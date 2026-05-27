@@ -86,7 +86,7 @@ class _RegisterVerifyScreenState extends ConsumerState<RegisterVerifyScreen> {
           ?.value
           .errorMessage;
       if (errorMessage != null && errorMessage.isNotEmpty) {
-        await AppFeedback.showMessage(context, message: errorMessage);
+        await AppFeedback.showError(context, message: errorMessage);
       }
     }
   }
@@ -106,7 +106,7 @@ class _RegisterVerifyScreenState extends ConsumerState<RegisterVerifyScreen> {
 
       if (!mounted) return;
 
-      await AppFeedback.showMessage(context, message: '注册完成，请使用账号密码登录');
+      await AppFeedback.showSuccess(context, message: '注册完成，请使用账号密码登录');
       if (!mounted) return;
       context.go(AppRoutePaths.login);
     } catch (_) {
@@ -117,7 +117,7 @@ class _RegisterVerifyScreenState extends ConsumerState<RegisterVerifyScreen> {
           ?.value
           .errorMessage;
       if (errorMessage != null && errorMessage.isNotEmpty) {
-        await AppFeedback.showMessage(context, message: errorMessage);
+        await AppFeedback.showError(context, message: errorMessage);
       }
     }
   }
@@ -131,8 +131,9 @@ class _RegisterVerifyScreenState extends ConsumerState<RegisterVerifyScreen> {
       title: '验证注册',
       footer: Center(
         child: CupertinoButton(
-          onPressed:
-              isSubmitting ? null : () => context.go(AppRoutePaths.register),
+          onPressed: isSubmitting
+              ? null
+              : () => context.go(AppRoutePaths.register),
           child: const Text(
             '返回上一步',
             style: TextStyle(fontWeight: FontWeight.w700),
@@ -181,20 +182,16 @@ class _RegisterVerifyScreenState extends ConsumerState<RegisterVerifyScreen> {
             // Resend button
             Center(
               child: CupertinoButton(
-                onPressed:
-                    isSubmitting || _countdown > 0 ? null : _resendCode,
+                onPressed: isSubmitting || _countdown > 0 ? null : _resendCode,
                 padding: EdgeInsets.zero,
                 child: Text(
-                  _countdown > 0
-                      ? '${_countdown}s 后重新发送'
-                      : '重新发送验证码',
+                  _countdown > 0 ? '${_countdown}s 后重新发送' : '重新发送验证码',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color:
-                        _countdown > 0
-                            ? AppColors.mutedForeground
-                            : AppColors.primary,
+                    color: _countdown > 0
+                        ? AppColors.mutedForeground
+                        : AppColors.primary,
                   ),
                 ),
               ),

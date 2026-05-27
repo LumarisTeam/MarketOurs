@@ -169,7 +169,7 @@ class ProfileScreen extends ConsumerWidget {
     try {
       await sendCode();
       if (!context.mounted) return;
-      await AppFeedback.showMessage(context, message: '验证码已发送');
+      await AppFeedback.showSuccess(context, message: '验证码已发送');
     } catch (_) {
       final errorMessage = ref
           .read(authControllerProvider)
@@ -177,7 +177,7 @@ class ProfileScreen extends ConsumerWidget {
           ?.value
           .errorMessage;
       if (errorMessage != null && errorMessage.isNotEmpty && context.mounted) {
-        await AppFeedback.showMessage(context, message: errorMessage);
+        await AppFeedback.showError(context, message: errorMessage);
       }
       codeController.dispose();
       return;
@@ -240,7 +240,7 @@ class ProfileScreen extends ConsumerWidget {
     try {
       await verifyCode(codeController.text.trim());
       if (!context.mounted) return;
-      await AppFeedback.showMessage(context, message: successMessage);
+      await AppFeedback.showSuccess(context, message: successMessage);
     } catch (_) {
       final errorMessage = ref
           .read(authControllerProvider)
@@ -248,7 +248,7 @@ class ProfileScreen extends ConsumerWidget {
           ?.value
           .errorMessage;
       if (errorMessage != null && errorMessage.isNotEmpty && context.mounted) {
-        await AppFeedback.showMessage(context, message: errorMessage);
+        await AppFeedback.showError(context, message: errorMessage);
       }
     } finally {
       codeController.dispose();
@@ -493,8 +493,8 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
     final random = Random();
     final seed = random.nextInt(0xFFFFFF).toRadixString(36).padLeft(5, '0');
     setState(
-      () => _avatarUrl =
-          'https://api.dicebear.com/9.x/avataaars/svg?seed=$seed',
+      () =>
+          _avatarUrl = 'https://api.dicebear.com/9.x/avataaars/svg?seed=$seed',
     );
   }
 
@@ -522,163 +522,163 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
       if (url != null && url.isNotEmpty && mounted) {
         setState(() => _avatarUrl = url);
       }
-      } catch (_) {
-        if (mounted) {
-          await AppFeedback.showMessage(context, message: '头像上传失败');
-        }
-      } finally {
-        if (mounted) setState(() => _isUploadingAvatar = false);
+    } catch (_) {
+      if (mounted) {
+        await AppFeedback.showError(context, message: '头像上传失败');
       }
-    }
-
-    void _showAvatarOptions() {
-      showCupertinoModalPopup<void>(
-        context: context,
-        builder: (ctx) => CupertinoActionSheet(
-          title: const Text('选择头像'),
-          actions: [
-            CupertinoActionSheetAction(
-              onPressed: () {
-                Navigator.pop(ctx);
-                _generateRandomAvatar();
-              },
-              child: const Text('随机生成'),
-            ),
-            CupertinoActionSheetAction(
-              onPressed: () {
-                Navigator.pop(ctx);
-                _pickFromGallery();
-              },
-              child: const Text('从相册选择'),
-            ),
-            CupertinoActionSheetAction(
-              onPressed: () {
-                Navigator.pop(ctx);
-                _takePhoto();
-              },
-              child: const Text('拍照'),
-            ),
-          ],
-          cancelButton: CupertinoActionSheetAction(
-            isDefaultAction: true,
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('取消'),
-          ),
-        ),
-      );
-    }
-
-    Future<void> _submit() async {
-      if (!_formKey.currentState!.validate()) return;
-
-      try {
-        await ref
-            .read(authControllerProvider.notifier)
-            .updateProfile(
-              UserUpdateDto(
-                name: _nameController.text.trim(),
-                info: _infoController.text.trim(),
-                avatar: _avatarUrl,
-              ),
-            );
-        if (!mounted) return;
-        await AppFeedback.showMessage(context, message: '个人资料已更新');
-        Navigator.of(context).pop();
-      } catch (_) {
-        final errorMessage = ref
-            .read(authControllerProvider)
-            .asData
-            ?.value
-            .errorMessage;
-        if (errorMessage != null && errorMessage.isNotEmpty && mounted) {
-          await AppFeedback.showMessage(context, message: errorMessage);
-        }
-      }
-    }
-
-    @override
-    Widget build(BuildContext context) {
-      final authState = ref.watch(authControllerProvider).asData?.value;
-      final isSubmitting = authState?.isSubmitting ?? false;
-
-      return Padding(
-        padding: EdgeInsets.only(
-          left: 20,
-          right: 20,
-          top: 20,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-        ),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            shrinkWrap: true,
-            children: [
-              Text('编辑资料', style: AppTextStyles.sectionTitle(context)),
-              const SizedBox(height: 20),
-
-              // Avatar picker
-              Center(
-                child: GestureDetector(
-                  onTap: _isUploadingAvatar ? null : _showAvatarOptions,
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      AppAvatar(
-                        url: _avatarUrl,
-                        name: _nameController.text,
-                        size: 88,
-                        radius: 44,
-                      ),
-                      if (_isUploadingAvatar)
-                        const Positioned.fill(
-                          child: Center(child: CupertinoActivityIndicator()),
-                        ),
-                      Positioned(
-                        right: -4,
-                        bottom: -4,
-                        child: Container(
-                          width: 32,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            color: AppColors.primary,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            CupertinoIcons.camera,
-                            size: 16,
-                            color: CupertinoColors.white,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Center(
-                child: Text(
-                  '点击更换头像',
-                  style: AppTextStyles.label(context).copyWith(fontSize: 11),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              AppTextField(controller: _nameController, placeholder: '昵称'),
-              const SizedBox(height: 12),
-              AppTextField(
-                controller: _infoController,
-                placeholder: '个人简介',
-                maxLines: 3,
-              ),
-              const SizedBox(height: 24),
-              AppPrimaryButton(
-                onPressed:
-                    isSubmitting || _isUploadingAvatar ? null : _submit,
-                child: Text(isSubmitting ? '保存中...' : '保存修改'),
-              ),
-            ],
-          ),
-        ),
-      );
+    } finally {
+      if (mounted) setState(() => _isUploadingAvatar = false);
     }
   }
+
+  void _showAvatarOptions() {
+    showCupertinoModalPopup<void>(
+      context: context,
+      builder: (ctx) => CupertinoActionSheet(
+        title: const Text('选择头像'),
+        actions: [
+          CupertinoActionSheetAction(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _generateRandomAvatar();
+            },
+            child: const Text('随机生成'),
+          ),
+          CupertinoActionSheetAction(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _pickFromGallery();
+            },
+            child: const Text('从相册选择'),
+          ),
+          CupertinoActionSheetAction(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _takePhoto();
+            },
+            child: const Text('拍照'),
+          ),
+        ],
+        cancelButton: CupertinoActionSheetAction(
+          isDefaultAction: true,
+          onPressed: () => Navigator.pop(ctx),
+          child: const Text('取消'),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    try {
+      await ref
+          .read(authControllerProvider.notifier)
+          .updateProfile(
+            UserUpdateDto(
+              name: _nameController.text.trim(),
+              info: _infoController.text.trim(),
+              avatar: _avatarUrl,
+            ),
+          );
+      if (!mounted) return;
+      await AppFeedback.showSuccess(context, message: '个人资料已更新');
+      if (!mounted) return;
+      Navigator.of(context).pop();
+    } catch (_) {
+      final errorMessage = ref
+          .read(authControllerProvider)
+          .asData
+          ?.value
+          .errorMessage;
+      if (errorMessage != null && errorMessage.isNotEmpty && mounted) {
+        await AppFeedback.showError(context, message: errorMessage);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final authState = ref.watch(authControllerProvider).asData?.value;
+    final isSubmitting = authState?.isSubmitting ?? false;
+
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+      ),
+      child: Form(
+        key: _formKey,
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            Text('编辑资料', style: AppTextStyles.sectionTitle(context)),
+            const SizedBox(height: 20),
+
+            // Avatar picker
+            Center(
+              child: GestureDetector(
+                onTap: _isUploadingAvatar ? null : _showAvatarOptions,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    AppAvatar(
+                      url: _avatarUrl,
+                      name: _nameController.text,
+                      size: 88,
+                      radius: 44,
+                    ),
+                    if (_isUploadingAvatar)
+                      const Positioned.fill(
+                        child: Center(child: CupertinoActivityIndicator()),
+                      ),
+                    Positioned(
+                      right: -4,
+                      bottom: -4,
+                      child: Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          CupertinoIcons.camera,
+                          size: 16,
+                          color: CupertinoColors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Center(
+              child: Text(
+                '点击更换头像',
+                style: AppTextStyles.label(context).copyWith(fontSize: 11),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            AppTextField(controller: _nameController, placeholder: '昵称'),
+            const SizedBox(height: 12),
+            AppTextField(
+              controller: _infoController,
+              placeholder: '个人简介',
+              maxLines: 3,
+            ),
+            const SizedBox(height: 24),
+            AppPrimaryButton(
+              onPressed: isSubmitting || _isUploadingAvatar ? null : _submit,
+              child: Text(isSubmitting ? '保存中...' : '保存修改'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

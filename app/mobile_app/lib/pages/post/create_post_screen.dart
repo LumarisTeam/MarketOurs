@@ -30,7 +30,6 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   final _fileService = FileService();
   final List<XFile> _images = [];
   bool _isSubmitting = false;
-  String? _errorMessage;
 
   @override
   void dispose() {
@@ -45,7 +44,6 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
 
     setState(() {
       _images.addAll(picked);
-      _errorMessage = null;
     });
   }
 
@@ -65,7 +63,6 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
 
     setState(() {
       _isSubmitting = true;
-      _errorMessage = null;
     });
 
     try {
@@ -73,7 +70,9 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
           ? <String>[]
           : (await _fileService.uploadImages(_images)).data ?? <String>[];
 
-      final response = await ref.read(postServiceProvider).createPost(
+      final response = await ref
+          .read(postServiceProvider)
+          .createPost(
             PostCreateDto(
               title: _titleController.text.trim(),
               content: _contentController.text.trim(),
@@ -87,12 +86,15 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
 
       if (!mounted) return;
 
-      await AppFeedback.showMessage(context, message: '帖子已发布');
+      await AppFeedback.showSuccess(context, message: '帖子已发布');
+      if (!mounted) return;
       context.go(buildPostDetailLocation(post.id));
     } catch (error) {
       if (!mounted) return;
-      setState(() => _errorMessage = error.toString().replaceFirst('Exception: ', ''));
-      await AppFeedback.showMessage(context, message: _errorMessage ?? '帖子创建失败');
+      await AppFeedback.showError(
+        context,
+        message: error.toString().replaceFirst('Exception: ', ''),
+      );
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -105,11 +107,16 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       navigationBar: CupertinoNavigationBar(
         middle: const Text('发布帖子'),
         backgroundColor: AppColors.background.withValues(alpha: 0.94),
-        border: Border(bottom: BorderSide(color: AppColors.border.withValues(alpha: 0.3))),
+        border: Border(
+          bottom: BorderSide(color: AppColors.border.withValues(alpha: 0.3)),
+        ),
         trailing: CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: _isSubmitting ? null : _submit,
-          child: Text(_isSubmitting ? '正在发布' : '发布', style: const TextStyle(fontWeight: FontWeight.w700)),
+          child: Text(
+            _isSubmitting ? '正在发布' : '发布',
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
         ),
       ),
       child: SafeArea(
@@ -118,10 +125,6 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
           child: ListView(
             padding: const EdgeInsets.all(20),
             children: [
-              if (_errorMessage != null) ...[
-                _ErrorBanner(message: _errorMessage!),
-                const SizedBox(height: 16),
-              ],
               AppTappableCard(
                 padding: const EdgeInsets.all(20),
                 radius: AppRadii.lg,
@@ -130,14 +133,16 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                     AppTextField(
                       controller: _titleController,
                       placeholder: '帖子标题',
-                      validator: (v) => v?.trim().isEmpty == true ? '请输入标题' : null,
+                      validator: (v) =>
+                          v?.trim().isEmpty == true ? '请输入标题' : null,
                     ),
                     const SizedBox(height: 16),
                     AppTextField(
                       controller: _contentController,
                       placeholder: '分享此刻的新鲜事...',
                       maxLines: 8,
-                      validator: (v) => v?.trim().isEmpty == true ? '请输入内容' : null,
+                      validator: (v) =>
+                          v?.trim().isEmpty == true ? '请输入内容' : null,
                     ),
                   ],
                 ),
@@ -152,11 +157,23 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('图片', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                        const Text(
+                          '图片',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                         CupertinoButton(
                           padding: EdgeInsets.zero,
                           onPressed: _isSubmitting ? null : _pickImages,
-                          child: const Text('添加图片', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                          child: const Text(
+                            '添加图片',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -165,8 +182,14 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                       Container(
                         height: 120,
                         alignment: Alignment.center,
-                        decoration: BoxDecoration(color: AppColors.secondary, borderRadius: BorderRadius.circular(AppRadii.md)),
-                        child: const Text('还没选择图片', style: TextStyle(color: AppColors.mutedForeground)),
+                        decoration: BoxDecoration(
+                          color: AppColors.secondary,
+                          borderRadius: BorderRadius.circular(AppRadii.md),
+                        ),
+                        child: const Text(
+                          '还没选择图片',
+                          style: TextStyle(color: AppColors.mutedForeground),
+                        ),
                       )
                     else
                       Wrap(
@@ -174,7 +197,10 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                         runSpacing: 12,
                         children: [
                           for (var i = 0; i < _images.length; i++)
-                            _ImagePreview(image: _images[i], onRemove: () => _removeImage(i)),
+                            _ImagePreview(
+                              image: _images[i],
+                              onRemove: () => _removeImage(i),
+                            ),
                         ],
                       ),
                   ],
@@ -205,7 +231,12 @@ class _ImagePreview extends StatelessWidget {
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(AppRadii.md),
-          child: Image.file(File(image.path), width: 90, height: 90, fit: BoxFit.cover),
+          child: Image.file(
+            File(image.path),
+            width: 90,
+            height: 90,
+            fit: BoxFit.cover,
+          ),
         ),
         Positioned(
           right: -8,
@@ -213,24 +244,14 @@ class _ImagePreview extends StatelessWidget {
           child: CupertinoButton(
             padding: EdgeInsets.zero,
             onPressed: onRemove,
-            child: const Icon(CupertinoIcons.xmark_circle_fill, color: AppColors.destructive, size: 24),
+            child: const Icon(
+              CupertinoIcons.xmark_circle_fill,
+              color: AppColors.destructive,
+              size: 24,
+            ),
           ),
         ),
       ],
-    );
-  }
-}
-
-class _ErrorBanner extends StatelessWidget {
-  const _ErrorBanner({required this.message});
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: const Color(0xFFFFE5E5), borderRadius: BorderRadius.circular(AppRadii.md)),
-      child: Text(message, style: const TextStyle(color: AppColors.destructive, fontWeight: FontWeight.w600)),
     );
   }
 }

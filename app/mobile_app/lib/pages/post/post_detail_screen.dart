@@ -95,11 +95,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       await action();
       if (reloadAll) await _loadData();
       if (successMessage != null && mounted) {
-        await AppFeedback.showMessage(context, message: successMessage);
+        await AppFeedback.showSuccess(context, message: successMessage);
       }
     } catch (error) {
       if (!mounted) return;
-      await AppFeedback.showMessage(
+      await AppFeedback.showError(
         context,
         message: error.toString().replaceFirst('Exception: ', ''),
       );
@@ -193,7 +193,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     if (values == null) return;
 
     await _runAction(() async {
-      await ref.read(postServiceProvider).updatePost(
+      await ref
+          .read(postServiceProvider)
+          .updatePost(
             post.id,
             PostUpdateDto(
               title: values.$1,
@@ -330,249 +332,289 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           _isLoading
               ? const Center(child: CupertinoActivityIndicator(radius: 14))
               : _errorMessage != null || post == null
-                  ? _PostDetailErrorView(
-                      message: _errorMessage ?? '详情加载失败',
-                      onRetry: _loadData,
-                    )
-                  : CustomScrollView(
-                      physics: const BouncingScrollPhysics(
-                        parent: AlwaysScrollableScrollPhysics(),
-                      ),
-                      slivers: [
-                        CupertinoSliverNavigationBar(
-                          backgroundColor: CupertinoDynamicColor.resolve(
-                            AppColors.background,
+              ? _PostDetailErrorView(
+                  message: _errorMessage ?? '详情加载失败',
+                  onRetry: _loadData,
+                )
+              : CustomScrollView(
+                  physics: const BouncingScrollPhysics(
+                    parent: AlwaysScrollableScrollPhysics(),
+                  ),
+                  slivers: [
+                    CupertinoSliverNavigationBar(
+                      backgroundColor: CupertinoDynamicColor.resolve(
+                        AppColors.background,
+                        context,
+                      ).withValues(alpha: 0.8),
+                      border: Border(
+                        bottom: BorderSide(
+                          color: CupertinoDynamicColor.resolve(
+                            AppColors.border,
                             context,
-                          ).withValues(alpha: 0.8),
-                          border: Border(
-                            bottom: BorderSide(
-                              color: CupertinoDynamicColor.resolve(AppColors.border, context).withValues(alpha: 0.3),
-                              width: 0.5,
-                            ),
-                          ),
-                          largeTitle: const Text('详情'),
-                          middle: const Text('详情', style: TextStyle(fontWeight: FontWeight.w700)),
-                          trailing: isOwner
-                              ? CupertinoButton(
-                                  padding: EdgeInsets.zero,
-                                  onPressed: () {
-                                    showCupertinoModalPopup<void>(
-                                      context: context,
-                                      builder: (_) => CupertinoActionSheet(
-                                        actions: [
-                                          CupertinoActionSheetAction(
-                                            onPressed: () {
-                                              Navigator.of(context).pop();
-                                              _editPost();
-                                            },
-                                            child: const Text('编辑帖子'),
-                                          ),
-                                          CupertinoActionSheetAction(
-                                            isDestructiveAction: true,
-                                            onPressed: () {
-                                              Navigator.of(context).pop();
-                                              _deletePost();
-                                            },
-                                            child: const Text('删除帖子'),
-                                          ),
-                                        ],
-                                        cancelButton: CupertinoActionSheetAction(
-                                          onPressed: () => Navigator.of(context).pop(),
-                                          child: const Text('取消'),
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  child: const Icon(CupertinoIcons.ellipsis, size: 22),
-                                )
-                              : null,
+                          ).withValues(alpha: 0.3),
+                          width: 0.5,
                         ),
-                        CupertinoSliverRefreshControl(onRefresh: _loadData),
-                        SliverPadding(
-                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 160),
-                          sliver: SliverToBoxAdapter(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _PostHero(
-                                  post: post,
-                                  onAuthorTap: post.userId == null
-                                      ? null
-                                      : () => context.push(
-                                            buildPublicProfileLocation(post.userId!),
-                                          ),
-                                ),
-                                const SizedBox(height: 24),
-                                _ActionBar(
-                                  likes: post.likes ?? 0,
-                                  dislikes: post.dislikes ?? 0,
-                                  watch: post.watch ?? 0,
-                                  isWorking: _isWorking,
-                                  isLiked: _postLiked,
-                                  isDisliked: _postDisliked,
-                                  onLike: () => _runAction(() async {
-                                    final res = await ref.read(postServiceProvider).likePost(post.id);
-                                    final data = res.data;
-                                    if (data != null) {
-                                      setState(() {
-                                        _postLiked = data.isLiked;
-                                        _postDisliked = false;
-                                        if (_post != null) {
-                                          _post = PostDto(
-                                            id: _post!.id,
-                                            title: _post!.title,
-                                            content: _post!.content,
-                                            images: _post!.images,
-                                            createdAt: _post!.createdAt,
-                                            updatedAt: _post!.updatedAt,
-                                            userId: _post!.userId,
-                                            author: _post!.author,
-                                            likes: data.likeCount,
-                                            dislikes: data.dislikeCount,
-                                            watch: _post!.watch,
-                                            isReview: _post!.isReview,
-                                          );
-                                        }
-                                      });
-                                    }
-                                  }, reloadAll: false),
-                                  onDislike: () => _runAction(() async {
-                                    final res = await ref.read(postServiceProvider).dislikePost(post.id);
-                                    final data = res.data;
-                                    if (data != null) {
-                                      setState(() {
-                                        _postDisliked = data.isDisliked;
-                                        _postLiked = false;
-                                        if (_post != null) {
-                                          _post = PostDto(
-                                            id: _post!.id,
-                                            title: _post!.title,
-                                            content: _post!.content,
-                                            images: _post!.images,
-                                            createdAt: _post!.createdAt,
-                                            updatedAt: _post!.updatedAt,
-                                            userId: _post!.userId,
-                                            author: _post!.author,
-                                            likes: data.likeCount,
-                                            dislikes: data.dislikeCount,
-                                            watch: _post!.watch,
-                                            isReview: _post!.isReview,
-                                          );
-                                        }
-                                      });
-                                    }
-                                  }, reloadAll: false),
-                                ),
-                                const SizedBox(height: 32),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        '评论 ${_comments.length}',
-                                        style: AppTextStyles.sectionTitle(context),
+                      ),
+                      largeTitle: const Text('详情'),
+                      middle: const Text(
+                        '详情',
+                        style: TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      trailing: isOwner
+                          ? CupertinoButton(
+                              padding: EdgeInsets.zero,
+                              onPressed: () {
+                                showCupertinoModalPopup<void>(
+                                  context: context,
+                                  builder: (_) => CupertinoActionSheet(
+                                    actions: [
+                                      CupertinoActionSheetAction(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                          _editPost();
+                                        },
+                                        child: const Text('编辑帖子'),
                                       ),
+                                      CupertinoActionSheetAction(
+                                        isDestructiveAction: true,
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                          _deletePost();
+                                        },
+                                        child: const Text('删除帖子'),
+                                      ),
+                                    ],
+                                    cancelButton: CupertinoActionSheetAction(
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(),
+                                      child: const Text('取消'),
                                     ),
-                                    CupertinoSlidingSegmentedControl<String>(
-                                      groupValue: _commentSort,
-                                      backgroundColor: CupertinoDynamicColor.resolve(
+                                  ),
+                                );
+                              },
+                              child: const Icon(
+                                CupertinoIcons.ellipsis,
+                                size: 22,
+                              ),
+                            )
+                          : null,
+                    ),
+                    CupertinoSliverRefreshControl(onRefresh: _loadData),
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 160),
+                      sliver: SliverToBoxAdapter(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _PostHero(
+                              post: post,
+                              onAuthorTap: post.userId == null
+                                  ? null
+                                  : () => context.push(
+                                      buildPublicProfileLocation(post.userId!),
+                                    ),
+                            ),
+                            const SizedBox(height: 24),
+                            _ActionBar(
+                              likes: post.likes ?? 0,
+                              dislikes: post.dislikes ?? 0,
+                              watch: post.watch ?? 0,
+                              isWorking: _isWorking,
+                              isLiked: _postLiked,
+                              isDisliked: _postDisliked,
+                              onLike: () => _runAction(() async {
+                                final res = await ref
+                                    .read(postServiceProvider)
+                                    .likePost(post.id);
+                                final data = res.data;
+                                if (data != null) {
+                                  setState(() {
+                                    _postLiked = data.isLiked;
+                                    _postDisliked = false;
+                                    if (_post != null) {
+                                      _post = PostDto(
+                                        id: _post!.id,
+                                        title: _post!.title,
+                                        content: _post!.content,
+                                        images: _post!.images,
+                                        createdAt: _post!.createdAt,
+                                        updatedAt: _post!.updatedAt,
+                                        userId: _post!.userId,
+                                        author: _post!.author,
+                                        likes: data.likeCount,
+                                        dislikes: data.dislikeCount,
+                                        watch: _post!.watch,
+                                        isReview: _post!.isReview,
+                                      );
+                                    }
+                                  });
+                                }
+                              }, reloadAll: false),
+                              onDislike: () => _runAction(() async {
+                                final res = await ref
+                                    .read(postServiceProvider)
+                                    .dislikePost(post.id);
+                                final data = res.data;
+                                if (data != null) {
+                                  setState(() {
+                                    _postDisliked = data.isDisliked;
+                                    _postLiked = false;
+                                    if (_post != null) {
+                                      _post = PostDto(
+                                        id: _post!.id,
+                                        title: _post!.title,
+                                        content: _post!.content,
+                                        images: _post!.images,
+                                        createdAt: _post!.createdAt,
+                                        updatedAt: _post!.updatedAt,
+                                        userId: _post!.userId,
+                                        author: _post!.author,
+                                        likes: data.likeCount,
+                                        dislikes: data.dislikeCount,
+                                        watch: _post!.watch,
+                                        isReview: _post!.isReview,
+                                      );
+                                    }
+                                  });
+                                }
+                              }, reloadAll: false),
+                            ),
+                            const SizedBox(height: 32),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    '评论 ${_comments.length}',
+                                    style: AppTextStyles.sectionTitle(context),
+                                  ),
+                                ),
+                                CupertinoSlidingSegmentedControl<String>(
+                                  groupValue: _commentSort,
+                                  backgroundColor:
+                                      CupertinoDynamicColor.resolve(
                                         AppColors.secondary,
                                         context,
                                       ),
-                                      children: const {
-                                        'recent': Padding(
-                                          padding: EdgeInsets.symmetric(horizontal: 10),
-                                          child: Text('最新', style: TextStyle(fontSize: 13)),
-                                        ),
-                                        'hot': Padding(
-                                          padding: EdgeInsets.symmetric(horizontal: 10),
-                                          child: Text('最热', style: TextStyle(fontSize: 13)),
-                                        ),
-                                      },
-                                      onValueChanged: (v) {
-                                        if (v != null) {
-                                          setState(() => _commentSort = v);
-                                          _loadData();
+                                  children: const {
+                                    'recent': Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                      ),
+                                      child: Text(
+                                        '最新',
+                                        style: TextStyle(fontSize: 13),
+                                      ),
+                                    ),
+                                    'hot': Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                      ),
+                                      child: Text(
+                                        '最热',
+                                        style: TextStyle(fontSize: 13),
+                                      ),
+                                    ),
+                                  },
+                                  onValueChanged: (v) {
+                                    if (v != null) {
+                                      setState(() => _commentSort = v);
+                                      _loadData();
+                                    }
+                                  },
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            if (_comments.isEmpty)
+                              const AppEmptyState(
+                                icon: CupertinoIcons.chat_bubble,
+                                title: '暂无评论',
+                                description: '分享你的见解，成为第一个评论的人。',
+                              )
+                            else
+                              ..._comments.map(
+                                (c) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 12),
+                                  child: _CommentThread(
+                                    comment: c,
+                                    currentUserId: user?.id,
+                                    onAuthorTapForUser: (id) => context.push(
+                                      buildPublicProfileLocation(id),
+                                    ),
+                                    onReply: () => _replyComment(c),
+                                    onEdit: user?.id == c.userId
+                                        ? () => _editComment(c)
+                                        : null,
+                                    onDelete: user?.id == c.userId
+                                        ? () => _deleteComment(c)
+                                        : null,
+                                    likedComments: _likedComments,
+                                    dislikedComments: _dislikedComments,
+                                    onLike: () => _runAction(() async {
+                                      final res = await _commentService
+                                          .likeComment(c.id);
+                                      final data = res.data;
+                                      if (data != null) {
+                                        setState(() {
+                                          if (data.isLiked) {
+                                            _likedComments.add(c.id);
+                                            _dislikedComments.remove(c.id);
+                                          } else {
+                                            _likedComments.remove(c.id);
+                                          }
+                                        });
+                                      }
+                                    }),
+                                    onDislike: () => _runAction(() async {
+                                      final res = await _commentService
+                                          .dislikeComment(c.id);
+                                      final data = res.data;
+                                      if (data != null) {
+                                        setState(() {
+                                          if (data.isDisliked) {
+                                            _dislikedComments.add(c.id);
+                                            _likedComments.remove(c.id);
+                                          } else {
+                                            _dislikedComments.remove(c.id);
+                                          }
+                                        });
+                                      }
+                                    }),
+                                    onReplyChild: _replyComment,
+                                    onEditChild: _editComment,
+                                    onDeleteChild: _deleteComment,
+                                    onLikeChild: (child) => _runAction(
+                                      () async {
+                                        final res = await _commentService
+                                            .likeComment(child.id);
+                                        if (res.data?.isLiked == true) {
+                                          setState(() {
+                                            _likedComments.add(child.id);
+                                            _dislikedComments.remove(child.id);
+                                          });
                                         }
                                       },
                                     ),
-                                  ],
+                                    onDislikeChild: (child) =>
+                                        _runAction(() async {
+                                          final res = await _commentService
+                                              .dislikeComment(child.id);
+                                          if (res.data?.isDisliked == true) {
+                                            setState(() {
+                                              _dislikedComments.add(child.id);
+                                              _likedComments.remove(child.id);
+                                            });
+                                          }
+                                        }),
+                                  ),
                                 ),
-                                const SizedBox(height: 16),
-                                if (_comments.isEmpty)
-                                  const AppEmptyState(
-                                    icon: CupertinoIcons.chat_bubble,
-                                    title: '暂无评论',
-                                    description: '分享你的见解，成为第一个评论的人。',
-                                  )
-                                else
-                                  ..._comments.map((c) => Padding(
-                                        padding: const EdgeInsets.only(bottom: 12),
-                                        child: _CommentThread(
-                                          comment: c,
-                                          currentUserId: user?.id,
-                                          onAuthorTapForUser: (id) => context.push(buildPublicProfileLocation(id)),
-                                          onReply: () => _replyComment(c),
-                                          onEdit: user?.id == c.userId ? () => _editComment(c) : null,
-                                          onDelete: user?.id == c.userId ? () => _deleteComment(c) : null,
-                                          likedComments: _likedComments,
-                                          dislikedComments: _dislikedComments,
-                                          onLike: () => _runAction(() async {
-                                            final res = await _commentService.likeComment(c.id);
-                                            final data = res.data;
-                                            if (data != null) {
-                                              setState(() {
-                                                if (data.isLiked) {
-                                                  _likedComments.add(c.id);
-                                                  _dislikedComments.remove(c.id);
-                                                } else {
-                                                  _likedComments.remove(c.id);
-                                                }
-                                              });
-                                            }
-                                          }),
-                                          onDislike: () => _runAction(() async {
-                                            final res = await _commentService.dislikeComment(c.id);
-                                            final data = res.data;
-                                            if (data != null) {
-                                              setState(() {
-                                                if (data.isDisliked) {
-                                                  _dislikedComments.add(c.id);
-                                                  _likedComments.remove(c.id);
-                                                } else {
-                                                  _dislikedComments.remove(c.id);
-                                                }
-                                              });
-                                            }
-                                          }),
-                                          onReplyChild: _replyComment,
-                                          onEditChild: _editComment,
-                                          onDeleteChild: _deleteComment,
-                                          onLikeChild: (child) => _runAction(() async {
-                                            final res = await _commentService.likeComment(child.id);
-                                            if (res.data?.isLiked == true) {
-                                              setState(() {
-                                                _likedComments.add(child.id);
-                                                _dislikedComments.remove(child.id);
-                                              });
-                                            }
-                                          }),
-                                          onDislikeChild: (child) => _runAction(() async {
-                                            final res = await _commentService.dislikeComment(child.id);
-                                            if (res.data?.isDisliked == true) {
-                                              setState(() {
-                                                _dislikedComments.add(child.id);
-                                                _likedComments.remove(child.id);
-                                              });
-                                            }
-                                          }),
-                                        ),
-                                      )),
-                              ],
-                            ),
-                          ),
+                              ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
+                  ],
+                ),
           if (!_isLoading && post != null)
             Positioned(
               left: 0,
@@ -582,12 +624,23 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                   child: Container(
-                    padding: EdgeInsets.fromLTRB(16, 12, 16, MediaQuery.of(context).padding.bottom + 12),
+                    padding: EdgeInsets.fromLTRB(
+                      16,
+                      12,
+                      16,
+                      MediaQuery.of(context).padding.bottom + 12,
+                    ),
                     decoration: BoxDecoration(
-                      color: CupertinoDynamicColor.resolve(AppColors.background, context).withValues(alpha: 0.8),
+                      color: CupertinoDynamicColor.resolve(
+                        AppColors.background,
+                        context,
+                      ).withValues(alpha: 0.8),
                       border: Border(
                         top: BorderSide(
-                          color: CupertinoDynamicColor.resolve(AppColors.border, context).withValues(alpha: 0.3),
+                          color: CupertinoDynamicColor.resolve(
+                            AppColors.border,
+                            context,
+                          ).withValues(alpha: 0.3),
                         ),
                       ),
                     ),
@@ -598,8 +651,13 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           child: Container(
                             height: 44,
                             decoration: BoxDecoration(
-                              color: CupertinoDynamicColor.resolve(AppColors.secondary, context),
-                              borderRadius: BorderRadius.circular(AppRadii.pill),
+                              color: CupertinoDynamicColor.resolve(
+                                AppColors.secondary,
+                                context,
+                              ),
+                              borderRadius: BorderRadius.circular(
+                                AppRadii.pill,
+                              ),
                             ),
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             alignment: Alignment.centerLeft,
@@ -608,7 +666,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                               placeholder: '写下你的评论...',
                               placeholderStyle: AppTextStyles.muted(context),
                               decoration: null,
-                              style: AppTextStyles.body(context).copyWith(fontSize: 15),
+                              style: AppTextStyles.body(
+                                context,
+                              ).copyWith(fontSize: 15),
                               cursorColor: AppColors.primary,
                             ),
                           ),
@@ -620,7 +680,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           child: Text(
                             '发布',
                             style: TextStyle(
-                              color: AppColors.primary.withValues(alpha: _isWorking ? 0.5 : 1.0),
+                              color: AppColors.primary.withValues(
+                                alpha: _isWorking ? 0.5 : 1.0,
+                              ),
                               fontWeight: FontWeight.w700,
                               fontSize: 16,
                             ),
@@ -679,7 +741,10 @@ class _PostHero extends StatelessWidget {
                 ),
                 AppSecondaryButton(
                   onPressed: onAuthorTap,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 6,
+                  ),
                   child: const Text('关注', style: TextStyle(fontSize: 13)),
                 ),
               ],
@@ -687,39 +752,48 @@ class _PostHero extends StatelessWidget {
           ),
         Text(
           post.title?.trim().isNotEmpty == true ? post.title!.trim() : '未命名帖子',
-          style: AppTextStyles.title(context).copyWith(
-            fontSize: 22,
-            height: 1.3,
-          ),
+          style: AppTextStyles.title(
+            context,
+          ).copyWith(fontSize: 22, height: 1.3),
         ),
         const SizedBox(height: 16),
         Text(
-          post.content?.trim().isNotEmpty == true ? post.content!.trim() : '这个帖子还没有填写描述。',
+          post.content?.trim().isNotEmpty == true
+              ? post.content!.trim()
+              : '这个帖子还没有填写描述。',
           style: AppTextStyles.body(context).copyWith(
             fontSize: 17,
             height: 1.6,
-            color: CupertinoDynamicColor.resolve(AppColors.foreground, context).withValues(alpha: 0.9),
+            color: CupertinoDynamicColor.resolve(
+              AppColors.foreground,
+              context,
+            ).withValues(alpha: 0.9),
           ),
         ),
         if (post.images?.isNotEmpty == true) ...[
           const SizedBox(height: 20),
-          ...post.images!.map((imageUrl) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(AppRadii.lg),
-              child: Image.network(
-                imageUrl,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  height: 200,
+          ...post.images!.map(
+            (imageUrl) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(AppRadii.lg),
+                child: Image.network(
+                  imageUrl,
                   width: double.infinity,
-                  color: AppColors.muted,
-                  child: const Icon(CupertinoIcons.photo, color: AppColors.mutedForeground),
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    height: 200,
+                    width: double.infinity,
+                    color: AppColors.muted,
+                    child: const Icon(
+                      CupertinoIcons.photo,
+                      color: AppColors.mutedForeground,
+                    ),
+                  ),
                 ),
               ),
             ),
-          )),
+          ),
         ],
       ],
     );
@@ -758,8 +832,18 @@ class _ActionBar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
         border: Border(
-          top: BorderSide(color: CupertinoDynamicColor.resolve(AppColors.border, context).withValues(alpha: 0.3)),
-          bottom: BorderSide(color: CupertinoDynamicColor.resolve(AppColors.border, context).withValues(alpha: 0.3)),
+          top: BorderSide(
+            color: CupertinoDynamicColor.resolve(
+              AppColors.border,
+              context,
+            ).withValues(alpha: 0.3),
+          ),
+          bottom: BorderSide(
+            color: CupertinoDynamicColor.resolve(
+              AppColors.border,
+              context,
+            ).withValues(alpha: 0.3),
+          ),
         ),
       ),
       child: Row(
@@ -773,17 +857,19 @@ class _ActionBar extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           _ActionChip(
-            icon: isDisliked ? CupertinoIcons.hand_thumbsdown_fill : CupertinoIcons.hand_thumbsdown,
+            icon: isDisliked
+                ? CupertinoIcons.hand_thumbsdown_fill
+                : CupertinoIcons.hand_thumbsdown,
             label: '$dislikes',
             onTap: isWorking ? null : onDislike,
-            color: CupertinoDynamicColor.resolve(AppColors.mutedForeground, context),
+            color: CupertinoDynamicColor.resolve(
+              AppColors.mutedForeground,
+              context,
+            ),
             active: isDisliked,
           ),
           const Spacer(),
-          Text(
-            '$watch 次浏览',
-            style: AppTextStyles.label(context),
-          ),
+          Text('$watch 次浏览', style: AppTextStyles.label(context)),
         ],
       ),
     );
@@ -791,7 +877,13 @@ class _ActionBar extends StatelessWidget {
 }
 
 class _ActionChip extends StatelessWidget {
-  const _ActionChip({required this.icon, required this.label, this.onTap, required this.color, this.active = false});
+  const _ActionChip({
+    required this.icon,
+    required this.label,
+    this.onTap,
+    required this.color,
+    this.active = false,
+  });
   final IconData icon;
   final String label;
   final VoidCallback? onTap;
@@ -815,7 +907,12 @@ class _ActionChip extends StatelessWidget {
             Icon(
               icon,
               size: 18,
-              color: active ? color : CupertinoDynamicColor.resolve(AppColors.mutedForeground, context),
+              color: active
+                  ? color
+                  : CupertinoDynamicColor.resolve(
+                      AppColors.mutedForeground,
+                      context,
+                    ),
             ),
             const SizedBox(width: 8),
             Text(
@@ -823,7 +920,12 @@ class _ActionChip extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: active ? color : CupertinoDynamicColor.resolve(AppColors.foreground, context),
+                color: active
+                    ? color
+                    : CupertinoDynamicColor.resolve(
+                        AppColors.foreground,
+                        context,
+                      ),
               ),
             ),
           ],
@@ -875,7 +977,9 @@ class _CommentThread extends StatelessWidget {
       children: [
         _CommentCard(
           comment: comment,
-          onAuthorTap: comment.userId == null ? null : () => onAuthorTapForUser(comment.userId!),
+          onAuthorTap: comment.userId == null
+              ? null
+              : () => onAuthorTapForUser(comment.userId!),
           onReply: onReply,
           onEdit: onEdit,
           onDelete: onDelete,
@@ -891,7 +995,10 @@ class _CommentThread extends StatelessWidget {
             decoration: BoxDecoration(
               border: Border(
                 left: BorderSide(
-                  color: CupertinoDynamicColor.resolve(AppColors.border, context).withValues(alpha: 0.3),
+                  color: CupertinoDynamicColor.resolve(
+                    AppColors.border,
+                    context,
+                  ).withValues(alpha: 0.3),
                   width: 2,
                 ),
               ),
@@ -902,16 +1009,23 @@ class _CommentThread extends StatelessWidget {
                   _CommentCard(
                     comment: reply,
                     isReply: true,
-                    onAuthorTap: reply.userId == null ? null : () => onAuthorTapForUser(reply.userId!),
+                    onAuthorTap: reply.userId == null
+                        ? null
+                        : () => onAuthorTapForUser(reply.userId!),
                     onReply: () => onReplyChild(reply),
-                    onEdit: currentUserId == reply.userId ? () => onEditChild?.call(reply) : null,
-                    onDelete: currentUserId == reply.userId ? () => onDeleteChild?.call(reply) : null,
+                    onEdit: currentUserId == reply.userId
+                        ? () => onEditChild?.call(reply)
+                        : null,
+                    onDelete: currentUserId == reply.userId
+                        ? () => onDeleteChild?.call(reply)
+                        : null,
                     onLike: () => onLikeChild(reply),
                     onDislike: () => onDislikeChild(reply),
                     isLiked: likedComments.contains(reply.id),
                     isDisliked: dislikedComments.contains(reply.id),
                   ),
-                  if (reply != comment.repliedComments!.last) const SizedBox(height: 16),
+                  if (reply != comment.repliedComments!.last)
+                    const SizedBox(height: 16),
                 ],
               ],
             ),
@@ -920,7 +1034,10 @@ class _CommentThread extends StatelessWidget {
         const SizedBox(height: 16),
         Container(
           height: 1,
-          color: CupertinoDynamicColor.resolve(AppColors.border, context).withValues(alpha: 0.3),
+          color: CupertinoDynamicColor.resolve(
+            AppColors.border,
+            context,
+          ).withValues(alpha: 0.3),
         ),
         const SizedBox(height: 16),
       ],
@@ -929,7 +1046,18 @@ class _CommentThread extends StatelessWidget {
 }
 
 class _CommentCard extends StatelessWidget {
-  const _CommentCard({required this.comment, this.onAuthorTap, required this.onReply, this.onEdit, this.onDelete, required this.onLike, required this.onDislike, this.isLiked = false, this.isDisliked = false, this.isReply = false});
+  const _CommentCard({
+    required this.comment,
+    this.onAuthorTap,
+    required this.onReply,
+    this.onEdit,
+    this.onDelete,
+    required this.onLike,
+    required this.onDislike,
+    this.isLiked = false,
+    this.isDisliked = false,
+    this.isReply = false,
+  });
   final CommentDto comment;
   final VoidCallback? onAuthorTap;
   final VoidCallback onReply;
@@ -988,7 +1116,9 @@ class _CommentCard extends StatelessWidget {
             children: [
               Text(
                 comment.content ?? '',
-                style: AppTextStyles.body(context).copyWith(fontSize: 15, height: 1.5),
+                style: AppTextStyles.body(
+                  context,
+                ).copyWith(fontSize: 15, height: 1.5),
               ),
               const SizedBox(height: 8),
               Row(
@@ -1000,11 +1130,18 @@ class _CommentCard extends StatelessWidget {
                   ],
                   if (onDelete != null) ...[
                     const SizedBox(width: 16),
-                    _TextAction(label: '删除', onTap: onDelete!, activeColor: AppColors.destructive, active: true),
+                    _TextAction(
+                      label: '删除',
+                      onTap: onDelete!,
+                      activeColor: AppColors.destructive,
+                      active: true,
+                    ),
                   ],
                   const Spacer(),
                   _CommentActionIcon(
-                    icon: isDisliked ? CupertinoIcons.hand_thumbsdown_fill : CupertinoIcons.hand_thumbsdown,
+                    icon: isDisliked
+                        ? CupertinoIcons.hand_thumbsdown_fill
+                        : CupertinoIcons.hand_thumbsdown,
                     onTap: onDislike,
                     active: isDisliked,
                   ),
@@ -1028,7 +1165,13 @@ class _CommentCard extends StatelessWidget {
 }
 
 class _CommentActionIcon extends StatelessWidget {
-  const _CommentActionIcon({required this.icon, this.label, required this.onTap, this.active = false, this.activeColor});
+  const _CommentActionIcon({
+    required this.icon,
+    this.label,
+    required this.onTap,
+    this.active = false,
+    this.activeColor,
+  });
   final IconData icon;
   final String? label;
   final VoidCallback onTap;
@@ -1037,8 +1180,9 @@ class _CommentActionIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = active 
-        ? (activeColor ?? CupertinoDynamicColor.resolve(AppColors.primary, context))
+    final color = active
+        ? (activeColor ??
+              CupertinoDynamicColor.resolve(AppColors.primary, context))
         : CupertinoDynamicColor.resolve(AppColors.mutedForeground, context);
 
     return CupertinoButton(
@@ -1051,7 +1195,14 @@ class _CommentActionIcon extends StatelessWidget {
           Icon(icon, size: 16, color: color),
           if (label != null) ...[
             const SizedBox(width: 4),
-            Text(label!, style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.w600)),
+            Text(
+              label!,
+              style: TextStyle(
+                fontSize: 12,
+                color: color,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
         ],
       ),
@@ -1060,7 +1211,12 @@ class _CommentActionIcon extends StatelessWidget {
 }
 
 class _TextAction extends StatelessWidget {
-  const _TextAction({required this.label, required this.onTap, this.active = false, this.activeColor = AppColors.primary});
+  const _TextAction({
+    required this.label,
+    required this.onTap,
+    this.active = false,
+    this.activeColor = AppColors.primary,
+  });
   final String label;
   final VoidCallback onTap;
   final bool active;
@@ -1068,7 +1224,10 @@ class _TextAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final resolvedMuted = CupertinoDynamicColor.resolve(AppColors.mutedForeground, context);
+    final resolvedMuted = CupertinoDynamicColor.resolve(
+      AppColors.mutedForeground,
+      context,
+    );
     final resolvedActive = CupertinoDynamicColor.resolve(activeColor, context);
 
     return CupertinoButton(

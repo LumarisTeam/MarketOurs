@@ -242,7 +242,7 @@ class _RouterRefreshNotifier extends ChangeNotifier {
   _RouterRefreshNotifier(Ref ref) {
     _subscription = ref.listen(
       authControllerProvider,
-      (_, __) => notifyListeners(),
+      (previous, next) => notifyListeners(),
     );
   }
 

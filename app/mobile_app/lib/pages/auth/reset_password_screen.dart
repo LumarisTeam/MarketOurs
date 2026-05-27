@@ -58,7 +58,10 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
         return;
       }
 
-      await AppFeedback.showMessage(context, message: '密码已重置，请重新登录');
+      await AppFeedback.showSuccess(context, message: '密码已重置，请重新登录');
+      if (!mounted) {
+        return;
+      }
       context.go(AppRoutePaths.login);
     } catch (_) {
       final errorMessage = ref
@@ -67,7 +70,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
           ?.value
           .errorMessage;
       if (errorMessage != null && errorMessage.isNotEmpty && mounted) {
-        await AppFeedback.showMessage(context, message: errorMessage);
+        await AppFeedback.showError(context, message: errorMessage);
       }
     }
   }

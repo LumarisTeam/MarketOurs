@@ -52,10 +52,11 @@ class _PushSettingsScreenState extends State<PushSettingsScreen> {
     setState(() => _isSaving = false);
 
     if (mounted) {
-      await AppFeedback.showMessage(
-        context,
-        message: success ? '保存成功' : '保存失败',
-      );
+      if (success) {
+        await AppFeedback.showSuccess(context, message: '保存成功');
+      } else {
+        await AppFeedback.showError(context, message: '保存失败');
+      }
     }
   }
 

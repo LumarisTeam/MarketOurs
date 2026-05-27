@@ -41,7 +41,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         return;
       }
 
-      await AppFeedback.showMessage(context, message: '验证码已发送，请继续重置密码');
+      await AppFeedback.showSuccess(context, message: '验证码已发送，请继续重置密码');
       if (!mounted) {
         return;
       }
@@ -56,7 +56,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           ?.value
           .errorMessage;
       if (errorMessage != null && errorMessage.isNotEmpty && mounted) {
-        await AppFeedback.showMessage(context, message: errorMessage);
+        await AppFeedback.showError(context, message: errorMessage);
       }
     }
   }

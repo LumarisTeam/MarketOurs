@@ -45,7 +45,10 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
       if (!mounted) {
         return;
       }
-      await AppFeedback.showMessage(context, message: '密码修改成功');
+      await AppFeedback.showSuccess(context, message: '密码修改成功');
+      if (!mounted) {
+        return;
+      }
       context.go(AppRoutePaths.profile);
     } catch (_) {
       final errorMessage = ref
@@ -54,7 +57,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
           ?.value
           .errorMessage;
       if (errorMessage != null && errorMessage.isNotEmpty && mounted) {
-        await AppFeedback.showMessage(context, message: errorMessage);
+        await AppFeedback.showError(context, message: errorMessage);
       }
     }
   }

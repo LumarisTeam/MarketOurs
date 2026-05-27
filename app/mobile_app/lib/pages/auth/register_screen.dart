@@ -40,7 +40,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   static final _emailRegex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
   static final _phoneRegex = RegExp(r'^1[3-9]\d{9}$');
-  static final _passwordRegex = RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$');
+  static final _passwordRegex = RegExp(
+    r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$',
+  );
 
   @override
   void initState() {
@@ -60,8 +62,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final random = Random();
     final seed = random.nextInt(0xFFFFFF).toRadixString(36).padLeft(5, '0');
     setState(
-      () => _avatarUrl =
-          'https://api.dicebear.com/9.x/avataaars/svg?seed=$seed',
+      () =>
+          _avatarUrl = 'https://api.dicebear.com/9.x/avataaars/svg?seed=$seed',
     );
   }
 
@@ -103,7 +105,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       }
     } catch (_) {
       if (mounted) {
-        await AppFeedback.showMessage(context, message: '头像上传失败');
+        await AppFeedback.showError(context, message: '头像上传失败');
       }
     } finally {
       if (mounted) setState(() => _isUploadingAvatar = false);
@@ -186,7 +188,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           ?.value
           .errorMessage;
       if (errorMessage != null && errorMessage.isNotEmpty) {
-        await AppFeedback.showMessage(context, message: errorMessage);
+        await AppFeedback.showError(context, message: errorMessage);
       }
     }
   }
@@ -204,10 +206,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       title: '注册账号',
       footer: Center(
         child: CupertinoButton(
-          onPressed:
-              isSubmitting
-                  ? null
-                  : () => context.go(AppRoutePaths.login),
+          onPressed: isSubmitting
+              ? null
+              : () => context.go(AppRoutePaths.login),
           child: const Text(
             '已有账号？返回登录',
             style: TextStyle(fontWeight: FontWeight.w700),
@@ -237,23 +238,22 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         ),
                       ),
                       child: ClipOval(
-                        child:
-                            _isUploadingAvatar
-                                ? Center(
-                                  child: CupertinoActivityIndicator(
-                                    color: AppColors.primary,
-                                  ),
-                                )
-                                : Image.network(
-                                  _avatarUrl,
-                                  fit: BoxFit.cover,
-                                  errorBuilder:
-                                      (context, error, stackTrace) => Icon(
-                                        CupertinoIcons.person_circle,
-                                        size: 64,
-                                        color: AppColors.mutedForeground,
-                                      ),
+                        child: _isUploadingAvatar
+                            ? Center(
+                                child: CupertinoActivityIndicator(
+                                  color: AppColors.primary,
                                 ),
+                              )
+                            : Image.network(
+                                _avatarUrl,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Icon(
+                                      CupertinoIcons.person_circle,
+                                      size: 64,
+                                      color: AppColors.mutedForeground,
+                                    ),
+                              ),
                       ),
                     ),
                     Positioned(

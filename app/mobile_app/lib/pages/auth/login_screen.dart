@@ -44,10 +44,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _sendCode() async {
     final account = _accountController.text.trim();
     if (account.isEmpty) {
-      await AppFeedback.showMessage(context, message: '请输入账号');
+      await AppFeedback.showError(context, message: '请输入账号');
       return;
     }
-    
+
     setState(() => _isSendingCode = true);
     try {
       await ref
@@ -55,7 +55,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           .sendLoginCode(account: account);
       if (!mounted) return;
       _startCountdown();
-      await AppFeedback.showMessage(context, message: '验证码已发送');
+      await AppFeedback.showSuccess(context, message: '验证码已发送');
     } catch (error) {
       if (!mounted) return;
       // Handle the error directly here to avoid state listener side effects
@@ -63,7 +63,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (error.toString().isNotEmpty) {
         message = error.toString().replaceFirst('Exception: ', '');
       }
-      await AppFeedback.showMessage(context, message: message);
+      await AppFeedback.showError(context, message: message);
     } finally {
       if (mounted) {
         setState(() => _isSendingCode = false);
@@ -112,7 +112,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final authState = ref.read(authControllerProvider).asData?.value;
     final errorMessage = authState?.errorMessage;
     if (success) {
-      await AppFeedback.showMessage(context, message: '登录成功');
+      await AppFeedback.showSuccess(context, message: '登录成功');
       if (!mounted) {
         return;
       }
@@ -121,7 +121,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
 
     if (errorMessage != null && errorMessage.isNotEmpty) {
-      await AppFeedback.showMessage(context, message: errorMessage);
+      await AppFeedback.showError(context, message: errorMessage);
     }
   }
 
@@ -268,19 +268,43 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             const SizedBox(height: 32),
             Row(
               children: [
-                Expanded(child: Container(height: 1, color: CupertinoDynamicColor.resolve(AppColors.border, context).withValues(alpha: 0.3))),
+                Expanded(
+                  child: Container(
+                    height: 1,
+                    color: CupertinoDynamicColor.resolve(
+                      AppColors.border,
+                      context,
+                    ).withValues(alpha: 0.3),
+                  ),
+                ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text('其他方式登录', style: AppTextStyles.label(context).copyWith(fontSize: 11, letterSpacing: 1.2)),
+                  child: Text(
+                    '其他方式登录',
+                    style: AppTextStyles.label(
+                      context,
+                    ).copyWith(fontSize: 11, letterSpacing: 1.2),
+                  ),
                 ),
-                Expanded(child: Container(height: 1, color: CupertinoDynamicColor.resolve(AppColors.border, context).withValues(alpha: 0.3))),
+                Expanded(
+                  child: Container(
+                    height: 1,
+                    color: CupertinoDynamicColor.resolve(
+                      AppColors.border,
+                      context,
+                    ).withValues(alpha: 0.3),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _SocialButton(icon: CupertinoIcons.person_circle, label: 'Ours'),
+                _SocialButton(
+                  icon: CupertinoIcons.person_circle,
+                  label: 'Ours',
+                ),
                 const SizedBox(width: 24),
                 _SocialButton(icon: CupertinoIcons.globe, label: 'Google'),
                 const SizedBox(width: 24),
@@ -310,10 +334,22 @@ class _SocialButton extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              border: Border.all(color: CupertinoDynamicColor.resolve(AppColors.border, context).withValues(alpha: 0.5)),
+              border: Border.all(
+                color: CupertinoDynamicColor.resolve(
+                  AppColors.border,
+                  context,
+                ).withValues(alpha: 0.5),
+              ),
               borderRadius: BorderRadius.circular(AppRadii.md),
             ),
-            child: Icon(icon, size: 24, color: CupertinoDynamicColor.resolve(AppColors.foreground, context)),
+            child: Icon(
+              icon,
+              size: 24,
+              color: CupertinoDynamicColor.resolve(
+                AppColors.foreground,
+                context,
+              ),
+            ),
           ),
         ),
         const SizedBox(height: 6),
