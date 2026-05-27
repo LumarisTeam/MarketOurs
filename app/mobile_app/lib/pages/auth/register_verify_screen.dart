@@ -94,11 +94,7 @@ class _RegisterVerifyScreenState extends ConsumerState<RegisterVerifyScreen> {
     final isSubmitting = authState?.isSubmitting ?? false;
 
     return AuthScaffold(
-      badge: 'Verify Account',
       title: '验证注册',
-      subtitle: widget.account == null
-          ? '输入收到的验证码完成注册。'
-          : '我们将为 ${widget.account} 发送验证码，请完成验证。',
       footer: Center(
         child: CupertinoButton(
           onPressed: isSubmitting

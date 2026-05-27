@@ -67,9 +67,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     final isSubmitting = authState?.isSubmitting ?? false;
 
     return AuthScaffold(
-      badge: 'Reset Access',
       title: '找回密码',
-      subtitle: '输入注册时使用的账号，我们会发送重置验证码。',
       footer: Center(
         child: CupertinoButton(
           onPressed: isSubmitting

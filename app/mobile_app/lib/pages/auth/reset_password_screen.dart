@@ -79,9 +79,6 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
 
     return AuthScaffold(
       title: '重置密码',
-      subtitle: widget.account == null
-          ? '输入收到的验证码和新密码，完成密码重置。'
-          : '我们已经向 ${widget.account} 发送验证码，请填写验证码并设置新密码。',
       footer: Center(
         child: CupertinoButton(
           onPressed: isSubmitting

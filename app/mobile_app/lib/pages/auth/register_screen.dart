@@ -80,9 +80,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final isSubmitting = authState?.isSubmitting ?? false;
 
     return AuthScaffold(
-      badge: 'Join MarketOurs',
       title: '注册账号',
-      subtitle: '先填写基础信息，我们会在下一步通过验证码完成注册验证。',
       footer: Center(
         child: CupertinoButton(
           onPressed: isSubmitting

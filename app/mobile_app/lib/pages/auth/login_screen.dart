@@ -132,7 +132,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     return AuthScaffold(
       title: '登录',
-      subtitle: '支持账号密码登录，也支持验证码快捷登录。',
       footer: Center(
         child: CupertinoButton(
           onPressed: isSubmitting
@@ -149,26 +148,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Container(
-              padding: const EdgeInsets.all(2),
-              decoration: BoxDecoration(
-                color: CupertinoDynamicColor.resolve(AppColors.secondary, context),
-                borderRadius: BorderRadius.circular(AppRadii.md),
-              ),
-              child: Row(
-                children: [
-                  _ModeButton(
-                    label: '密码登录',
-                    isActive: _loginMode == _LoginMode.password,
-                    onTap: () => setState(() => _loginMode = _LoginMode.password),
-                  ),
-                  _ModeButton(
-                    label: '验证码登录',
-                    isActive: _loginMode == _LoginMode.otp,
-                    onTap: () => setState(() => _loginMode = _LoginMode.otp),
-                  ),
-                ],
-              ),
+            CupertinoSlidingSegmentedControl<_LoginMode>(
+              groupValue: _loginMode,
+              onValueChanged: (value) {
+                if (value != null) setState(() => _loginMode = value);
+              },
+              children: const {
+                _LoginMode.password: Text('密码登录'),
+                _LoginMode.otp: Text('验证码登录'),
+              },
             ),
             const SizedBox(height: 24),
             Text('账号', style: AppTextStyles.label(context)),
@@ -275,16 +263,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             const SizedBox(height: 28),
             AppPrimaryButton(
               onPressed: isSubmitting ? null : _submit,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(isSubmitting ? '登录中...' : '登录'),
-                  if (!isSubmitting) ...[
-                    const SizedBox(width: 8),
-                    const Icon(CupertinoIcons.arrow_right, size: 18),
-                  ],
-                ],
-              ),
+              child: Text(isSubmitting ? '登录中...' : '登录'),
             ),
             const SizedBox(height: 32),
             Row(
@@ -309,49 +288,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ],
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ModeButton extends StatelessWidget {
-  const _ModeButton({required this.label, required this.isActive, required this.onTap});
-  final String label;
-  final bool isActive;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: CupertinoButton(
-        padding: EdgeInsets.zero,
-        onPressed: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            color: isActive ? CupertinoDynamicColor.resolve(AppColors.card, context) : null,
-            borderRadius: BorderRadius.circular(AppRadii.md - 2),
-            boxShadow: isActive ? [
-              BoxShadow(
-                color: const Color(0x0A000000),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              )
-            ] : null,
-          ),
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
-              color: CupertinoDynamicColor.resolve(
-                isActive ? AppColors.primary : AppColors.mutedForeground,
-                context,
-              ),
-            ),
-          ),
         ),
       ),
     );
