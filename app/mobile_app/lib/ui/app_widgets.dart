@@ -42,18 +42,27 @@ class AppPageScaffold extends StatelessWidget {
               middle: Text(
                 title!,
                 style: TextStyle(
-                  color: CupertinoDynamicColor.resolve(AppColors.foreground, context),
+                  color: CupertinoDynamicColor.resolve(
+                    AppColors.foreground,
+                    context,
+                  ),
                   fontWeight: FontWeight.w700,
                 ),
               ),
               leading: leading,
               trailing: trailing,
-              backgroundColor: CupertinoDynamicColor.resolve(AppColors.background, context)
-                  .withValues(alpha: 0.82),
+              // Keep the nav bar fully opaque so CupertinoPageScaffold
+              // treats it as obstructing and offsets page content below it.
+              backgroundColor: CupertinoDynamicColor.resolve(
+                AppColors.background,
+                context,
+              ),
               border: Border(
                 bottom: BorderSide(
-                  color: CupertinoDynamicColor.resolve(AppColors.border, context)
-                      .withValues(alpha: 0.35),
+                  color: CupertinoDynamicColor.resolve(
+                    AppColors.border,
+                    context,
+                  ).withValues(alpha: 0.35),
                 ),
               ),
               automaticallyImplyLeading: leading == null,
@@ -174,13 +183,18 @@ class AppPrimaryButton extends StatelessWidget {
       padding: padding,
       borderRadius: BorderRadius.circular(AppRadii.lg),
       color: CupertinoDynamicColor.resolve(
-        disabled ? AppColors.primary.withValues(alpha: 0.45) : AppColors.primary,
+        disabled
+            ? AppColors.primary.withValues(alpha: 0.45)
+            : AppColors.primary,
         context,
       ),
       onPressed: onPressed,
       child: DefaultTextStyle(
         style: TextStyle(
-          color: CupertinoDynamicColor.resolve(AppColors.primaryForeground, context),
+          color: CupertinoDynamicColor.resolve(
+            AppColors.primaryForeground,
+            context,
+          ),
           fontSize: 16,
           fontWeight: FontWeight.w700,
         ),
@@ -212,7 +226,9 @@ class AppSecondaryButton extends StatelessWidget {
       child: DefaultTextStyle(
         style: TextStyle(
           color: CupertinoDynamicColor.resolve(
-            onTap == null ? AppColors.mutedForeground : AppColors.secondaryForeground,
+            onTap == null
+                ? AppColors.mutedForeground
+                : AppColors.secondaryForeground,
             context,
           ),
           fontSize: 15,
@@ -260,8 +276,13 @@ class AppTappableCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(radius),
-        border: showBorder 
-            ? Border.all(color: CupertinoDynamicColor.resolve(AppColors.border, context).withValues(alpha: 0.5))
+        border: showBorder
+            ? Border.all(
+                color: CupertinoDynamicColor.resolve(
+                  AppColors.border,
+                  context,
+                ).withValues(alpha: 0.5),
+              )
             : null,
         boxShadow: showShadow ? AppShadows.card : null,
       ),
@@ -374,10 +395,7 @@ class AppBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: AppDecorations.pill(
-        context,
-        background: backgroundColor,
-      ),
+      decoration: AppDecorations.pill(context, background: backgroundColor),
       child: DefaultTextStyle(
         style: TextStyle(
           color: CupertinoDynamicColor.resolve(foregroundColor, context),
@@ -467,12 +485,18 @@ class AppEmptyState extends StatelessWidget {
               width: 64,
               height: 64,
               decoration: BoxDecoration(
-                color: CupertinoDynamicColor.resolve(AppColors.secondary, context),
+                color: CupertinoDynamicColor.resolve(
+                  AppColors.secondary,
+                  context,
+                ),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 icon,
-                color: CupertinoDynamicColor.resolve(AppColors.mutedForeground, context),
+                color: CupertinoDynamicColor.resolve(
+                  AppColors.mutedForeground,
+                  context,
+                ),
                 size: 28,
               ),
             ),
@@ -516,14 +540,18 @@ Future<T?> showAppBottomSheet<T>({
               child: Container(
                 margin: const EdgeInsets.only(top: 40),
                 decoration: BoxDecoration(
-                  color: CupertinoDynamicColor.resolve(AppColors.background, context)
-                      .withValues(alpha: 0.94),
+                  color: CupertinoDynamicColor.resolve(
+                    AppColors.background,
+                    context,
+                  ).withValues(alpha: 0.94),
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(AppRadii.xl),
                   ),
                   border: Border.all(
-                    color: CupertinoDynamicColor.resolve(AppColors.border, context)
-                        .withValues(alpha: 0.35),
+                    color: CupertinoDynamicColor.resolve(
+                      AppColors.border,
+                      context,
+                    ).withValues(alpha: 0.35),
                   ),
                 ),
                 child: builder(sheetContext),
@@ -567,7 +595,10 @@ class AppAvatar extends StatelessWidget {
     final borderRadius = radius ?? (isCircle ? size / 2 : AppRadii.md);
     final avatarUrl = url?.trim();
     final hasImage = avatarUrl != null && avatarUrl.isNotEmpty;
-    final resolvedBg = CupertinoDynamicColor.resolve(AppColors.secondary, context);
+    final resolvedBg = CupertinoDynamicColor.resolve(
+      AppColors.secondary,
+      context,
+    );
 
     Widget? imageWidget;
     if (hasImage) {
@@ -583,13 +614,10 @@ class AppAvatar extends StatelessWidget {
           width: size,
           height: size,
           fit: BoxFit.cover,
-          placeholderBuilder:
-              (context) => Container(
-                color: resolvedBg,
-                child: const Center(
-                  child: CupertinoActivityIndicator(radius: 8),
-                ),
-              ),
+          placeholderBuilder: (context) => Container(
+            color: resolvedBg,
+            child: const Center(child: CupertinoActivityIndicator(radius: 8)),
+          ),
         );
       } else {
         imageWidget = Image.network(
