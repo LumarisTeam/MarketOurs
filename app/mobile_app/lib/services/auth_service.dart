@@ -7,7 +7,11 @@ class AuthService {
   final _api = ApiService().dio;
 
   Future<ApiResponse<TokenDto>> login(LoginRequest request) async {
-    final response = await _api.post('/Auth/login', data: request.toJson());
+    final response = await _api.post(
+      '/Auth/login',
+      data: request.toJson(),
+      options: ApiService.anonymousOptions(),
+    );
     return ApiResponse<TokenDto>.fromJson(
       response.data,
       (json) => TokenDto.fromJson(json as Map<String, dynamic>),
@@ -18,6 +22,7 @@ class AuthService {
     final response = await _api.post(
       '/Auth/send-login-code',
       data: request.toJson(),
+      options: ApiService.anonymousOptions(),
     );
     return ApiResponse.fromJson(response.data, (json) => json);
   }
@@ -26,6 +31,7 @@ class AuthService {
     final response = await _api.post(
       '/Auth/login-by-code',
       data: request.toJson(),
+      options: ApiService.anonymousOptions(),
     );
     return ApiResponse<TokenDto>.fromJson(
       response.data,
@@ -34,7 +40,11 @@ class AuthService {
   }
 
   Future<ApiResponse<String>> register(UserCreateDto request) async {
-    final response = await _api.post('/Auth/register', data: request.toJson());
+    final response = await _api.post(
+      '/Auth/register',
+      data: request.toJson(),
+      options: ApiService.anonymousOptions(),
+    );
     return ApiResponse<String>.fromJson(
       response.data,
       (json) => json as String,
@@ -45,6 +55,7 @@ class AuthService {
     final response = await _api.post(
       '/Auth/send-registration-code',
       queryParameters: {'regToken': regToken},
+      options: ApiService.anonymousOptions(),
     );
     return ApiResponse.fromJson(response.data, (json) => json);
   }
@@ -55,6 +66,7 @@ class AuthService {
     final response = await _api.post(
       '/Auth/verify-registration',
       data: request.toJson(),
+      options: ApiService.anonymousOptions(),
     );
     return ApiResponse<UserDto>.fromJson(
       response.data,
@@ -91,6 +103,7 @@ class AuthService {
       '/Auth/verify-email',
       queryParameters: {'token': token, 'code': code}
         ..removeWhere((_, value) => value == null),
+      options: ApiService.anonymousOptions(),
     );
     return ApiResponse.fromJson(response.data, (json) => json);
   }
@@ -100,6 +113,7 @@ class AuthService {
       '/Auth/verify-phone',
       queryParameters: {'token': token, 'code': code}
         ..removeWhere((_, value) => value == null),
+      options: ApiService.anonymousOptions(),
     );
     return ApiResponse.fromJson(response.data, (json) => json);
   }
@@ -108,6 +122,7 @@ class AuthService {
     final response = await _api.post(
       '/Auth/forgot-password',
       data: request.toJson(),
+      options: ApiService.anonymousOptions(),
     );
     return ApiResponse.fromJson(response.data, (json) => json);
   }
@@ -116,6 +131,7 @@ class AuthService {
     final response = await _api.post(
       '/Auth/reset-password',
       data: request.toJson(),
+      options: ApiService.anonymousOptions(),
     );
     return ApiResponse.fromJson(response.data, (json) => json);
   }
@@ -124,6 +140,7 @@ class AuthService {
     final response = await _api.post(
       '/Auth/resend-verification',
       data: request.toJson(),
+      options: ApiService.anonymousOptions(),
     );
     return ApiResponse.fromJson(response.data, (json) => json);
   }

@@ -103,6 +103,7 @@ class AuthController extends AsyncNotifier<AuthState> {
   }) async {
     final current = state.asData?.value ?? AuthState.unauthenticated();
     state = AsyncData(current.copyWith(isSubmitting: true, clearError: true));
+    var savedTokens = false;
 
     final deviceType =
         Platform.isLinux || Platform.isMacOS || Platform.isWindows
@@ -124,6 +125,7 @@ class AuthController extends AsyncNotifier<AuthState> {
       }
 
       await _storage.saveTokens(token!);
+      savedTokens = true;
       final user = await _fetchCurrentUser();
       await _storage.saveUser(user);
 
@@ -138,7 +140,9 @@ class AuthController extends AsyncNotifier<AuthState> {
       );
       return true;
     } catch (error) {
-      await _clearStoredSessionSafely();
+      if (savedTokens) {
+        await _clearStoredSessionSafely();
+      }
       state = AsyncData(
         AuthState.unauthenticated(errorMessage: _normalizeError(error)),
       );
@@ -165,6 +169,7 @@ class AuthController extends AsyncNotifier<AuthState> {
   }) async {
     final current = state.asData?.value ?? AuthState.unauthenticated();
     state = AsyncData(current.copyWith(isSubmitting: true, clearError: true));
+    var savedTokens = false;
 
     final deviceType =
         Platform.isLinux || Platform.isMacOS || Platform.isWindows
@@ -186,6 +191,7 @@ class AuthController extends AsyncNotifier<AuthState> {
       }
 
       await _storage.saveTokens(token!);
+      savedTokens = true;
       final user = await _fetchCurrentUser();
       await _storage.saveUser(user);
 
@@ -200,7 +206,9 @@ class AuthController extends AsyncNotifier<AuthState> {
       );
       return true;
     } catch (error) {
-      await _clearStoredSessionSafely();
+      if (savedTokens) {
+        await _clearStoredSessionSafely();
+      }
       state = AsyncData(
         AuthState.unauthenticated(errorMessage: _normalizeError(error)),
       );

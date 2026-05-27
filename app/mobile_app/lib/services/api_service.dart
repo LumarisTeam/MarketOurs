@@ -6,7 +6,11 @@ import 'auth_storage.dart';
 class ApiService {
   late final Dio dio;
   static final ApiService _instance = ApiService._internal();
-  static const String _apiBaseUrlOverride = 'https://lumalisapi.luckyfishes.site';
+  static const String _apiBaseUrlOverride =
+      'https://lumalisapi.luckyfishes.site';
+  static const String _skipAuthExtraKey = 'skipAuth';
+  static const String _skipUnauthorizedHandlerExtraKey =
+      'skipUnauthorizedHandler';
   AuthStorage? _authStorage;
   Future<void> Function()? _onUnauthorized;
   bool _isHandlingUnauthorized = false;
@@ -25,14 +29,20 @@ class ApiService {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          final token = await _authStorage?.readAccessToken();
+          final shouldSkipAuth = options.extra[_skipAuthExtraKey] == true;
+          final token = shouldSkipAuth
+              ? null
+              : await _authStorage?.readAccessToken();
           if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
           }
           return handler.next(options);
         },
         onError: (e, handler) async {
+          final shouldSkipUnauthorizedHandler =
+              e.requestOptions.extra[_skipUnauthorizedHandlerExtraKey] == true;
           if (e.response?.statusCode == 401 &&
+              !shouldSkipUnauthorizedHandler &&
               !_isHandlingUnauthorized &&
               _onUnauthorized != null) {
             _isHandlingUnauthorized = true;
@@ -54,6 +64,12 @@ class ApiService {
   }) {
     _authStorage = storage;
     _onUnauthorized = onUnauthorized;
+  }
+
+  static Options anonymousOptions() {
+    return Options(
+      extra: {_skipAuthExtraKey: true, _skipUnauthorizedHandlerExtraKey: true},
+    );
   }
 
   static String _resolveBaseUrl() {
