@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/auth.dart';
 import '../models/auth_session.dart';
 import '../models/user.dart';
+import 'app_logger.dart';
 
 abstract class AuthStorage {
   Future<AuthSession?> readSession();
@@ -189,10 +190,15 @@ class SecureAuthStorage implements AuthStorage {
       }
 
       _loggedSecureStorageDisabled = true;
-      debugPrint(
-        'Secure storage is unavailable for this app configuration; '
-        'using SharedPreferences for auth tokens for the rest of this session. '
-        'Original failure during $action for "$key": ${error.code} ${error.message}',
+      AppLogger.warn(
+        'AuthStorage',
+        'Secure storage unavailable, falling back to SharedPreferences',
+        context: {
+          'action': action,
+          'key': key,
+          'code': error.code,
+          'message': error.message,
+        },
       );
       return;
     }
@@ -213,9 +219,15 @@ class SecureAuthStorage implements AuthStorage {
   }
 
   void _logFallback(String action, String key, PlatformException error) {
-    debugPrint(
-      'Secure storage $action failed for "$key", falling back to SharedPreferences: '
-      '${error.code} ${error.message}',
+    AppLogger.warn(
+      'AuthStorage',
+      'Secure storage operation failed, using SharedPreferences fallback',
+      context: {
+        'action': action,
+        'key': key,
+        'code': error.code,
+        'message': error.message,
+      },
     );
   }
 }

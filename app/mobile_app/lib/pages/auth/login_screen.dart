@@ -120,9 +120,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       return;
     }
 
-    if (errorMessage != null && errorMessage.isNotEmpty) {
-      await AppFeedback.showError(context, message: errorMessage);
-    }
+    final fallbackMessage = _loginMode == _LoginMode.password
+        ? '登录失败，请检查账号和密码'
+        : '登录失败，请检查验证码';
+    await AppFeedback.showError(
+      context,
+      message: (errorMessage != null && errorMessage.isNotEmpty)
+          ? errorMessage
+          : fallbackMessage,
+    );
   }
 
   @override

@@ -76,7 +76,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
             PostCreateDto(
               title: _titleController.text.trim(),
               content: _contentController.text.trim(),
-              images: uploadedImages.isEmpty ? null : uploadedImages,
+              images: uploadedImages,
               userId: user.id,
             ),
           );

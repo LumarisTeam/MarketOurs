@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
+import 'app_logger.dart';
 import 'auth_storage.dart';
 
 class ApiService {
@@ -11,6 +14,8 @@ class ApiService {
   static const String _skipAuthExtraKey = 'skipAuth';
   static const String _skipUnauthorizedHandlerExtraKey =
       'skipUnauthorizedHandler';
+  static const String _requestLogIdExtraKey = 'requestLogId';
+  static const String _requestStartedAtExtraKey = 'requestStartedAt';
   AuthStorage? _authStorage;
   Future<void> Function()? _onUnauthorized;
   bool _isHandlingUnauthorized = false;
@@ -29,6 +34,10 @@ class ApiService {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
+          final requestId = _buildRequestId();
+          options.extra[_requestLogIdExtraKey] = requestId;
+          options.extra[_requestStartedAtExtraKey] = DateTime.now();
+
           final shouldSkipAuth = options.extra[_skipAuthExtraKey] == true;
           final token = shouldSkipAuth
               ? null
@@ -36,9 +45,71 @@ class ApiService {
           if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
           }
+
+          AppLogger.info(
+            'HTTP',
+            'Request started',
+            context: {
+              'requestId': requestId,
+              'method': options.method,
+              'url': options.uri.toString(),
+              'query': options.queryParameters,
+              'headers': _sanitizeHeaders(options.headers),
+              'body': _stringifyPayload(options.data),
+            },
+          );
           return handler.next(options);
         },
+        onResponse: (response, handler) {
+          final requestId =
+              response.requestOptions.extra[_requestLogIdExtraKey] as String?;
+          AppLogger.info(
+            'HTTP',
+            'Request completed',
+            context: {
+              'requestId': requestId,
+              'method': response.requestOptions.method,
+              'url': response.requestOptions.uri.toString(),
+              'statusCode': response.statusCode,
+              'durationMs': _elapsedMs(response.requestOptions),
+            },
+          );
+          return handler.next(response);
+        },
         onError: (e, handler) async {
+          final requestId =
+              e.requestOptions.extra[_requestLogIdExtraKey] as String?;
+          final responseData = _extractResponseData(e.response?.data);
+          final logContext = {
+            'requestId': requestId,
+            'method': e.requestOptions.method,
+            'url': e.requestOptions.uri.toString(),
+            'statusCode': e.response?.statusCode,
+            'durationMs': _elapsedMs(e.requestOptions),
+            'query': e.requestOptions.queryParameters,
+            'body': _stringifyPayload(e.requestOptions.data),
+            'response': responseData,
+          };
+
+          if ((e.response?.statusCode ?? 0) >= 500) {
+            AppLogger.error(
+              'HTTP',
+              'Request failed',
+              context: logContext,
+              error: e.error ?? e.message ?? e.type.name,
+              stackTrace: e.stackTrace,
+            );
+          } else {
+            AppLogger.warn(
+              'HTTP',
+              'Request failed',
+              context: {
+                ...logContext,
+                'error': e.message ?? e.type.name,
+              },
+            );
+          }
+
           final shouldSkipUnauthorizedHandler =
               e.requestOptions.extra[_skipUnauthorizedHandlerExtraKey] == true;
           if (e.response?.statusCode == 401 &&
@@ -96,5 +167,64 @@ class ApiService {
       case TargetPlatform.fuchsia:
         return 'http://localhost:5053';
     }
+  }
+
+  static String _buildRequestId() {
+    final millis = DateTime.now().millisecondsSinceEpoch;
+    final micros = DateTime.now().microsecondsSinceEpoch.remainder(1000);
+    return '$millis-$micros';
+  }
+
+  static int? _elapsedMs(RequestOptions options) {
+    final startedAt = options.extra[_requestStartedAtExtraKey];
+    if (startedAt is! DateTime) {
+      return null;
+    }
+    return DateTime.now().difference(startedAt).inMilliseconds;
+  }
+
+  static Map<String, Object?> _sanitizeHeaders(Map<String, dynamic> headers) {
+    return headers.map((key, value) {
+      final isSensitive = key.toLowerCase() == 'authorization';
+      return MapEntry(key, isSensitive ? '<redacted>' : value);
+    });
+  }
+
+  static Object? _extractResponseData(dynamic data) {
+    if (data == null) {
+      return null;
+    }
+
+    if (data is String) {
+      try {
+        return jsonDecode(data);
+      } catch (_) {
+        return data;
+      }
+    }
+
+    return data;
+  }
+
+  static Object? _stringifyPayload(dynamic data) {
+    if (data == null) {
+      return null;
+    }
+
+    if (data is FormData) {
+      return {
+        'fields': {for (final field in data.fields) field.key: field.value},
+        'files': [
+          for (final file in data.files)
+            {
+              'field': file.key,
+              'filename': file.value.filename,
+              'contentType': file.value.contentType?.toString(),
+            },
+        ],
+      };
+    }
+
+    return _extractResponseData(data);
   }
 }

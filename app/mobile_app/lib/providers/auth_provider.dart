@@ -142,9 +142,16 @@ class AuthController extends AsyncNotifier<AuthState> {
     } catch (error) {
       if (savedTokens) {
         await _clearStoredSessionSafely();
+        state = AsyncData(
+          AuthState.unauthenticated(errorMessage: _normalizeError(error)),
+        );
+        return false;
       }
       state = AsyncData(
-        AuthState.unauthenticated(errorMessage: _normalizeError(error)),
+        current.copyWith(
+          isSubmitting: false,
+          errorMessage: _normalizeError(error),
+        ),
       );
       return false;
     }
@@ -208,9 +215,16 @@ class AuthController extends AsyncNotifier<AuthState> {
     } catch (error) {
       if (savedTokens) {
         await _clearStoredSessionSafely();
+        state = AsyncData(
+          AuthState.unauthenticated(errorMessage: _normalizeError(error)),
+        );
+        return false;
       }
       state = AsyncData(
-        AuthState.unauthenticated(errorMessage: _normalizeError(error)),
+        current.copyWith(
+          isSubmitting: false,
+          errorMessage: _normalizeError(error),
+        ),
       );
       return false;
     }
