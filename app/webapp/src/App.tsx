@@ -26,28 +26,44 @@ import { useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import type { RootState } from "./stores"
 import { userService } from "./services/userService"
-import { setUser, logout } from "./stores/authSlice"
+import { hydrateSession, logout, setUser } from "./stores/authSlice"
+import { readAuthSession } from "./services/authSession"
 
 export function App() {
   const dispatch = useDispatch()
-  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth)
+  const { isAuthenticated, user, isHydrated } = useSelector((state: RootState) => state.auth)
 
   useEffect(() => {
     const initUser = async () => {
-      if (isAuthenticated && !user) {
-        try {
-          const response = await userService.getProfile()
-          if (response.data) {
-            dispatch(setUser(response.data))
-          }
-        } catch (error) {
-          console.error("Failed to initialize user:", error)
-          dispatch(logout())
+      const storedSession = readAuthSession()
+      if (!storedSession.accessToken) {
+        dispatch(hydrateSession({ user: null, accessToken: null }))
+        return
+      }
+
+      try {
+        const response = await userService.getProfile()
+        if (response.data) {
+          dispatch(setUser(response.data))
+          dispatch(
+            hydrateSession({
+              user: response.data,
+              accessToken: readAuthSession().accessToken,
+            }),
+          )
         }
+      } catch (error) {
+        console.error("Failed to initialize user:", error)
+        dispatch(logout())
       }
     }
-    initUser()
-  }, [isAuthenticated, user, dispatch])
+
+    if (!isHydrated) {
+      initUser()
+    } else if (isAuthenticated && !user) {
+      initUser()
+    }
+  }, [dispatch, isAuthenticated, isHydrated, user])
 
   return (
     <ThemeProvider defaultTheme="system" storageKey="marketours-theme">

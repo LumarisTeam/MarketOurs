@@ -15,6 +15,8 @@ abstract class AuthStorage {
 
   Future<String?> readAccessToken();
 
+  Future<String?> readRefreshToken();
+
   Future<void> saveTokens(TokenDto token);
 
   Future<void> saveUser(UserDto user);
@@ -75,6 +77,12 @@ class SecureAuthStorage implements AuthStorage {
   Future<String?> readAccessToken() async {
     final prefs = await SharedPreferences.getInstance();
     return _readValue(secureKey: _accessTokenKey, prefs: prefs);
+  }
+
+  @override
+  Future<String?> readRefreshToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return _readValue(secureKey: _refreshTokenKey, prefs: prefs);
   }
 
   @override

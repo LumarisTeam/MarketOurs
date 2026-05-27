@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router";
 import { useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { authService } from "../../services/authService";
+import { writeAuthSession } from "../../services/authSession";
 import { setCredentials } from "../../stores/authSlice";
 import { Mail, Lock, Loader2, ArrowRight, ShieldCheck, GraduationCap } from "lucide-react";
 import { PasswordField } from "../../components/auth/PasswordField";
@@ -56,14 +57,19 @@ export default function LoginPage() {
 
     try {
       const response = loginMode === "password"
-        ? await authService.login({ account, password })
+        ? await authService.login({ account, password, deviceType: "Web" })
         : await authService.loginByCode({ account, code: otpCode, deviceType: "Web" });
 
       if (response.data) {
+        writeAuthSession({
+          accessToken: response.data.accessToken,
+          refreshToken: response.data.refreshToken,
+        });
         const userInfo = await authService.getInfo();
         dispatch(setCredentials({
           user: userInfo.data,
-          token: response.data.accessToken
+          accessToken: response.data.accessToken,
+          refreshToken: response.data.refreshToken,
         }));
         navigate("/");
       }

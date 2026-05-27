@@ -1,16 +1,25 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { UserDto } from "../types";
+import {
+  clearAuthSession,
+  readAuthSession,
+  writeAuthSession,
+} from "../services/authSession";
 
 interface AuthState {
   user: UserDto | null;
-  token: string | null;
+  accessToken: string | null;
   isAuthenticated: boolean;
+  isHydrated: boolean;
 }
 
+const storedSession = readAuthSession();
+
 const initialState: AuthState = {
-  user: null,
-  token: localStorage.getItem("accessToken"),
-  isAuthenticated: !!localStorage.getItem("accessToken"),
+  user: storedSession.user,
+  accessToken: storedSession.accessToken,
+  isAuthenticated: !!storedSession.accessToken,
+  isHydrated: false,
 };
 
 export const authSlice = createSlice({
@@ -19,26 +28,46 @@ export const authSlice = createSlice({
   reducers: {
     setCredentials: (
       state,
-      action: PayloadAction<{ user: UserDto; token: string }>
+      action: PayloadAction<{
+        user: UserDto;
+        accessToken: string;
+        refreshToken: string;
+      }>
     ) => {
       state.user = action.payload.user;
-      state.token = action.payload.token;
+      state.accessToken = action.payload.accessToken;
       state.isAuthenticated = true;
-      localStorage.setItem("accessToken", action.payload.token);
+      state.isHydrated = true;
+      writeAuthSession(action.payload);
     },
     logout: (state) => {
       state.user = null;
-      state.token = null;
+      state.accessToken = null;
       state.isAuthenticated = false;
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
+      state.isHydrated = true;
+      clearAuthSession();
     },
     setUser: (state, action: PayloadAction<UserDto>) => {
       state.user = action.payload;
       state.isAuthenticated = true;
+      state.isHydrated = true;
+      writeAuthSession({ user: action.payload });
+    },
+    hydrateSession: (state, action: PayloadAction<{
+      user: UserDto | null;
+      accessToken: string | null;
+    }>) => {
+      state.user = action.payload.user;
+      state.accessToken = action.payload.accessToken;
+      state.isAuthenticated = !!action.payload.accessToken;
+      state.isHydrated = true;
+    },
+    markHydrated: (state) => {
+      state.isHydrated = true;
     },
   },
 });
 
-export const { setCredentials, logout, setUser } = authSlice.actions;
+export const { setCredentials, logout, setUser, hydrateSession, markHydrated } =
+  authSlice.actions;
 export default authSlice.reducer;

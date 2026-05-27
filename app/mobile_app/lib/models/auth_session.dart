@@ -7,7 +7,8 @@ class AuthSession {
   final String? refreshToken;
   final UserDto? user;
 
-  bool get hasToken => (accessToken?.isNotEmpty ?? false);
+  bool get hasToken =>
+      (accessToken?.isNotEmpty ?? false) || (refreshToken?.isNotEmpty ?? false);
 
   AuthSession copyWith({
     String? accessToken,

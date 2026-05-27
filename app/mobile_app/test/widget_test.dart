@@ -15,7 +15,7 @@ import 'package:mobile_app/services/auth_storage.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('shows public home when no local token exists', (tester) async {
+  testWidgets('shows login when no local token exists', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -30,10 +30,8 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('首页'), findsWidgets);
-    expect(find.text('热榜'), findsWidgets);
-    expect(find.byIcon(CupertinoIcons.plus_circle_fill), findsOneWidget);
-    expect(find.text('通知'), findsWidgets);
+    expect(find.text('登录'), findsWidgets);
+    expect(find.text('没有账号？去注册'), findsOneWidget);
   });
 
   testWidgets('shows home when token restore succeeds', (tester) async {
@@ -62,6 +60,42 @@ void main() {
     expect(find.byIcon(CupertinoIcons.plus_circle_fill), findsOneWidget);
   });
 
+  testWidgets('restores session by refreshing expired access token', (
+    tester,
+  ) async {
+    final storage = _TestAuthStorage(
+      session: AuthSession(accessToken: 'expired', refreshToken: 'refresh'),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authStorageProvider.overrideWithValue(storage),
+          authServiceProvider.overrideWithValue(
+            _FakeAuthService(
+              user: _demoUser,
+              getInfoError: Exception('token expired'),
+              refreshTokenResult: TokenDto(
+                accessToken: 'refreshed-access',
+                refreshToken: 'refreshed-refresh',
+              ),
+            ),
+          ),
+          homeFeedProvider.overrideWith(() => _FakeHomeFeedNotifier()),
+          hotFeedProvider.overrideWith(() => _FakeHotFeedNotifier()),
+        ],
+        child: const MarketOursApp(),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(find.text('首页'), findsWidgets);
+    expect(storage.session?.accessToken, 'refreshed-access');
+    expect(storage.session?.refreshToken, 'refreshed-refresh');
+    expect(storage.session?.user?.id, _demoUser.id);
+  });
+
   testWidgets('clears invalid restored token and returns to login', (
     tester,
   ) async {
@@ -85,8 +119,7 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('首页'), findsWidgets);
-    expect(find.byIcon(CupertinoIcons.plus_circle_fill), findsOneWidget);
+    expect(find.text('登录'), findsWidgets);
     expect(storage.session, isNull);
   });
 
@@ -150,11 +183,20 @@ void main() {
 }
 
 class _FakeAuthService extends AuthService {
-  _FakeAuthService({this.user, this.loginToken, this.getInfoError});
+  _FakeAuthService({
+    this.user,
+    this.loginToken,
+    this.getInfoError,
+    this.refreshTokenResult,
+    this.refreshError,
+  });
 
   final UserDto? user;
   final TokenDto? loginToken;
   final Object? getInfoError;
+  final TokenDto? refreshTokenResult;
+  final Object? refreshError;
+  int _getInfoAttempts = 0;
 
   @override
   Future<ApiResponse<TokenDto>> login(LoginRequest request) async {
@@ -168,10 +210,25 @@ class _FakeAuthService extends AuthService {
 
   @override
   Future<ApiResponse<UserDto>> getInfo() async {
-    if (getInfoError != null) {
+    _getInfoAttempts += 1;
+    if (getInfoError != null &&
+        (refreshTokenResult == null || _getInfoAttempts == 1)) {
       throw getInfoError!;
     }
     return ApiResponse<UserDto>(message: 'ok', data: user ?? _demoUser);
+  }
+
+  @override
+  Future<ApiResponse<TokenDto>> refresh(RefreshRequest request) async {
+    if (refreshError != null) {
+      throw refreshError!;
+    }
+    return ApiResponse<TokenDto>(
+      message: 'ok',
+      data:
+          refreshTokenResult ??
+          TokenDto(accessToken: 'refreshed-access', refreshToken: 'refreshed-refresh'),
+    );
   }
 
   @override
@@ -241,6 +298,11 @@ class _TestAuthStorage implements AuthStorage {
   @override
   Future<String?> readAccessToken() async {
     return _session?.accessToken;
+  }
+
+  @override
+  Future<String?> readRefreshToken() async {
+    return _session?.refreshToken;
   }
 
   @override

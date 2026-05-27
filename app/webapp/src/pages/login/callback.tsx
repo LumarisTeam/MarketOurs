@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router";
 import { useDispatch } from "react-redux";
 import { setCredentials } from "../../stores/authSlice";
 import { authService } from "../../services/authService";
+import { writeAuthSession } from "../../services/authSession";
 import { Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -37,15 +38,13 @@ export default function LoginCallbackPage() {
 
   const handleLogin = async (accessToken: string, refreshToken: string) => {
     try {
-      // Store tokens
-      localStorage.setItem("token", accessToken);
-      localStorage.setItem("refreshToken", refreshToken);
-
+      writeAuthSession({ accessToken, refreshToken });
       // Get user info
       const userInfo = await authService.getInfo();
       dispatch(setCredentials({ 
         user: userInfo.data, 
-        token: accessToken 
+        accessToken,
+        refreshToken,
       }));
       
       navigate("/");

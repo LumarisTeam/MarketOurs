@@ -14,25 +14,11 @@ import type {
 } from '../types';
 
 export const authService = {
-  login: async (data: LoginRequest) => {
-    const response = await apiClient.post<TokenDto>('/Auth/login', data);
-    if (response.data?.accessToken) {
-      localStorage.setItem('accessToken', response.data.accessToken);
-      localStorage.setItem('refreshToken', response.data.refreshToken);
-    }
-    return response;
-  },
+  login: (data: LoginRequest) => apiClient.post<TokenDto>('/Auth/login', data),
 
   sendLoginCode: (data: SendCodeRequest) => apiClient.post<void>('/Auth/send-login-code', data),
 
-  loginByCode: async (data: LoginByCodeRequest) => {
-    const response = await apiClient.post<TokenDto>('/Auth/login-by-code', data);
-    if (response.data?.accessToken) {
-      localStorage.setItem('accessToken', response.data.accessToken);
-      localStorage.setItem('refreshToken', response.data.refreshToken);
-    }
-    return response;
-  },
+  loginByCode: (data: LoginByCodeRequest) => apiClient.post<TokenDto>('/Auth/login-by-code', data),
 
   register: (data: UserCreateDto) => apiClient.post<string>('/Auth/register', data),
 
@@ -40,20 +26,9 @@ export const authService = {
 
   verifyRegistration: (data: VerifyRegistrationRequest) => apiClient.post<UserDto>('/Auth/verify-registration', data),
 
-  refresh: async (data: RefreshRequest) => {
-    const response = await apiClient.post<TokenDto>('/Auth/refresh', data);
-    if (response.data?.accessToken) {
-      localStorage.setItem('accessToken', response.data.accessToken);
-      localStorage.setItem('refreshToken', response.data.refreshToken);
-    }
-    return response;
-  },
+  refresh: (data: RefreshRequest) => apiClient.post<TokenDto>('/Auth/refresh', data),
 
-  logout: (deviceType: string = 'Web') => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    return apiClient.post<void>(`/Auth/logout?deviceType=${deviceType}`);
-  },
+  logout: (deviceType: string = 'Web') => apiClient.post<void>(`/Auth/logout?deviceType=${deviceType}`),
 
   getInfo: () => apiClient.get<UserDto>('/Auth/info'),
 

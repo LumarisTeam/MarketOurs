@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import '../models/auth.dart';
 import '../models/auth_session.dart';
@@ -87,8 +88,9 @@ class AuthController extends AsyncNotifier<AuthState> {
     }
 
     try {
-      final user = await _fetchCurrentUser();
-      final restoredSession = session.copyWith(user: user);
+      final user = await _restoreUserFromSession(session);
+      final latestSession = await _storage.readSession();
+      final restoredSession = (latestSession ?? session).copyWith(user: user);
       await _storage.saveUser(user);
       return AuthState.authenticated(restoredSession);
     } catch (_) {
@@ -497,6 +499,30 @@ class AuthController extends AsyncNotifier<AuthState> {
     return user;
   }
 
+  Future<UserDto> _restoreUserFromSession(AuthSession session) async {
+    try {
+      return await _fetchCurrentUser();
+    } catch (error) {
+      if ((session.refreshToken?.isNotEmpty ?? false) == false) {
+        rethrow;
+      }
+
+      final refreshed = await _authService.refresh(
+        RefreshRequest(
+          refreshToken: session.refreshToken!,
+          deviceType: _resolveDeviceType(),
+        ),
+      );
+      final token = refreshed.data;
+      if (token?.accessToken == null || token?.refreshToken == null) {
+        throw error;
+      }
+
+      await _storage.saveTokens(token!);
+      return _fetchCurrentUser();
+    }
+  }
+
   Future<void> _handleUnauthorized() async {
     await _clearStoredSessionSafely();
     state = AsyncData(AuthState.unauthenticated());
@@ -531,5 +557,15 @@ class AuthController extends AsyncNotifier<AuthState> {
       return message.substring('Exception:'.length).trim();
     }
     return message.isEmpty ? '操作失败，请稍后重试' : message;
+  }
+
+  String _resolveDeviceType() {
+    if (kIsWeb) {
+      return 'Web';
+    }
+
+    return Platform.isLinux || Platform.isMacOS || Platform.isWindows
+        ? 'Desktop'
+        : 'Mobile';
   }
 }

@@ -75,7 +75,11 @@ class AuthService {
   }
 
   Future<ApiResponse<TokenDto>> refresh(RefreshRequest request) async {
-    final response = await _api.post('/Auth/refresh', data: request.toJson());
+    final response = await _api.post(
+      '/Auth/refresh',
+      data: request.toJson(),
+      options: ApiService.anonymousOptions(),
+    );
     return ApiResponse<TokenDto>.fromJson(
       response.data,
       (json) => TokenDto.fromJson(json as Map<String, dynamic>),

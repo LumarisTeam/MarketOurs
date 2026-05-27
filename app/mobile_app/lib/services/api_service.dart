@@ -1,10 +1,12 @@
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
 import 'app_logger.dart';
 import 'auth_storage.dart';
+import '../models/auth.dart';
 
 class ApiService {
   late final Dio dio;
@@ -19,6 +21,7 @@ class ApiService {
   AuthStorage? _authStorage;
   Future<void> Function()? _onUnauthorized;
   bool _isHandlingUnauthorized = false;
+  Future<String?>? _refreshingAccessToken;
 
   factory ApiService() => _instance;
 
@@ -112,6 +115,24 @@ class ApiService {
 
           final shouldSkipUnauthorizedHandler =
               e.requestOptions.extra[_skipUnauthorizedHandlerExtraKey] == true;
+          final shouldAttemptRefresh =
+              e.response?.statusCode == 401 &&
+              !shouldSkipUnauthorizedHandler &&
+              e.requestOptions.path != '/Auth/refresh' &&
+              e.requestOptions.extra['retriedAfterRefresh'] != true;
+
+          if (shouldAttemptRefresh) {
+            final refreshedToken = await _refreshAccessToken();
+            if (refreshedToken != null) {
+              final retryOptions = await _retryOptions(
+                e.requestOptions,
+                refreshedToken,
+              );
+              final retryResponse = await dio.fetch(retryOptions);
+              return handler.resolve(retryResponse);
+            }
+          }
+
           if (e.response?.statusCode == 401 &&
               !shouldSkipUnauthorizedHandler &&
               !_isHandlingUnauthorized &&
@@ -141,6 +162,83 @@ class ApiService {
     return Options(
       extra: {_skipAuthExtraKey: true, _skipUnauthorizedHandlerExtraKey: true},
     );
+  }
+
+  Future<String?> _refreshAccessToken() {
+    _refreshingAccessToken ??= () async {
+      final refreshToken = await _authStorage?.readRefreshToken();
+      if (refreshToken == null || refreshToken.isEmpty) {
+        return null;
+      }
+
+      try {
+        final response = await dio.post(
+          '/Auth/refresh',
+          data: RefreshRequest(
+            refreshToken: refreshToken,
+            deviceType: _resolveDeviceType(),
+          ).toJson(),
+          options: anonymousOptions(),
+        );
+        final data = _extractResponseData(response.data);
+        if (data is! Map<String, dynamic>) {
+          return null;
+        }
+
+        final payload = data['data'];
+        if (payload is! Map<String, dynamic>) {
+          return null;
+        }
+
+        final token = TokenDto.fromJson(payload);
+        if (token.accessToken == null || token.refreshToken == null) {
+          return null;
+        }
+
+        await _authStorage?.saveTokens(token);
+        return token.accessToken;
+      } catch (_) {
+        return null;
+      } finally {
+        _refreshingAccessToken = null;
+      }
+    }();
+
+    return _refreshingAccessToken!;
+  }
+
+  Future<RequestOptions> _retryOptions(
+    RequestOptions requestOptions,
+    String accessToken,
+  ) async {
+    final headers = Map<String, dynamic>.from(requestOptions.headers);
+    headers['Authorization'] = 'Bearer $accessToken';
+
+    final extra = Map<String, dynamic>.from(requestOptions.extra);
+    extra['retriedAfterRefresh'] = true;
+
+    return requestOptions.copyWith(
+      headers: headers,
+      extra: extra,
+    );
+  }
+
+  static String _resolveDeviceType() {
+    if (kIsWeb) {
+      return 'Web';
+    }
+
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.android:
+      case TargetPlatform.iOS:
+        return 'Mobile';
+      case TargetPlatform.macOS:
+      case TargetPlatform.windows:
+      case TargetPlatform.linux:
+        return 'Desktop';
+      case TargetPlatform.fuchsia:
+        return 'Mobile';
+    }
   }
 
   static String _resolveBaseUrl() {

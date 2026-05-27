@@ -131,6 +131,18 @@ public class LoginServiceTests
     }
 
     [Test]
+    public void Login_WithInvalidRefreshToken_ShouldThrowAuthException()
+    {
+        // Arrange
+        _mockDatabase.Setup(db => db.StringGetAsync(It.IsAny<RedisKey>(), It.IsAny<CommandFlags>()))
+            .ReturnsAsync(RedisValue.Null);
+
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<AuthException>(async () => await _loginService.Login("invalid_refresh_token", "Web"));
+        Assert.That(ex!.ErrorCode, Is.EqualTo(ErrorCode.InvalidToken));
+    }
+
+    [Test]
     public async Task Logout_ShouldDeleteKeyInRedis()
     {
         // Arrange
