@@ -6,9 +6,7 @@ import 'auth_storage.dart';
 class ApiService {
   late final Dio dio;
   static final ApiService _instance = ApiService._internal();
-  static const String _apiBaseUrlOverride = String.fromEnvironment(
-    'API_BASE_URL',
-  );
+  static const String _apiBaseUrlOverride = 'https://lumalisapi.luckyfishes.site';
   AuthStorage? _authStorage;
   Future<void> Function()? _onUnauthorized;
   bool _isHandlingUnauthorized = false;
@@ -61,6 +59,10 @@ class ApiService {
   static String _resolveBaseUrl() {
     if (_apiBaseUrlOverride.isNotEmpty) {
       return _apiBaseUrlOverride;
+    }
+
+    if (kDebugMode) {
+      return 'http://localhost:5053';
     }
 
     if (kIsWeb) {
