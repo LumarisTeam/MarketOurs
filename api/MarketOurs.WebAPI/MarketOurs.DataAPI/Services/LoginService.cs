@@ -95,6 +95,7 @@ public class LoginService(
     IUserService userService,
     IEnumerable<IConnectionMultiplexer> redisEnumerable,
     IJwtService jwtService,
+    JwtConfig jwtConfig,
     IEmailService emailService,
     ISmsService smsService,
     SmsConfig smsConfig,
@@ -221,16 +222,30 @@ public class LoginService(
         }
 
         var key = CacheKeys.UserAccessToken(user.Id, deviceType);
+        var refreshTokenTtl = GetRefreshTokenTtl(deviceType.GetDeviceTypeEnum());
 
         // 使用异步方法将新 Token 存入 Redis，直接覆盖旧值 (可用于踢掉旧设备的会话)
         await db.StringSetAsync(key, token, TimeSpan.FromHours(2));
-        await db.StringSetAsync(CacheKeys.UserRefreshToken(refreshToken), user.Id, TimeSpan.FromDays(3));
+        await db.StringSetAsync(CacheKeys.UserRefreshToken(refreshToken), user.Id, refreshTokenTtl);
 
         return new TokenDto
         {
             AccessToken = token,
             RefreshToken = refreshToken
         };
+    }
+
+    private TimeSpan GetRefreshTokenTtl(DeviceType deviceType)
+    {
+        var hours = deviceType switch
+        {
+            DeviceType.Mobile => jwtConfig.MobileRefreshTokenExpiryHours,
+            DeviceType.Desktop => jwtConfig.DesktopRefreshTokenExpiryHours,
+            DeviceType.Web => jwtConfig.WebRefreshTokenExpiryHours,
+            _ => jwtConfig.WebRefreshTokenExpiryHours
+        };
+
+        return TimeSpan.FromHours(hours);
     }
 
     public async Task<TokenDto> Login(string token, string deviceType)

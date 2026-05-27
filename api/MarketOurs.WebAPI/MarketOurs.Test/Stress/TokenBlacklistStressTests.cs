@@ -45,6 +45,7 @@ public class TokenBlacklistStressTests
             _mockUserService.Object,
             redisList,
             _mockJwtService.Object,
+            new JwtConfig(),
             _mockEmailService.Object,
             _mockSmsService.Object,
             new SmsConfig(),

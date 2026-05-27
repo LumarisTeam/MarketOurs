@@ -38,6 +38,7 @@ public class LoginServiceTests
             _mockUserService.Object,
             redisList,
             _mockJwtService.Object,
+            new JwtConfig(),
             _mockEmailService.Object,
             _mockSmsService.Object,
             new SmsConfig(),
@@ -128,6 +129,29 @@ public class LoginServiceTests
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result.AccessToken, Is.EqualTo("new_access_token"));
+    }
+
+    [Test]
+    public async Task Login_OnMobile_ShouldStoreRefreshTokenForThirtyDays()
+    {
+        // Arrange
+        var user = new UserDto { Id = "1", Name = "Mobile User", IsActive = true };
+        _mockUserService.Setup(s => s.LoginAsync("mobile", "password")).ReturnsAsync(user);
+        _mockJwtService.Setup(j => j.GetAccessToken(user, It.IsAny<DeviceType>())).ReturnsAsync("access_token");
+        _mockJwtService.Setup(j => j.GetRefreshToken(It.IsAny<DeviceType>())).ReturnsAsync("refresh_token");
+
+        // Act
+        await _loginService.Login("mobile", "password", "Mobile");
+
+        // Assert
+        var refreshTokenWrite = _mockDatabase.Invocations.Single(invocation =>
+            invocation.Method.Name == nameof(IDatabase.StringSetAsync) &&
+            invocation.Arguments.Count >= 3 &&
+            invocation.Arguments[0] is RedisKey key &&
+            key.ToString() == CacheKeys.UserRefreshToken("refresh_token"));
+
+        Assert.That(refreshTokenWrite.Arguments[1].ToString(), Is.EqualTo("1"));
+        Assert.That(refreshTokenWrite.ToString(), Does.Contain("EX 2592000"));
     }
 
     [Test]

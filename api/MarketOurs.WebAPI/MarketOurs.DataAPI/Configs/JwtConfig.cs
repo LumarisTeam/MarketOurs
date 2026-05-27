@@ -15,10 +15,22 @@ public class JwtConfig
     public int AccessTokenExpiryMinutes { get; set; } = 20;
 
     /// <summary>
-    /// 刷新令牌过期时间（小时）
+    /// Web 刷新令牌过期时间（小时）
     /// </summary>
-    [Range(24, 168)]
-    public int RefreshTokenExpiryHours { get; set; } = 72;
+    [Range(24, 2160)]
+    public int WebRefreshTokenExpiryHours { get; set; } = 72;
+
+    /// <summary>
+    /// Mobile 刷新令牌过期时间（小时）
+    /// </summary>
+    [Range(24, 2160)]
+    public int MobileRefreshTokenExpiryHours { get; set; } = 720;
+
+    /// <summary>
+    /// Desktop 刷新令牌过期时间（小时）
+    /// </summary>
+    [Range(24, 2160)]
+    public int DesktopRefreshTokenExpiryHours { get; set; } = 720;
 
     /// <summary>
     /// RSA私钥路径

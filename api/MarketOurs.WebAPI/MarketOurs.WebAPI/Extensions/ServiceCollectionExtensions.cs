@@ -83,13 +83,32 @@ public static class ServiceCollectionExtensions
                     out var accessTokenExpiry)
                     ? accessTokenExpiry
                     : 20,
-            RefreshTokenExpiryHours =
+            WebRefreshTokenExpiryHours =
                 int.TryParse(
-                    Environment.GetEnvironmentVariable("JWT_REFRESH_TOKEN_EXPIRY_HOURS",
+                    Environment.GetEnvironmentVariable("JWT_WEB_REFRESH_TOKEN_EXPIRY_HOURS",
                         EnvironmentVariableTarget.Process),
-                    out var refreshTokenExpiry)
-                    ? refreshTokenExpiry
-                    : 72,
+                    out var webRefreshTokenExpiry)
+                    ? webRefreshTokenExpiry
+                    : int.TryParse(
+                        Environment.GetEnvironmentVariable("JWT_REFRESH_TOKEN_EXPIRY_HOURS",
+                            EnvironmentVariableTarget.Process),
+                        out var legacyRefreshTokenExpiry)
+                        ? legacyRefreshTokenExpiry
+                        : 72,
+            MobileRefreshTokenExpiryHours =
+                int.TryParse(
+                    Environment.GetEnvironmentVariable("JWT_MOBILE_REFRESH_TOKEN_EXPIRY_HOURS",
+                        EnvironmentVariableTarget.Process),
+                    out var mobileRefreshTokenExpiry)
+                    ? mobileRefreshTokenExpiry
+                    : 720,
+            DesktopRefreshTokenExpiryHours =
+                int.TryParse(
+                    Environment.GetEnvironmentVariable("JWT_DESKTOP_REFRESH_TOKEN_EXPIRY_HOURS",
+                        EnvironmentVariableTarget.Process),
+                    out var desktopRefreshTokenExpiry)
+                    ? desktopRefreshTokenExpiry
+                    : 720,
             RsaPrivateKeyPath =
                 Environment.GetEnvironmentVariable("JWT_RSA_PRIVATE_KEY_PATH", EnvironmentVariableTarget.Process) ??
                 "./keys/rsa_private.pem",
