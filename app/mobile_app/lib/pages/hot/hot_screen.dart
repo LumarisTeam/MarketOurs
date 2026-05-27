@@ -181,18 +181,6 @@ class _HotPostCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                if (post.author != null)
-                  UserCard(
-                    user: post.author!,
-                    onTap: post.author?.id == null
-                        ? null
-                        : () => context.push(
-                            buildPublicProfileLocation(post.author!.id!),
-                          ),
-                  ),
-                if (post.author != null) const SizedBox(height: 12),
-                Text(excerpt, style: AppTextStyles.muted(context)),
-                const SizedBox(height: 16),
                 Row(
                   children: [
                     Row(

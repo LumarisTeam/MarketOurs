@@ -51,12 +51,10 @@ class AppPageScaffold extends StatelessWidget {
               ),
               leading: leading,
               trailing: trailing,
-              // Keep the nav bar fully opaque so CupertinoPageScaffold
-              // treats it as obstructing and offsets page content below it.
               backgroundColor: CupertinoDynamicColor.resolve(
                 AppColors.background,
                 context,
-              ),
+              ).withValues(alpha: 0.82),
               border: Border(
                 bottom: BorderSide(
                   color: CupertinoDynamicColor.resolve(
@@ -69,7 +67,7 @@ class AppPageScaffold extends StatelessWidget {
               padding: const EdgeInsetsDirectional.only(start: 8, end: 8),
             ),
       child: SafeArea(
-        top: title == null,
+        top: true,
         bottom: bottomBar == null,
         child: Stack(
           children: [

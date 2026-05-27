@@ -103,12 +103,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       ),
                       CupertinoActionSheetAction(
                         onPressed: () {
-                          Navigator.of(context).pop();
-                          Navigator.push(
-                            context,
+                          Navigator.of(context).push(
                             CupertinoPageRoute(
-                              builder: (_) =>
-                                  PushSettingsScreen(service: widget.service),
+                              builder: (_) => PushSettingsScreen(
+                                service: widget.service,
+                              ),
                             ),
                           );
                         },
