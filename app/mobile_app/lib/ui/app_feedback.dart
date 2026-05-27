@@ -1,14 +1,11 @@
-import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import 'app_theme.dart';
 
 abstract final class AppFeedback {
-  static OverlayEntry? _activeEntry;
-  static Timer? _dismissTimer;
-
   static Future<void> showMessage(
     BuildContext context, {
     required String message,
@@ -95,45 +92,18 @@ abstract final class AppFeedback {
     required Color tint,
     String? title,
   }) async {
-    final overlay = Overlay.maybeOf(context, rootOverlay: true);
-    if (overlay == null) {
-      return showCupertinoDialog<void>(
-        context: context,
-        builder: (context) => _FeedbackDialog(
-          title: title ?? '提示',
-          message: message,
-          actions: [
-            _FeedbackAction(
-              label: '确定',
-              onPressed: () => Navigator.of(context).pop(),
-              isPrimary: true,
-            ),
-          ],
-        ),
-      );
-    }
+    final hasTitle = title != null && title.trim().isNotEmpty;
+    final text = hasTitle ? '$title\n$message' : message;
 
-    _dismissTimer?.cancel();
-    _activeEntry?.remove();
-
-    final entry = OverlayEntry(
-      builder: (overlayContext) => _FeedbackToast(
-        message: message,
-        title: title,
-        icon: icon,
-        tint: tint,
-      ),
+    await Fluttertoast.showToast(
+      msg: text,
+      toastLength: Toast.LENGTH_LONG,
+      gravity: ToastGravity.BOTTOM,
+      timeInSecForIosWeb: 3,
+      backgroundColor: const Color(0xE61C1C1E),
+      textColor: const Color(0xFFFFFFFF),
+      fontSize: 14.0,
     );
-
-    _activeEntry = entry;
-    overlay.insert(entry);
-
-    _dismissTimer = Timer(const Duration(seconds: 3), () {
-      if (_activeEntry == entry) {
-        entry.remove();
-        _activeEntry = null;
-      }
-    });
   }
 }
 
@@ -191,99 +161,6 @@ class _FeedbackDialog extends StatelessWidget {
                   ],
                 ),
               ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _FeedbackToast extends StatelessWidget {
-  const _FeedbackToast({
-    required this.message,
-    required this.icon,
-    required this.tint,
-    this.title,
-  });
-
-  final String message;
-  final String? title;
-  final IconData icon;
-  final Color tint;
-
-  @override
-  Widget build(BuildContext context) {
-    final resolvedTint = CupertinoDynamicColor.resolve(tint, context);
-
-    return IgnorePointer(
-      child: SafeArea(
-        child: Align(
-          alignment: Alignment.topCenter,
-          child: Container(
-            margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-            constraints: const BoxConstraints(maxWidth: 480),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(AppRadii.xl),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
-                  ),
-                  decoration: BoxDecoration(
-                    color: CupertinoDynamicColor.resolve(
-                      AppColors.card,
-                      context,
-                    ).withValues(alpha: 0.94),
-                    borderRadius: BorderRadius.circular(AppRadii.xl),
-                    border: Border.all(
-                      color: resolvedTint.withValues(alpha: 0.16),
-                    ),
-                    boxShadow: AppShadows.card,
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          color: resolvedTint.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(AppRadii.md),
-                        ),
-                        child: Icon(icon, size: 18, color: resolvedTint),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (title != null && title!.trim().isNotEmpty) ...[
-                              Text(
-                                title!,
-                                style: AppTextStyles.label(context).copyWith(
-                                  color: resolvedTint,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                            ],
-                            Text(
-                              message,
-                              style: AppTextStyles.body(
-                                context,
-                              ).copyWith(fontSize: 14, height: 1.35),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
             ),
           ),
         ),

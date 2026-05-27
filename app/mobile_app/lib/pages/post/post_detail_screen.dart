@@ -355,7 +355,6 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           width: 0.5,
                         ),
                       ),
-                      largeTitle: const Text('详情'),
                       middle: const Text(
                         '详情',
                         style: TextStyle(fontWeight: FontWeight.w700),

@@ -68,12 +68,11 @@ String buildPublicProfileLocation(String userId) {
 }
 
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final authAsync = ref.watch(authControllerProvider);
-
   return GoRouter(
     initialLocation: AppRoutePaths.splash,
     refreshListenable: _RouterRefreshNotifier(ref),
     redirect: (context, state) {
+      final authAsync = ref.read(authControllerProvider);
       final path = state.uri.path;
       final isAuthRoute = _authRoutes.contains(path);
       final isSplashRoute = path == AppRoutePaths.splash;
