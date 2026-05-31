@@ -7,11 +7,13 @@ import { type RootState } from "../../stores"
 import { postService } from "../../services/postService"
 import type { PostDto } from "../../types"
 import { formatPostRelativeDate, getPostAuthorName, getPostExcerpt } from "../../lib/postDisplay"
+import { sharePost } from "../../lib/postShare"
 
 export function PostCard({ post, onDelete }: { post: PostDto; onDelete?: (id: string) => void }) {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const { user } = useSelector((state: RootState) => state.auth);
+  const [shareFeedback, setShareFeedback] = useState<string | null>(null);
   
   const isMe = user && post.userId.toLowerCase() === user.id.toLowerCase();
   const isAdmin = user && user.role === 'Admin';
@@ -34,6 +36,23 @@ export function PostCard({ post, onDelete }: { post: PostDto; onDelete?: (id: st
   const handleAuthorClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     navigate(`/user/${post.userId}`);
+  };
+
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const outcome = await sharePost(post);
+      if (outcome === "shared") {
+        setShareFeedback("已打开分享面板");
+      } else if (outcome === "copied") {
+        setShareFeedback("链接已复制");
+      }
+    } catch (error) {
+      console.error(error);
+      setShareFeedback("分享失败，请稍后重试");
+    } finally {
+      window.setTimeout(() => setShareFeedback(null), 2500);
+    }
   };
 
   return (
@@ -103,12 +122,17 @@ export function PostCard({ post, onDelete }: { post: PostDto; onDelete?: (id: st
           <span>{post.watch}</span>
         </button>
         <button 
-          onClick={(e) => { e.stopPropagation(); }}
+          onClick={handleShare}
           className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors ml-auto"
+          title={t("post.share")}
         >
           <Share2 size={18} />
+          <span>{t("post.share")}</span>
         </button>
       </div>
+      {shareFeedback ? (
+        <p className="mt-3 text-right text-xs font-medium text-primary">{shareFeedback}</p>
+      ) : null}
     </article>
   )
 }

@@ -11,6 +11,7 @@ import type { i18n } from "i18next"
 import { formatDistanceToNow } from "date-fns"
 import { zhCN, enUS } from "date-fns/locale"
 import { cn } from "../../lib/utils"
+import { sharePost } from "../../lib/postShare"
 
 const formatDate = (dateString: string, i18nInstance: i18n, updatedAtString?: string, t?: any) => {
   try {
@@ -250,6 +251,7 @@ export default function PostDetailPage() {
   const [commentSort, setCommentSort] = useState<"recent" | "hot">("recent")
   const [postLiked, setPostLiked] = useState(false)
   const [likedComments, setLikedComments] = useState<Set<string>>(new Set())
+  const [shareFeedback, setShareFeedback] = useState<string | null>(null)
 
   // Editing state for post
   const [isEditingPost, setIsEditingPost] = useState(false)
@@ -310,6 +312,24 @@ export default function PostDetailPage() {
       console.error(err);
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  const handleShare = async () => {
+    if (!post) return;
+
+    try {
+      const outcome = await sharePost(post);
+      if (outcome === "shared") {
+        setShareFeedback("已打开分享面板");
+      } else if (outcome === "copied") {
+        setShareFeedback("链接已复制");
+      }
+    } catch (error) {
+      console.error(error);
+      setShareFeedback("分享失败，请稍后重试");
+    } finally {
+      window.setTimeout(() => setShareFeedback(null), 2500);
     }
   }
 
@@ -585,11 +605,15 @@ export default function PostDetailPage() {
             <Heart size={20} className={cn("group-hover:scale-110 transition-transform", postLiked && "fill-primary")} />
             <span>{post.likes} {t("post.likes")}</span>
           </button>
-          <button className="flex items-center gap-2 px-6 py-2.5 rounded-full hover:bg-muted transition-all font-bold text-muted-foreground group">
+          <button
+            onClick={handleShare}
+            className="flex items-center gap-2 px-6 py-2.5 rounded-full hover:bg-muted transition-all font-bold text-muted-foreground group"
+          >
             <Share2 size={20} className="group-hover:scale-110 transition-transform" />
             <span>{t("post.share")}</span>
           </button>
         </footer>
+        {shareFeedback ? <p className="text-sm font-medium text-primary">{shareFeedback}</p> : null}
       </article>
 
       <section className="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200">

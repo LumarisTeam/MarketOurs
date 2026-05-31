@@ -6,6 +6,8 @@ import '../../models/post.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/post_feed_provider.dart';
 import '../../router/app_router.dart';
+import '../../services/share_service.dart';
+import '../../ui/app_feedback.dart';
 import '../../ui/app_theme.dart';
 import '../../ui/app_widgets.dart';
 
@@ -154,6 +156,20 @@ class _PostCard extends StatelessWidget {
   const _PostCard({required this.post});
 
   final PostDto post;
+  static const _shareService = ShareService();
+
+  Future<void> _handleShare(BuildContext context) async {
+    try {
+      await _shareService.sharePost(post);
+      if (context.mounted) {
+        await AppFeedback.showSuccess(context, message: '帖子分享面板已打开');
+      }
+    } catch (_) {
+      if (context.mounted) {
+        await AppFeedback.showError(context, message: '分享失败，请稍后重试');
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -214,10 +230,9 @@ class _PostCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
               title,
-              style: AppTextStyles.sectionTitle(context).copyWith(
-                fontSize: 18,
-                height: 1.3,
-              ),
+              style: AppTextStyles.sectionTitle(
+                context,
+              ).copyWith(fontSize: 18, height: 1.3),
             ),
           ),
           const SizedBox(height: 8),
@@ -231,7 +246,10 @@ class _PostCard extends StatelessWidget {
                     excerpt,
                     style: AppTextStyles.body(context).copyWith(
                       fontSize: 15,
-                      color: CupertinoDynamicColor.resolve(AppColors.foreground, context).withValues(alpha: 0.8),
+                      color: CupertinoDynamicColor.resolve(
+                        AppColors.foreground,
+                        context,
+                      ).withValues(alpha: 0.8),
                     ),
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
@@ -249,7 +267,10 @@ class _PostCard extends StatelessWidget {
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) => Container(
                           color: AppColors.muted,
-                          child: const Icon(CupertinoIcons.photo, color: AppColors.mutedForeground),
+                          child: const Icon(
+                            CupertinoIcons.photo,
+                            color: AppColors.mutedForeground,
+                          ),
                         ),
                       ),
                     ),
@@ -264,7 +285,10 @@ class _PostCard extends StatelessWidget {
             decoration: BoxDecoration(
               border: Border(
                 top: BorderSide(
-                  color: CupertinoDynamicColor.resolve(AppColors.border, context).withValues(alpha: 0.3),
+                  color: CupertinoDynamicColor.resolve(
+                    AppColors.border,
+                    context,
+                  ).withValues(alpha: 0.3),
                 ),
               ),
             ),
@@ -286,10 +310,15 @@ class _PostCard extends StatelessWidget {
                   label: '${post.watch ?? 0}',
                 ),
                 const Spacer(),
-                const Icon(
-                  CupertinoIcons.share,
-                  size: 18,
-                  color: AppColors.mutedForeground,
+                CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size.zero,
+                  onPressed: () => _handleShare(context),
+                  child: const Icon(
+                    CupertinoIcons.share,
+                    size: 18,
+                    color: AppColors.mutedForeground,
+                  ),
                 ),
               ],
             ),

@@ -10,6 +10,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/post_feed_provider.dart';
 import '../../router/app_router.dart';
 import '../../services/comment_service.dart';
+import '../../services/share_service.dart';
 import '../../ui/app_feedback.dart';
 import '../../ui/app_fields.dart';
 import '../../ui/app_theme.dart';
@@ -27,6 +28,7 @@ class PostDetailScreen extends ConsumerStatefulWidget {
 class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   final _commentService = CommentService();
   final _commentController = TextEditingController();
+  final _shareService = const ShareService();
   PostDto? _post;
   List<CommentDto> _comments = const [];
   bool _isLoading = true;
@@ -128,6 +130,20 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       );
       _commentController.clear();
     }, successMessage: '评论已发布');
+  }
+
+  Future<void> _shareCurrentPost() async {
+    final post = _post;
+    if (post == null) return;
+
+    try {
+      await _shareService.sharePost(post);
+      if (!mounted) return;
+      await AppFeedback.showSuccess(context, message: '帖子分享面板已打开');
+    } catch (error) {
+      if (!mounted) return;
+      await AppFeedback.showError(context, message: '分享失败，请稍后重试');
+    }
   }
 
   Future<void> _replyComment(CommentDto comment) async {
@@ -399,62 +415,75 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           isWorking: _isWorking,
                           isLiked: _postLiked,
                           isDisliked: _postDisliked,
-                          onLike: () => _runAction(() async {
-                            final res = await ref
-                                .read(postServiceProvider)
-                                .likePost(post.id);
-                            final data = res.data;
-                            if (data != null) {
-                              setState(() {
-                                _postLiked = data.isLiked;
-                                _postDisliked = false;
-                                if (_post != null) {
-                                  _post = PostDto(
-                                    id: _post!.id,
-                                    title: _post!.title,
-                                    content: _post!.content,
-                                    images: _post!.images,
-                                    createdAt: _post!.createdAt,
-                                    updatedAt: _post!.updatedAt,
-                                    userId: _post!.userId,
-                                    author: _post!.author,
-                                    likes: data.likeCount,
-                                    dislikes: data.dislikeCount,
-                                    watch: _post!.watch,
-                                    isReview: _post!.isReview,
-                                  );
-                                }
-                              });
+                          onShare: _shareCurrentPost,
+                          onLike: () {
+                            if (user == null) {
+                              context.go(AppRoutePaths.login);
+                              return;
                             }
-                          }, reloadAll: false),
-                          onDislike: () => _runAction(() async {
-                            final res = await ref
-                                .read(postServiceProvider)
-                                .dislikePost(post.id);
-                            final data = res.data;
-                            if (data != null) {
-                              setState(() {
-                                _postDisliked = data.isDisliked;
-                                _postLiked = false;
-                                if (_post != null) {
-                                  _post = PostDto(
-                                    id: _post!.id,
-                                    title: _post!.title,
-                                    content: _post!.content,
-                                    images: _post!.images,
-                                    createdAt: _post!.createdAt,
-                                    updatedAt: _post!.updatedAt,
-                                    userId: _post!.userId,
-                                    author: _post!.author,
-                                    likes: data.likeCount,
-                                    dislikes: data.dislikeCount,
-                                    watch: _post!.watch,
-                                    isReview: _post!.isReview,
-                                  );
-                                }
-                              });
+                            _runAction(() async {
+                              final res = await ref
+                                  .read(postServiceProvider)
+                                  .likePost(post.id);
+                              final data = res.data;
+                              if (data != null) {
+                                setState(() {
+                                  _postLiked = data.isLiked;
+                                  _postDisliked = false;
+                                  if (_post != null) {
+                                    _post = PostDto(
+                                      id: _post!.id,
+                                      title: _post!.title,
+                                      content: _post!.content,
+                                      images: _post!.images,
+                                      createdAt: _post!.createdAt,
+                                      updatedAt: _post!.updatedAt,
+                                      userId: _post!.userId,
+                                      author: _post!.author,
+                                      likes: data.likeCount,
+                                      dislikes: data.dislikeCount,
+                                      watch: _post!.watch,
+                                      isReview: _post!.isReview,
+                                    );
+                                  }
+                                });
+                              }
+                            }, reloadAll: false);
+                          },
+                          onDislike: () {
+                            if (user == null) {
+                              context.go(AppRoutePaths.login);
+                              return;
                             }
-                          }, reloadAll: false),
+                            _runAction(() async {
+                              final res = await ref
+                                  .read(postServiceProvider)
+                                  .dislikePost(post.id);
+                              final data = res.data;
+                              if (data != null) {
+                                setState(() {
+                                  _postDisliked = data.isDisliked;
+                                  _postLiked = false;
+                                  if (_post != null) {
+                                    _post = PostDto(
+                                      id: _post!.id,
+                                      title: _post!.title,
+                                      content: _post!.content,
+                                      images: _post!.images,
+                                      createdAt: _post!.createdAt,
+                                      updatedAt: _post!.updatedAt,
+                                      userId: _post!.userId,
+                                      author: _post!.author,
+                                      likes: data.likeCount,
+                                      dislikes: data.dislikeCount,
+                                      watch: _post!.watch,
+                                      isReview: _post!.isReview,
+                                    );
+                                  }
+                                });
+                              }
+                            }, reloadAll: false);
+                          },
                         ),
                         const SizedBox(height: 32),
                         Row(
@@ -522,61 +551,83 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                     : null,
                                 likedComments: _likedComments,
                                 dislikedComments: _dislikedComments,
-                                onLike: () => _runAction(() async {
-                                  final res = await _commentService.likeComment(
-                                    c.id,
-                                  );
-                                  final data = res.data;
-                                  if (data != null) {
-                                    setState(() {
-                                      if (data.isLiked) {
-                                        _likedComments.add(c.id);
-                                        _dislikedComments.remove(c.id);
-                                      } else {
-                                        _likedComments.remove(c.id);
-                                      }
-                                    });
+                                onLike: () {
+                                  if (user == null) {
+                                    context.go(AppRoutePaths.login);
+                                    return;
                                   }
-                                }),
-                                onDislike: () => _runAction(() async {
-                                  final res = await _commentService
-                                      .dislikeComment(c.id);
-                                  final data = res.data;
-                                  if (data != null) {
-                                    setState(() {
-                                      if (data.isDisliked) {
-                                        _dislikedComments.add(c.id);
-                                        _likedComments.remove(c.id);
-                                      } else {
-                                        _dislikedComments.remove(c.id);
-                                      }
-                                    });
+                                  _runAction(() async {
+                                    final res = await _commentService
+                                        .likeComment(c.id);
+                                    final data = res.data;
+                                    if (data != null) {
+                                      setState(() {
+                                        if (data.isLiked) {
+                                          _likedComments.add(c.id);
+                                          _dislikedComments.remove(c.id);
+                                        } else {
+                                          _likedComments.remove(c.id);
+                                        }
+                                      });
+                                    }
+                                  });
+                                },
+                                onDislike: () {
+                                  if (user == null) {
+                                    context.go(AppRoutePaths.login);
+                                    return;
                                   }
-                                }),
+                                  _runAction(() async {
+                                    final res = await _commentService
+                                        .dislikeComment(c.id);
+                                    final data = res.data;
+                                    if (data != null) {
+                                      setState(() {
+                                        if (data.isDisliked) {
+                                          _dislikedComments.add(c.id);
+                                          _likedComments.remove(c.id);
+                                        } else {
+                                          _dislikedComments.remove(c.id);
+                                        }
+                                      });
+                                    }
+                                  });
+                                },
                                 onReplyChild: _replyComment,
                                 onEditChild: _editComment,
                                 onDeleteChild: _deleteComment,
-                                onLikeChild: (child) => _runAction(() async {
-                                  final res = await _commentService.likeComment(
-                                    child.id,
-                                  );
-                                  if (res.data?.isLiked == true) {
-                                    setState(() {
-                                      _likedComments.add(child.id);
-                                      _dislikedComments.remove(child.id);
-                                    });
+                                onLikeChild: (child) {
+                                  if (user == null) {
+                                    context.go(AppRoutePaths.login);
+                                    return;
                                   }
-                                }),
-                                onDislikeChild: (child) => _runAction(() async {
-                                  final res = await _commentService
-                                      .dislikeComment(child.id);
-                                  if (res.data?.isDisliked == true) {
-                                    setState(() {
-                                      _dislikedComments.add(child.id);
-                                      _likedComments.remove(child.id);
-                                    });
+                                  _runAction(() async {
+                                    final res = await _commentService
+                                        .likeComment(child.id);
+                                    if (res.data?.isLiked == true) {
+                                      setState(() {
+                                        _likedComments.add(child.id);
+                                        _dislikedComments.remove(child.id);
+                                      });
+                                    }
+                                  });
+                                },
+                                onDislikeChild: (child) {
+                                  if (user == null) {
+                                    context.go(AppRoutePaths.login);
+                                    return;
                                   }
-                                }),
+                                  _runAction(() async {
+                                    final res = await _commentService
+                                        .dislikeComment(child.id);
+                                    if (res.data?.isDisliked == true) {
+                                      setState(() {
+                                        _dislikedComments.add(child.id);
+                                        _likedComments.remove(child.id);
+                                      });
+                                    }
+                                  });
+                                },
                               ),
                             ),
                           ),
@@ -771,6 +822,7 @@ class _ActionBar extends StatelessWidget {
     required this.isWorking,
     required this.isLiked,
     required this.isDisliked,
+    required this.onShare,
     required this.onLike,
     required this.onDislike,
   });
@@ -780,6 +832,7 @@ class _ActionBar extends StatelessWidget {
   final bool isWorking;
   final bool isLiked;
   final bool isDisliked;
+  final VoidCallback onShare;
   final VoidCallback onLike;
   final VoidCallback onDislike;
 
@@ -827,6 +880,17 @@ class _ActionBar extends StatelessWidget {
           ),
           const Spacer(),
           Text('$watch 次浏览', style: AppTextStyles.label(context)),
+          const SizedBox(width: 12),
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            minimumSize: Size.zero,
+            onPressed: onShare,
+            child: const Icon(
+              CupertinoIcons.share,
+              size: 18,
+              color: AppColors.mutedForeground,
+            ),
+          ),
         ],
       ),
     );

@@ -76,6 +76,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final path = state.uri.path;
       final isAuthRoute = _authRoutes.contains(path);
       final isSplashRoute = path == AppRoutePaths.splash;
+      final isPublicRoute = _isPublicRoute(path);
 
       // 如果还在初始化加载中，保持在启动页
       if (authAsync.isLoading) {
@@ -96,8 +97,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       }
 
       // 未登录：
-      // 如果当前就在认证页，不需要跳转
-      if (isAuthRoute) {
+      // 如果当前就在认证页或公开内容页，不需要跳转
+      if (isAuthRoute || isPublicRoute) {
         return null;
       }
 
@@ -236,6 +237,11 @@ const _authRoutes = {
   AppRoutePaths.forgotPassword,
   AppRoutePaths.resetPassword,
 };
+
+bool _isPublicRoute(String path) {
+  final postDetailPattern = RegExp(r'^/post/[^/]+$');
+  return postDetailPattern.hasMatch(path);
+}
 
 class _RouterRefreshNotifier extends ChangeNotifier {
   _RouterRefreshNotifier(Ref ref) {
