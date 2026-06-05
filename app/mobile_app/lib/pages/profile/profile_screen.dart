@@ -11,6 +11,7 @@ import '../../router/app_router.dart';
 import '../../services/file_service.dart';
 import '../../ui/app_feedback.dart';
 import '../../ui/app_fields.dart';
+import '../../ui/app_responsive.dart';
 import '../../ui/app_theme.dart';
 import '../../ui/app_widgets.dart';
 
@@ -33,14 +34,16 @@ class ProfileScreen extends ConsumerWidget {
               border: null,
             ),
             SliverFillRemaining(
-              child: Center(
-                child: AppEmptyState(
-                  icon: CupertinoIcons.person,
-                  title: '还没有登录',
-                  description: '登录后可以查看个人资料、管理安全设置。',
-                  action: AppPrimaryButton(
-                    onPressed: () => context.go(AppRoutePaths.login),
-                    child: const Text('去登录'),
+              child: AppResponsiveCenter(
+                child: Center(
+                  child: AppEmptyState(
+                    icon: CupertinoIcons.person,
+                    title: '还没有登录',
+                    description: '登录后可以查看个人资料、管理安全设置。',
+                    action: AppPrimaryButton(
+                      onPressed: () => context.go(AppRoutePaths.login),
+                      child: const Text('去登录'),
+                    ),
                   ),
                 ),
               ),
@@ -72,72 +75,73 @@ class ProfileScreen extends ConsumerWidget {
                 ref.read(authControllerProvider.notifier).refreshProfile(),
           ),
           SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                children: [
-                  const SizedBox(height: 12),
-                  _ProfileHero(
-                    user: user,
-                    onViewPublicProfile: () =>
-                        context.push(buildPublicProfileLocation(user.id)),
-                  ),
-                  const SizedBox(height: 20),
-                  _ProfileSection(
-                    title: '资料信息',
-                    children: [
-                      _InfoRow(label: '昵称', value: _fallback(user.name, '未设置')),
-                      _InfoRow(
-                        label: '简介',
-                        value: _fallback(user.info, '还没有写简介'),
-                      ),
-                      _InfoRow(
-                        label: '邮箱',
-                        value: _fallback(user.email, '未绑定'),
-                      ),
-                      _VerificationRow(
-                        label: '邮箱验证',
-                        isVerified: user.isEmailVerified ?? false,
-                        isBusy: isSubmitting,
-                        onVerify: () => _startVerification(
-                          context: context,
-                          ref: ref,
-                          sendCode: () => ref
-                              .read(authControllerProvider.notifier)
-                              .sendEmailCode(),
-                          verifyCode: (code) => ref
-                              .read(authControllerProvider.notifier)
-                              .verifyEmailCode(code: code),
-                          successMessage: '邮箱验证成功',
+            child: AppResponsiveCenter(
+              padding: AppResponsive.sliverPagePadding(context, bottom: 32),
+              child: AppTwoPane(
+                key: const ValueKey('profile-responsive-two-pane'),
+                secondaryFirstOnWide: true,
+                primary: Column(
+                  children: [
+                    _ProfileSection(
+                      title: '资料信息',
+                      children: [
+                        _InfoRow(label: '昵称', value: _fallback(user.name, '未设置')),
+                        _InfoRow(
+                          label: '简介',
+                          value: _fallback(user.info, '还没有写简介'),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  _ProfileSection(
-                    title: '账户安全',
-                    children: [
-                      _NavRow(
-                        icon: CupertinoIcons.lock_rotation,
-                        title: '修改密码',
-                        subtitle: '更新当前账号密码',
-                        onTap: () => context.push(AppRoutePaths.changePassword),
-                      ),
-                      _NavRow(
-                        icon: CupertinoIcons.square_arrow_right,
-                        title: '退出登录',
-                        subtitle: '清除当前会话',
-                        destructive: true,
-                        onTap: isSubmitting
-                            ? null
-                            : () => ref
-                                  .read(authControllerProvider.notifier)
-                                  .logout(),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 32),
-                ],
+                        _InfoRow(
+                          label: '邮箱',
+                          value: _fallback(user.email, '未绑定'),
+                        ),
+                        _VerificationRow(
+                          label: '邮箱验证',
+                          isVerified: user.isEmailVerified ?? false,
+                          isBusy: isSubmitting,
+                          onVerify: () => _startVerification(
+                            context: context,
+                            ref: ref,
+                            sendCode: () => ref
+                                .read(authControllerProvider.notifier)
+                                .sendEmailCode(),
+                            verifyCode: (code) => ref
+                                .read(authControllerProvider.notifier)
+                                .verifyEmailCode(code: code),
+                            successMessage: '邮箱验证成功',
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    _ProfileSection(
+                      title: '账户安全',
+                      children: [
+                        _NavRow(
+                          icon: CupertinoIcons.lock_rotation,
+                          title: '修改密码',
+                          subtitle: '更新当前账号密码',
+                          onTap: () => context.push(AppRoutePaths.changePassword),
+                        ),
+                        _NavRow(
+                          icon: CupertinoIcons.square_arrow_right,
+                          title: '退出登录',
+                          subtitle: '清除当前会话',
+                          destructive: true,
+                          onTap: isSubmitting
+                              ? null
+                              : () => ref
+                                    .read(authControllerProvider.notifier)
+                                    .logout(),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                secondary: _ProfileHero(
+                  user: user,
+                  onViewPublicProfile: () =>
+                      context.push(buildPublicProfileLocation(user.id)),
+                ),
               ),
             ),
           ),

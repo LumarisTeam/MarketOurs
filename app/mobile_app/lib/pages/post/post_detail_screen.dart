@@ -13,6 +13,7 @@ import '../../services/comment_service.dart';
 import '../../services/share_service.dart';
 import '../../ui/app_feedback.dart';
 import '../../ui/app_fields.dart';
+import '../../ui/app_responsive.dart';
 import '../../ui/app_theme.dart';
 import '../../ui/app_widgets.dart';
 
@@ -335,6 +336,71 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     return result;
   }
 
+  Widget _buildActionBar(BuildContext context, PostDto post, bool isAuthenticated) {
+    return _ActionBar(
+      likes: post.likes ?? 0,
+      dislikes: post.dislikes ?? 0,
+      watch: post.watch ?? 0,
+      isWorking: _isWorking,
+      isLiked: _postLiked,
+      isDisliked: _postDisliked,
+      onShare: _shareCurrentPost,
+      onLike: () {
+        if (!isAuthenticated) {
+          context.go(AppRoutePaths.login);
+          return;
+        }
+        _runAction(() async {
+          final res = await ref.read(postServiceProvider).likePost(post.id);
+          final data = res.data;
+          if (data != null) {
+            setState(() {
+              _postLiked = data.isLiked;
+              _postDisliked = false;
+              _replacePostCounts(data.likeCount, data.dislikeCount);
+            });
+          }
+        }, reloadAll: false);
+      },
+      onDislike: () {
+        if (!isAuthenticated) {
+          context.go(AppRoutePaths.login);
+          return;
+        }
+        _runAction(() async {
+          final res = await ref.read(postServiceProvider).dislikePost(post.id);
+          final data = res.data;
+          if (data != null) {
+            setState(() {
+              _postDisliked = data.isDisliked;
+              _postLiked = false;
+              _replacePostCounts(data.likeCount, data.dislikeCount);
+            });
+          }
+        }, reloadAll: false);
+      },
+    );
+  }
+
+  void _replacePostCounts(int likes, int dislikes) {
+    final current = _post;
+    if (current == null) return;
+    _post = PostDto(
+      id: current.id,
+      title: current.title,
+      content: current.content,
+      images: current.images,
+      createdAt: current.createdAt,
+      updatedAt: current.updatedAt,
+      userId: current.userId,
+      author: current.author,
+      likes: likes,
+      dislikes: dislikes,
+      watch: current.watch,
+      isReview: current.isReview,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(authControllerProvider).asData?.value.user;
@@ -393,10 +459,18 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               ),
               slivers: [
                 CupertinoSliverRefreshControl(onRefresh: _loadData),
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
-                  sliver: SliverToBoxAdapter(
-                    child: Column(
+                SliverToBoxAdapter(
+                  child: AppResponsiveCenter(
+                    padding: AppResponsive.sliverPagePadding(context),
+                    child: Builder(
+                      builder: (context) {
+                        final isWide = AppResponsive.isWideTwoPane(context);
+                        final actionBar = _buildActionBar(
+                          context,
+                          post,
+                          user != null,
+                        );
+                        final content = Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _PostHero(
@@ -407,84 +481,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                   buildPublicProfileLocation(post.userId!),
                                 ),
                         ),
-                        const SizedBox(height: 24),
-                        _ActionBar(
-                          likes: post.likes ?? 0,
-                          dislikes: post.dislikes ?? 0,
-                          watch: post.watch ?? 0,
-                          isWorking: _isWorking,
-                          isLiked: _postLiked,
-                          isDisliked: _postDisliked,
-                          onShare: _shareCurrentPost,
-                          onLike: () {
-                            if (user == null) {
-                              context.go(AppRoutePaths.login);
-                              return;
-                            }
-                            _runAction(() async {
-                              final res = await ref
-                                  .read(postServiceProvider)
-                                  .likePost(post.id);
-                              final data = res.data;
-                              if (data != null) {
-                                setState(() {
-                                  _postLiked = data.isLiked;
-                                  _postDisliked = false;
-                                  if (_post != null) {
-                                    _post = PostDto(
-                                      id: _post!.id,
-                                      title: _post!.title,
-                                      content: _post!.content,
-                                      images: _post!.images,
-                                      createdAt: _post!.createdAt,
-                                      updatedAt: _post!.updatedAt,
-                                      userId: _post!.userId,
-                                      author: _post!.author,
-                                      likes: data.likeCount,
-                                      dislikes: data.dislikeCount,
-                                      watch: _post!.watch,
-                                      isReview: _post!.isReview,
-                                    );
-                                  }
-                                });
-                              }
-                            }, reloadAll: false);
-                          },
-                          onDislike: () {
-                            if (user == null) {
-                              context.go(AppRoutePaths.login);
-                              return;
-                            }
-                            _runAction(() async {
-                              final res = await ref
-                                  .read(postServiceProvider)
-                                  .dislikePost(post.id);
-                              final data = res.data;
-                              if (data != null) {
-                                setState(() {
-                                  _postDisliked = data.isDisliked;
-                                  _postLiked = false;
-                                  if (_post != null) {
-                                    _post = PostDto(
-                                      id: _post!.id,
-                                      title: _post!.title,
-                                      content: _post!.content,
-                                      images: _post!.images,
-                                      createdAt: _post!.createdAt,
-                                      updatedAt: _post!.updatedAt,
-                                      userId: _post!.userId,
-                                      author: _post!.author,
-                                      likes: data.likeCount,
-                                      dislikes: data.dislikeCount,
-                                      watch: _post!.watch,
-                                      isReview: _post!.isReview,
-                                    );
-                                  }
-                                });
-                              }
-                            }, reloadAll: false);
-                          },
-                        ),
+                        if (!isWide) ...[
+                          const SizedBox(height: 24),
+                          actionBar,
+                        ],
                         const SizedBox(height: 32),
                         Row(
                           children: [
@@ -632,6 +632,18 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             ),
                           ),
                       ],
+                    );
+
+                        if (!isWide) {
+                          return content;
+                        }
+
+                        return AppTwoPane(
+                          key: const ValueKey('post-detail-responsive-two-pane'),
+                          primary: content,
+                          secondary: actionBar,
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -641,9 +653,15 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }
 
   Widget _buildCommentComposer(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(AppRadii.xl),
-      child: BackdropFilter(
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: AppResponsive.readableMaxWidth(context, fallback: 820),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(AppRadii.xl),
+          child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
@@ -701,6 +719,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 ),
               ),
             ],
+          ),
+        ),
           ),
         ),
       ),

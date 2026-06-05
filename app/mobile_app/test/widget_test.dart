@@ -6,11 +6,13 @@ import 'package:mobile_app/main.dart';
 import 'package:mobile_app/models/api_response.dart';
 import 'package:mobile_app/models/auth.dart';
 import 'package:mobile_app/models/auth_session.dart';
+import 'package:mobile_app/models/post.dart';
 import 'package:mobile_app/models/user.dart';
 import 'package:mobile_app/providers/auth_provider.dart';
 import 'package:mobile_app/providers/post_feed_provider.dart';
 import 'package:mobile_app/services/auth_service.dart';
 import 'package:mobile_app/services/auth_storage.dart';
+import 'package:mobile_app/ui/app_responsive.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -136,6 +138,69 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('热榜暂时为空'), findsOneWidget);
+  });
+
+  testWidgets('uses two column home feed on desktop width', (tester) async {
+    tester.view
+      ..physicalSize = const Size(1366, 900)
+      ..devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final storage = _TestAuthStorage(
+      session: AuthSession(accessToken: 'access', refreshToken: 'refresh'),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authStorageProvider.overrideWithValue(storage),
+          authServiceProvider.overrideWithValue(
+            _FakeAuthService(user: _demoUser),
+          ),
+          homeFeedProvider.overrideWith(
+            () => _FakeHomeFeedNotifier(posts: _demoPosts),
+          ),
+          hotFeedProvider.overrideWith(() => _FakeHotFeedNotifier()),
+        ],
+        child: const MarketOursApp(),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('home-feed-columns-2')), findsOneWidget);
+    expect(find.text('桌面响应式帖子 A'), findsOneWidget);
+    expect(find.text('桌面响应式帖子 B'), findsOneWidget);
+  });
+
+  testWidgets('responsive helpers classify desktop layout', (tester) async {
+    tester.view
+      ..physicalSize = const Size(1366, 900)
+      ..devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    late bool isDesktop;
+    late bool isWideTwoPane;
+    late int columns;
+
+    await tester.pumpWidget(
+      CupertinoApp(
+        home: Builder(
+          builder: (context) {
+            isDesktop = AppResponsive.isDesktop(context);
+            isWideTwoPane = AppResponsive.isWideTwoPane(context);
+            columns = AppResponsive.listColumnCount(context);
+            return const SizedBox.shrink();
+          },
+        ),
+      ),
+    );
+
+    expect(isDesktop, isTrue);
+    expect(isWideTwoPane, isTrue);
+    expect(columns, 2);
   });
 
   testWidgets('restores session by refreshing expired access token', (
@@ -343,10 +408,14 @@ class _FakeAuthService extends AuthService {
 }
 
 class _FakeHomeFeedNotifier extends HomeFeedNotifier {
+  _FakeHomeFeedNotifier({this.posts = const []});
+
+  final List<PostDto> posts;
+
   @override
   Future<HomeFeedState> build() async {
-    return const HomeFeedState(
-      posts: [],
+    return HomeFeedState(
+      posts: posts,
       pageIndex: 1,
       hasNextPage: false,
       isLoadingMore: false,
@@ -408,3 +477,28 @@ final _demoUser = UserDto(
   name: '测试用户',
   email: 'demo@example.com',
 );
+
+final _demoPosts = [
+  PostDto(
+    id: 'post-a',
+    title: '桌面响应式帖子 A',
+    content: '用于验证桌面两列布局。',
+    userId: _demoUser.id,
+    author: UserSimpleDto(id: _demoUser.id, name: _demoUser.name),
+    likes: 1,
+    dislikes: 0,
+    watch: 12,
+    commentsCount: 2,
+  ),
+  PostDto(
+    id: 'post-b',
+    title: '桌面响应式帖子 B',
+    content: '用于验证第二张卡片。',
+    userId: _demoUser.id,
+    author: UserSimpleDto(id: _demoUser.id, name: _demoUser.name),
+    likes: 3,
+    dislikes: 0,
+    watch: 24,
+    commentsCount: 4,
+  ),
+];

@@ -8,6 +8,7 @@ import '../../providers/post_feed_provider.dart';
 import '../../router/app_router.dart';
 import '../../services/share_service.dart';
 import '../../ui/app_feedback.dart';
+import '../../ui/app_responsive.dart';
 import '../../ui/app_theme.dart';
 import '../../ui/app_widgets.dart';
 
@@ -87,9 +88,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               onRefresh: ref.read(homeFeedProvider.notifier).refresh,
             ),
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              child: AppResponsiveCenter(
+                padding: AppResponsive.sliverPagePadding(
+                  context,
+                  top: 12,
+                  bottom: 8,
+                ),
                 child: CupertinoSearchTextField(
+                  key: const ValueKey('home-responsive-search-field'),
                   controller: _searchController,
                   placeholder: '搜索帖子、话题或用户',
                   borderRadius: BorderRadius.circular(AppRadii.md),
@@ -97,9 +103,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
             ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-              sliver: _PostListSection(
+            AppResponsiveSliverPadding(
+              child: _PostListSection(
                 posts: state.posts,
                 isLoadingMore: state.isLoadingMore,
               ),
@@ -124,30 +129,57 @@ class _PostListSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final columnCount = AppResponsive.listColumnCount(context);
+
     if (posts.isEmpty) {
-      return const SliverToBoxAdapter(
-        child: AppEmptyState(
-          icon: CupertinoIcons.news,
-          title: '还没有帖子',
-          description: '等第一位同学来发布内容，或者稍后再刷新看看。',
-        ),
+      return const AppEmptyState(
+        icon: CupertinoIcons.news,
+        title: '还没有帖子',
+        description: '等第一位同学来发布内容，或者稍后再刷新看看。',
       );
     }
 
-    return SliverList.builder(
-      itemCount: posts.length + (isLoadingMore ? 1 : 0),
-      itemBuilder: (context, index) {
-        if (index == posts.length) {
-          return const Padding(
+    if (columnCount == 1) {
+      return Column(
+        key: const ValueKey('home-feed-columns-1'),
+        children: [
+          for (final post in posts)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: _PostCard(post: post),
+            ),
+          if (isLoadingMore)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Center(child: CupertinoActivityIndicator()),
+            ),
+        ],
+      );
+    }
+
+    return Column(
+      key: const ValueKey('home-feed-columns-2'),
+      children: [
+        LayoutBuilder(
+          builder: (context, constraints) {
+            const spacing = 16.0;
+            final itemWidth = (constraints.maxWidth - spacing) / 2;
+            return Wrap(
+              spacing: spacing,
+              runSpacing: spacing,
+              children: [
+                for (final post in posts)
+                  SizedBox(width: itemWidth, child: _PostCard(post: post)),
+              ],
+            );
+          },
+        ),
+        if (isLoadingMore)
+          const Padding(
             padding: EdgeInsets.symmetric(vertical: 24),
             child: Center(child: CupertinoActivityIndicator()),
-          );
-        }
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: _PostCard(post: posts[index]),
-        );
-      },
+          ),
+      ],
     );
   }
 }

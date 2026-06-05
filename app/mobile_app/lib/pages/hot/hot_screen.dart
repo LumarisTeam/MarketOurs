@@ -1,12 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mobile_app/components/user_card.dart';
 
 import '../../models/post.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/post_feed_provider.dart';
 import '../../router/app_router.dart';
+import '../../ui/app_responsive.dart';
 import '../../ui/app_theme.dart';
 import '../../ui/app_widgets.dart';
 
@@ -50,26 +50,8 @@ class HotScreen extends ConsumerWidget {
             CupertinoSliverRefreshControl(
               onRefresh: ref.read(hotFeedProvider.notifier).refresh,
             ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-              sliver: state.posts.isEmpty
-                  ? const SliverToBoxAdapter(
-                      child: AppEmptyState(
-                        icon: CupertinoIcons.flame,
-                        title: '热榜暂时为空',
-                        description: '等大家再热闹一点，热门帖子就会出现在这里。',
-                      ),
-                    )
-                  : SliverList.builder(
-                      itemCount: state.posts.length,
-                      itemBuilder: (context, index) => Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: _HotPostCard(
-                          post: state.posts[index],
-                          rank: index + 1,
-                        ),
-                      ),
-                    ),
+            AppResponsiveSliverPadding(
+              child: _HotPostList(posts: state.posts),
             ),
           ],
         ),
@@ -93,6 +75,56 @@ class HotScreen extends ConsumerWidget {
   }
 }
 
+class _HotPostList extends StatelessWidget {
+  const _HotPostList({required this.posts});
+
+  final List<PostDto> posts;
+
+  @override
+  Widget build(BuildContext context) {
+    if (posts.isEmpty) {
+      return const AppEmptyState(
+        icon: CupertinoIcons.flame,
+        title: '热榜暂时为空',
+        description: '等大家再热闹一点，热门帖子就会出现在这里。',
+      );
+    }
+
+    final columns = AppResponsive.listColumnCount(context);
+    if (columns == 1) {
+      return Column(
+        key: const ValueKey('hot-feed-columns-1'),
+        children: [
+          for (final entry in posts.indexed)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: _HotPostCard(post: entry.$2, rank: entry.$1 + 1),
+            ),
+        ],
+      );
+    }
+
+    return LayoutBuilder(
+      key: const ValueKey('hot-feed-columns-2'),
+      builder: (context, constraints) {
+        const spacing = 16.0;
+        final itemWidth = (constraints.maxWidth - spacing) / 2;
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: [
+            for (final entry in posts.indexed)
+              SizedBox(
+                width: itemWidth,
+                child: _HotPostCard(post: entry.$2, rank: entry.$1 + 1),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
 class _HotPostCard extends StatelessWidget {
   const _HotPostCard({required this.post, required this.rank});
 
@@ -104,13 +136,6 @@ class _HotPostCard extends StatelessWidget {
     final title = post.title?.trim().isNotEmpty == true
         ? post.title!.trim()
         : '未命名帖子';
-    final content = post.content?.trim().isNotEmpty == true
-        ? post.content!.trim()
-        : '这个帖子还没有填写内容。';
-    final excerpt = content.length > 120
-        ? '${content.substring(0, 120)}...'
-        : content;
-
     final isTop3 = rank <= 3;
     final rankColor = isTop3 ? AppColors.hot : AppColors.mutedForeground;
 
