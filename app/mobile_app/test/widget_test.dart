@@ -60,6 +60,84 @@ void main() {
     expect(find.byIcon(CupertinoIcons.plus_circle_fill), findsOneWidget);
   });
 
+  testWidgets('uses bottom navigation on phone width', (tester) async {
+    tester.view
+      ..physicalSize = const Size(390, 844)
+      ..devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final storage = _TestAuthStorage(
+      session: AuthSession(accessToken: 'access', refreshToken: 'refresh'),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authStorageProvider.overrideWithValue(storage),
+          authServiceProvider.overrideWithValue(
+            _FakeAuthService(user: _demoUser),
+          ),
+          homeFeedProvider.overrideWith(() => _FakeHomeFeedNotifier()),
+          hotFeedProvider.overrideWith(() => _FakeHotFeedNotifier()),
+        ],
+        child: const MarketOursApp(),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(find.byType(CupertinoTabBar), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('main-shell-tablet-side-navigation')),
+      findsNothing,
+    );
+  });
+
+  testWidgets('uses side navigation on tablet width and switches tabs', (
+    tester,
+  ) async {
+    tester.view
+      ..physicalSize = const Size(1024, 768)
+      ..devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final storage = _TestAuthStorage(
+      session: AuthSession(accessToken: 'access', refreshToken: 'refresh'),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authStorageProvider.overrideWithValue(storage),
+          authServiceProvider.overrideWithValue(
+            _FakeAuthService(user: _demoUser),
+          ),
+          homeFeedProvider.overrideWith(() => _FakeHomeFeedNotifier()),
+          hotFeedProvider.overrideWith(() => _FakeHotFeedNotifier()),
+        ],
+        child: const MarketOursApp(),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    final sideNavigation = find.byKey(
+      const ValueKey('main-shell-tablet-side-navigation'),
+    );
+
+    expect(sideNavigation, findsOneWidget);
+    expect(find.byType(CupertinoTabBar), findsNothing);
+
+    await tester.tap(
+      find.descendant(of: sideNavigation, matching: find.text('热榜')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('热榜暂时为空'), findsOneWidget);
+  });
+
   testWidgets('restores session by refreshing expired access token', (
     tester,
   ) async {
