@@ -69,9 +69,12 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
           .asData
           ?.value
           .errorMessage;
-      if (errorMessage != null && errorMessage.isNotEmpty && mounted) {
-        await AppFeedback.showError(context, message: errorMessage);
-      }
+      await AppFeedback.showError(
+        context,
+        message: (errorMessage != null && errorMessage.isNotEmpty)
+            ? errorMessage
+            : '重置密码失败，请稍后重试',
+      );
     }
   }
 

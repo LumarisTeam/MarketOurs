@@ -9,8 +9,11 @@ class PostService {
   final _api = ApiService().dio;
 
   ApiResponse<PagedResult<PostDto>> _parsePagedPosts(dynamic data) {
+    if (data is! Map<String, dynamic>) {
+      throw const FormatException('帖子列表响应格式异常');
+    }
     return ApiResponse<PagedResult<PostDto>>.fromJson(
-      data as Map<String, dynamic>,
+      data,
       (json) => PagedResult<PostDto>.fromJson(
         json as Map<String, dynamic>,
         (item) => PostDto.fromJson(item as Map<String, dynamic>),

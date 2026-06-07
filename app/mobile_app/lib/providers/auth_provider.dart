@@ -108,9 +108,9 @@ class AuthController extends AsyncNotifier<AuthState> {
     var savedTokens = false;
 
     final deviceType =
-        Platform.isLinux || Platform.isMacOS || Platform.isWindows
-        ? 'Desktop'
-        : 'Mobile';
+        (!kIsWeb) && (Platform.isLinux || Platform.isMacOS || Platform.isWindows)
+            ? 'Desktop'
+            : 'Mobile';
 
     try {
       final response = await _authService.login(
@@ -181,9 +181,9 @@ class AuthController extends AsyncNotifier<AuthState> {
     var savedTokens = false;
 
     final deviceType =
-        Platform.isLinux || Platform.isMacOS || Platform.isWindows
-        ? 'Desktop'
-        : 'Mobile';
+        (!kIsWeb) && (Platform.isLinux || Platform.isMacOS || Platform.isWindows)
+            ? 'Desktop'
+            : 'Mobile';
 
     try {
       final response = await _authService.loginByCode(
@@ -315,9 +315,9 @@ class AuthController extends AsyncNotifier<AuthState> {
 
     try {
       final deviceType =
-          Platform.isLinux || Platform.isMacOS || Platform.isWindows
-          ? 'Desktop'
-          : 'Mobile';
+          (!kIsWeb) && (Platform.isLinux || Platform.isMacOS || Platform.isWindows)
+              ? 'Desktop'
+              : 'Mobile';
       await _authService.logout(deviceType: deviceType);
     } catch (_) {
       // Clearing local session takes priority over logout request failures.
@@ -515,7 +515,7 @@ class AuthController extends AsyncNotifier<AuthState> {
       );
       final token = refreshed.data;
       if (token?.accessToken == null || token?.refreshToken == null) {
-        throw error;
+        throw Exception('令牌刷新失败：服务端返回了不完整的令牌数据');
       }
 
       await _storage.saveTokens(token!);

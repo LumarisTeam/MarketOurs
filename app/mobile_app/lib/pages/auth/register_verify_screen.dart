@@ -85,9 +85,12 @@ class _RegisterVerifyScreenState extends ConsumerState<RegisterVerifyScreen> {
           .asData
           ?.value
           .errorMessage;
-      if (errorMessage != null && errorMessage.isNotEmpty) {
-        await AppFeedback.showError(context, message: errorMessage);
-      }
+      await AppFeedback.showError(
+        context,
+        message: (errorMessage != null && errorMessage.isNotEmpty)
+            ? errorMessage
+            : '重发验证码失败，请稍后重试',
+      );
     }
   }
 
@@ -116,9 +119,12 @@ class _RegisterVerifyScreenState extends ConsumerState<RegisterVerifyScreen> {
           .asData
           ?.value
           .errorMessage;
-      if (errorMessage != null && errorMessage.isNotEmpty) {
-        await AppFeedback.showError(context, message: errorMessage);
-      }
+      await AppFeedback.showError(
+        context,
+        message: (errorMessage != null && errorMessage.isNotEmpty)
+            ? errorMessage
+            : '验证失败，请稍后重试',
+      );
     }
   }
 

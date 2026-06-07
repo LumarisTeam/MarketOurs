@@ -187,9 +187,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           .asData
           ?.value
           .errorMessage;
-      if (errorMessage != null && errorMessage.isNotEmpty) {
-        await AppFeedback.showError(context, message: errorMessage);
-      }
+      await AppFeedback.showError(
+        context,
+        message: (errorMessage != null && errorMessage.isNotEmpty)
+            ? errorMessage
+            : '注册失败，请稍后重试',
+      );
     }
   }
 

@@ -6,6 +6,13 @@ import 'api_service.dart';
 class NotificationService {
   final _api = ApiService().dio;
 
+  Map<String, dynamic> _asMap(dynamic data) {
+    if (data is! Map<String, dynamic>) {
+      throw const FormatException('通知响应格式异常');
+    }
+    return data;
+  }
+
   Future<PagedResult<NotificationDto>?> getNotifications({
     int pageIndex = 1,
     int pageSize = 10,
@@ -15,7 +22,7 @@ class NotificationService {
       queryParameters: {'PageIndex': pageIndex, 'PageSize': pageSize},
     );
     final apiRes = ApiResponse<PagedResult<NotificationDto>>.fromJson(
-      response.data as Map<String, dynamic>,
+      _asMap(response.data),
       (json) => PagedResult<NotificationDto>.fromJson(
         json as Map<String, dynamic>,
         (item) => NotificationDto.fromJson(item as Map<String, dynamic>),
@@ -27,7 +34,7 @@ class NotificationService {
   Future<int> getUnreadCount() async {
     final response = await _api.get('/Notification/unread-count');
     final apiRes = ApiResponse<int>.fromJson(
-      response.data as Map<String, dynamic>,
+      _asMap(response.data),
       (json) => json as int,
     );
     return apiRes.data ?? 0;
@@ -36,7 +43,7 @@ class NotificationService {
   Future<bool> markAsRead(String id) async {
     final response = await _api.post('/Notification/$id/read');
     final apiRes = ApiResponse<Object?>.fromJson(
-      response.data as Map<String, dynamic>,
+      _asMap(response.data),
       (json) => json,
     );
     return apiRes.code == 200 &&
@@ -46,7 +53,7 @@ class NotificationService {
   Future<bool> markAllAsRead() async {
     final response = await _api.post('/Notification/read-all');
     final apiRes = ApiResponse<Object?>.fromJson(
-      response.data as Map<String, dynamic>,
+      _asMap(response.data),
       (json) => json,
     );
     return apiRes.code == 200 &&
@@ -56,7 +63,7 @@ class NotificationService {
   Future<PushSettingsDto?> getSettings() async {
     final response = await _api.get('/Notification/settings');
     final apiRes = ApiResponse<PushSettingsDto>.fromJson(
-      response.data as Map<String, dynamic>,
+      _asMap(response.data),
       (json) => PushSettingsDto.fromJson(json as Map<String, dynamic>),
     );
     return apiRes.data;
@@ -68,7 +75,7 @@ class NotificationService {
       data: settings.toJson(),
     );
     final apiRes = ApiResponse<Object?>.fromJson(
-      response.data as Map<String, dynamic>,
+      _asMap(response.data),
       (json) => json,
     );
     return apiRes.code == 200 &&

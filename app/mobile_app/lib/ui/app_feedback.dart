@@ -11,7 +11,7 @@ abstract final class AppFeedback {
     required String message,
     String title = '提示',
   }) {
-    return showInfo(context, message: message);
+    return showInfo(context, message: message, title: title);
   }
 
   static Future<void> showInfo(

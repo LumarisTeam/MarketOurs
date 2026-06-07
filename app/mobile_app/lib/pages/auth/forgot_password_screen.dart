@@ -55,9 +55,12 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           .asData
           ?.value
           .errorMessage;
-      if (errorMessage != null && errorMessage.isNotEmpty && mounted) {
-        await AppFeedback.showError(context, message: errorMessage);
-      }
+      await AppFeedback.showError(
+        context,
+        message: (errorMessage != null && errorMessage.isNotEmpty)
+            ? errorMessage
+            : '发送验证码失败，请稍后重试',
+      );
     }
   }
 

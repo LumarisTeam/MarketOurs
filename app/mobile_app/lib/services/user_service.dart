@@ -5,10 +5,17 @@ import 'api_service.dart';
 class UserService {
   final _api = ApiService().dio;
 
+  Map<String, dynamic> _asMap(dynamic data) {
+    if (data is! Map<String, dynamic>) {
+      throw const FormatException('用户服务响应格式异常');
+    }
+    return data;
+  }
+
   Future<ApiResponse<UserDto>> getProfile() async {
     final response = await _api.get('/User/profile');
     return ApiResponse<UserDto>.fromJson(
-      response.data,
+      _asMap(response.data),
       (json) => UserDto.fromJson(json as Map<String, dynamic>),
     );
   }
@@ -16,7 +23,7 @@ class UserService {
   Future<ApiResponse<UserDto>> updateProfile(UserUpdateDto request) async {
     final response = await _api.put('/User/profile', data: request.toJson());
     return ApiResponse<UserDto>.fromJson(
-      response.data,
+      _asMap(response.data),
       (json) => UserDto.fromJson(json as Map<String, dynamic>),
     );
   }
@@ -26,13 +33,13 @@ class UserService {
   ) async {
     final response = await _api.get('/User/public/$userId');
     return ApiResponse<PublicUserProfileDto>.fromJson(
-      response.data,
+      _asMap(response.data),
       (json) => PublicUserProfileDto.fromJson(json as Map<String, dynamic>),
     );
   }
 
   Future<ApiResponse> changePassword(ChangePasswordRequest request) async {
     final response = await _api.put('/User/password', data: request.toJson());
-    return ApiResponse.fromJson(response.data, (json) => json);
+    return ApiResponse.fromJson(_asMap(response.data), (json) => json);
   }
 }

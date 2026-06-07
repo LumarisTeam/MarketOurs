@@ -81,8 +81,9 @@ class HomeFeedNotifier extends AsyncNotifier<HomeFeedState> {
         previousPosts: currentState.posts,
       );
       state = AsyncData(nextState);
-    } catch (error, stackTrace) {
-      state = AsyncError(error, stackTrace);
+    } catch (_) {
+      // Keep existing data on error so the user can retry loading more.
+      state = AsyncData(currentState.copyWith(isLoadingMore: false));
     }
   }
 

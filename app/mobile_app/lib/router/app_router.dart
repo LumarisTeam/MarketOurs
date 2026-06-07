@@ -187,7 +187,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: AppRoutePaths.profile,
-                name: AppRoutePaths.profile,
+                name: AppRouteNames.profile,
                 builder: (context, state) => const ProfileScreen(),
               ),
             ],
@@ -239,8 +239,16 @@ const _authRoutes = {
 };
 
 bool _isPublicRoute(String path) {
+  // Post detail pages (e.g. /post/abc123) are publicly viewable, but NOT /post/create.
+  if (path == AppRoutePaths.createPost) return false;
   final postDetailPattern = RegExp(r'^/post/[^/]+$');
-  return postDetailPattern.hasMatch(path);
+  if (postDetailPattern.hasMatch(path)) return true;
+
+  // Public user profiles (e.g. /user/abc123) are publicly viewable.
+  final publicProfilePattern = RegExp(r'^/user/[^/]+$');
+  if (publicProfilePattern.hasMatch(path)) return true;
+
+  return false;
 }
 
 class _RouterRefreshNotifier extends ChangeNotifier {

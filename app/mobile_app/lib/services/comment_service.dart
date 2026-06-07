@@ -8,8 +8,11 @@ class CommentService {
   final _api = ApiService().dio;
 
   ApiResponse<PagedResult<CommentDto>> _parsePagedComments(dynamic data) {
+    if (data is! Map<String, dynamic>) {
+      throw const FormatException('评论列表响应格式异常');
+    }
     return ApiResponse<PagedResult<CommentDto>>.fromJson(
-      data as Map<String, dynamic>,
+      data,
       (json) => PagedResult<CommentDto>.fromJson(
         json as Map<String, dynamic>,
         (item) => CommentDto.fromJson(item as Map<String, dynamic>),

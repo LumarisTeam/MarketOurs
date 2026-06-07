@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'providers/theme_provider.dart';
 import 'router/app_router.dart';
 import 'ui/app_theme.dart';
 
@@ -14,13 +15,27 @@ class MarketOursApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
+    final themeMode = ref.watch(themeModeNotifierProvider);
 
     return CupertinoApp.router(
       title: '光汇',
       debugShowCheckedModeBanner: false,
       routerConfig: router,
+      builder: (context, child) {
+        final forcedBrightness = themeMode.forcedBrightness;
+        if (forcedBrightness != null) {
+          child = MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              platformBrightness: forcedBrightness,
+            ),
+            child: child!,
+          );
+        }
+        return child!;
+      },
       theme: CupertinoThemeData(
-        brightness: MediaQuery.platformBrightnessOf(context),
+        brightness: themeMode.forcedBrightness ??
+            MediaQuery.platformBrightnessOf(context),
         primaryColor: AppColors.primary,
         scaffoldBackgroundColor: AppColors.background,
         barBackgroundColor: AppColors.background,

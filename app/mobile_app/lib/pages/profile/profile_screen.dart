@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../models/user.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/theme_provider.dart';
 import '../../router/app_router.dart';
 import '../../services/file_service.dart';
 import '../../ui/app_feedback.dart';
@@ -115,6 +116,13 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 16),
                   _ProfileSection(
+                    title: '外观偏好',
+                    children: [
+                      _ThemeRow(),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  _ProfileSection(
                     title: '账户安全',
                     children: [
                       _NavRow(
@@ -176,8 +184,11 @@ class ProfileScreen extends ConsumerWidget {
           .asData
           ?.value
           .errorMessage;
-      if (errorMessage != null && errorMessage.isNotEmpty && context.mounted) {
-        await AppFeedback.showError(context, message: errorMessage);
+      final message = (errorMessage != null && errorMessage.isNotEmpty)
+          ? errorMessage
+          : '发送验证码失败，请稍后重试';
+      if (context.mounted) {
+        await AppFeedback.showError(context, message: message);
       }
       codeController.dispose();
       return;
@@ -247,8 +258,11 @@ class ProfileScreen extends ConsumerWidget {
           .asData
           ?.value
           .errorMessage;
-      if (errorMessage != null && errorMessage.isNotEmpty && context.mounted) {
-        await AppFeedback.showError(context, message: errorMessage);
+      final verifyMessage = (errorMessage != null && errorMessage.isNotEmpty)
+          ? errorMessage
+          : '验证失败，请稍后重试';
+      if (context.mounted) {
+        await AppFeedback.showError(context, message: verifyMessage);
       }
     } finally {
       codeController.dispose();
@@ -451,6 +465,74 @@ class _VerificationRow extends StatelessWidget {
   }
 }
 
+class _ThemeRow extends ConsumerWidget {
+  const _ThemeRow();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeModeNotifierProvider);
+
+    return AppListTile(
+      onTap: () => _showPicker(context, ref, themeMode),
+      leading: Icon(themeMode.icon, color: AppColors.primary, size: 20),
+      title: Text(
+        themeMode.label,
+        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+      ),
+      subtitle: const Text('点击切换显示模式', style: TextStyle(fontSize: 13)),
+      trailing: const Icon(
+        CupertinoIcons.chevron_right,
+        size: 14,
+        color: AppColors.mutedForeground,
+      ),
+    );
+  }
+
+  void _showPicker(
+    BuildContext context,
+    WidgetRef ref,
+    AppThemeMode currentMode,
+  ) {
+    showCupertinoModalPopup<void>(
+      context: context,
+      builder: (ctx) => CupertinoActionSheet(
+        title: const Text('选择外观模式'),
+        actions: AppThemeMode.values.map((mode) {
+          final isSelected = mode == currentMode;
+          return CupertinoActionSheetAction(
+            onPressed: () {
+              ref.read(themeModeNotifierProvider.notifier).setMode(mode);
+              Navigator.pop(ctx);
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(mode.icon, size: 20, color: AppColors.primary),
+                const SizedBox(width: 10),
+                Text(mode.label),
+                if (isSelected)
+                  const Padding(
+                    padding: EdgeInsets.only(left: 8),
+                    child: Icon(
+                      CupertinoIcons.check_mark,
+                      size: 18,
+                      color: AppColors.primary,
+                    ),
+                  ),
+              ],
+            ),
+          );
+        }).toList(),
+        cancelButton: CupertinoActionSheetAction(
+          isDefaultAction: true,
+          onPressed: () => Navigator.pop(ctx),
+          child: const Text('取消'),
+        ),
+      ),
+    );
+  }
+}
+
 class _ProfileEditSheet extends ConsumerStatefulWidget {
   const _ProfileEditSheet({required this.initialUser});
 
@@ -591,8 +673,11 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
           .asData
           ?.value
           .errorMessage;
-      if (errorMessage != null && errorMessage.isNotEmpty && mounted) {
-        await AppFeedback.showError(context, message: errorMessage);
+      final updateMessage = (errorMessage != null && errorMessage.isNotEmpty)
+          ? errorMessage
+          : '保存失败，请稍后重试';
+      if (mounted) {
+        await AppFeedback.showError(context, message: updateMessage);
       }
     }
   }

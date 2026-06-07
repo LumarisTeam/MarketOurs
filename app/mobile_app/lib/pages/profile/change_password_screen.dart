@@ -56,9 +56,12 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
           .asData
           ?.value
           .errorMessage;
-      if (errorMessage != null && errorMessage.isNotEmpty && mounted) {
-        await AppFeedback.showError(context, message: errorMessage);
-      }
+      await AppFeedback.showError(
+        context,
+        message: (errorMessage != null && errorMessage.isNotEmpty)
+            ? errorMessage
+            : '修改密码失败，请稍后重试',
+      );
     }
   }
 
