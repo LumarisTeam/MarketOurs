@@ -31,8 +31,8 @@ class AppPageScaffold extends StatelessWidget {
     final contentPadding =
         padding ?? AppResponsive.pagePadding(context, narrow: 16, wide: 24);
     final contentMaxWidth =
-        maxContentWidth ??
-        AppResponsive.contentMaxWidth(context, fallback: 920);
+        maxContentWidth ?? AppResponsive.contentMaxWidth(context);
+    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
 
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
@@ -81,7 +81,9 @@ class AppPageScaffold extends StatelessWidget {
                       left: contentPadding.left,
                       right: contentPadding.right,
                       top: contentPadding.top,
-                      bottom: bottomBar == null ? contentPadding.bottom : 120,
+                      bottom: bottomBar == null
+                          ? contentPadding.bottom
+                          : 120 + bottomInset,
                     ),
                     child: child,
                   ),
@@ -102,7 +104,7 @@ class AppPageScaffold extends StatelessWidget {
                         contentPadding.left,
                         0,
                         contentPadding.right,
-                        12,
+                        12 + bottomInset,
                       ),
                       child: bottomBar!,
                     ),
@@ -525,34 +527,40 @@ Future<T?> showAppBottomSheet<T>({
   return showCupertinoModalPopup<T>(
     context: context,
     builder: (sheetContext) {
+      final isPhone = AppResponsive.isPhone(sheetContext);
+      final maxWidth = AppResponsive.sheetMaxWidth(sheetContext);
+      final borderRadius = isPhone
+          ? const BorderRadius.vertical(top: Radius.circular(AppRadii.xl))
+          : BorderRadius.circular(AppRadii.xl);
       return Align(
-        alignment: Alignment.bottomCenter,
+        alignment: isPhone ? Alignment.bottomCenter : Alignment.center,
         child: SafeArea(
           top: false,
           child: ClipRRect(
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(AppRadii.xl),
-            ),
+            borderRadius: borderRadius,
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
-              child: Container(
-                margin: const EdgeInsets.only(top: 40),
-                decoration: BoxDecoration(
-                  color: CupertinoDynamicColor.resolve(
-                    AppColors.background,
-                    context,
-                  ).withValues(alpha: 0.94),
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(AppRadii.xl),
-                  ),
-                  border: Border.all(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: maxWidth),
+                child: Container(
+                  margin: isPhone
+                      ? const EdgeInsets.only(top: 40)
+                      : const EdgeInsets.symmetric(horizontal: 20),
+                  decoration: BoxDecoration(
                     color: CupertinoDynamicColor.resolve(
-                      AppColors.border,
+                      AppColors.background,
                       context,
-                    ).withValues(alpha: 0.35),
+                    ).withValues(alpha: 0.94),
+                    borderRadius: borderRadius,
+                    border: Border.all(
+                      color: CupertinoDynamicColor.resolve(
+                        AppColors.border,
+                        context,
+                      ).withValues(alpha: 0.35),
+                    ),
                   ),
+                  child: builder(sheetContext),
                 ),
-                child: builder(sheetContext),
               ),
             ),
           ),

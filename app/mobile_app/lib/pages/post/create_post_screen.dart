@@ -12,6 +12,7 @@ import '../../router/app_router.dart';
 import '../../services/file_service.dart';
 import '../../ui/app_feedback.dart';
 import '../../ui/app_fields.dart';
+import '../../ui/app_responsive.dart';
 import '../../ui/app_theme.dart';
 import '../../ui/app_widgets.dart';
 
@@ -123,97 +124,107 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         child: Form(
           key: _formKey,
           child: ListView(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.zero,
             children: [
-              AppTappableCard(
-                padding: const EdgeInsets.all(20),
-                radius: AppRadii.lg,
-                child: Column(
-                  children: [
-                    AppTextField(
-                      controller: _titleController,
-                      placeholder: '帖子标题',
-                      validator: (v) =>
-                          v?.trim().isEmpty == true ? '请输入标题' : null,
-                    ),
-                    const SizedBox(height: 16),
-                    AppTextField(
-                      controller: _contentController,
-                      placeholder: '分享此刻的新鲜事...',
-                      maxLines: 8,
-                      validator: (v) =>
-                          v?.trim().isEmpty == true ? '请输入内容' : null,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              AppTappableCard(
-                padding: const EdgeInsets.all(20),
-                radius: AppRadii.lg,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          '图片',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        CupertinoButton(
-                          padding: EdgeInsets.zero,
-                          onPressed: _isSubmitting ? null : _pickImages,
-                          child: const Text(
-                            '添加图片',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    if (_images.isEmpty)
-                      Container(
-                        height: 120,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: AppColors.secondary,
-                          borderRadius: BorderRadius.circular(AppRadii.md),
-                        ),
-                        child: const Text(
-                          '还没选择图片',
-                          style: TextStyle(color: AppColors.mutedForeground),
-                        ),
-                      )
-                    else
-                      Wrap(
-                        spacing: 12,
-                        runSpacing: 12,
-                        children: [
-                          for (var i = 0; i < _images.length; i++)
-                            _ImagePreview(
-                              image: _images[i],
-                              onRemove: () => _removeImage(i),
-                            ),
-                        ],
+              AppResponsiveCenter(
+                maxWidth: AppResponsive.formMaxWidth(context),
+                padding: AppResponsive.pagePadding(context, narrow: 20),
+                child: AppTwoPane(
+                  primary: _buildEditorCard(),
+                  secondary: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _buildImageCard(),
+                      const SizedBox(height: 20),
+                      AppPrimaryButton(
+                        onPressed: _isSubmitting ? null : _submit,
+                        child: Text(_isSubmitting ? '发布中...' : '立即发布'),
                       ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 32),
-              AppPrimaryButton(
-                onPressed: _isSubmitting ? null : _submit,
-                child: Text(_isSubmitting ? '发布中...' : '立即发布'),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildEditorCard() {
+    return AppTappableCard(
+      padding: const EdgeInsets.all(20),
+      radius: AppRadii.lg,
+      child: Column(
+        children: [
+          AppTextField(
+            controller: _titleController,
+            placeholder: '帖子标题',
+            validator: (v) => v?.trim().isEmpty == true ? '请输入标题' : null,
+          ),
+          const SizedBox(height: 16),
+          AppTextField(
+            controller: _contentController,
+            placeholder: '分享此刻的新鲜事...',
+            maxLines: AppResponsive.isDesktop(context) ? 12 : 8,
+            validator: (v) => v?.trim().isEmpty == true ? '请输入内容' : null,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImageCard() {
+    return AppTappableCard(
+      padding: const EdgeInsets.all(20),
+      radius: AppRadii.lg,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                '图片',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+              ),
+              CupertinoButton(
+                padding: EdgeInsets.zero,
+                onPressed: _isSubmitting ? null : _pickImages,
+                child: const Text(
+                  '添加图片',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (_images.isEmpty)
+            Container(
+              height: 120,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: AppColors.secondary,
+                borderRadius: BorderRadius.circular(AppRadii.md),
+              ),
+              child: const Text(
+                '还没选择图片',
+                style: TextStyle(color: AppColors.mutedForeground),
+              ),
+            )
+          else
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                for (var i = 0; i < _images.length; i++)
+                  _ImagePreview(
+                    image: _images[i],
+                    onRemove: () => _removeImage(i),
+                  ),
+              ],
+            ),
+        ],
       ),
     );
   }

@@ -9,6 +9,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/post_feed_provider.dart';
 import '../../router/app_router.dart';
 import '../../services/user_service.dart';
+import '../../ui/app_responsive.dart';
 import '../../ui/app_widgets.dart';
 
 class PublicProfileScreen extends ConsumerStatefulWidget {
@@ -93,51 +94,70 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
               ),
               slivers: [
                 CupertinoSliverRefreshControl(onRefresh: _load),
-                SliverPadding(
-                  padding: const EdgeInsets.only(bottom: 24),
-                  sliver: SliverToBoxAdapter(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _ProfileHero(profile: _profile!, isMe: isMe),
-                        if (isMe) ...[
-                          const SizedBox(height: 12),
-                          AppSecondaryButton(
-                            onPressed: () =>
-                                context.push(AppRoutePaths.profile),
-                            child: const Text('管理我的资料'),
-                          ),
-                        ],
-                        const SizedBox(height: 24),
-                        const Text(
-                          '最近发布',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.foreground,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          '看看这位同学最近在 光汇 分享了什么。',
-                          style: TextStyle(color: CupertinoColors.systemGrey),
-                        ),
-                        const SizedBox(height: 16),
-                        if (_recentPosts.isEmpty)
-                          const AppSectionCard(child: Text('还没有公开帖子'))
-                        else
-                          ..._recentPosts.map(
-                            (post) => Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: _PostPreview(post: post),
+                SliverToBoxAdapter(
+                  child: AppResponsiveCenter(
+                    padding: AppResponsive.sliverPagePadding(context),
+                    child: AppTwoPane(
+                      key: const ValueKey('public-profile-responsive-two-pane'),
+                      secondaryFirstOnWide: true,
+                      secondary: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _ProfileHero(profile: _profile!, isMe: isMe),
+                          if (isMe) ...[
+                            const SizedBox(height: 12),
+                            AppSecondaryButton(
+                              onPressed: () =>
+                                  context.push(AppRoutePaths.profile),
+                              child: const Text('管理我的资料'),
                             ),
-                          ),
-                      ],
+                          ],
+                        ],
+                      ),
+                      primary: _RecentPostsSection(posts: _recentPosts),
                     ),
                   ),
                 ),
               ],
             ),
+    );
+  }
+}
+
+class _RecentPostsSection extends StatelessWidget {
+  const _RecentPostsSection({required this.posts});
+
+  final List<PostDto> posts;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          '最近发布',
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            color: AppColors.foreground,
+          ),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          '看看这位同学最近在 光汇 分享了什么。',
+          style: TextStyle(color: CupertinoColors.systemGrey),
+        ),
+        const SizedBox(height: 16),
+        if (posts.isEmpty)
+          const AppSectionCard(child: Text('还没有公开帖子'))
+        else
+          ...posts.map(
+            (post) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _PostPreview(post: post),
+            ),
+          ),
+      ],
     );
   }
 }

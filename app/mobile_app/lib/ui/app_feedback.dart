@@ -1,7 +1,6 @@
 import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 
 import 'app_theme.dart';
 
@@ -93,16 +92,112 @@ abstract final class AppFeedback {
     String? title,
   }) async {
     final hasTitle = title != null && title.trim().isNotEmpty;
-    final text = hasTitle ? '$title\n$message' : message;
+    final overlay = Overlay.of(context, rootOverlay: true);
+    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+    final bottomPadding = MediaQuery.paddingOf(context).bottom;
 
-    await Fluttertoast.showToast(
-      msg: text,
-      toastLength: Toast.LENGTH_LONG,
-      gravity: ToastGravity.BOTTOM,
-      timeInSecForIosWeb: 3,
-      backgroundColor: const Color(0xE61C1C1E),
-      textColor: const Color(0xFFFFFFFF),
-      fontSize: 14.0,
+    final entry = OverlayEntry(
+      builder: (context) => _FeedbackToast(
+        message: message,
+        title: hasTitle ? title!.trim() : null,
+        icon: icon,
+        tint: tint,
+        bottomOffset: bottomInset + bottomPadding + 28,
+      ),
+    );
+
+    overlay.insert(entry);
+    await Future<void>.delayed(const Duration(seconds: 3));
+    entry.remove();
+  }
+}
+
+class _FeedbackToast extends StatelessWidget {
+  const _FeedbackToast({
+    required this.message,
+    required this.icon,
+    required this.tint,
+    required this.bottomOffset,
+    this.title,
+  });
+
+  final String message;
+  final String? title;
+  final IconData icon;
+  final Color tint;
+  final double bottomOffset;
+
+  @override
+  Widget build(BuildContext context) {
+    final resolvedTint = CupertinoDynamicColor.resolve(tint, context);
+
+    return Positioned(
+      left: 20,
+      right: 20,
+      bottom: bottomOffset,
+      child: IgnorePointer(
+        child: SafeArea(
+          top: false,
+          child: Center(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadii.lg),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: const Color(0xE61C1C1E),
+                    borderRadius: BorderRadius.circular(AppRadii.lg),
+                    border: Border.all(color: const Color(0x1AFFFFFF)),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(icon, color: resolvedTint, size: 20),
+                        const SizedBox(width: 10),
+                        Flexible(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (title != null) ...[
+                                Text(
+                                  title!,
+                                  style: const TextStyle(
+                                    color: Color(0xFFFFFFFF),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    height: 1.25,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                              ],
+                              Text(
+                                message,
+                                style: const TextStyle(
+                                  color: Color(0xFFFFFFFF),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  height: 1.35,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

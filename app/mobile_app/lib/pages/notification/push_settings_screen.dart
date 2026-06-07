@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import '../../models/notification.dart';
 import '../../services/notification_service.dart';
 import '../../ui/app_feedback.dart';
+import '../../ui/app_responsive.dart';
 import '../../ui/app_widgets.dart';
 
 class PushSettingsScreen extends StatefulWidget {
@@ -64,6 +65,7 @@ class _PushSettingsScreenState extends State<PushSettingsScreen> {
   Widget build(BuildContext context) {
     return AppPageScaffold(
       title: '推送设置',
+      maxContentWidth: AppResponsive.readableMaxWidth(context, fallback: 720),
       child: _isLoading
           ? const Center(child: CupertinoActivityIndicator())
           : Column(

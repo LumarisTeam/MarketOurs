@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../providers/auth_provider.dart';
 import '../../router/app_router.dart';
 import '../../ui/app_feedback.dart';
+import '../../ui/app_responsive.dart';
 import '../../ui/app_widgets.dart';
 import '../auth/password_form_field.dart';
 
@@ -72,6 +73,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
 
     return AppPageScaffold(
       title: '修改密码',
+      maxContentWidth: AppResponsive.readableMaxWidth(context, fallback: 560),
       child: Form(
         key: _formKey,
         child: Column(
