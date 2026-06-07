@@ -50,12 +50,11 @@ class HotScreen extends ConsumerWidget {
             CupertinoSliverRefreshControl(
               onRefresh: ref.read(hotFeedProvider.notifier).refresh,
             ),
-            AppResponsiveSliverPadding(
-              child: _HotPostList(posts: state.posts),
-            ),
+            AppResponsiveSliverPadding(child: _HotPostList(posts: state.posts)),
           ],
         ),
-        loading: () => const Center(child: CupertinoActivityIndicator(radius: 14)),
+        loading: () =>
+            const Center(child: CupertinoActivityIndicator(radius: 14)),
         error: (error, _) => Center(
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -143,118 +142,94 @@ class _HotPostCard extends StatelessWidget {
       padding: EdgeInsets.zero,
       radius: AppRadii.lg,
       onPressed: () => context.push(buildPostDetailLocation(post.id)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (post.images?.isNotEmpty == true)
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(AppRadii.lg),
-              ),
-              child: AspectRatio(
-                aspectRatio: 1.8,
-                child: Image.network(
-                  post.images!.first,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    color: AppColors.muted,
-                    alignment: Alignment.center,
-                    child: const Icon(
-                      CupertinoIcons.photo,
-                      color: AppColors.mutedForeground,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 28,
+                  height: 28,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: isTop3
+                        ? AppColors.hot.withValues(alpha: 0.12)
+                        : AppColors.muted,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    '$rank',
+                    style: TextStyle(
+                      color: rankColor,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
                 ),
-              ),
-            ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 28,
-                      height: 28,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: isTop3
-                            ? AppColors.hot.withValues(alpha: 0.12)
-                            : AppColors.muted,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Text(
-                        '$rank',
-                        style: TextStyle(
-                          color: rankColor,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        title,
-                        style: AppTextStyles.sectionTitle(context).copyWith(fontSize: 20),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(CupertinoIcons.flame, color: rankColor, size: 14),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${post.watch ?? 0} 热度',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: rankColor,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(width: 16),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          CupertinoIcons.bubble_left,
-                          size: 14,
-                          color: AppColors.mutedForeground,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${post.commentsCount ?? 0} 讨论',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: AppColors.mutedForeground,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const Spacer(),
-                    const Icon(
-                      CupertinoIcons.chevron_right,
-                      color: AppColors.mutedForeground,
-                      size: 14,
-                    ),
-                  ],
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: AppTextStyles.sectionTitle(
+                      context,
+                    ).copyWith(fontSize: 20),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),
-          ),
-        ],
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(CupertinoIcons.flame, color: rankColor, size: 14),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${post.watch ?? 0} 热度',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: rankColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 16),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      CupertinoIcons.bubble_left,
+                      size: 14,
+                      color: AppColors.mutedForeground,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${post.commentsCount ?? 0} 讨论',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: AppColors.mutedForeground,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                const Icon(
+                  CupertinoIcons.chevron_right,
+                  color: AppColors.mutedForeground,
+                  size: 14,
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

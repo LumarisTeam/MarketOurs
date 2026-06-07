@@ -6,8 +6,8 @@ import '../services/app_logger.dart';
 
 enum AppThemeMode {
   system('跟随系统', CupertinoIcons.gear_alt),
-  light('浅色模式', CupertinoIcons.sun_max),
-  dark('深色模式', CupertinoIcons.moon);
+  light('亮色', CupertinoIcons.sun_max),
+  dark('暗色', CupertinoIcons.moon);
 
   const AppThemeMode(this.label, this.icon);
 

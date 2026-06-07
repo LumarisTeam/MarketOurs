@@ -28,6 +28,7 @@ dependencies:
   go_router: ^17.2.0
   display_mode: ^0.0.2
   image_picker: ^1.2.0
+  carousel_slider: ^5.1.2
 
 dev_dependencies:
   flutter_test:

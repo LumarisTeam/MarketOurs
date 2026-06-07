@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../models/user.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/theme_provider.dart';
 import '../../router/app_router.dart';
 import '../../services/file_service.dart';
 import '../../ui/app_feedback.dart';
@@ -36,14 +37,21 @@ class ProfileScreen extends ConsumerWidget {
             SliverFillRemaining(
               child: AppResponsiveCenter(
                 child: Center(
-                  child: AppEmptyState(
-                    icon: CupertinoIcons.person,
-                    title: '还没有登录',
-                    description: '登录后可以查看个人资料、管理安全设置。',
-                    action: AppPrimaryButton(
-                      onPressed: () => context.go(AppRoutePaths.login),
-                      child: const Text('去登录'),
-                    ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AppEmptyState(
+                        icon: CupertinoIcons.person,
+                        title: '还没有登录',
+                        description: '登录后可以查看个人资料、管理安全设置。',
+                        action: AppPrimaryButton(
+                          onPressed: () => context.go(AppRoutePaths.login),
+                          child: const Text('去登录'),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      const _ThemeModeSection(),
+                    ],
                   ),
                 ),
               ),
@@ -112,6 +120,8 @@ class ProfileScreen extends ConsumerWidget {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 16),
+                    const _ThemeModeSection(),
                     const SizedBox(height: 16),
                     _ProfileSection(
                       title: '账户安全',
@@ -387,6 +397,71 @@ class _NavRow extends StatelessWidget {
         size: 14,
         color: AppColors.mutedForeground,
       ),
+    );
+  }
+}
+
+class _ThemeModeSection extends ConsumerWidget {
+  const _ThemeModeSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeModeNotifierProvider);
+
+    return _ProfileSection(
+      title: '显示设置',
+      children: [
+        AppListTile(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(themeMode.icon, color: AppColors.primary, size: 18),
+          ),
+          title: const Text(
+            '主题模式',
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+          ),
+          subtitle: Text(themeMode.label, style: const TextStyle(fontSize: 13)),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          width: double.infinity,
+          child: CupertinoSlidingSegmentedControl<AppThemeMode>(
+            groupValue: themeMode,
+            padding: const EdgeInsets.all(3),
+            children: {
+              for (final mode in AppThemeMode.values)
+                mode: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 7,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(mode.icon, size: 15),
+                      const SizedBox(width: 4),
+                      Text(
+                        mode.label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+            },
+            onValueChanged: (mode) {
+              if (mode == null) return;
+              ref.read(themeModeNotifierProvider.notifier).setMode(mode);
+            },
+          ),
+        ),
+      ],
     );
   }
 }
