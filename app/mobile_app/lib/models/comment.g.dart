@@ -12,6 +12,8 @@ CommentDto _$CommentDtoFromJson(Map<String, dynamic> json) => CommentDto(
   images: (json['images'] as List<dynamic>?)?.map((e) => e as String).toList(),
   likes: (json['likes'] as num?)?.toInt(),
   dislikes: (json['dislikes'] as num?)?.toInt(),
+  isLiked: json['isLiked'] as bool?,
+  isDisliked: json['isDisliked'] as bool?,
   createdAt: json['createdAt'] == null
       ? null
       : DateTime.parse(json['createdAt'] as String),
@@ -37,6 +39,8 @@ Map<String, dynamic> _$CommentDtoToJson(CommentDto instance) =>
       'images': instance.images,
       'likes': instance.likes,
       'dislikes': instance.dislikes,
+      'isLiked': instance.isLiked,
+      'isDisliked': instance.isDisliked,
       'createdAt': instance.createdAt?.toIso8601String(),
       'updatedAt': instance.updatedAt?.toIso8601String(),
       'userId': instance.userId,
@@ -51,8 +55,9 @@ CommentCreateDto _$CommentCreateDtoFromJson(Map<String, dynamic> json) =>
     CommentCreateDto(
       content: json['content'] as String,
       images: (json['images'] as List<dynamic>?)
-          ?.map((e) => e as String)
-          .toList(),
+              ?.map((e) => e as String)
+              .toList() ??
+          [],
       userId: json['userId'] as String,
       postId: json['postId'] as String,
       parentCommentId: json['parentCommentId'] as String?,
@@ -71,8 +76,9 @@ CommentUpdateDto _$CommentUpdateDtoFromJson(Map<String, dynamic> json) =>
     CommentUpdateDto(
       content: json['content'] as String,
       images: (json['images'] as List<dynamic>?)
-          ?.map((e) => e as String)
-          .toList(),
+              ?.map((e) => e as String)
+              .toList() ??
+          [],
     );
 
 Map<String, dynamic> _$CommentUpdateDtoToJson(CommentUpdateDto instance) =>

@@ -57,7 +57,7 @@ public class PostControllerTests : ControllerTestBase
     {
         // Arrange
         var post = new PostDto { Id = "1", Title = "Post 1" };
-        _mockPostService.Setup(s => s.GetByIdAsync("1")).ReturnsAsync(post);
+        _mockPostService.Setup(s => s.GetByIdAsync("1", null)).ReturnsAsync(post);
         _mockPostService.Setup(s => s.IncrementWatchAsync("1")).Returns(Task.CompletedTask);
 
         // Act
@@ -94,7 +94,7 @@ public class PostControllerTests : ControllerTestBase
         var existingPost = new PostDto { Id = "1", UserId = "1" };
         var updatedPost = new PostDto { Id = "1", Title = "Updated", UserId = "1" };
         
-        _mockPostService.Setup(s => s.GetByIdIncludingPendingAsync("1")).ReturnsAsync(existingPost);
+        _mockPostService.Setup(s => s.GetByIdIncludingPendingAsync("1", null)).ReturnsAsync(existingPost);
         _mockPostService.Setup(s => s.UpdateAsync("1", updateDto)).ReturnsAsync(updatedPost);
 
         // Act
@@ -111,7 +111,7 @@ public class PostControllerTests : ControllerTestBase
         // Arrange
         var updateDto = new PostUpdateDto { Title = "Updated" };
         var existingPost = new PostDto { Id = "1", UserId = "other_user" };
-        _mockPostService.Setup(s => s.GetByIdIncludingPendingAsync("1")).ReturnsAsync(existingPost);
+        _mockPostService.Setup(s => s.GetByIdIncludingPendingAsync("1", null)).ReturnsAsync(existingPost);
 
         // Act
         var ex = Assert.ThrowsAsync<AuthException>(async () => await _controller.Update("1", updateDto));
@@ -127,7 +127,7 @@ public class PostControllerTests : ControllerTestBase
         // Arrange
         SetupUser(_controller, "admin_id", "Admin");
         var existingPost = new PostDto { Id = "1", UserId = "user_id" };
-        _mockPostService.Setup(s => s.GetByIdIncludingPendingAsync("1")).ReturnsAsync(existingPost);
+        _mockPostService.Setup(s => s.GetByIdIncludingPendingAsync("1", null)).ReturnsAsync(existingPost);
         _mockPostService.Setup(s => s.DeleteAsync("1")).Returns(Task.CompletedTask);
 
         // Act

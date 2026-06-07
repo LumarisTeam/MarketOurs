@@ -10,6 +10,8 @@ class CommentDto {
   final List<String>? images;
   final int? likes;
   final int? dislikes;
+  final bool? isLiked;
+  final bool? isDisliked;
   final DateTime? createdAt;
   final DateTime? updatedAt;
   final String? userId;
@@ -25,6 +27,8 @@ class CommentDto {
     this.images,
     this.likes,
     this.dislikes,
+    this.isLiked,
+    this.isDisliked,
     this.createdAt,
     this.updatedAt,
     this.userId,
@@ -43,14 +47,15 @@ class CommentDto {
 @JsonSerializable()
 class CommentCreateDto {
   final String content;
-  final List<String>? images;
+  @JsonKey(defaultValue: <String>[])
+  final List<String> images;
   final String userId;
   final String postId;
   final String? parentCommentId;
 
   CommentCreateDto({
     required this.content,
-    this.images,
+    this.images = const [],
     required this.userId,
     required this.postId,
     this.parentCommentId,
@@ -64,9 +69,10 @@ class CommentCreateDto {
 @JsonSerializable()
 class CommentUpdateDto {
   final String content;
-  final List<String>? images;
+  @JsonKey(defaultValue: <String>[])
+  final List<String> images;
 
-  CommentUpdateDto({required this.content, this.images});
+  CommentUpdateDto({required this.content, this.images = const []});
 
   factory CommentUpdateDto.fromJson(Map<String, dynamic> json) =>
       _$CommentUpdateDtoFromJson(json);

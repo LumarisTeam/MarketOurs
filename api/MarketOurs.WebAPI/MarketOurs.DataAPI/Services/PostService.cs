@@ -45,14 +45,14 @@ public interface IPostService
     /// </summary>
     /// <param name="id">帖子ID</param>
     /// <returns>帖子DTO，不存在则返回null</returns>
-    Task<PostDto?> GetByIdAsync(string id);
+    Task<PostDto?> GetByIdAsync(string id, string? requesterUserId = null);
 
     /// <summary>
     /// 根据ID获取帖子详情，包含待审核帖子
     /// </summary>
     /// <param name="id">帖子ID</param>
     /// <returns>帖子DTO，不存在则返回null</returns>
-    Task<PostDto?> GetByIdIncludingPendingAsync(string id);
+    Task<PostDto?> GetByIdIncludingPendingAsync(string id, string? requesterUserId = null);
 
     /// <summary>
     /// 创建新帖子
@@ -241,12 +241,12 @@ public class PostService(
     private readonly ConcurrentDictionary<string, Task<PostDto?>> _getByIdTasks = new();
 
     /// <inheritdoc/>
-    public async Task<PostDto?> GetByIdAsync(string id)
+    public async Task<PostDto?> GetByIdAsync(string id, string? requesterUserId = null)
     {
         var memCacheKey = CacheKeys.PostMem(id);
         if (memoryCache.TryGetValue<PostDto>(memCacheKey, out var memCachedDto) && memCachedDto != null)
         {
-            return await FillDynamicData(memCachedDto);
+            return await FillDynamicData(ClonePostDto(memCachedDto), requesterUserId);
         }
 
         // Request coalescing to prevent penetration storm
@@ -309,21 +309,52 @@ public class PostService(
 
         // Create a new instance if needed, but FillDynamicData modifies it in-place which might be a race condition if multiple awaiters run it concurrently.
         // Wait, FillDynamicData modifies dto.Likes, etc. The original code also modified it in-place.
-        return await FillDynamicData(resultDto);
+        return await FillDynamicData(ClonePostDto(resultDto), requesterUserId);
     }
 
-    public async Task<PostDto?> GetByIdIncludingPendingAsync(string id)
+    public async Task<PostDto?> GetByIdIncludingPendingAsync(string id, string? requesterUserId = null)
     {
         var post = await postRepo.GetByIdAsync(id);
-        return post == null ? null : await FillDynamicData(MapToDto(post));
+        return post == null ? null : await FillDynamicData(MapToDto(post), requesterUserId);
     }
 
-    private async Task<PostDto> FillDynamicData(PostDto dto)
+    private async Task<PostDto> FillDynamicData(PostDto dto, string? requesterUserId = null)
     {
         dto.Likes = await likeManager.GetPostLikesAsync(dto.Id, dto.Likes);
         dto.Dislikes = await likeManager.GetPostDislikesAsync(dto.Id, dto.Dislikes);
         dto.Watch = await GetPostWatchAsync(dto.Id, dto.Watch);
+        if (!string.IsNullOrWhiteSpace(requesterUserId))
+        {
+            dto.IsLiked = await likeManager.IsPostLikedAsync(dto.Id, requesterUserId);
+            dto.IsDisliked = await likeManager.IsPostDislikedAsync(dto.Id, requesterUserId);
+        }
+        else
+        {
+            dto.IsLiked = false;
+            dto.IsDisliked = false;
+        }
         return dto;
+    }
+
+    private static PostDto ClonePostDto(PostDto dto)
+    {
+        return new PostDto
+        {
+            Id = dto.Id,
+            Title = dto.Title,
+            Content = dto.Content,
+            Images = dto.Images.ToList(),
+            CreatedAt = dto.CreatedAt,
+            UpdatedAt = dto.UpdatedAt,
+            UserId = dto.UserId,
+            Author = dto.Author,
+            Likes = dto.Likes,
+            Dislikes = dto.Dislikes,
+            IsLiked = dto.IsLiked,
+            IsDisliked = dto.IsDisliked,
+            Watch = dto.Watch,
+            IsReview = dto.IsReview
+        };
     }
 
     /// <inheritdoc/>
@@ -463,6 +494,11 @@ public class PostService(
         {
             dto.Likes = await likeManager.GetCommentLikesAsync(dto.Id, dto.Likes);
             dto.Dislikes = await likeManager.GetCommentDislikesAsync(dto.Id, dto.Dislikes);
+            if (!string.IsNullOrWhiteSpace(requesterUserId))
+            {
+                dto.IsLiked = await likeManager.IsCommentLikedAsync(dto.Id, requesterUserId);
+                dto.IsDisliked = await likeManager.IsCommentDislikedAsync(dto.Id, requesterUserId);
+            }
         }
 
         // 构建树形结构

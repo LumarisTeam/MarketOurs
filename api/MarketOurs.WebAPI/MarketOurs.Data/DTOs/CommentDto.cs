@@ -33,6 +33,16 @@ public class CommentDto
     public int Dislikes { get; set; }
 
     /// <summary>
+    /// 当前请求用户是否已点赞
+    /// </summary>
+    public bool IsLiked { get; set; }
+
+    /// <summary>
+    /// 当前请求用户是否已点踩
+    /// </summary>
+    public bool IsDisliked { get; set; }
+
+    /// <summary>
     /// 是否通过审核
     /// </summary>
     public bool IsReview { get; set; }

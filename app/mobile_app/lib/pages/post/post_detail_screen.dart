@@ -79,6 +79,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       setState(() {
         _post = post;
         _comments = comments ?? const [];
+        _postLiked = post.isLiked ?? false;
+        _postDisliked = post.isDisliked ?? false;
+        _syncCommentReactionState(_comments);
       });
     } catch (error) {
       if (!mounted) return;
@@ -103,6 +106,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       if (!mounted || requestId != _commentsRequestId) return;
       setState(() {
         _comments = comments ?? const [];
+        _syncCommentReactionState(_comments);
       });
     } catch (error) {
       if (!mounted || requestId != _commentsRequestId) return;
@@ -121,11 +125,13 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     Future<void> Function() action, {
     String? successMessage,
     bool reloadAll = true,
+    bool reloadComments = false,
   }) async {
     setState(() => _isWorking = true);
     try {
       await action();
       if (reloadAll) await _loadData();
+      if (!reloadAll && reloadComments) await _loadComments();
       if (successMessage != null && mounted) {
         await AppFeedback.showSuccess(context, message: successMessage);
       }
@@ -159,7 +165,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         ),
       );
       _commentController.clear();
-    }, successMessage: '评论已发布');
+    }, successMessage: '评论已发布', reloadAll: false, reloadComments: true);
   }
 
   Future<void> _shareCurrentPost() async {
@@ -200,7 +206,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           parentCommentId: comment.id,
         ),
       );
-    }, successMessage: '回复已发送');
+    }, successMessage: '回复已发送', reloadAll: false, reloadComments: true);
   }
 
   Future<void> _editComment(CommentDto comment) async {
@@ -216,7 +222,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         comment.id,
         CommentUpdateDto(content: content.trim()),
       );
-    }, successMessage: '评论已更新');
+    }, successMessage: '评论已更新', reloadAll: false, reloadComments: true);
   }
 
   Future<void> _deleteComment(CommentDto comment) async {
@@ -225,7 +231,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 
     await _runAction(() async {
       await _commentService.deleteComment(comment.id);
-    }, successMessage: '评论已删除');
+    }, successMessage: '评论已删除', reloadAll: false, reloadComments: true);
   }
 
   Future<void> _editPost() async {
@@ -425,8 +431,103 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       author: current.author,
       likes: likes,
       dislikes: dislikes,
+      isLiked: _postLiked,
+      isDisliked: _postDisliked,
       watch: current.watch,
+      commentsCount: current.commentsCount,
       isReview: current.isReview,
+    );
+  }
+
+  void _syncCommentReactionState(List<CommentDto> comments) {
+    _likedComments.clear();
+    _dislikedComments.clear();
+
+    void visit(CommentDto comment) {
+      if (comment.isLiked ?? false) {
+        _likedComments.add(comment.id);
+      }
+      if (comment.isDisliked ?? false) {
+        _dislikedComments.add(comment.id);
+      }
+      for (final reply in comment.repliedComments ?? const <CommentDto>[]) {
+        visit(reply);
+      }
+    }
+
+    for (final comment in comments) {
+      visit(comment);
+    }
+  }
+
+  void _applyCommentReaction(
+    String commentId, {
+    required bool isLiked,
+    required bool isDisliked,
+    required int likeCount,
+    required int dislikeCount,
+  }) {
+    if (isLiked) {
+      _likedComments.add(commentId);
+    } else {
+      _likedComments.remove(commentId);
+    }
+
+    if (isDisliked) {
+      _dislikedComments.add(commentId);
+    } else {
+      _dislikedComments.remove(commentId);
+    }
+
+    _comments = _comments
+        .map(
+          (comment) => _replaceCommentCounts(
+            comment,
+            commentId,
+            likeCount,
+            dislikeCount,
+          ),
+        )
+        .toList();
+  }
+
+  CommentDto _replaceCommentCounts(
+    CommentDto comment,
+    String commentId,
+    int likeCount,
+    int dislikeCount,
+  ) {
+    final replies = comment.repliedComments
+        ?.map(
+          (reply) => _replaceCommentCounts(
+            reply,
+            commentId,
+            likeCount,
+            dislikeCount,
+          ),
+        )
+        .toList();
+
+    return CommentDto(
+      id: comment.id,
+      content: comment.content,
+      images: comment.images,
+      likes: comment.id == commentId ? likeCount : comment.likes,
+      dislikes: comment.id == commentId ? dislikeCount : comment.dislikes,
+      isLiked: comment.id == commentId
+          ? _likedComments.contains(commentId)
+          : comment.isLiked,
+      isDisliked: comment.id == commentId
+          ? _dislikedComments.contains(commentId)
+          : comment.isDisliked,
+      createdAt: comment.createdAt,
+      updatedAt: comment.updatedAt,
+      userId: comment.userId,
+      author: comment.author,
+      postId: comment.postId,
+      parentCommentId: comment.parentCommentId,
+      repliedComments: replies,
+      isReview: comment.isReview,
     );
   }
 
@@ -598,15 +699,16 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                     final data = res.data;
                                     if (data != null) {
                                       setState(() {
-                                        if (data.isLiked) {
-                                          _likedComments.add(c.id);
-                                          _dislikedComments.remove(c.id);
-                                        } else {
-                                          _likedComments.remove(c.id);
-                                        }
+                                        _applyCommentReaction(
+                                          c.id,
+                                          isLiked: data.isLiked,
+                                          isDisliked: data.isDisliked,
+                                          likeCount: data.likeCount,
+                                          dislikeCount: data.dislikeCount,
+                                        );
                                       });
                                     }
-                                  });
+                                  }, reloadAll: false);
                                 },
                                 onDislike: () {
                                   if (user == null) {
@@ -619,15 +721,16 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                     final data = res.data;
                                     if (data != null) {
                                       setState(() {
-                                        if (data.isDisliked) {
-                                          _dislikedComments.add(c.id);
-                                          _likedComments.remove(c.id);
-                                        } else {
-                                          _dislikedComments.remove(c.id);
-                                        }
+                                        _applyCommentReaction(
+                                          c.id,
+                                          isLiked: data.isLiked,
+                                          isDisliked: data.isDisliked,
+                                          likeCount: data.likeCount,
+                                          dislikeCount: data.dislikeCount,
+                                        );
                                       });
                                     }
-                                  });
+                                  }, reloadAll: false);
                                 },
                                 onReplyChild: _replyComment,
                                 onEditChild: _editComment,
@@ -640,13 +743,19 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                   _runAction(() async {
                                     final res = await _commentService
                                         .likeComment(child.id);
-                                    if (res.data?.isLiked == true) {
+                                    final data = res.data;
+                                    if (data != null) {
                                       setState(() {
-                                        _likedComments.add(child.id);
-                                        _dislikedComments.remove(child.id);
+                                        _applyCommentReaction(
+                                          child.id,
+                                          isLiked: data.isLiked,
+                                          isDisliked: data.isDisliked,
+                                          likeCount: data.likeCount,
+                                          dislikeCount: data.dislikeCount,
+                                        );
                                       });
                                     }
-                                  });
+                                  }, reloadAll: false);
                                 },
                                 onDislikeChild: (child) {
                                   if (user == null) {
@@ -656,13 +765,19 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                   _runAction(() async {
                                     final res = await _commentService
                                         .dislikeComment(child.id);
-                                    if (res.data?.isDisliked == true) {
+                                    final data = res.data;
+                                    if (data != null) {
                                       setState(() {
-                                        _dislikedComments.add(child.id);
-                                        _likedComments.remove(child.id);
+                                        _applyCommentReaction(
+                                          child.id,
+                                          isLiked: data.isLiked,
+                                          isDisliked: data.isDisliked,
+                                          likeCount: data.likeCount,
+                                          dislikeCount: data.dislikeCount,
+                                        );
                                       });
                                     }
-                                  });
+                                  }, reloadAll: false);
                                 },
                               ),
                             ),

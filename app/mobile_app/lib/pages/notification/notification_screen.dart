@@ -96,9 +96,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     actions: [
                       CupertinoActionSheetAction(
                         onPressed: () async {
-                          Navigator.of(context).pop();
                           await widget.service.markAllAsRead();
-                          _loadNotifications();
+                          await _loadNotifications();
+                          // if (context.mounted) {
+                          //   Navigator.of(context).pop();
+                          // }
                         },
                         child: const Text('全部标为已读'),
                       ),
@@ -106,9 +108,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                         onPressed: () {
                           Navigator.of(context).push(
                             CupertinoPageRoute(
-                              builder: (_) => PushSettingsScreen(
-                                service: widget.service,
-                              ),
+                              builder: (_) =>
+                                  PushSettingsScreen(service: widget.service),
                             ),
                           );
                         },

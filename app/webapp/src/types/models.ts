@@ -121,6 +121,8 @@ export interface PostDto {
   author?: UserSimpleDto | null;
   likes: number;
   dislikes: number;
+  isLiked?: boolean;
+  isDisliked?: boolean;
   watch: number;
   isReview: boolean;
 }
@@ -148,6 +150,8 @@ export interface CommentDto {
   images: string[];
   likes: number;
   dislikes: number;
+  isLiked?: boolean;
+  isDisliked?: boolean;
   isReview: boolean;
   createdAt: string;
   updatedAt: string;

@@ -26,6 +26,16 @@ public interface ILikeManager
     Task<int> GetPostDislikesAsync(string postId, int fallbackCount);
 
     /// <summary>
+    /// 判断用户是否已点赞帖子
+    /// </summary>
+    Task<bool> IsPostLikedAsync(string postId, string userId);
+
+    /// <summary>
+    /// 判断用户是否已点踩帖子
+    /// </summary>
+    Task<bool> IsPostDislikedAsync(string postId, string userId);
+
+    /// <summary>
     /// 切换帖子点赞状态 (如果已点赞则取消，如果已点踩则先取消点踩再点赞)
     /// </summary>
     Task<LikeToggleResult> SetPostLikeAsync(string postId, string userId);
@@ -46,6 +56,16 @@ public interface ILikeManager
     /// 获取评论点踩数
     /// </summary>
     Task<int> GetCommentDislikesAsync(string commentId, int fallbackCount);
+
+    /// <summary>
+    /// 判断用户是否已点赞评论
+    /// </summary>
+    Task<bool> IsCommentLikedAsync(string commentId, string userId);
+
+    /// <summary>
+    /// 判断用户是否已点踩评论
+    /// </summary>
+    Task<bool> IsCommentDislikedAsync(string commentId, string userId);
 
     /// <summary>
     /// 切换评论点赞状态
@@ -105,6 +125,22 @@ public class LikeManager(
         await GetCountAsync(CacheKeys.CommentDislikes(commentId), fallbackCount);
 
     /// <inheritdoc/>
+    public async Task<bool> IsPostLikedAsync(string postId, string userId) =>
+        await IsMemberAsync(CacheKeys.PostLikes(postId), userId, () => postRepo.GetLikeUsersAsync(postId));
+
+    /// <inheritdoc/>
+    public async Task<bool> IsPostDislikedAsync(string postId, string userId) =>
+        await IsMemberAsync(CacheKeys.PostDislikes(postId), userId, () => postRepo.GetDislikeUsersAsync(postId));
+
+    /// <inheritdoc/>
+    public async Task<bool> IsCommentLikedAsync(string commentId, string userId) =>
+        await IsMemberAsync(CacheKeys.CommentLikes(commentId), userId, () => commentRepo.GetLikeUsersAsync(commentId));
+
+    /// <inheritdoc/>
+    public async Task<bool> IsCommentDislikedAsync(string commentId, string userId) =>
+        await IsMemberAsync(CacheKeys.CommentDislikes(commentId), userId, () => commentRepo.GetDislikeUsersAsync(commentId));
+
+    /// <inheritdoc/>
     public async Task<LikeToggleResult> SetPostLikeAsync(string postId, string userId) =>
         await ToggleActionAsync(TargetType.Post, ActionType.Like, postId, userId,
             () => postRepo.GetLikeUsersAsync(postId),
@@ -144,6 +180,26 @@ public class LikeManager(
             logger.LogWarning(ex, "Failed to read count from Redis for key {Key}", key);
         }
         return fallbackCount;
+    }
+
+    private async Task<bool> IsMemberAsync(string key, string userId, Func<Task<List<UserModel>?>> dbFetcher)
+    {
+        if (_redis != null)
+        {
+            try
+            {
+                var db = _redis.GetDatabase();
+                await EnsureCacheAsync(db, key, dbFetcher);
+                return await db.SetContainsAsync(key, userId);
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Failed to read membership from Redis for key {Key}", key);
+            }
+        }
+
+        var users = await dbFetcher();
+        return users?.Any(u => u.Id == userId) == true;
     }
 
     private async Task<LikeToggleResult> ToggleActionAsync(

@@ -267,6 +267,7 @@ export default function PostDetailPage() {
       try {
         const postRes = await postService.getPost(id, { signal: controller.signal })
         setPost(postRes.data)
+        setPostLiked(postRes.data.isLiked ?? false)
         setEditTitle(postRes.data.title)
         setEditContent(postRes.data.content)
       } catch (err) {
@@ -287,7 +288,17 @@ export default function PostDetailPage() {
       setCommentsLoading(true)
       try {
         const commentsRes = await postService.getPostComments(id, commentSort, { signal: controller.signal })
-        setComments(Array.isArray(commentsRes.data) ? commentsRes.data : [])
+        const nextComments = Array.isArray(commentsRes.data) ? commentsRes.data : [];
+        setComments(nextComments)
+        const nextLikedComments = new Set<string>();
+        const collectLiked = (items: CommentDto[]) => {
+          items.forEach((comment) => {
+            if (comment.isLiked) nextLikedComments.add(comment.id);
+            if (comment.repliedComments?.length) collectLiked(comment.repliedComments);
+          });
+        };
+        collectLiked(nextComments);
+        setLikedComments(nextLikedComments);
       } catch (err) {
         if (err instanceof Error && err.name === 'AbortError') return;
         console.error("Failed to fetch comments", err)

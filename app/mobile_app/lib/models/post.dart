@@ -15,6 +15,8 @@ class PostDto {
   final UserSimpleDto? author;
   final int? likes;
   final int? dislikes;
+  final bool? isLiked;
+  final bool? isDisliked;
   final int? watch;
   final int? commentsCount;
   final bool? isReview;
@@ -30,6 +32,8 @@ class PostDto {
     this.author,
     this.likes,
     this.dislikes,
+    this.isLiked,
+    this.isDisliked,
     this.watch,
     this.commentsCount,
     this.isReview,

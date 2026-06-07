@@ -23,7 +23,10 @@ PostDto _$PostDtoFromJson(Map<String, dynamic> json) => PostDto(
       : UserSimpleDto.fromJson(json['author'] as Map<String, dynamic>),
   likes: (json['likes'] as num?)?.toInt(),
   dislikes: (json['dislikes'] as num?)?.toInt(),
+  isLiked: json['isLiked'] as bool?,
+  isDisliked: json['isDisliked'] as bool?,
   watch: (json['watch'] as num?)?.toInt(),
+  commentsCount: (json['commentsCount'] as num?)?.toInt(),
   isReview: json['isReview'] as bool?,
 );
 
@@ -38,7 +41,10 @@ Map<String, dynamic> _$PostDtoToJson(PostDto instance) => <String, dynamic>{
   'author': instance.author,
   'likes': instance.likes,
   'dislikes': instance.dislikes,
+  'isLiked': instance.isLiked,
+  'isDisliked': instance.isDisliked,
   'watch': instance.watch,
+  'commentsCount': instance.commentsCount,
   'isReview': instance.isReview,
 };
 

@@ -64,7 +64,8 @@ public class PostController(IPostService postService) : ControllerBase
     [AllowAnonymous]
     public async Task<ApiResponse<PostDto>> GetById(string id)
     {
-        var post = await postService.GetByIdAsync(id);
+        var userId = this.GetOptionalUserId();
+        var post = await postService.GetByIdAsync(id, userId);
         if (post == null) throw new ResourceAccessException(ErrorCode.PostNotFound, "帖子不存在");
 
         await postService.IncrementWatchAsync(id);
