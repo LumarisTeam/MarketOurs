@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -981,26 +982,39 @@ class _PostHero extends StatelessWidget {
         ),
         if (post.images?.isNotEmpty == true) ...[
           const SizedBox(height: 20),
-          ...post.images!.map(
-            (imageUrl) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(AppRadii.lg),
-                child: Image.network(
-                  imageUrl,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    height: 200,
-                    width: double.infinity,
-                    color: AppColors.muted,
-                    child: const Icon(
-                      CupertinoIcons.photo,
-                      color: AppColors.mutedForeground,
+          CarouselSlider.builder(
+            itemCount: post.images?.length,
+            itemBuilder:
+                (BuildContext context, int itemIndex, int pageViewIndex) =>
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(AppRadii.lg),
+                        child: Image.network(
+                          post.images?[itemIndex] ?? '',
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            height: 200,
+                            width: double.infinity,
+                            color: AppColors.muted,
+                            child: const Icon(
+                              CupertinoIcons.photo,
+                              color: AppColors.mutedForeground,
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ),
+            options: CarouselOptions(
+              aspectRatio: 16 / 9,
+              viewportFraction: 0.8,
+              initialPage: 0,
+              enableInfiniteScroll: false,
+              reverse: false,
+              enlargeCenterPage: true,
+              enlargeFactor: 0.3,
+              scrollDirection: Axis.horizontal,
             ),
           ),
         ],

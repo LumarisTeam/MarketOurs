@@ -412,6 +412,7 @@ class _ThemeModeSection extends ConsumerWidget {
       title: '显示设置',
       children: [
         AppListTile(
+          onTap: () => _showThemeModeSheet(context, ref, themeMode),
           padding: const EdgeInsets.symmetric(vertical: 10),
           leading: Container(
             padding: const EdgeInsets.all(8),
@@ -426,39 +427,75 @@ class _ThemeModeSection extends ConsumerWidget {
             style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
           ),
           subtitle: Text(themeMode.label, style: const TextStyle(fontSize: 13)),
+          trailing: const Icon(
+            CupertinoIcons.chevron_right,
+            size: 14,
+            color: AppColors.mutedForeground,
+          ),
         ),
-        const SizedBox(height: 8),
-        SizedBox(
-          width: double.infinity,
-          child: CupertinoSlidingSegmentedControl<AppThemeMode>(
-            groupValue: themeMode,
-            padding: const EdgeInsets.all(3),
-            children: {
-              for (final mode in AppThemeMode.values)
-                mode: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 7,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(mode.icon, size: 15),
-                      const SizedBox(width: 4),
-                      Text(
-                        mode.label,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-            },
-            onValueChanged: (mode) {
-              if (mode == null) return;
-              ref.read(themeModeNotifierProvider.notifier).setMode(mode);
-            },
+      ],
+    );
+  }
+
+  void _showThemeModeSheet(
+    BuildContext context,
+    WidgetRef ref,
+    AppThemeMode currentMode,
+  ) {
+    showCupertinoModalPopup<void>(
+      context: context,
+      builder: (sheetContext) => CupertinoActionSheet(
+        title: const Text('主题模式'),
+        actions: [
+          for (final mode in AppThemeMode.values)
+            CupertinoActionSheetAction(
+              isDefaultAction: mode == currentMode,
+              onPressed: () {
+                Navigator.of(sheetContext).pop();
+                ref.read(themeModeNotifierProvider.notifier).setMode(mode);
+              },
+              child: _ThemeModeActionLabel(
+                mode: mode,
+                isSelected: mode == currentMode,
+              ),
+            ),
+        ],
+        cancelButton: CupertinoActionSheetAction(
+          isDefaultAction: true,
+          onPressed: () => Navigator.of(sheetContext).pop(),
+          child: const Text('取消'),
+        ),
+      ),
+    );
+  }
+}
+
+class _ThemeModeActionLabel extends StatelessWidget {
+  const _ThemeModeActionLabel({
+    required this.mode,
+    required this.isSelected,
+  });
+
+  final AppThemeMode mode;
+  final bool isSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isSelected ? AppColors.primary : AppColors.foreground;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(mode.icon, size: 18, color: color),
+        const SizedBox(width: 8),
+        Text(mode.label, style: TextStyle(color: color)),
+        const SizedBox(width: 8),
+        Opacity(
+          opacity: isSelected ? 1 : 0,
+          child: const Icon(
+            CupertinoIcons.check_mark,
+            size: 18,
+            color: AppColors.primary,
           ),
         ),
       ],
