@@ -39,9 +39,9 @@ DotNetEnv.Env.Load();
 builder.Services.Configure<FormOptions>(options =>
 {
     // 设置请求体大小上限为10MB
-    options.MultipartBodyLengthLimit = 10 * 1024 * 1024;
-    options.ValueLengthLimit = 10 * 1024 * 1024;
-    options.BufferBodyLengthLimit = 10 * 1024 * 1024;
+    options.MultipartBodyLengthLimit = 100 * 1024 * 1024;
+    options.ValueLengthLimit = 100 * 1024 * 1024;
+    options.BufferBodyLengthLimit = 100 * 1024 * 1024;
 });
 
 // 配置Kestrel服务器的请求大小限制

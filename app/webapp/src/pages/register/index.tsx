@@ -12,8 +12,9 @@ export default function RegisterPage() {
   const [account, setAccount] = useState("");
   const [password, setPassword] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [showAvatarOptions, setShowAvatarOptions] = useState(false);
   const [error, setError] = useState("");
 
@@ -42,6 +43,9 @@ export default function RegisterPage() {
   const generateRandomAvatar = () => {
     const randomSeed = Math.random().toString(36).substring(7);
     setAvatarUrl(`https://api.dicebear.com/9.x/avataaars/svg?seed=${randomSeed}`);
+    setAvatarFile(null);
+    if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+    setAvatarPreview("");
     setShowAvatarOptions(false);
   };
 
@@ -50,33 +54,20 @@ export default function RegisterPage() {
     generateRandomAvatar();
   }, []);
 
-  const handleAvatarFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setShowAvatarOptions(false);
-    setIsUploadingAvatar(true);
     setError("");
 
-    // Immediate preview
+    if (avatarPreview) URL.revokeObjectURL(avatarPreview);
     const previewUrl = URL.createObjectURL(file);
-    setAvatarUrl(previewUrl);
+    setAvatarFile(file);
+    setAvatarPreview(previewUrl);
+    setAvatarUrl("");
 
-    try {
-      const response = await fileService.uploadImage(file);
-      if (response.data) {
-        setAvatarUrl(response.data);
-      }
-    } catch (err: any) {
-      setError(err.message || t("auth.error_registration_failed"));
-      // Revert to random on failure
-      generateRandomAvatar();
-    } finally {
-      setIsUploadingAvatar(false);
-      URL.revokeObjectURL(previewUrl);
-      // Reset input so the same file can be re-selected
-      e.target.value = '';
-    }
+    e.target.value = '';
   };
 
   const validateAccount = (value: string) => {
@@ -121,16 +112,23 @@ export default function RegisterPage() {
     setError("");
 
     try {
+      let avatar = avatarUrl;
+      if (avatarFile) {
+        const uploadResponse = await fileService.uploadImage(avatarFile);
+        if (uploadResponse.data) {
+          avatar = uploadResponse.data;
+        }
+      }
+
       const response = await authService.register({
         name,
         account,
         password,
-        avatar: avatarUrl
+        avatar
       });
 
       if (response.data) {
         setRegToken(response.data);
-        // Automatically send code
         await authService.sendRegistrationCode(response.data);
         setStep(2);
         setCountdown(60);
@@ -202,24 +200,17 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={() => setShowAvatarOptions(!showAvatarOptions)}
-                  disabled={isUploadingAvatar}
-                  className="relative group cursor-pointer disabled:cursor-wait"
+                  className="relative group cursor-pointer"
                 >
                   <div className="h-24 w-24 rounded-full overflow-hidden border-4 border-primary/20 shadow-xl transition-transform hover:scale-105">
-                    {isUploadingAvatar ? (
-                      <div className="h-full w-full flex items-center justify-center bg-muted">
-                        <Loader2 className="animate-spin text-primary" size={32} />
-                      </div>
-                    ) : (
-                      <img
-                        src={avatarUrl}
-                        alt="Avatar Preview"
-                        className="h-full w-full object-cover"
-                      />
-                    )}
+                    <img
+                      src={avatarPreview || avatarUrl}
+                      alt="Avatar Preview"
+                      className="h-full w-full object-cover"
+                    />
                   </div>
                   <div className="absolute -right-2 -bottom-2 p-2 bg-primary text-white rounded-full shadow-lg transition-all duration-500">
-                    <RefreshCw size={16} className={isUploadingAvatar ? "animate-spin" : ""} />
+                    <RefreshCw size={16} />
                   </div>
                 </button>
 
@@ -344,7 +335,7 @@ export default function RegisterPage() {
 
             <button
               type="submit"
-              disabled={isLoading || isUploadingAvatar || accountType === 'invalid' || !isPasswordValid}
+              disabled={isLoading || accountType === 'invalid' || !isPasswordValid}
               className="w-full py-4 rounded-2xl bg-primary text-primary-foreground font-bold text-lg hover:opacity-90 transition-all shadow-xl shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (

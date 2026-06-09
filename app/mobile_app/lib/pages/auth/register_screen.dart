@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
@@ -29,7 +30,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _passwordController = TextEditingController();
 
   String _avatarUrl = '';
-  bool _isUploadingAvatar = false;
+  XFile? _avatarFile;
   bool _isAccountDirty = false;
   bool _isPasswordDirty = false;
   bool _isAccountValid = false;
@@ -61,10 +62,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   void _generateRandomAvatar() {
     final random = Random();
     final seed = random.nextInt(0xFFFFFF).toRadixString(36).padLeft(5, '0');
-    setState(
-      () =>
-          _avatarUrl = 'https://api.dicebear.com/9.x/avataaars/svg?seed=$seed',
-    );
+    setState(() {
+      _avatarUrl = 'https://api.dicebear.com/9.x/avataaars/svg?seed=$seed';
+      _avatarFile = null;
+    });
   }
 
   bool _validateAccount(String value) {
@@ -84,7 +85,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       source: ImageSource.gallery,
       imageQuality: 90,
     );
-    if (picked != null) await _uploadAvatar(picked);
+    if (picked != null) {
+      setState(() {
+        _avatarFile = picked;
+        _avatarUrl = '';
+      });
+    }
   }
 
   Future<void> _takePhoto() async {
@@ -92,23 +98,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       source: ImageSource.camera,
       imageQuality: 90,
     );
-    if (picked != null) await _uploadAvatar(picked);
-  }
-
-  Future<void> _uploadAvatar(XFile file) async {
-    setState(() => _isUploadingAvatar = true);
-    try {
-      final response = await _fileService.uploadImage(file);
-      final url = response.data;
-      if (url != null && url.isNotEmpty && mounted) {
-        setState(() => _avatarUrl = url);
-      }
-    } catch (_) {
-      if (mounted) {
-        await AppFeedback.showError(context, message: '头像上传失败');
-      }
-    } finally {
-      if (mounted) setState(() => _isUploadingAvatar = false);
+    if (picked != null) {
+      setState(() {
+        _avatarFile = picked;
+        _avatarUrl = '';
+      });
     }
   }
 
@@ -155,18 +149,32 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     }
 
     try {
+      var avatar = _avatarUrl;
+      if (_avatarFile != null) {
+        final uploadResponse = await _fileService.uploadImage(_avatarFile!);
+        final url = uploadResponse.data;
+        if (url != null && url.isNotEmpty) {
+          avatar = url;
+        } else {
+          if (!mounted) return;
+          await AppFeedback.showError(context, message: '头像上传失败');
+          return;
+        }
+      }
+
+      if (!mounted) return;
+
       final registrationToken = await ref
           .read(authControllerProvider.notifier)
           .register(
             account: _accountController.text.trim(),
             password: _passwordController.text,
             name: _nameController.text.trim(),
-            avatar: _avatarUrl,
+            avatar: avatar,
           );
 
       if (!mounted) return;
 
-      // Auto-send verification code
       await ref
           .read(authControllerProvider.notifier)
           .sendRegistrationCode(registrationToken);
@@ -180,7 +188,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           'account': _accountController.text.trim(),
         },
       );
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
       final errorMessage = ref
           .read(authControllerProvider)
@@ -226,7 +234,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             // Avatar
             Center(
               child: GestureDetector(
-                onTap: _isUploadingAvatar ? null : _showAvatarOptions,
+                onTap: _showAvatarOptions,
                 child: Stack(
                   clipBehavior: Clip.none,
                   children: [
@@ -241,11 +249,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         ),
                       ),
                       child: ClipOval(
-                        child: _isUploadingAvatar
-                            ? Center(
-                                child: CupertinoActivityIndicator(
-                                  color: AppColors.primary,
-                                ),
+                        child: _avatarFile != null
+                            ? Image.file(
+                                File(_avatarFile!.path),
+                                fit: BoxFit.cover,
                               )
                             : Image.network(
                                 _avatarUrl,
@@ -277,9 +284,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           ],
                         ),
                         child: Icon(
-                          _isUploadingAvatar
-                              ? CupertinoIcons.refresh
-                              : CupertinoIcons.camera,
+                          CupertinoIcons.camera,
                           size: 16,
                           color: CupertinoColors.white,
                         ),

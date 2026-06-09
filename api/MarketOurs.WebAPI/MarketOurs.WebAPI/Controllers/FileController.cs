@@ -11,7 +11,7 @@ namespace MarketOurs.WebAPI.Controllers;
 [Route("[controller]")]
 public class FileController(IStorageService storageService, ILogger<FileController> logger) : ControllerBase
 {
-    private static readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+    private static readonly string[] AllowedExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
 
     /// <summary>
     /// 上传单张图片 (限制为 jpg, png, gif, webp)

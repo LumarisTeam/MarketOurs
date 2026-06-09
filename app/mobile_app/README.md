@@ -1,17 +1,42 @@
-# mobile_app
+## 部署
 
-A new Flutter project.
+1. Windows (msix):
 
-## Getting Started
+   ```bash
+   dart run msix:create --store
+   ```
 
-This project is a starting point for a Flutter application.
+2. Android (apk):
+   ```bash
+   flutter build apk --obfuscate --split-debug-info=xx --target-platform android-arm64 --split-per-abi
+   ```
 
-A few resources to get you started if this is your first Flutter project:
+可以加入 `--dart-define=UPDATE_CHANNEL=appstore` 来表明使用应用商店版本
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+3. Android (aab):
+   ```bash
+   flutter build appbundle --obfuscate --split-debug-info=xx --target-platform android-arm64
+   ```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+4. Web (wasm):
+
+   ```bash
+   flutter build web--wasm
+   ```
+
+5. macOS
+
+   ```bash
+   flutter build macos --release
+   ```
+
+6. iOS (ipa):
+   ```bash
+   flutter build ipa
+   ```
+
+7. Linux
+   ```bash
+   flutter build linux --release
+   ```
+
