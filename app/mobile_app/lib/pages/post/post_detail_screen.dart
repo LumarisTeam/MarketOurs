@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -927,28 +928,41 @@ class _PostHero extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 16),
             child: Row(
               children: [
-                AppAvatar(
-                  url: post.author?.avatar,
-                  name: post.author?.name,
-                  size: 40,
-                ),
-                const SizedBox(width: 12),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        post.author?.name ?? '匿名用户',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
+                  child: GestureDetector(
+                    onTap: () {
+                      if (post.userId != null && post.userId!.isNotEmpty) {
+                        context.push(buildPublicProfileLocation(post.userId!));
+                      }
+                    },
+                    child: Row(
+                      children: [
+                        AppAvatar(
+                          url: post.author?.avatar,
+                          name: post.author?.name,
+                          size: 40,
                         ),
-                      ),
-                      Text(
-                        _formatDate(post.createdAt, post.updatedAt),
-                        style: AppTextStyles.label(context),
-                      ),
-                    ],
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                post.author?.name ?? '匿名用户',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              Text(
+                                _formatDate(post.createdAt, post.updatedAt),
+                                style: AppTextStyles.label(context),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 AppSecondaryButton(
@@ -1011,15 +1025,16 @@ class _PostHero extends StatelessWidget {
                               width: double.infinity,
                               fit: BoxFit.cover,
                               gaplessPlayback: true,
-                              errorBuilder: (context, error, stackTrace) => Container(
-                                height: 200,
-                                width: double.infinity,
-                                color: AppColors.muted,
-                                child: const Icon(
-                                  CupertinoIcons.photo,
-                                  color: AppColors.mutedForeground,
-                                ),
-                              ),
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Container(
+                                    height: 200,
+                                    width: double.infinity,
+                                    color: AppColors.muted,
+                                    child: const Icon(
+                                      CupertinoIcons.photo,
+                                      color: AppColors.mutedForeground,
+                                    ),
+                                  ),
                             ),
                           ),
                         ),
