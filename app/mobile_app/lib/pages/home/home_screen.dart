@@ -300,6 +300,7 @@ class _PostCard extends StatelessWidget {
                       child: Image.network(
                         post.images!.first,
                         fit: BoxFit.cover,
+                        gaplessPlayback: true,
                         errorBuilder: (context, error, stackTrace) => Container(
                           color: AppColors.muted,
                           child: const Icon(

@@ -40,7 +40,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   }
 
   Future<void> _pickImages() async {
-    final picked = await _imagePicker.pickMultiImage(imageQuality: 90);
+    final picked = await _imagePicker.pickMultiImage();
     if (picked.isEmpty) return;
 
     setState(() {

@@ -5,6 +5,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'image_viewer_screen.dart';
+
 import '../../models/comment.dart';
 import '../../models/post.dart';
 import '../../providers/auth_provider.dart';
@@ -988,19 +990,36 @@ class _PostHero extends StatelessWidget {
                 (BuildContext context, int itemIndex, int pageViewIndex) =>
                     Padding(
                       padding: const EdgeInsets.only(bottom: 12),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(AppRadii.lg),
-                        child: Image.network(
-                          post.images?[itemIndex] ?? '',
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Container(
-                            height: 200,
-                            width: double.infinity,
-                            color: AppColors.muted,
-                            child: const Icon(
-                              CupertinoIcons.photo,
-                              color: AppColors.mutedForeground,
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).push(
+                            CupertinoPageRoute(
+                              fullscreenDialog: true,
+                              builder: (_) => ImageViewerScreen(
+                                images: post.images!,
+                                initialIndex: itemIndex,
+                              ),
+                            ),
+                          );
+                        },
+                        child: Hero(
+                          tag: 'image_$itemIndex',
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(AppRadii.lg),
+                            child: Image.network(
+                              post.images?[itemIndex] ?? '',
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                              gaplessPlayback: true,
+                              errorBuilder: (context, error, stackTrace) => Container(
+                                height: 200,
+                                width: double.infinity,
+                                color: AppColors.muted,
+                                child: const Icon(
+                                  CupertinoIcons.photo,
+                                  color: AppColors.mutedForeground,
+                                ),
+                              ),
                             ),
                           ),
                         ),
