@@ -42,8 +42,30 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
           PhotoViewGallery.builder(
             scrollPhysics: const BouncingScrollPhysics(),
             builder: (context, index) {
+              final url = widget.images[index];
+              final isGif = url.toLowerCase().contains('.gif');
+              if (isGif) {
+                return PhotoViewGalleryPageOptions.customChild(
+                  child: Center(
+                    child: Image.network(
+                      url,
+                      fit: BoxFit.contain,
+                      gaplessPlayback: true,
+                      errorBuilder: (context, error, stackTrace) => const Icon(
+                        CupertinoIcons.photo,
+                        color: CupertinoColors.white,
+                        size: 48,
+                      ),
+                    ),
+                  ),
+                  minScale: PhotoViewComputedScale.contained,
+                  maxScale: PhotoViewComputedScale.covered * 3,
+                  heroAttributes:
+                      PhotoViewHeroAttributes(tag: 'image_$index'),
+                );
+              }
               return PhotoViewGalleryPageOptions(
-                imageProvider: NetworkImage(widget.images[index]),
+                imageProvider: NetworkImage(url),
                 minScale: PhotoViewComputedScale.contained,
                 maxScale: PhotoViewComputedScale.covered * 3,
                 heroAttributes:
