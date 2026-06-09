@@ -479,7 +479,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     await _runAction(
       () async {
         await ref.read(postServiceProvider).deletePost(post.id);
-        if (mounted) context.go(AppRoutePaths.home);
+        if (mounted) context.pop();
       },
       successMessage: '帖子已删除',
       reloadAll: false,

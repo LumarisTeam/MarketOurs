@@ -89,7 +89,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
 
       await AppFeedback.showSuccess(context, message: '帖子已发布');
       if (!mounted) return;
-      context.go(buildPostDetailLocation(post.id));
+      context.pushReplacement(buildPostDetailLocation(post.id));
     } catch (error) {
       if (!mounted) return;
       await AppFeedback.showError(
