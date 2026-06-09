@@ -1,3 +1,4 @@
+using Amazon.S3;
 using MarketOurs.DataAPI.Configs;
 using MarketOurs.DataAPI.Repos;
 using MarketOurs.DataAPI.Services;
@@ -59,7 +60,32 @@ public static class ServiceCollectionExtensions
     {
         // 注册存储服务
         services.AddScoped<LocalStorageService>();
-        services.AddHttpClient<IStorageService, VercelBlobStorageService>();
+
+        var storageProvider =
+            Environment.GetEnvironmentVariable("STORAGE_PROVIDER", EnvironmentVariableTarget.Process) ?? "";
+
+        if (storageProvider.Equals("S3", StringComparison.OrdinalIgnoreCase))
+        {
+            var s3Config = services.BuildServiceProvider().GetRequiredService<S3StorageConfig>();
+            var s3ClientConfig = new AmazonS3Config { RegionEndpoint = Amazon.RegionEndpoint.GetBySystemName(s3Config.Region) };
+            if (!string.IsNullOrWhiteSpace(s3Config.Endpoint))
+            {
+                s3ClientConfig.ServiceURL = s3Config.Endpoint;
+                s3ClientConfig.ForcePathStyle = s3Config.ForcePathStyle;
+            }
+
+            services.AddSingleton<IAmazonS3>(_ =>
+                new AmazonS3Client(s3Config.AccessKey, s3Config.SecretKey, s3ClientConfig));
+            services.AddScoped<IStorageService, S3StorageService>();
+        }
+        else if (storageProvider.Equals("Local", StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddScoped<IStorageService, LocalStorageService>();
+        }
+        else
+        {
+            services.AddHttpClient<IStorageService, VercelBlobStorageService>();
+        }
 
         // 注册IP黑名单缓存服务
         services.AddSingleton<IIpBlacklistCacheService, IpBlacklistCacheService>();
@@ -189,11 +215,26 @@ public static class ServiceCollectionExtensions
                 : 31536000
         };
 
+        var s3Config = new S3StorageConfig
+        {
+            AccessKey = Environment.GetEnvironmentVariable("S3_ACCESS_KEY", EnvironmentVariableTarget.Process) ?? "",
+            SecretKey = Environment.GetEnvironmentVariable("S3_SECRET_KEY", EnvironmentVariableTarget.Process) ?? "",
+            BucketName = Environment.GetEnvironmentVariable("S3_BUCKET", EnvironmentVariableTarget.Process) ?? "",
+            Region = Environment.GetEnvironmentVariable("S3_REGION", EnvironmentVariableTarget.Process) ?? "us-east-1",
+            Endpoint = Environment.GetEnvironmentVariable("S3_ENDPOINT", EnvironmentVariableTarget.Process),
+            BasePrefix = (Environment.GetEnvironmentVariable("S3_BASE_PREFIX", EnvironmentVariableTarget.Process) ?? "uploads").Trim('/'),
+            CdnBaseUrl = Environment.GetEnvironmentVariable("S3_CDN_URL", EnvironmentVariableTarget.Process),
+            ForcePathStyle = bool.TryParse(
+                Environment.GetEnvironmentVariable("S3_FORCE_PATH_STYLE", EnvironmentVariableTarget.Process),
+                out var forcePathStyle) && forcePathStyle
+        };
+
         services.AddSingleton(jwtConfig);
         services.AddSingleton(emailConfig);
         services.AddSingleton(aiConfig);
         services.AddSingleton(smsConfig);
         services.AddSingleton(vercelBlobConfig);
+        services.AddSingleton(s3Config);
         services.AddSingleton<RsaKeyManager>();
 
         var kernelBuilder = services.AddKernel();
