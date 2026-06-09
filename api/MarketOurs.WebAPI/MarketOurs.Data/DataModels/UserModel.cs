@@ -87,6 +87,26 @@ public class UserModel : DataModel
     public List<CommentModel> DislikesComments { get; set; } = [];
 
     /// <summary>
+    /// 关注关系：我关注的用户列表
+    /// </summary>
+    public List<UserModel> Following { get; set; } = [];
+
+    /// <summary>
+    /// 关注关系：关注我的用户列表
+    /// </summary>
+    public List<UserModel> Followers { get; set; } = [];
+
+    /// <summary>
+    /// 屏蔽关系：我屏蔽的用户列表
+    /// </summary>
+    public List<UserModel> BlockedUsers { get; set; } = [];
+
+    /// <summary>
+    /// 屏蔽关系：屏蔽我的用户列表
+    /// </summary>
+    public List<UserModel> BlockedBy { get; set; } = [];
+
+    /// <summary>
     /// 账户创建时间
     /// </summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

@@ -34,6 +34,7 @@ public static class ServiceCollectionExtensions
         // Services
         services.AddScoped<ILockService, RedisLockService>();
         services.AddScoped<ILikeManager, LikeManager>();
+        services.AddScoped<IFollowService, FollowService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IPostService, PostService>();
         services.AddScoped<ICommentService, CommentService>();

@@ -54,7 +54,8 @@ Map<String, dynamic> _$CommentDtoToJson(CommentDto instance) =>
 CommentCreateDto _$CommentCreateDtoFromJson(Map<String, dynamic> json) =>
     CommentCreateDto(
       content: json['content'] as String,
-      images: (json['images'] as List<dynamic>?)
+      images:
+          (json['images'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           [],
@@ -75,7 +76,8 @@ Map<String, dynamic> _$CommentCreateDtoToJson(CommentCreateDto instance) =>
 CommentUpdateDto _$CommentUpdateDtoFromJson(Map<String, dynamic> json) =>
     CommentUpdateDto(
       content: json['content'] as String,
-      images: (json['images'] as List<dynamic>?)
+      images:
+          (json['images'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           [],

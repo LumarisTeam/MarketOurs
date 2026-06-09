@@ -13,7 +13,10 @@ namespace MarketOurs.WebAPI.Controllers;
 /// </summary>
 [ApiController]
 [Route("[controller]")]
-public class UserController(IUserService userService, ILogger<UserController> logger) : ControllerBase
+public class UserController(
+    IUserService userService,
+    IFollowService followService,
+    ILogger<UserController> logger) : ControllerBase
 {
     #region Admin Operations (管理员操作)
 
@@ -137,6 +140,14 @@ public class UserController(IUserService userService, ILogger<UserController> lo
         logger.LogInformation("Public profile requested: {Id}", id);
         var user = await userService.GetPublicProfileByIdAsync(id);
         if (user == null) throw new ResourceAccessException(ErrorCode.UserNotFound, "用户不存在");
+
+        // 获取关注统计数据
+        var viewerUserId = this.GetOptionalUserId();
+        var stats = await followService.GetFollowStatsAsync(id, viewerUserId);
+
+        user.FollowerCount = stats.FollowerCount;
+        user.FollowingCount = stats.FollowingCount;
+        user.RelationshipStatus = viewerUserId != null ? stats : null;
 
         return ApiResponse<PublicUserProfileDto>.Success(user, "获取公开资料成功");
     }

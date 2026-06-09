@@ -82,6 +82,24 @@ export interface PublicUserProfileDto {
   avatar: string;
   info: string;
   createdAt: string;
+  followerCount: number;
+  followingCount: number;
+  relationshipStatus?: FollowStatsDto | null;
+}
+
+export interface FollowToggleResult {
+  isFollowing: boolean;
+  followerCount: number;
+  followingCount: number;
+}
+
+export interface FollowStatsDto {
+  followerCount: number;
+  followingCount: number;
+  isFollowing: boolean;
+  isFollowedBy: boolean;
+  isBlocked: boolean;
+  isBlockedBy: boolean;
 }
 
 export interface UserUpdateDto {

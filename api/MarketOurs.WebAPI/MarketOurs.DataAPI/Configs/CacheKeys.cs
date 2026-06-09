@@ -63,4 +63,18 @@ public static class CacheKeys
     public static string LoginCode(string account) => $"login_code:{account}";
 
     #endregion
+
+    #region Follow & Block (关注/屏蔽相关 - Redis Set)
+
+    // 关注关系集合
+    public static string UserFollowing(string userId) => $"user:{userId}:following";
+    public static string UserFollowers(string userId) => $"user:{userId}:followers";
+
+    // 屏蔽关系集合
+    public static string UserBlocked(string userId) => $"user:{userId}:blocked";
+
+    // 关注统计 (本地缓存)
+    public static string FollowStats(string userId) => $"user:{userId}:follow_stats";
+
+    #endregion
 }

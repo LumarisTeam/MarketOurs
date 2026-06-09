@@ -2,9 +2,10 @@ import { Link, useParams } from "react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
-import { ArrowRight, Calendar, FileText, Loader2, Shield, Sparkles } from "lucide-react";
+import { ArrowRight, Calendar, FileText, Loader2, Shield, Sparkles, UserPlus, UserMinus, Ban } from "lucide-react";
 import { userService } from "../../services/userService";
 import { postService } from "../../services/postService";
+import { followService } from "../../services/followService";
 import type { RootState } from "../../stores";
 import type { PostDto, PublicUserProfileDto } from "../../types";
 
@@ -67,6 +68,12 @@ export default function PublicProfilePage() {
     };
   }, [id, t]);
 
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+  const [followLoading, setFollowLoading] = useState(false);
+
   const isCurrentUser = useMemo(() => {
     if (!currentUser || !profile) {
       return false;
@@ -74,6 +81,48 @@ export default function PublicProfilePage() {
 
     return currentUser.id.toLowerCase() === profile.id.toLowerCase();
   }, [currentUser, profile]);
+
+  useEffect(() => {
+    if (profile) {
+      setFollowerCount(profile.followerCount ?? 0);
+      setFollowingCount(profile.followingCount ?? 0);
+      setIsFollowing(profile.relationshipStatus?.isFollowing ?? false);
+      setIsBlocked(profile.relationshipStatus?.isBlocked ?? false);
+    }
+  }, [profile]);
+
+  const handleToggleFollow = async () => {
+    if (!id || followLoading) return;
+    setFollowLoading(true);
+    try {
+      const result = await followService.toggleFollow(id);
+      setIsFollowing(result.data.isFollowing);
+      setFollowerCount(result.data.followerCount);
+    } catch (err) {
+      console.error("Failed to toggle follow", err);
+    } finally {
+      setFollowLoading(false);
+    }
+  };
+
+  const handleToggleBlock = async () => {
+    if (!id || followLoading) return;
+    setFollowLoading(true);
+    try {
+      if (isBlocked) {
+        await followService.unblockUser(id);
+        setIsBlocked(false);
+      } else {
+        await followService.blockUser(id);
+        setIsBlocked(true);
+        setIsFollowing(false);
+      }
+    } catch (err) {
+      console.error("Failed to toggle block", err);
+    } finally {
+      setFollowLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -140,23 +189,60 @@ export default function PublicProfilePage() {
                 <ArrowRight size={18} />
               </Link>
             )}
+
+            {!isCurrentUser && currentUser && (
+              <div className="flex items-center gap-3 self-start">
+                <button
+                  onClick={handleToggleFollow}
+                  disabled={followLoading || isBlocked}
+                  className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 font-semibold transition-all disabled:opacity-50 ${
+                    isFollowing
+                      ? "border border-border bg-muted text-foreground hover:bg-muted/80"
+                      : "bg-primary text-primary-foreground hover:opacity-90"
+                  }`}
+                >
+                  {isFollowing ? <UserMinus size={18} /> : <UserPlus size={18} />}
+                  {isFollowing ? "已关注" : "关注"}
+                </button>
+                <button
+                  onClick={handleToggleBlock}
+                  disabled={followLoading}
+                  className={`inline-flex items-center gap-2 rounded-2xl px-4 py-3 font-semibold transition-all disabled:opacity-50 ${
+                    isBlocked
+                      ? "border border-destructive/30 bg-destructive/10 text-destructive"
+                      : "border border-border bg-muted text-muted-foreground hover:bg-muted/80"
+                  }`}
+                >
+                  <Ban size={18} />
+                  {isBlocked ? "已屏蔽" : "屏蔽"}
+                </button>
+              </div>
+            )}
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-4">
+            <div className="rounded-[2rem] border border-border/50 bg-muted/30 p-5">
+              <div className="mb-3 flex items-center gap-3 text-muted-foreground">
+                <UserPlus size={18} />
+                <span className="text-sm font-medium">粉丝</span>
+              </div>
+              <p className="text-lg font-bold">{followerCount}</p>
+            </div>
+
+            <div className="rounded-[2rem] border border-border/50 bg-muted/30 p-5">
+              <div className="mb-3 flex items-center gap-3 text-muted-foreground">
+                <UserPlus size={18} />
+                <span className="text-sm font-medium">关注</span>
+              </div>
+              <p className="text-lg font-bold">{followingCount}</p>
+            </div>
+
             <div className="rounded-[2rem] border border-border/50 bg-muted/30 p-5">
               <div className="mb-3 flex items-center gap-3 text-muted-foreground">
                 <Calendar size={18} />
                 <span className="text-sm font-medium">{t("profile.joined_at")}</span>
               </div>
               <p className="text-lg font-bold">{new Date(profile.createdAt).toLocaleDateString()}</p>
-            </div>
-
-            <div className="rounded-[2rem] border border-border/50 bg-muted/30 p-5">
-              <div className="mb-3 flex items-center gap-3 text-muted-foreground">
-                <Shield size={18} />
-                <span className="text-sm font-medium">{t("profile.role")}</span>
-              </div>
-              <p className="text-lg font-bold">{profile.role}</p>
             </div>
 
             <div className="rounded-[2rem] border border-border/50 bg-muted/30 p-5">

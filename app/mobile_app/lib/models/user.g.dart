@@ -119,6 +119,13 @@ PublicUserProfileDto _$PublicUserProfileDtoFromJson(
   createdAt: json['createdAt'] == null
       ? null
       : DateTime.parse(json['createdAt'] as String),
+  followerCount: (json['followerCount'] as num?)?.toInt() ?? 0,
+  followingCount: (json['followingCount'] as num?)?.toInt() ?? 0,
+  relationshipStatus: json['relationshipStatus'] == null
+      ? null
+      : FollowStatsDto.fromJson(
+          json['relationshipStatus'] as Map<String, dynamic>,
+        ),
 );
 
 Map<String, dynamic> _$PublicUserProfileDtoToJson(
@@ -130,7 +137,44 @@ Map<String, dynamic> _$PublicUserProfileDtoToJson(
   'avatar': instance.avatar,
   'info': instance.info,
   'createdAt': instance.createdAt?.toIso8601String(),
+  'followerCount': instance.followerCount,
+  'followingCount': instance.followingCount,
+  'relationshipStatus': instance.relationshipStatus,
 };
+
+FollowToggleResult _$FollowToggleResultFromJson(Map<String, dynamic> json) =>
+    FollowToggleResult(
+      isFollowing: json['isFollowing'] as bool,
+      followerCount: (json['followerCount'] as num).toInt(),
+      followingCount: (json['followingCount'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$FollowToggleResultToJson(FollowToggleResult instance) =>
+    <String, dynamic>{
+      'isFollowing': instance.isFollowing,
+      'followerCount': instance.followerCount,
+      'followingCount': instance.followingCount,
+    };
+
+FollowStatsDto _$FollowStatsDtoFromJson(Map<String, dynamic> json) =>
+    FollowStatsDto(
+      followerCount: (json['followerCount'] as num).toInt(),
+      followingCount: (json['followingCount'] as num).toInt(),
+      isFollowing: json['isFollowing'] as bool,
+      isFollowedBy: json['isFollowedBy'] as bool,
+      isBlocked: json['isBlocked'] as bool,
+      isBlockedBy: json['isBlockedBy'] as bool,
+    );
+
+Map<String, dynamic> _$FollowStatsDtoToJson(FollowStatsDto instance) =>
+    <String, dynamic>{
+      'followerCount': instance.followerCount,
+      'followingCount': instance.followingCount,
+      'isFollowing': instance.isFollowing,
+      'isFollowedBy': instance.isFollowedBy,
+      'isBlocked': instance.isBlocked,
+      'isBlockedBy': instance.isBlockedBy,
+    };
 
 ChangePasswordRequest _$ChangePasswordRequestFromJson(
   Map<String, dynamic> json,

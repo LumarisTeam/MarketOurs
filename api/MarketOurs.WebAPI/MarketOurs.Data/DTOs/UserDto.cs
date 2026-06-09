@@ -115,6 +115,21 @@ public class PublicUserProfileDto
     /// 创建时间
     /// </summary>
     public DateTime CreatedAt { get; set; }
+
+    /// <summary>
+    /// 粉丝数量
+    /// </summary>
+    public int FollowerCount { get; set; }
+
+    /// <summary>
+    /// 关注数量
+    /// </summary>
+    public int FollowingCount { get; set; }
+
+    /// <summary>
+    /// 与当前查看者的关系状态（仅登录用户可见）
+    /// </summary>
+    public FollowStatsDto? RelationshipStatus { get; set; }
 }
 
 /// <summary>

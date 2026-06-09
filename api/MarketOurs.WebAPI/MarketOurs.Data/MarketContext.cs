@@ -59,6 +59,18 @@ public class MarketContext(DbContextOptions<MarketContext> options) : DbContext(
             .HasForeignKey(x => x.ParentCommentId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // 关注关系 (User ↔ User)
+        modelBuilder.Entity<UserModel>()
+            .HasMany(u => u.Following)
+            .WithMany(u => u.Followers)
+            .UsingEntity(j => j.ToTable("user_follows"));
+
+        // 屏蔽关系 (User ↔ User)
+        modelBuilder.Entity<UserModel>()
+            .HasMany(u => u.BlockedUsers)
+            .WithMany(u => u.BlockedBy)
+            .UsingEntity(j => j.ToTable("user_blocks"));
+
         modelBuilder.Entity<SensitiveWordModel>()
             .HasIndex(x => x.Word)
             .IsUnique();

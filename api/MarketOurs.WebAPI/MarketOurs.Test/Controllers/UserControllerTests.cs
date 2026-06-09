@@ -11,6 +11,7 @@ namespace MarketOurs.Test.Controllers;
 public class UserControllerTests : ControllerTestBase
 {
     private Mock<IUserService> _mockUserService;
+    private Mock<IFollowService> _mockFollowService;
     private Mock<ILogger<UserController>> _mockLogger;
     private UserController _controller;
 
@@ -18,10 +19,11 @@ public class UserControllerTests : ControllerTestBase
     public void Setup()
     {
         _mockUserService = new Mock<IUserService>();
+        _mockFollowService = new Mock<IFollowService>();
         _mockLogger = new Mock<ILogger<UserController>>();
-        
-        _controller = new UserController(_mockUserService.Object, _mockLogger.Object);
-        
+
+        _controller = new UserController(_mockUserService.Object, _mockFollowService.Object, _mockLogger.Object);
+
         // Use the base class method to setup user
         SetupUser(_controller, "1", "Admin");
     }

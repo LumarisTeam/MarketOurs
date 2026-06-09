@@ -8,6 +8,7 @@ import '../../models/user.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/post_feed_provider.dart';
 import '../../router/app_router.dart';
+import '../../services/follow_service.dart';
 import '../../services/user_service.dart';
 import '../../ui/app_responsive.dart';
 import '../../ui/app_widgets.dart';
@@ -24,10 +25,17 @@ class PublicProfileScreen extends ConsumerStatefulWidget {
 
 class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
   final _userService = UserService();
+  final _followService = FollowService();
   PublicUserProfileDto? _profile;
   List<PostDto> _recentPosts = const [];
   bool _isLoading = true;
   String? _errorMessage;
+
+  bool _isFollowing = false;
+  bool _isBlocked = false;
+  int _followerCount = 0;
+  int _followingCount = 0;
+  bool _followLoading = false;
 
   @override
   void initState() {
@@ -62,6 +70,10 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
       setState(() {
         _profile = profile;
         _recentPosts = posts ?? const [];
+        _followerCount = profile.followerCount;
+        _followingCount = profile.followingCount;
+        _isFollowing = profile.relationshipStatus?.isFollowing ?? false;
+        _isBlocked = profile.relationshipStatus?.isBlocked ?? false;
       });
     } catch (error) {
       if (!mounted) {
@@ -75,6 +87,41 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
         setState(() => _isLoading = false);
       }
     }
+  }
+
+  Future<void> _handleToggleFollow() async {
+    if (_followLoading) return;
+    setState(() => _followLoading = true);
+    try {
+      final result = await _followService.toggleFollow(widget.userId);
+      if (mounted && result.data != null) {
+        setState(() {
+          _isFollowing = result.data!.isFollowing;
+          _followerCount = result.data!.followerCount;
+        });
+      }
+    } catch (_) {}
+    if (mounted) setState(() => _followLoading = false);
+  }
+
+  Future<void> _handleToggleBlock() async {
+    if (_followLoading) return;
+    setState(() => _followLoading = true);
+    try {
+      if (_isBlocked) {
+        await _followService.unblockUser(widget.userId);
+        if (mounted) setState(() => _isBlocked = false);
+      } else {
+        await _followService.blockUser(widget.userId);
+        if (mounted) {
+          setState(() {
+            _isBlocked = true;
+            _isFollowing = false;
+          });
+        }
+      }
+    } catch (_) {}
+    if (mounted) setState(() => _followLoading = false);
   }
 
   @override
@@ -104,6 +151,21 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           _ProfileHero(profile: _profile!, isMe: isMe),
+                          const SizedBox(height: 12),
+                          _FollowStats(
+                            followerCount: _followerCount,
+                            followingCount: _followingCount,
+                          ),
+                          if (!isMe && ref.watch(authControllerProvider).asData?.value.user != null) ...[
+                            const SizedBox(height: 12),
+                            _FollowBlockButtons(
+                              isFollowing: _isFollowing,
+                              isBlocked: _isBlocked,
+                              isLoading: _followLoading,
+                              onToggleFollow: _handleToggleFollow,
+                              onToggleBlock: _handleToggleBlock,
+                            ),
+                          ],
                           if (isMe) ...[
                             const SizedBox(height: 12),
                             AppSecondaryButton(
@@ -287,6 +349,165 @@ class _PostPreview extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _FollowStats extends StatelessWidget {
+  const _FollowStats({required this.followerCount, required this.followingCount});
+
+  final int followerCount;
+  final int followingCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: AppSectionCard(
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+            child: Column(
+              children: [
+                Text(
+                  '$followerCount',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.foreground,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  '粉丝',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: AppColors.mutedForeground,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: AppSectionCard(
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+            child: Column(
+              children: [
+                Text(
+                  '$followingCount',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.foreground,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  '关注',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: AppColors.mutedForeground,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _FollowBlockButtons extends StatelessWidget {
+  const _FollowBlockButtons({
+    required this.isFollowing,
+    required this.isBlocked,
+    required this.isLoading,
+    required this.onToggleFollow,
+    required this.onToggleBlock,
+  });
+
+  final bool isFollowing;
+  final bool isBlocked;
+  final bool isLoading;
+  final VoidCallback onToggleFollow;
+  final VoidCallback onToggleBlock;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: CupertinoButton(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            color: isFollowing
+                ? AppColors.secondary
+                : CupertinoColors.activeBlue,
+            borderRadius: BorderRadius.circular(12),
+            onPressed: isLoading || isBlocked ? null : onToggleFollow,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  isFollowing
+                      ? CupertinoIcons.person_badge_minus
+                      : CupertinoIcons.person_badge_plus,
+                  size: 18,
+                  color: isFollowing
+                      ? AppColors.foreground
+                      : CupertinoColors.white,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  isFollowing ? '已关注' : '关注',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: isFollowing
+                        ? AppColors.foreground
+                        : CupertinoColors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        CupertinoButton(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          color: isBlocked
+              ? CupertinoColors.systemRed.withValues(alpha: 0.15)
+              : AppColors.secondary,
+          borderRadius: BorderRadius.circular(12),
+          onPressed: isLoading ? null : onToggleBlock,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                isBlocked
+                    ? CupertinoIcons.hand_raised_slash
+                    : CupertinoIcons.hand_raised,
+                size: 18,
+                color: isBlocked
+                    ? CupertinoColors.systemRed
+                    : AppColors.mutedForeground,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                isBlocked ? '已屏蔽' : '屏蔽',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: isBlocked
+                      ? CupertinoColors.systemRed
+                      : AppColors.mutedForeground,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

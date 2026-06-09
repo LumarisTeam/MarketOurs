@@ -118,6 +118,9 @@ class PublicUserProfileDto {
   final String? avatar;
   final String? info;
   final DateTime? createdAt;
+  final int followerCount;
+  final int followingCount;
+  final FollowStatsDto? relationshipStatus;
 
   PublicUserProfileDto({
     required this.id,
@@ -126,11 +129,54 @@ class PublicUserProfileDto {
     this.avatar,
     this.info,
     this.createdAt,
+    this.followerCount = 0,
+    this.followingCount = 0,
+    this.relationshipStatus,
   });
 
   factory PublicUserProfileDto.fromJson(Map<String, dynamic> json) =>
       _$PublicUserProfileDtoFromJson(json);
   Map<String, dynamic> toJson() => _$PublicUserProfileDtoToJson(this);
+}
+
+@JsonSerializable()
+class FollowToggleResult {
+  final bool isFollowing;
+  final int followerCount;
+  final int followingCount;
+
+  FollowToggleResult({
+    required this.isFollowing,
+    required this.followerCount,
+    required this.followingCount,
+  });
+
+  factory FollowToggleResult.fromJson(Map<String, dynamic> json) =>
+      _$FollowToggleResultFromJson(json);
+  Map<String, dynamic> toJson() => _$FollowToggleResultToJson(this);
+}
+
+@JsonSerializable()
+class FollowStatsDto {
+  final int followerCount;
+  final int followingCount;
+  final bool isFollowing;
+  final bool isFollowedBy;
+  final bool isBlocked;
+  final bool isBlockedBy;
+
+  FollowStatsDto({
+    required this.followerCount,
+    required this.followingCount,
+    required this.isFollowing,
+    required this.isFollowedBy,
+    required this.isBlocked,
+    required this.isBlockedBy,
+  });
+
+  factory FollowStatsDto.fromJson(Map<String, dynamic> json) =>
+      _$FollowStatsDtoFromJson(json);
+  Map<String, dynamic> toJson() => _$FollowStatsDtoToJson(this);
 }
 
 @JsonSerializable()
