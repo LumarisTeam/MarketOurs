@@ -7,6 +7,12 @@ export const fileService = {
     return apiClient.post<string>('/File/upload/image', formData);
   },
 
+  uploadAvatar: (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return apiClient.post<string>('/File/upload/avatar', formData);
+  },
+
   uploadImages: (files: File[]) => {
     const formData = new FormData();
     files.forEach((file) => formData.append('files', file));

@@ -248,6 +248,7 @@ class AuthController extends AsyncNotifier<AuthState> {
           password: password,
           name: name,
           avatar: avatar,
+          role: 'User',
         ),
       );
 

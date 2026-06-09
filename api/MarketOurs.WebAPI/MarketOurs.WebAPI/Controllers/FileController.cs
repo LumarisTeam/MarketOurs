@@ -96,14 +96,13 @@ public class FileController(IStorageService storageService, ILogger<FileControll
         }
 
         var urls = new List<string>();
-        foreach (var file in files)
+        foreach (var file in from file in files
+                 let extension = Path.GetExtension(file.FileName).ToLower()
+                 where AllowedExtensions.Contains(extension)
+                 select file)
         {
-            var extension = Path.GetExtension(file.FileName).ToLower();
-            if (AllowedExtensions.Contains(extension))
-            {
-                var url = await storageService.SaveFileAsync(file, "images");
-                urls.Add(url);
-            }
+            var url = await storageService.SaveFileAsync(file, "images");
+            urls.Add(url);
         }
 
         return ApiResponse<List<string>>.Success(urls, $"成功上传 {urls.Count} 张图片");
