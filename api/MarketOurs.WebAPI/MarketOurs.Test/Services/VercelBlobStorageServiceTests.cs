@@ -1,5 +1,7 @@
 using System.Net;
 using System.Text;
+using MarketOurs.DataAPI.Configs;
+using MarketOurs.DataAPI.Services;
 using MarketOurs.WebAPI.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -85,16 +87,17 @@ public class VercelBlobStorageServiceTests
         var environment = new Mock<IWebHostEnvironment>();
         environment.SetupGet(item => item.WebRootPath).Returns(Path.GetTempPath());
         var localStorage = new LocalStorageService(environment.Object, NullLogger<LocalStorageService>.Instance);
+        var vercelBlog = new VercelBlobConfig();
 
         return new VercelBlobStorageService(
             httpClient,
             localStorage,
-            NullLogger<VercelBlobStorageService>.Instance);
+            NullLogger<VercelBlobStorageService>.Instance, vercelBlog);
     }
 
     private static FormFile CreateFormFile(string fileName, string contentType)
     {
-        var bytes = Encoding.UTF8.GetBytes("test image content");
+        var bytes = "test image content"u8.ToArray();
         var stream = new MemoryStream(bytes);
         return new FormFile(stream, 0, bytes.Length, "file", fileName)
         {

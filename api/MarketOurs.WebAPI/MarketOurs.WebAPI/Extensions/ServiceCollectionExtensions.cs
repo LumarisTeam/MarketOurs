@@ -169,10 +169,31 @@ public static class ServiceCollectionExtensions
                 "hmac-sha256",
         };
 
+        var vercelBlobConfig = new VercelBlobConfig()
+        {
+            Token =
+                Environment.GetEnvironmentVariable("BLOB_READ_WRITE_TOKEN", EnvironmentVariableTarget.Process) ?? "",
+            StoreId = NormalizeStoreId(
+                Environment.GetEnvironmentVariable("BLOB_STORE_ID", EnvironmentVariableTarget.Process)
+                ?? ParseStoreId(
+                    Environment.GetEnvironmentVariable("BLOB_READ_WRITE_TOKEN", EnvironmentVariableTarget.Process) ??
+                    "")),
+            Access = Environment.GetEnvironmentVariable("BLOB_ACCESS", EnvironmentVariableTarget.Process) ?? "public",
+            BaseUrl = (Environment.GetEnvironmentVariable("BLOB_BASE_PATH", EnvironmentVariableTarget.Process) ??
+                       "uploads")
+                .Trim('/'),
+            CacheControlMaxAgeSeconds = int.TryParse(
+                Environment.GetEnvironmentVariable("BLOB_CACHE_CONTROL_MAX_AGE", EnvironmentVariableTarget.Process),
+                out var cacheSeconds)
+                ? cacheSeconds
+                : 31536000
+        };
+
         services.AddSingleton(jwtConfig);
         services.AddSingleton(emailConfig);
         services.AddSingleton(aiConfig);
         services.AddSingleton(smsConfig);
+        services.AddSingleton(vercelBlobConfig);
         services.AddSingleton<RsaKeyManager>();
 
         var kernelBuilder = services.AddKernel();
@@ -191,5 +212,24 @@ public static class ServiceCollectionExtensions
                 apiKey: aiConfig.ApiKey ?? string.Empty,
                 endpoint: new Uri(aiConfig.Endpoint ?? string.Empty));
         }
+    }
+
+    private static string NormalizeStoreId(string storeId)
+    {
+        return storeId.StartsWith("store_", StringComparison.OrdinalIgnoreCase)
+            ? storeId["store_".Length..]
+            : storeId;
+    }
+
+    private static string ParseStoreId(string token)
+    {
+        var parts = token.Split('_', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length >= 4 && !string.IsNullOrWhiteSpace(parts[3]))
+        {
+            return NormalizeStoreId(parts[3]);
+        }
+
+        throw new InvalidOperationException(
+            "无法从 BLOB_READ_WRITE_TOKEN 解析 store id，请显式配置 BLOB_STORE_ID。");
     }
 }
