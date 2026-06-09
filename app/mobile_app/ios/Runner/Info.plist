@@ -46,6 +46,8 @@
 		</dict>
 		<key>NSPhotoLibraryUsageDescription</key>
 		<string>选择相册中的图片以发布帖子。</string>
+		<key>NSCameraUsageDescription</key>
+		<string>使用相机拍摄头像或帖子图片。</string>
 		<key>UIApplicationSceneManifest</key>
 		<dict>
 			<key>UIApplicationSupportsMultipleScenes</key>
