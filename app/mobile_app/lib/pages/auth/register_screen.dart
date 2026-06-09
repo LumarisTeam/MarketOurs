@@ -151,7 +151,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     try {
       var avatar = _avatarUrl;
       if (_avatarFile != null) {
-        final uploadResponse = await _fileService.uploadImage(_avatarFile!);
+        final uploadResponse = await _fileService.uploadAvatar(_avatarFile!);
         final url = uploadResponse.data;
         if (url != null && url.isNotEmpty) {
           avatar = url;

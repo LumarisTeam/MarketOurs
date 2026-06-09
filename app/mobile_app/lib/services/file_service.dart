@@ -19,6 +19,22 @@ class FileService {
     );
   }
 
+  Future<ApiResponse<String>> uploadAvatar(XFile file) async {
+    final formData = FormData.fromMap({
+      'file': await MultipartFile.fromFile(file.path, filename: file.name),
+    });
+
+    final response = await _api.post(
+      '/File/upload/avatar',
+      data: formData,
+      options: ApiService.anonymousOptions(),
+    );
+    return ApiResponse<String>.fromJson(
+      response.data,
+      (json) => json as String,
+    );
+  }
+
   Future<ApiResponse<List<String>>> uploadImages(List<XFile> files) async {
     final payload = <MultipartFile>[];
     for (final file in files) {

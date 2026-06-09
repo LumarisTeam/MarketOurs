@@ -48,6 +48,40 @@ public class FileController(IStorageService storageService, ILogger<FileControll
     }
 
     /// <summary>
+    /// 匿名上传头像（注册时使用），限制 2MB
+    /// </summary>
+    /// <param name="file">上传的文件流</param>
+    /// <returns>上传成功后的文件访问 URL</returns>
+    [HttpPost("upload/avatar")]
+    [AllowAnonymous]
+    [RequestSizeLimit(2 * 1024 * 1024)]
+    public async Task<ApiResponse<string>> UploadAvatar(IFormFile? file)
+    {
+        if (file == null || file.Length == 0)
+        {
+            return ApiResponse<string>.Fail(400, "文件未找到");
+        }
+
+        var extension = Path.GetExtension(file.FileName).ToLower();
+        if (!AllowedExtensions.Contains(extension))
+        {
+            return ApiResponse<string>.Fail(400, "不支持的文件类型，仅限图片 (jpg, png, gif, webp)");
+        }
+
+        try
+        {
+            var url = await storageService.SaveFileAsync(file, "avatars");
+            logger.LogInformation("匿名上传头像成功: {Url}", url);
+            return ApiResponse<string>.Success(url, "上传成功");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "头像上传过程中发生错误");
+            return ApiResponse<string>.Fail(500, "文件上传失败");
+        }
+    }
+
+    /// <summary>
     /// 批量上传图片
     /// </summary>
     /// <param name="files">上传的文件列表</param>

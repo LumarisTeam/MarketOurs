@@ -114,7 +114,7 @@ export default function RegisterPage() {
     try {
       let avatar = avatarUrl;
       if (avatarFile) {
-        const uploadResponse = await fileService.uploadImage(avatarFile);
+        const uploadResponse = await fileService.uploadAvatar(avatarFile);
         if (uploadResponse.data) {
           avatar = uploadResponse.data;
         }
