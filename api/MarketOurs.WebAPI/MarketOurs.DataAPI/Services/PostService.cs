@@ -489,8 +489,8 @@ public class PostService(
             .Where(dto => dto.IsReview || isAdmin || (!string.IsNullOrWhiteSpace(requesterUserId) && dto.UserId == requesterUserId))
             .ToList();
 
-        // 填充动态数据（Likes/Dislikes）
-        foreach (var dto in allDtos)
+        // 填充动态数据（Likes/Dislikes）- 并行执行以减少 Redis 往返次数
+        await Task.WhenAll(allDtos.Select(async dto =>
         {
             dto.Likes = await likeManager.GetCommentLikesAsync(dto.Id, dto.Likes);
             dto.Dislikes = await likeManager.GetCommentDislikesAsync(dto.Id, dto.Dislikes);
@@ -499,7 +499,7 @@ public class PostService(
                 dto.IsLiked = await likeManager.IsCommentLikedAsync(dto.Id, requesterUserId);
                 dto.IsDisliked = await likeManager.IsCommentDislikedAsync(dto.Id, requesterUserId);
             }
-        }
+        }));
 
         // 构建树形结构
         var commentDict = allDtos.ToDictionary(c => c.Id);

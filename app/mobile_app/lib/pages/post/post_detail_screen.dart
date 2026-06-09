@@ -74,13 +74,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 
     try {
       final postService = ref.read(postServiceProvider);
-      final results = await Future.wait([
-        postService.getPost(widget.postId),
-        postService.getPostComments(widget.postId, _commentSort),
-      ]);
-
-      final post = (results[0] as dynamic).data as PostDto?;
-      final comments = (results[1] as dynamic).data as List<CommentDto>?;
+      final response = await postService.getPost(widget.postId);
+      final post = response.data;
       if (post == null) {
         throw Exception('帖子不存在');
       }
@@ -89,21 +84,40 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 
       setState(() {
         _post = post;
-        _comments = comments ?? const [];
         _postLiked = post.isLiked ?? false;
         _postDisliked = post.isDisliked ?? false;
-        _syncCommentReactionState(_comments);
+        _isLoading = false;
+        _isCommentsLoading = true;
       });
 
-      // 获取对帖子作者的关注状态
+      await _loadCommentsInternal();
       _loadAuthorFollowState(post.userId);
     } catch (error) {
       if (!mounted) return;
       setState(() {
         _errorMessage = error.toString().replaceFirst('Exception: ', '');
+        _isLoading = false;
       });
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _loadCommentsInternal() async {
+    final requestId = ++_commentsRequestId;
+    try {
+      final res = await ref
+          .read(postServiceProvider)
+          .getPostComments(widget.postId, _commentSort);
+      final comments = res.data;
+
+      if (!mounted || requestId != _commentsRequestId) return;
+      setState(() {
+        _comments = comments ?? const [];
+        _syncCommentReactionState(_comments);
+        _isCommentsLoading = false;
+      });
+    } catch (error) {
+      if (!mounted || requestId != _commentsRequestId) return;
+      setState(() => _isCommentsLoading = false);
     }
   }
 
@@ -142,31 +156,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }
 
   Future<void> _loadComments() async {
-    final requestId = ++_commentsRequestId;
     setState(() => _isCommentsLoading = true);
-
-    try {
-      final res = await ref
-          .read(postServiceProvider)
-          .getPostComments(widget.postId, _commentSort);
-      final comments = res.data;
-
-      if (!mounted || requestId != _commentsRequestId) return;
-      setState(() {
-        _comments = comments ?? const [];
-        _syncCommentReactionState(_comments);
-      });
-    } catch (error) {
-      if (!mounted || requestId != _commentsRequestId) return;
-      await AppFeedback.showError(
-        context,
-        message: error.toString().replaceFirst('Exception: ', ''),
-      );
-    } finally {
-      if (mounted && requestId == _commentsRequestId) {
-        setState(() => _isCommentsLoading = false);
-      }
-    }
+    await _loadCommentsInternal();
   }
 
   Future<void> _runAction(
@@ -204,21 +195,31 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     final content = _commentController.text.trim();
     if (content.isEmpty) return;
 
-    await _runAction(
-      () async {
-        await _commentService.createComment(
-          CommentCreateDto(
-            content: content,
-            userId: user.id,
-            postId: widget.postId,
-          ),
-        );
+    setState(() => _isWorking = true);
+    try {
+      final response = await _commentService.createComment(
+        CommentCreateDto(
+          content: content,
+          userId: user.id,
+          postId: widget.postId,
+        ),
+      );
+      final newComment = response.data;
+      if (newComment != null) {
+        _insertCommentLocally(newComment);
         _commentController.clear();
-      },
-      successMessage: '评论已发布',
-      reloadAll: false,
-      reloadComments: true,
-    );
+        if (mounted)
+          await AppFeedback.showSuccess(context, message: '评论已发布');
+      }
+    } catch (error) {
+      if (!mounted) return;
+      await AppFeedback.showError(
+        context,
+        message: error.toString().replaceFirst('Exception: ', ''),
+      );
+    } finally {
+      if (mounted) setState(() => _isWorking = false);
+    }
   }
 
   Future<void> _shareCurrentPost() async {
@@ -249,22 +250,32 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     );
     if (content == null || content.trim().isEmpty) return;
 
-    await _runAction(
-      () async {
-        await _commentService.replyToComment(
-          comment.id,
-          CommentCreateDto(
-            content: content.trim(),
-            userId: user.id,
-            postId: widget.postId,
-            parentCommentId: comment.id,
-          ),
-        );
-      },
-      successMessage: '回复已发送',
-      reloadAll: false,
-      reloadComments: true,
-    );
+    setState(() => _isWorking = true);
+    try {
+      final response = await _commentService.replyToComment(
+        comment.id,
+        CommentCreateDto(
+          content: content.trim(),
+          userId: user.id,
+          postId: widget.postId,
+          parentCommentId: comment.id,
+        ),
+      );
+      final newReply = response.data;
+      if (newReply != null) {
+        _insertReplyLocally(comment.id, newReply);
+        if (mounted)
+          await AppFeedback.showSuccess(context, message: '回复已发送');
+      }
+    } catch (error) {
+      if (!mounted) return;
+      await AppFeedback.showError(
+        context,
+        message: error.toString().replaceFirst('Exception: ', ''),
+      );
+    } finally {
+      if (mounted) setState(() => _isWorking = false);
+    }
   }
 
   Future<void> _editComment(CommentDto comment) async {
@@ -275,30 +286,151 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     );
     if (content == null || content.trim().isEmpty) return;
 
-    await _runAction(
-      () async {
-        await _commentService.updateComment(
-          comment.id,
-          CommentUpdateDto(content: content.trim()),
-        );
-      },
-      successMessage: '评论已更新',
-      reloadAll: false,
-      reloadComments: true,
-    );
+    setState(() => _isWorking = true);
+    try {
+      await _commentService.updateComment(
+        comment.id,
+        CommentUpdateDto(content: content.trim()),
+      );
+      _updateCommentLocally(comment.id, content.trim());
+      if (mounted)
+        await AppFeedback.showSuccess(context, message: '评论已更新');
+    } catch (error) {
+      if (!mounted) return;
+      await AppFeedback.showError(
+        context,
+        message: error.toString().replaceFirst('Exception: ', ''),
+      );
+    } finally {
+      if (mounted) setState(() => _isWorking = false);
+    }
   }
 
   Future<void> _deleteComment(CommentDto comment) async {
     final confirmed = await _confirm('确定删除这条评论吗？');
     if (confirmed != true) return;
 
-    await _runAction(
-      () async {
-        await _commentService.deleteComment(comment.id);
-      },
-      successMessage: '评论已删除',
-      reloadAll: false,
-      reloadComments: true,
+    setState(() => _isWorking = true);
+    try {
+      await _commentService.deleteComment(comment.id);
+      _removeCommentLocally(comment.id);
+      if (mounted)
+        await AppFeedback.showSuccess(context, message: '评论已删除');
+    } catch (error) {
+      if (!mounted) return;
+      await AppFeedback.showError(
+        context,
+        message: error.toString().replaceFirst('Exception: ', ''),
+      );
+    } finally {
+      if (mounted) setState(() => _isWorking = false);
+    }
+  }
+
+  void _insertCommentLocally(CommentDto comment) {
+    setState(() {
+      _comments = [comment, ..._comments];
+      _syncCommentReactionState(_comments);
+    });
+  }
+
+  void _insertReplyLocally(String parentCommentId, CommentDto reply) {
+    setState(() {
+      _comments = _comments
+          .map((c) => _insertReplyInTree(c, parentCommentId, reply))
+          .toList();
+    });
+  }
+
+  CommentDto _insertReplyInTree(
+    CommentDto comment,
+    String parentId,
+    CommentDto reply,
+  ) {
+    if (comment.id == parentId) {
+      return _copyComment(
+        comment,
+        repliedComments: [...(comment.repliedComments ?? const []), reply],
+      );
+    }
+    if (comment.repliedComments == null ||
+        comment.repliedComments!.isEmpty) return comment;
+    return _copyComment(
+      comment,
+      repliedComments: comment.repliedComments!
+          .map((r) => _insertReplyInTree(r, parentId, reply))
+          .toList(),
+    );
+  }
+
+  void _updateCommentLocally(String commentId, String newContent) {
+    setState(() {
+      _comments = _comments
+          .map((c) => _updateCommentInTree(c, commentId, newContent))
+          .toList();
+    });
+  }
+
+  CommentDto _updateCommentInTree(
+    CommentDto comment,
+    String commentId,
+    String newContent,
+  ) {
+    if (comment.id == commentId) return _copyComment(comment, content: newContent);
+    if (comment.repliedComments == null ||
+        comment.repliedComments!.isEmpty) return comment;
+    return _copyComment(
+      comment,
+      repliedComments: comment.repliedComments!
+          .map((r) => _updateCommentInTree(r, commentId, newContent))
+          .toList(),
+    );
+  }
+
+  void _removeCommentLocally(String commentId) {
+    setState(() {
+      _comments = _comments
+          .where((c) => c.id != commentId)
+          .map((c) => _removeCommentInTree(c, commentId))
+          .toList();
+      _likedComments.remove(commentId);
+      _dislikedComments.remove(commentId);
+    });
+  }
+
+  CommentDto _removeCommentInTree(CommentDto comment, String commentId) {
+    if (comment.repliedComments == null ||
+        comment.repliedComments!.isEmpty) return comment;
+    return _copyComment(
+      comment,
+      repliedComments: comment.repliedComments!
+          .where((r) => r.id != commentId)
+          .map((r) => _removeCommentInTree(r, commentId))
+          .toList(),
+    );
+  }
+
+  CommentDto _copyComment(
+    CommentDto c, {
+    String? content,
+    List<CommentDto>? repliedComments,
+  }) {
+    return CommentDto(
+      id: c.id,
+      content: content ?? c.content,
+      images: c.images,
+      likes: c.likes,
+      dislikes: c.dislikes,
+      isLiked: c.isLiked,
+      isDisliked: c.isDisliked,
+      createdAt: c.createdAt,
+      updatedAt: c.updatedAt,
+      userId: c.userId,
+      author: c.author,
+      postId: c.postId,
+      parentCommentId: c.parentCommentId,
+      repliedComments: repliedComments ?? c.repliedComments,
+      isReview: c.isReview,
     );
   }
 
@@ -312,10 +444,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     );
     if (values == null) return;
 
-    await _runAction(() async {
-      await ref
-          .read(postServiceProvider)
-          .updatePost(
+    setState(() => _isWorking = true);
+    try {
+      final result = await ref.read(postServiceProvider).updatePost(
             post.id,
             PostUpdateDto(
               title: values.$1,
@@ -323,7 +454,19 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               images: post.images,
             ),
           );
-    }, successMessage: '帖子已更新');
+      if (mounted && result.data != null) {
+        setState(() => _post = result.data);
+        await AppFeedback.showSuccess(context, message: '帖子已更新');
+      }
+    } catch (error) {
+      if (!mounted) return;
+      await AppFeedback.showError(
+        context,
+        message: error.toString().replaceFirst('Exception: ', ''),
+      );
+    } finally {
+      if (mounted) setState(() => _isWorking = false);
+    }
   }
 
   Future<void> _deletePost() async {

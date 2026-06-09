@@ -12,7 +12,7 @@ class ApiService {
   late final Dio dio;
   static final ApiService _instance = ApiService._internal();
   static const String _apiBaseUrlOverride =
-      ''; // https://lumalisapi.luckyfishes.site
+      'https://lumalisapi.luckyfishes.site';
   static const String _skipAuthExtraKey = 'skipAuth';
   static const String _skipUnauthorizedHandlerExtraKey =
       'skipUnauthorizedHandler';
@@ -106,10 +106,7 @@ class ApiService {
             AppLogger.warn(
               'HTTP',
               'Request failed',
-              context: {
-                ...logContext,
-                'error': e.message ?? e.type.name,
-              },
+              context: {...logContext, 'error': e.message ?? e.type.name},
             );
           }
 
@@ -217,10 +214,7 @@ class ApiService {
     final extra = Map<String, dynamic>.from(requestOptions.extra);
     extra['retriedAfterRefresh'] = true;
 
-    return requestOptions.copyWith(
-      headers: headers,
-      extra: extra,
-    );
+    return requestOptions.copyWith(headers: headers, extra: extra);
   }
 
   static String _resolveDeviceType() {

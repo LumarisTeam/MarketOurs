@@ -151,7 +151,6 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           _ProfileHero(profile: _profile!, isMe: isMe),
-                          const SizedBox(height: 12),
                           _FollowStats(
                             followerCount: _followerCount,
                             followingCount: _followingCount,
@@ -258,8 +257,6 @@ class _ProfileHero extends StatelessWidget {
             spacing: 8,
             runSpacing: 8,
             children: [
-              if (profile.role?.trim().isNotEmpty == true)
-                _MetaChip(label: profile.role!.trim()),
               if (isMe) const _MetaChip(label: '这是你'),
             ],
           ),
