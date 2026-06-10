@@ -122,6 +122,7 @@ public interface IPostService
 
 public class PostService(
     IPostRepo postRepo,
+    ICommentRepo commentRepo,
     IUserRepo userRepo,
     ILikeManager likeManager,
     IDistributedCache distributedCache,
@@ -497,15 +498,24 @@ public class PostService(
             .Where(dto => dto.IsReview || isAdmin || (!string.IsNullOrWhiteSpace(requesterUserId) && dto.UserId == requesterUserId))
             .ToList();
 
-        // 填充动态数据（Likes/Dislikes）- 并行执行以减少 Redis 往返次数
+        // 登录用户:一次性批量查出该用户在本帖下点赞/点踩的评论集合,
+        // 替代原先逐条评论各 2 次的 IsCommentLiked/Disliked 查询(N+1 → 2 次查询)。
+        HashSet<string>? likedSet = null;
+        HashSet<string>? dislikedSet = null;
+        if (!string.IsNullOrWhiteSpace(requesterUserId))
+        {
+            (likedSet, dislikedSet) = await commentRepo.GetUserCommentReactionsAsync(id, requesterUserId);
+        }
+
+        // 填充点赞/点踩计数(O(1) Redis SCARD,并行执行);点赞状态用上面的批量集合判断。
         await Task.WhenAll(allDtos.Select(async dto =>
         {
             dto.Likes = await likeManager.GetCommentLikesAsync(dto.Id, dto.Likes);
             dto.Dislikes = await likeManager.GetCommentDislikesAsync(dto.Id, dto.Dislikes);
-            if (!string.IsNullOrWhiteSpace(requesterUserId))
+            if (likedSet != null)
             {
-                dto.IsLiked = await likeManager.IsCommentLikedAsync(dto.Id, requesterUserId);
-                dto.IsDisliked = await likeManager.IsCommentDislikedAsync(dto.Id, requesterUserId);
+                dto.IsLiked = likedSet.Contains(dto.Id);
+                dto.IsDisliked = dislikedSet!.Contains(dto.Id);
             }
         }));
 

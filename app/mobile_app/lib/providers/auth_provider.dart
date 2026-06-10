@@ -88,6 +88,15 @@ class AuthController extends AsyncNotifier<AuthState> {
       return AuthState.unauthenticated();
     }
 
+    // 乐观认证:本地已缓存用户信息时立即放行进入首页,真正的令牌校验放到
+    // 后台静默执行,避免启动时阻塞在加载页等待一次网络往返(原先的瓶颈)。
+    if (session.user != null) {
+      ref.read(homeFeedProvider);
+      _validateSessionInBackground(session);
+      return AuthState.authenticated(session);
+    }
+
+    // 无本地用户缓存(极少见):仍需等待网络获取用户信息后再放行。
     try {
       final user = await _restoreUserFromSession(session);
       final latestSession = await _storage.readSession();
@@ -100,6 +109,30 @@ class AuthController extends AsyncNotifier<AuthState> {
     } catch (_) {
       await _clearStoredSessionSafely();
       return AuthState.unauthenticated();
+    }
+  }
+
+  /// 后台静默校验会话有效性:成功则用最新用户信息刷新状态;若令牌彻底失效则登出。
+  /// 整个过程不阻塞首屏渲染。
+  Future<void> _validateSessionInBackground(AuthSession session) async {
+    try {
+      final user = await _restoreUserFromSession(session);
+      await _storage.saveUser(user);
+      final latestSession = await _storage.readSession();
+      final updatedSession = (latestSession ?? session).copyWith(user: user);
+
+      // 仅在仍处于已认证状态时更新,避免覆盖期间用户的登出等操作。
+      final current = state.asData?.value;
+      if (current != null && current.status == AuthStatus.authenticated) {
+        state = AsyncData(AuthState.authenticated(updatedSession));
+      }
+    } catch (_) {
+      // 令牌彻底失效(getInfo 与 refresh 均失败)→ 清理并登出。
+      await _clearStoredSessionSafely();
+      final current = state.asData?.value;
+      if (current != null && current.status == AuthStatus.authenticated) {
+        state = AsyncData(AuthState.unauthenticated());
+      }
     }
   }
 

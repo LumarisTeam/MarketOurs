@@ -14,6 +14,7 @@ namespace MarketOurs.Test.Services;
 public class PostServiceTests
 {
     private Mock<IPostRepo> _mockPostRepo;
+    private Mock<ICommentRepo> _mockCommentRepo;
     private Mock<IUserRepo> _mockUserRepo;
     private Mock<ILikeManager> _mockLikeManager;
     private Mock<IDistributedCache> _mockDistributedCache;
@@ -27,6 +28,7 @@ public class PostServiceTests
     public void Setup()
     {
         _mockPostRepo = new Mock<IPostRepo>();
+        _mockCommentRepo = new Mock<ICommentRepo>();
         _mockUserRepo = new Mock<IUserRepo>();
         _mockLikeManager = new Mock<ILikeManager>();
         _mockDistributedCache = new Mock<IDistributedCache>();
@@ -49,6 +51,7 @@ public class PostServiceTests
 
         _postService = new PostService(
             _mockPostRepo.Object,
+            _mockCommentRepo.Object,
             _mockUserRepo.Object,
             _mockLikeManager.Object,
             _mockDistributedCache.Object,

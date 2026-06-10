@@ -71,6 +71,13 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       _errorMessage = null;
     });
 
+    // 详情与评论并行发起,评论不再等详情返回后才开始,缩短首屏到评论可见的总时长。
+    final commentsRequestId = ++_commentsRequestId;
+    setState(() => _isCommentsLoading = true);
+    final commentsFuture = ref
+        .read(postServiceProvider)
+        .getPostComments(widget.postId, _commentSort);
+
     try {
       final postService = ref.read(postServiceProvider);
       final response = await postService.getPost(widget.postId);
@@ -86,10 +93,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         _postLiked = post.isLiked ?? false;
         _postDisliked = post.isDisliked ?? false;
         _isLoading = false;
-        _isCommentsLoading = true;
       });
 
-      await _loadCommentsInternal();
       _loadAuthorFollowState(post.userId);
     } catch (error) {
       if (!mounted) return;
@@ -97,6 +102,21 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         _errorMessage = error.toString().replaceFirst('Exception: ', '');
         _isLoading = false;
       });
+    }
+
+    // 消费并行发起的评论结果(无论详情成功与否都处理,避免评论 loading 卡死)。
+    try {
+      final res = await commentsFuture;
+      final comments = res.data;
+      if (!mounted || commentsRequestId != _commentsRequestId) return;
+      setState(() {
+        _comments = comments ?? const [];
+        _syncCommentReactionState(_comments);
+        _isCommentsLoading = false;
+      });
+    } catch (_) {
+      if (!mounted || commentsRequestId != _commentsRequestId) return;
+      setState(() => _isCommentsLoading = false);
     }
   }
 

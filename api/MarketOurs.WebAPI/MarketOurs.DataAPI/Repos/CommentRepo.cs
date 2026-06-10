@@ -23,6 +23,12 @@ public interface ICommentRepo
     public Task<UserModel?> GetAuthorAsync(string id);
     public Task<List<CommentModel>?> GetCommentsAsync(string id);
 
+    /// <summary>
+    /// 批量获取指定用户在某帖子下点赞/点踩的评论 ID 集合（替代逐条判断，避免 N+1 查询）
+    /// </summary>
+    public Task<(HashSet<string> Liked, HashSet<string> Disliked)> GetUserCommentReactionsAsync(
+        string postId, string userId);
+
     public Task CreateAsync(CommentModel comment);
 
     public Task UpdateAsync(UserModel user);
@@ -201,6 +207,27 @@ public class CommentRepo(IDbContextFactory<MarketContext> factory) : ICommentRep
             .Where(x => x.Id == id)
             .Select(x => x.Comments)
             .FirstOrDefaultAsync();
+    }
+
+    public async Task<(HashSet<string> Liked, HashSet<string> Disliked)> GetUserCommentReactionsAsync(
+        string postId, string userId)
+    {
+        await using var context = await factory.CreateDbContextAsync();
+
+        // 一次性查出该用户在此帖子下点赞的评论 ID（多对多关系表 JOIN，单次往返）
+        var likedIds = await context.Commits
+            .AsNoTracking()
+            .Where(c => c.PostId == postId && c.LikeUsers.Any(u => u.Id == userId))
+            .Select(c => c.Id)
+            .ToListAsync();
+
+        var dislikedIds = await context.Commits
+            .AsNoTracking()
+            .Where(c => c.PostId == postId && c.DislikeUsers.Any(u => u.Id == userId))
+            .Select(c => c.Id)
+            .ToListAsync();
+
+        return (likedIds.ToHashSet(), dislikedIds.ToHashSet());
     }
 
     public async Task CreateAsync(CommentModel comment)
