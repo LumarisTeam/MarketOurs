@@ -6,9 +6,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **MarketOurs** ("我们的集市，不属于任何人") is a campus marketplace platform consisting of:
 - `api/` — ASP.NET Core 10.0 backend
-- `app/webapp/` — React 19 customer-facing web app
-- `app/admin_app/` — React 19 admin dashboard
+- `app/webapp/` — React 19 web app. Contains **both** the customer-facing site and the admin dashboard; admin routes live under `src/pages/admin/`, gated by `AdminGuard` + `AdminLayout`. There is no separate admin project.
 - `app/mobile_app/` — Flutter mobile app
+- `app/mini_app/` — empty placeholder (mini-program, not yet started)
 
 ---
 
@@ -20,20 +20,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Run with SQLite (default, no Redis required)
 dotnet run --project api/MarketOurs.WebAPI/MarketOurs.WebAPI/
 
-# Build
-dotnet build api/MarketOurs.WebAPI/MarketOurs.WebAPI.sln
+# Build (note: the solution is the new .slnx format — there is no .sln file)
+dotnet build api/MarketOurs.WebAPI/MarketOurs.WebAPI.slnx
 
 # Run all tests
-dotnet test api/MarketOurs.WebAPI/MarketOurs.WebAPI.sln
+dotnet test api/MarketOurs.WebAPI/MarketOurs.WebAPI.slnx
 
 # Run a specific test class
-dotnet test api/MarketOurs.WebAPI/MarketOurs.WebAPI.sln --filter "ClassName=PostServiceTests"
+dotnet test api/MarketOurs.WebAPI/MarketOurs.WebAPI.slnx --filter "ClassName=PostServiceTests"
 
-# Run tests by category (integration tests require Docker)
-dotnet test api/MarketOurs.WebAPI/MarketOurs.WebAPI.sln --filter "Category=HighLoad"
+# Run tests by category — categories: Integration, Concurrency, Stress, HighLoad, Security
+dotnet test api/MarketOurs.WebAPI/MarketOurs.WebAPI.slnx --filter "Category=HighLoad"
 ```
 
 Integration tests (`MarketOurs.Test/Integration/`) auto-skip if Docker is unavailable — they spin up real PostgreSQL and Redis via Testcontainers.
+
+`.env` is loaded via `DotNetEnv.Env.Load()` relative to the run directory, so it lives at `MarketOurs.WebAPI/MarketOurs.WebAPI/.env` (next to `Program.cs`). Copy from `MarketOurs.WebAPI/.env.example`.
 
 ### Docker (Full Stack)
 
@@ -47,15 +49,17 @@ docker compose -f api/MarketOurs.WebAPI/compose.yaml up postgres
 
 Ports: API `8080/8081`, Redis `6379`, PostgreSQL `5432`, Mailpit UI `8025`.
 
-### Web Apps (webapp / admin_app)
+### Web App (webapp — customer site + admin dashboard)
 
 ```bash
-cd app/webapp       # or app/admin_app
+cd app/webapp
 pnpm install
 pnpm run dev        # Vite dev server
-pnpm run build      # TypeScript check + production bundle
-pnpm run lint
+pnpm run build      # tsc -b + Vite production bundle
+pnpm run lint       # eslint
 ```
+
+The React Compiler is enabled in this project, which affects dev/build performance.
 
 ### Mobile (Flutter)
 
@@ -121,7 +125,8 @@ Key variables read at startup via `DotNetEnv.Env.Load()`:
 
 Allowed origins: `*.zeabur.app`, `*.xauat.site`, `http://localhost*`. The `X-Refresh-Token` response header is exposed to frontends.
 
-### API Documentation
+### API Documentation & Endpoints
 
-Scalar UI is available at `/scalar` when running. OpenAPI spec at `/openapi`.
-Prometheus metrics at `/metrics`.
+- Scalar UI: `/scalar` (registered via `MapScalarApiReference`); OpenAPI spec at `/openapi` (Development only).
+- Prometheus metrics: `/api/metrics`.
+- Health checks: `/api/health`.
