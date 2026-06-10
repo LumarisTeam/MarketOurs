@@ -1440,6 +1440,39 @@ class _ActionChip extends StatelessWidget {
   }
 }
 
+/// 一条被展平的回复:[comment] 是回复本身,[replyTo] 是它直接回复的那条评论。
+/// [replyTo] 为 null 表示它直接回复顶层评论(不显示 @);否则显示 @对方。
+class _FlatReply {
+  const _FlatReply({required this.comment, this.replyTo});
+
+  final CommentDto comment;
+  final CommentDto? replyTo;
+}
+
+/// 将一条顶层评论下的所有后代回复展平成单层列表(只保留两级:顶层评论 + 其下所有回复)。
+/// 直接回复顶层评论的 replyTo 记为 null;回复某条回复的则记录被回复者,用于渲染 @对方。
+/// 列表按创建时间从早到晚排序,读起来像一段对话。
+List<_FlatReply> _flattenReplies(CommentDto root) {
+  final out = <_FlatReply>[];
+
+  void walk(List<CommentDto>? nodes, CommentDto parent, bool parentIsRoot) {
+    if (nodes == null) return;
+    for (final child in nodes) {
+      out.add(_FlatReply(comment: child, replyTo: parentIsRoot ? null : parent));
+      walk(child.repliedComments, child, false);
+    }
+  }
+
+  walk(root.repliedComments, root, true);
+  out.sort((a, b) {
+    final at = a.comment.createdAt;
+    final bt = b.comment.createdAt;
+    if (at == null || bt == null) return 0;
+    return at.compareTo(bt);
+  });
+  return out;
+}
+
 class _CommentThread extends StatelessWidget {
   const _CommentThread({
     required this.comment,
@@ -1477,6 +1510,8 @@ class _CommentThread extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 展平为两级:顶层评论 + 其下所有回复(含原本的三级及更深),更深的回复用 @对方 标注。
+    final flatReplies = _flattenReplies(comment);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1493,7 +1528,7 @@ class _CommentThread extends StatelessWidget {
           isLiked: likedComments.contains(comment.id),
           isDisliked: dislikedComments.contains(comment.id),
         ),
-        if (comment.repliedComments?.isNotEmpty == true) ...[
+        if (flatReplies.isNotEmpty) ...[
           Container(
             margin: const EdgeInsets.only(left: 44, top: 12),
             padding: const EdgeInsets.only(left: 12),
@@ -1510,27 +1545,27 @@ class _CommentThread extends StatelessWidget {
             ),
             child: Column(
               children: [
-                for (final reply in comment.repliedComments!) ...[
+                for (final flat in flatReplies) ...[
                   _CommentCard(
-                    comment: reply,
+                    comment: flat.comment,
                     isReply: true,
-                    onAuthorTap: reply.userId == null
+                    replyToName: flat.replyTo?.author?.name,
+                    onAuthorTap: flat.comment.userId == null
                         ? null
-                        : () => onAuthorTapForUser(reply.userId!),
-                    onReply: () => onReplyChild(reply),
-                    onEdit: currentUserId == reply.userId
-                        ? () => onEditChild?.call(reply)
+                        : () => onAuthorTapForUser(flat.comment.userId!),
+                    onReply: () => onReplyChild(flat.comment),
+                    onEdit: currentUserId == flat.comment.userId
+                        ? () => onEditChild?.call(flat.comment)
                         : null,
-                    onDelete: currentUserId == reply.userId
-                        ? () => onDeleteChild?.call(reply)
+                    onDelete: currentUserId == flat.comment.userId
+                        ? () => onDeleteChild?.call(flat.comment)
                         : null,
-                    onLike: () => onLikeChild(reply),
-                    onDislike: () => onDislikeChild(reply),
-                    isLiked: likedComments.contains(reply.id),
-                    isDisliked: dislikedComments.contains(reply.id),
+                    onLike: () => onLikeChild(flat.comment),
+                    onDislike: () => onDislikeChild(flat.comment),
+                    isLiked: likedComments.contains(flat.comment.id),
+                    isDisliked: dislikedComments.contains(flat.comment.id),
                   ),
-                  if (reply != comment.repliedComments!.last)
-                    const SizedBox(height: 16),
+                  if (flat != flatReplies.last) const SizedBox(height: 16),
                 ],
               ],
             ),
@@ -1562,6 +1597,7 @@ class _CommentCard extends StatelessWidget {
     this.isLiked = false,
     this.isDisliked = false,
     this.isReply = false,
+    this.replyToName,
   });
 
   final CommentDto comment;
@@ -1574,6 +1610,8 @@ class _CommentCard extends StatelessWidget {
   final bool isLiked;
   final bool isDisliked;
   final bool isReply;
+  // 被回复者名称;仅楼中楼(回复某条回复)时有值,在内容前显示 @对方。
+  final String? replyToName;
 
   @override
   Widget build(BuildContext context) {
@@ -1620,8 +1658,20 @@ class _CommentCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                comment.content ?? '',
+              Text.rich(
+                TextSpan(
+                  children: [
+                    if (replyToName != null && replyToName!.isNotEmpty)
+                      TextSpan(
+                        text: '@$replyToName ',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    TextSpan(text: comment.content ?? ''),
+                  ],
+                ),
                 style: AppTextStyles.body(
                   context,
                 ).copyWith(fontSize: 15, height: 1.5),

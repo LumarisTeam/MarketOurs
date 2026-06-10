@@ -35,8 +35,33 @@ const formatDate = (dateString: string, i18nInstance: i18n, updatedAtString?: st
   }
 }
 
+// 一条被展平的回复：comment 是回复本身，replyTo 是它直接回复的那条评论；
+// 当 replyTo 为 null 时表示它是直接回复顶层评论(不显示 @)，否则显示 @对方。
+type FlatReply = { comment: CommentDto; replyTo: CommentDto | null };
+
+// 将一条顶层评论下的所有后代回复展平成单层列表(只保留两级:顶层评论 + 其下所有回复)。
+// 直接回复顶层评论的 replyTo 记为 null;回复某条回复的则记录被回复者,用于渲染 @对方。
+// 列表按创建时间从早到晚排序,读起来像一段对话。
+function flattenReplies(root: CommentDto): FlatReply[] {
+  const out: FlatReply[] = [];
+  const walk = (nodes: CommentDto[] | undefined, parent: CommentDto, parentIsRoot: boolean) => {
+    if (!nodes) return;
+    for (const child of nodes) {
+      out.push({ comment: child, replyTo: parentIsRoot ? null : parent });
+      walk(child.repliedComments, child, false);
+    }
+  };
+  walk(root.repliedComments, root, true);
+  out.sort(
+    (a, b) => new Date(a.comment.createdAt).getTime() - new Date(b.comment.createdAt).getTime()
+  );
+  return out;
+}
+
 function CommentItem({
   comment,
+  replyTo,
+  replies,
   user,
   i18n,
   t,
@@ -47,6 +72,10 @@ function CommentItem({
   likedComments,
 }: {
   comment: CommentDto;
+  // 该评论直接回复的对象;有值时在内容前显示 @对方(仅楼中楼的回复-回复场景)
+  replyTo?: CommentDto | null;
+  // 仅顶层评论传入:其下被展平的所有回复
+  replies?: FlatReply[];
   user: any;
   i18n: any;
   t: any;
@@ -139,7 +168,17 @@ function CommentItem({
               </div>
             </div>
           ) : (
-            <p className="text-muted-foreground leading-relaxed text-sm whitespace-pre-wrap">{comment.content}</p>
+            <p className="text-muted-foreground leading-relaxed text-sm whitespace-pre-wrap">
+              {replyTo && (
+                <Link
+                  to={`/user/${replyTo.userId}`}
+                  className="font-bold text-primary hover:underline mr-1"
+                >
+                  @{replyTo.author?.name || `${t("common.user")} ${replyTo.userId.slice(0, 4)}`}
+                </Link>
+              )}
+              {comment.content}
+            </p>
           )}
         </div>
         
@@ -213,13 +252,14 @@ function CommentItem({
           </div>
         )}
 
-        {/* Render Replies */}
-        {comment.repliedComments && comment.repliedComments.length > 0 && (
+        {/* 渲染回复:只展开到两级,更深的回复被展平到这里并用 @对方 标注 */}
+        {replies && replies.length > 0 && (
           <div className="mt-4 space-y-6 pl-4 border-l-2 border-border/20">
-            {comment.repliedComments.map((reply) => (
+            {replies.map(({ comment: reply, replyTo: target }) => (
               <CommentItem
                 key={reply.id}
                 comment={reply}
+                replyTo={target}
                 user={user}
                 i18n={i18n}
                 t={t}
@@ -702,6 +742,7 @@ export default function PostDetailPage() {
             <CommentItem
               key={c.id}
               comment={c}
+              replies={flattenReplies(c)}
               user={user}
               i18n={i18n}
               t={t}
