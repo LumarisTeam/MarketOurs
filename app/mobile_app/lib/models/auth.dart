@@ -84,6 +84,24 @@ class VerifyCodeRequest {
 }
 
 @JsonSerializable()
+class UnbindThirdPartyRequest {
+  final String provider;
+  final String channel;
+  final String code;
+
+  UnbindThirdPartyRequest({
+    required this.provider,
+    required this.channel,
+    required this.code,
+  });
+
+  factory UnbindThirdPartyRequest.fromJson(Map<String, dynamic> json) =>
+      _$UnbindThirdPartyRequestFromJson(json);
+
+  Map<String, dynamic> toJson() => _$UnbindThirdPartyRequestToJson(this);
+}
+
+@JsonSerializable()
 class VerifyRegistrationRequest {
   final String registrationToken;
   final String code;

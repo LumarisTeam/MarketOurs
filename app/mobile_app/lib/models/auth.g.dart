@@ -69,6 +69,22 @@ VerifyCodeRequest _$VerifyCodeRequestFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$VerifyCodeRequestToJson(VerifyCodeRequest instance) =>
     <String, dynamic>{'code': instance.code};
 
+UnbindThirdPartyRequest _$UnbindThirdPartyRequestFromJson(
+  Map<String, dynamic> json,
+) => UnbindThirdPartyRequest(
+  provider: json['provider'] as String,
+  channel: json['channel'] as String,
+  code: json['code'] as String,
+);
+
+Map<String, dynamic> _$UnbindThirdPartyRequestToJson(
+  UnbindThirdPartyRequest instance,
+) => <String, dynamic>{
+  'provider': instance.provider,
+  'channel': instance.channel,
+  'code': instance.code,
+};
+
 VerifyRegistrationRequest _$VerifyRegistrationRequestFromJson(
   Map<String, dynamic> json,
 ) => VerifyRegistrationRequest(

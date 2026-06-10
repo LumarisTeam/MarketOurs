@@ -179,4 +179,35 @@ public class LoginServiceTests
         Assert.That(result, Is.True);
         _mockDatabase.Verify(db => db.KeyDeleteAsync(It.IsAny<RedisKey>(), It.IsAny<CommandFlags>()), Times.Once);
     }
+
+    [Test]
+    public async Task UnbindThirdPartyAsync_WithValidCode_ShouldVerifyAndClearBinding()
+    {
+        // Arrange
+        _mockUserService.Setup(s => s.VerifyCurrentUserCodeAsync("1", "ABC123", "email")).ReturnsAsync(true);
+        _mockUserService.Setup(s => s.ClearThirdPartyBindingAsync("1", "Github")).ReturnsAsync(new UserDto { Id = "1" });
+
+        // Act
+        var result = await _loginService.UnbindThirdPartyAsync("1", "Github", "email", "ABC123");
+
+        // Assert
+        Assert.That(result, Is.True);
+        _mockUserService.Verify(s => s.VerifyCurrentUserCodeAsync("1", "ABC123", "email"), Times.Once);
+        _mockUserService.Verify(s => s.ClearThirdPartyBindingAsync("1", "Github"), Times.Once);
+    }
+
+    [Test]
+    public void UnbindThirdPartyAsync_WhenVerificationFails_ShouldNotClearBinding()
+    {
+        // Arrange
+        _mockUserService.Setup(s => s.VerifyCurrentUserCodeAsync("1", "BAD", "email"))
+            .ThrowsAsync(new AuthException(ErrorCode.InvalidToken, "验证码无效或已过期"));
+
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<AuthException>(async () =>
+            await _loginService.UnbindThirdPartyAsync("1", "Github", "email", "BAD"));
+        Assert.That(ex!.ErrorCode, Is.EqualTo(ErrorCode.InvalidToken));
+        _mockUserService.Verify(s => s.ClearThirdPartyBindingAsync(It.IsAny<string>(), It.IsAny<string>()),
+            Times.Never);
+    }
 }

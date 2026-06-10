@@ -48,6 +48,11 @@ public interface ILoginService
     public Task<bool> BindThirdPartyAsync(string userId, string provider, string providerId);
 
     /// <summary>
+    /// 解绑第三方平台账号，要求本次邮箱或手机验证码通过。
+    /// </summary>
+    public Task<bool> UnbindThirdPartyAsync(string userId, string provider, string channel, string code);
+
+    /// <summary>
     /// 注销登录，销毁会话缓存
     /// </summary>
     /// <param name="id">用户 ID</param>
@@ -196,6 +201,14 @@ public class LoginService(
         }
 
         await userService.UpdateAsync(userId, updateDto);
+        return true;
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> UnbindThirdPartyAsync(string userId, string provider, string channel, string code)
+    {
+        await userService.VerifyCurrentUserCodeAsync(userId, code, channel);
+        await userService.ClearThirdPartyBindingAsync(userId, provider);
         return true;
     }
 

@@ -257,9 +257,21 @@ public class AuthController(ILoginService loginService, IUserService userService
     [Authorize]
     public async Task<ApiResponse> VerifyEmailCode([FromBody] VerifyCodeRequest request)
     {
-        _ = this.GetRequiredUserId();
-        await userService.VerifyEmailAsync(request.Code);
+        var userId = this.GetRequiredUserId();
+        await userService.VerifyCurrentUserCodeAsync(userId, request.Code, "email");
         return ApiResponse.Success("邮箱验证成功");
+    }
+
+    /// <summary>
+    /// 解绑第三方账号。必须使用当前登录用户本次收到的邮箱/手机验证码。
+    /// </summary>
+    [HttpPost("unbind-third-party")]
+    [Authorize]
+    public async Task<ApiResponse> UnbindThirdParty([FromBody] UnbindThirdPartyRequest request)
+    {
+        var userId = this.GetRequiredUserId();
+        await loginService.UnbindThirdPartyAsync(userId, request.Provider, request.Channel, request.Code);
+        return ApiResponse.Success("解绑成功");
     }
 
     /// <summary>
@@ -495,6 +507,30 @@ public class VerifyCodeRequest
 {
     /// <summary>
     /// 验证码
+    /// </summary>
+    [Required(ErrorMessage = "验证码不能为空")]
+    public string Code { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// 第三方解绑请求对象
+/// </summary>
+public class UnbindThirdPartyRequest
+{
+    /// <summary>
+    /// 第三方平台名称 (Ours/Github/Google/Weixin)
+    /// </summary>
+    [Required(ErrorMessage = "第三方平台不能为空")]
+    public string Provider { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 验证渠道 (email/phone)
+    /// </summary>
+    [Required(ErrorMessage = "验证方式不能为空")]
+    public string Channel { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 本次邮箱/手机验证码
     /// </summary>
     [Required(ErrorMessage = "验证码不能为空")]
     public string Code { get; set; } = string.Empty;

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using MarketOurs.Data;
 using MarketOurs.Data.DataModels;
 using MarketOurs.Data.DTOs;
@@ -96,6 +97,16 @@ public interface IUserService
     Task<bool> VerifyPhoneCodeAsync(string token);
 
     /// <summary>
+    /// 校验当前登录用户的本次邮箱/手机验证码。
+    /// </summary>
+    Task<bool> VerifyCurrentUserCodeAsync(string userId, string token, string channel);
+
+    /// <summary>
+    /// 清除用户的第三方平台绑定。
+    /// </summary>
+    Task<UserDto> ClearThirdPartyBindingAsync(string userId, string provider);
+
+    /// <summary>
     /// 忘记密码：发送重置令牌
     /// </summary>
     Task<bool> ForgotPasswordAsync(string account);
@@ -125,6 +136,8 @@ public class UserService(
     ILogger<UserService> logger) : IUserService
 {
     private readonly IConnectionMultiplexer? _redis = redisEnumerable.FirstOrDefault();
+
+    private sealed record VerificationTokenPayload(string UserId, string Channel);
 
     public const string VerificationEmailTemplate = @"
         <div style='font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 5px;'>
@@ -252,7 +265,8 @@ public class UserService(
         if (_redis != null)
         {
             var db = _redis.GetDatabase();
-            await db.StringSetAsync(CacheKeys.VerificationToken(token), userId, TimeSpan.FromHours(24));
+            await db.StringSetAsync(CacheKeys.VerificationToken(token), BuildVerificationPayload(userId, "email"),
+                TimeSpan.FromHours(24));
         }
         else
         {
@@ -273,11 +287,14 @@ public class UserService(
         if (_redis == null) throw new BusinessException(ErrorCode.CacheOperationFailed, "Redis 服务不可用");
 
         var db = _redis.GetDatabase();
-        var userId = await db.StringGetAsync(CacheKeys.VerificationToken(token));
+        var payload = await ReadVerificationPayloadAsync(db, token);
 
-        if (!userId.HasValue) throw new AuthException(ErrorCode.InvalidToken, "验证码无效或已过期");
+        if (payload == null ||
+            (!string.Equals(payload.Channel, "email", StringComparison.OrdinalIgnoreCase) &&
+             !string.Equals(payload.Channel, "legacy", StringComparison.OrdinalIgnoreCase)))
+            throw new AuthException(ErrorCode.InvalidToken, "验证码无效或已过期");
 
-        var user = await userRepo.GetByIdAsync(userId.ToString());
+        var user = await userRepo.GetByIdAsync(payload.UserId);
         if (user == null) throw new ResourceAccessException(ErrorCode.UserNotFound, "用户不存在");
 
         user.IsEmailVerified = true;
@@ -302,7 +319,8 @@ public class UserService(
         if (_redis != null)
         {
             var db = _redis.GetDatabase();
-            await db.StringSetAsync(CacheKeys.VerificationToken(token), userId, TimeSpan.FromMinutes(15));
+            await db.StringSetAsync(CacheKeys.VerificationToken(token), BuildVerificationPayload(userId, "phone"),
+                TimeSpan.FromMinutes(15));
         }
         else
         {
@@ -347,11 +365,14 @@ public class UserService(
         if (_redis == null) throw new BusinessException(ErrorCode.CacheOperationFailed, "Redis 服务不可用");
 
         var db = _redis.GetDatabase();
-        var userId = await db.StringGetAsync(CacheKeys.VerificationToken(token));
+        var payload = await ReadVerificationPayloadAsync(db, token);
 
-        if (!userId.HasValue) throw new AuthException(ErrorCode.InvalidToken, "验证码无效或已过期");
+        if (payload == null ||
+            (!string.Equals(payload.Channel, "phone", StringComparison.OrdinalIgnoreCase) &&
+             !string.Equals(payload.Channel, "legacy", StringComparison.OrdinalIgnoreCase)))
+            throw new AuthException(ErrorCode.InvalidToken, "验证码无效或已过期");
 
-        var user = await userRepo.GetByIdAsync(userId.ToString());
+        var user = await userRepo.GetByIdAsync(payload.UserId);
         if (user == null) throw new ResourceAccessException(ErrorCode.UserNotFound, "用户不存在");
 
         user.IsPhoneVerified = true;
@@ -361,6 +382,81 @@ public class UserService(
         await db.KeyDeleteAsync(CacheKeys.VerificationToken(token));
 
         return true;
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> VerifyCurrentUserCodeAsync(string userId, string token, string channel)
+    {
+        if (_redis == null) throw new BusinessException(ErrorCode.CacheOperationFailed, "Redis 服务不可用");
+
+        var normalizedChannel = NormalizeVerificationChannel(channel);
+        var db = _redis.GetDatabase();
+        var payload = await ReadVerificationPayloadAsync(db, token);
+
+        if (payload == null ||
+            !string.Equals(payload.UserId, userId, StringComparison.Ordinal) ||
+            !string.Equals(payload.Channel, normalizedChannel, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new AuthException(ErrorCode.InvalidToken, "验证码无效或已过期");
+        }
+
+        var user = await userRepo.GetByIdAsync(userId);
+        if (user == null) throw new ResourceAccessException(ErrorCode.UserNotFound, "用户不存在");
+
+        if (normalizedChannel == "email")
+        {
+            user.IsEmailVerified = true;
+        }
+        else
+        {
+            user.IsPhoneVerified = true;
+        }
+
+        user.IsActive = true;
+        await userRepo.UpdateAsync(user);
+        await db.KeyDeleteAsync(CacheKeys.VerificationToken(token));
+
+        return true;
+    }
+
+    /// <inheritdoc/>
+    public async Task<UserDto> ClearThirdPartyBindingAsync(string userId, string provider)
+    {
+        var user = await userRepo.GetByIdAsync(userId);
+        if (user == null) throw new ResourceAccessException(ErrorCode.UserNotFound, "用户不存在");
+
+        switch (provider?.ToLowerInvariant())
+        {
+            case "github":
+                EnsureBound(user.GithubId);
+                user.GithubId = null;
+                break;
+            case "google":
+                EnsureBound(user.GoogleId);
+                user.GoogleId = null;
+                break;
+            case "weixin":
+                EnsureBound(user.WeixinId);
+                user.WeixinId = null;
+                break;
+            case "ours":
+                EnsureBound(user.OursId);
+                user.OursId = null;
+                break;
+            default:
+                throw new BusinessException(ErrorCode.ParameterFormatError, "不支持的第三方平台");
+        }
+
+        await userRepo.UpdateAsync(user);
+        return MapToDto(user);
+
+        static void EnsureBound(string? providerId)
+        {
+            if (string.IsNullOrWhiteSpace(providerId))
+            {
+                throw new BusinessException(ErrorCode.InvalidStatusForOperation, "该第三方账号尚未绑定");
+            }
+        }
     }
 
     /// <inheritdoc/>
@@ -541,6 +637,44 @@ public class UserService(
             Avatar = user.Avatar,
             Info = user.Info,
             CreatedAt = user.CreatedAt
+        };
+    }
+
+    private static string BuildVerificationPayload(string userId, string channel)
+    {
+        return JsonSerializer.Serialize(new VerificationTokenPayload(userId, channel));
+    }
+
+    private static async Task<VerificationTokenPayload?> ReadVerificationPayloadAsync(IDatabase db, string token)
+    {
+        var value = await db.StringGetAsync(CacheKeys.VerificationToken(token));
+        if (!value.HasValue) return null;
+
+        var raw = value.ToString();
+        if (string.IsNullOrWhiteSpace(raw)) return null;
+
+        if (!raw.TrimStart().StartsWith('{'))
+        {
+            return new VerificationTokenPayload(raw, "legacy");
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<VerificationTokenPayload>(raw);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    private static string NormalizeVerificationChannel(string channel)
+    {
+        return channel?.ToLowerInvariant() switch
+        {
+            "email" => "email",
+            "phone" => "phone",
+            _ => throw new BusinessException(ErrorCode.ParameterFormatError, "不支持的验证方式")
         };
     }
 }

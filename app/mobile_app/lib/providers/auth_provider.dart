@@ -108,9 +108,10 @@ class AuthController extends AsyncNotifier<AuthState> {
     var savedTokens = false;
 
     final deviceType =
-        (!kIsWeb) && (Platform.isLinux || Platform.isMacOS || Platform.isWindows)
-            ? 'Desktop'
-            : 'Mobile';
+        (!kIsWeb) &&
+            (Platform.isLinux || Platform.isMacOS || Platform.isWindows)
+        ? 'Desktop'
+        : 'Mobile';
 
     try {
       final response = await _authService.login(
@@ -181,9 +182,10 @@ class AuthController extends AsyncNotifier<AuthState> {
     var savedTokens = false;
 
     final deviceType =
-        (!kIsWeb) && (Platform.isLinux || Platform.isMacOS || Platform.isWindows)
-            ? 'Desktop'
-            : 'Mobile';
+        (!kIsWeb) &&
+            (Platform.isLinux || Platform.isMacOS || Platform.isWindows)
+        ? 'Desktop'
+        : 'Mobile';
 
     try {
       final response = await _authService.loginByCode(
@@ -316,9 +318,10 @@ class AuthController extends AsyncNotifier<AuthState> {
 
     try {
       final deviceType =
-          (!kIsWeb) && (Platform.isLinux || Platform.isMacOS || Platform.isWindows)
-              ? 'Desktop'
-              : 'Mobile';
+          (!kIsWeb) &&
+              (Platform.isLinux || Platform.isMacOS || Platform.isWindows)
+          ? 'Desktop'
+          : 'Mobile';
       await _authService.logout(deviceType: deviceType);
     } catch (_) {
       // Clearing local session takes priority over logout request failures.
@@ -434,6 +437,23 @@ class AuthController extends AsyncNotifier<AuthState> {
 
   Future<void> verifyPhone({required String code}) async {
     await _runAuthenticatedAction(() => _authService.verifyPhone(code: code));
+    await refreshProfile();
+  }
+
+  Future<void> unbindThirdParty({
+    required String provider,
+    required String channel,
+    required String code,
+  }) async {
+    await _runAuthenticatedAction(
+      () => _authService.unbindThirdParty(
+        UnbindThirdPartyRequest(
+          provider: provider,
+          channel: channel,
+          code: code,
+        ),
+      ),
+    );
     await refreshProfile();
   }
 

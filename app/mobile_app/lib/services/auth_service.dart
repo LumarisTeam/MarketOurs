@@ -167,6 +167,14 @@ class AuthService {
     return ApiResponse.fromJson(response.data, (json) => json);
   }
 
+  Future<ApiResponse> unbindThirdParty(UnbindThirdPartyRequest request) async {
+    final response = await _api.post(
+      '/Auth/unbind-third-party',
+      data: request.toJson(),
+    );
+    return ApiResponse.fromJson(response.data, (json) => json);
+  }
+
   String buildExternalLoginUrl({
     required String provider,
     required String returnUrl,
@@ -186,5 +194,6 @@ class AuthService {
 
   static String get oauthCallbackPath => '/oauth-callback';
 
-  static String get oauthCallbackUrl => '${ApiService.baseUrl}$oauthCallbackPath';
+  static String get oauthCallbackUrl =>
+      '${ApiService.baseUrl}$oauthCallbackPath';
 }

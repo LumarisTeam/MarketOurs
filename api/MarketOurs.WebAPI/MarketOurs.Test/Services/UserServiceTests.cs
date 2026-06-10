@@ -1,3 +1,4 @@
+using System.Text.Json;
 using MarketOurs.Data;
 using MarketOurs.Data.DataModels;
 using MarketOurs.Data.DTOs;
@@ -192,7 +193,7 @@ public class UserServiceTests
         // Arrange
         var existingUser = new UserModel { Id = "1", Name = "Old Name", Info = "Old Info", Avatar = "Old Avatar" };
         var updateDto = new UserUpdateDto { Name = "New Name", Info = "New Info", Avatar = "New Avatar" };
-        
+
         _mockUserRepo.Setup(r => r.GetByIdAsync("1")).ReturnsAsync(existingUser);
         _mockUserRepo.Setup(r => r.UpdateAsync(It.IsAny<UserModel>())).Returns(Task.CompletedTask);
 
@@ -218,5 +219,118 @@ public class UserServiceTests
 
         // Assert
         _mockUserRepo.Verify(r => r.DeleteAsync("1"), Times.Once);
+    }
+
+    [Test]
+    public async Task VerifyCurrentUserCodeAsync_WithMatchingEmailCode_ShouldMarkEmailVerified()
+    {
+        // Arrange
+        var user = new UserModel { Id = "1", Email = "test@example.com", IsEmailVerified = false };
+        var payload = JsonSerializer.Serialize(new { UserId = "1", Channel = "email" });
+        _mockDatabase.Setup(db => db.StringGetAsync(CacheKeys.VerificationToken("ABC123"), It.IsAny<CommandFlags>()))
+            .ReturnsAsync(new RedisValue(payload));
+        _mockUserRepo.Setup(r => r.GetByIdAsync("1")).ReturnsAsync(user);
+        _mockUserRepo.Setup(r => r.UpdateAsync(It.IsAny<UserModel>())).Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _userService.VerifyCurrentUserCodeAsync("1", "ABC123", "email");
+
+        // Assert
+        Assert.That(result, Is.True);
+        Assert.That(user.IsEmailVerified, Is.True);
+        Assert.That(user.IsActive, Is.True);
+        _mockDatabase.Verify(db => db.KeyDeleteAsync(CacheKeys.VerificationToken("ABC123"), It.IsAny<CommandFlags>()),
+            Times.Once);
+    }
+
+    [Test]
+    public void VerifyCurrentUserCodeAsync_WhenCodeBelongsToAnotherUser_ShouldThrow()
+    {
+        // Arrange
+        var payload = JsonSerializer.Serialize(new { UserId = "2", Channel = "email" });
+        _mockDatabase.Setup(db => db.StringGetAsync(CacheKeys.VerificationToken("ABC123"), It.IsAny<CommandFlags>()))
+            .ReturnsAsync(new RedisValue(payload));
+
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<AuthException>(async () =>
+            await _userService.VerifyCurrentUserCodeAsync("1", "ABC123", "email"));
+        Assert.That(ex!.ErrorCode, Is.EqualTo(ErrorCode.InvalidToken));
+        _mockUserRepo.Verify(r => r.UpdateAsync(It.IsAny<UserModel>()), Times.Never);
+    }
+
+    [Test]
+    public void VerifyCurrentUserCodeAsync_WhenChannelDoesNotMatch_ShouldThrow()
+    {
+        // Arrange
+        var payload = JsonSerializer.Serialize(new { UserId = "1", Channel = "phone" });
+        _mockDatabase.Setup(db => db.StringGetAsync(CacheKeys.VerificationToken("ABC123"), It.IsAny<CommandFlags>()))
+            .ReturnsAsync(new RedisValue(payload));
+
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<AuthException>(async () =>
+            await _userService.VerifyCurrentUserCodeAsync("1", "ABC123", "email"));
+        Assert.That(ex!.ErrorCode, Is.EqualTo(ErrorCode.InvalidToken));
+    }
+
+    [Test]
+    public void VerifyCurrentUserCodeAsync_WithUnsupportedChannel_ShouldThrow()
+    {
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<BusinessException>(async () =>
+            await _userService.VerifyCurrentUserCodeAsync("1", "ABC123", "sms"));
+        Assert.That(ex!.ErrorCode, Is.EqualTo(ErrorCode.ParameterFormatError));
+    }
+
+    [Test]
+    public async Task ClearThirdPartyBindingAsync_ShouldOnlyClearRequestedProvider()
+    {
+        // Arrange
+        var user = new UserModel
+        {
+            Id = "1",
+            GithubId = "github-id",
+            GoogleId = "google-id",
+            WeixinId = "weixin-id",
+            OursId = "ours-id"
+        };
+        _mockUserRepo.Setup(r => r.GetByIdAsync("1")).ReturnsAsync(user);
+        _mockUserRepo.Setup(r => r.UpdateAsync(It.IsAny<UserModel>())).Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _userService.ClearThirdPartyBindingAsync("1", "Github");
+
+        // Assert
+        Assert.That(result.GithubId, Is.Null);
+        Assert.That(result.GoogleId, Is.EqualTo("google-id"));
+        Assert.That(result.WeixinId, Is.EqualTo("weixin-id"));
+        Assert.That(result.OursId, Is.EqualTo("ours-id"));
+        Assert.That(user.GithubId, Is.Null);
+    }
+
+    [Test]
+    public void ClearThirdPartyBindingAsync_WhenProviderNotBound_ShouldThrow()
+    {
+        // Arrange
+        var user = new UserModel { Id = "1", GithubId = null };
+        _mockUserRepo.Setup(r => r.GetByIdAsync("1")).ReturnsAsync(user);
+
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<BusinessException>(async () =>
+            await _userService.ClearThirdPartyBindingAsync("1", "Github"));
+        Assert.That(ex!.ErrorCode, Is.EqualTo(ErrorCode.InvalidStatusForOperation));
+        _mockUserRepo.Verify(r => r.UpdateAsync(It.IsAny<UserModel>()), Times.Never);
+    }
+
+    [Test]
+    public void ClearThirdPartyBindingAsync_WithUnsupportedProvider_ShouldThrow()
+    {
+        // Arrange
+        var user = new UserModel { Id = "1", GithubId = "github-id" };
+        _mockUserRepo.Setup(r => r.GetByIdAsync("1")).ReturnsAsync(user);
+
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<BusinessException>(async () =>
+            await _userService.ClearThirdPartyBindingAsync("1", "Twitter"));
+        Assert.That(ex!.ErrorCode, Is.EqualTo(ErrorCode.ParameterFormatError));
     }
 }
