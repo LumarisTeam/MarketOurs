@@ -133,6 +133,13 @@ class ProfileScreen extends ConsumerWidget {
                           subtitle: '管理关注的用户和屏蔽列表',
                           onTap: () => context.push(AppRoutePaths.following),
                         ),
+                        _NavRow(
+                          icon: CupertinoIcons.link,
+                          title: '第三方绑定',
+                          subtitle: '管理 Github、Google 等平台关联',
+                          onTap: () =>
+                              context.push(AppRoutePaths.bindings),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -288,6 +295,7 @@ class ProfileScreen extends ConsumerWidget {
     final trimmed = value?.trim();
     return trimmed == null || trimmed.isEmpty ? fallback : trimmed;
   }
+
 }
 
 class _ProfileHero extends StatelessWidget {

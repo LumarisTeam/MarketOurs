@@ -171,9 +171,17 @@ class AuthService {
     required String provider,
     required String returnUrl,
     String purpose = 'login',
+    String? accessToken,
+    String deviceType = 'Mobile',
   }) {
     final encodedReturn = Uri.encodeQueryComponent(returnUrl);
-    return '${ApiService.baseUrl}/Auth/external-login?provider=$provider&returnUrl=$encodedReturn&purpose=$purpose';
+    var url =
+        '${ApiService.baseUrl}/Auth/external-login?provider=$provider&returnUrl=$encodedReturn&purpose=$purpose&deviceType=$deviceType';
+    // 绑定操作需要传递 access_token，因为 WebView 跳转不会携带 Authorization 头
+    if (purpose == 'bind' && accessToken != null && accessToken.isNotEmpty) {
+      url += '&access_token=${Uri.encodeQueryComponent(accessToken)}';
+    }
+    return url;
   }
 
   static String get oauthCallbackPath => '/oauth-callback';

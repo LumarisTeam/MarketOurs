@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -14,6 +14,7 @@ import '../pages/hot/hot_screen.dart';
 import '../pages/post/create_post_screen.dart';
 import '../pages/post/post_detail_screen.dart';
 import '../pages/profile/change_password_screen.dart';
+import '../pages/profile/binding_screen.dart';
 import '../pages/profile/following_screen.dart';
 import '../pages/profile/profile_screen.dart';
 import '../pages/profile/public_profile_screen.dart';
@@ -35,6 +36,7 @@ abstract final class AppRoutePaths {
   static const hot = '/hot';
   static const profile = '/profile';
   static const changePassword = '/profile/reset-password';
+  static const bindings = '/profile/bindings';
   static const following = '/following';
   static const publicProfile = '/user/:userId';
   static const createPost = '/post/create';
@@ -54,6 +56,7 @@ abstract final class AppRouteNames {
   static const hot = 'hot';
   static const profile = 'profile';
   static const changePassword = 'change-password';
+  static const bindings = 'bindings';
   static const following = 'following';
   static const publicProfile = 'public-profile';
   static const createPost = 'create-post';
@@ -159,9 +162,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutePaths.oauthWebView,
         name: AppRouteNames.oauthWebView,
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final provider = state.uri.queryParameters['provider'] ?? 'Github';
-          return OAuthWebViewScreen(provider: provider);
+          final purpose = state.uri.queryParameters['purpose'] ?? 'login';
+          return CupertinoPage<void>(
+            key: state.pageKey,
+            child: OAuthWebViewScreen(
+              provider: provider,
+              purpose: purpose,
+            ),
+          );
         },
       ),
       StatefulShellRoute.indexedStack(
@@ -207,6 +217,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             ],
           ),
         ],
+      ),
+      GoRoute(
+        path: AppRoutePaths.bindings,
+        name: AppRouteNames.bindings,
+        builder: (context, state) => const BindingScreen(),
       ),
       GoRoute(
         path: AppRoutePaths.changePassword,
