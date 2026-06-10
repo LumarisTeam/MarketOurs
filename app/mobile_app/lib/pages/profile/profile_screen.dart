@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
@@ -607,7 +608,8 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
   late final TextEditingController _infoController;
 
   String _avatarUrl = '';
-  bool _isUploadingAvatar = false;
+  XFile? _avatarFile;
+  bool _isSaving = false;
   final _imagePicker = ImagePicker();
   final _fileService = FileService();
 
@@ -633,10 +635,10 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
   void _generateRandomAvatar() {
     final random = Random();
     final seed = random.nextInt(0xFFFFFF).toRadixString(36).padLeft(5, '0');
-    setState(
-      () =>
-          _avatarUrl = 'https://api.dicebear.com/9.x/avataaars/svg?seed=$seed',
-    );
+    setState(() {
+      _avatarFile = null;
+      _avatarUrl = 'https://api.dicebear.com/9.x/avataaars/svg?seed=$seed';
+    });
   }
 
   Future<void> _pickFromGallery() async {
@@ -644,7 +646,12 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
       source: ImageSource.gallery,
       imageQuality: 90,
     );
-    if (picked != null) await _uploadAvatar(picked);
+    if (picked != null) {
+      setState(() {
+        _avatarFile = picked;
+        _avatarUrl = '';
+      });
+    }
   }
 
   Future<void> _takePhoto() async {
@@ -652,23 +659,11 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
       source: ImageSource.camera,
       imageQuality: 90,
     );
-    if (picked != null) await _uploadAvatar(picked);
-  }
-
-  Future<void> _uploadAvatar(XFile file) async {
-    setState(() => _isUploadingAvatar = true);
-    try {
-      final response = await _fileService.uploadImage(file);
-      final url = response.data;
-      if (url != null && url.isNotEmpty && mounted) {
-        setState(() => _avatarUrl = url);
-      }
-    } catch (_) {
-      if (mounted) {
-        await AppFeedback.showError(context, message: '头像上传失败');
-      }
-    } finally {
-      if (mounted) setState(() => _isUploadingAvatar = false);
+    if (picked != null) {
+      setState(() {
+        _avatarFile = picked;
+        _avatarUrl = '';
+      });
     }
   }
 
@@ -712,14 +707,36 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
+    setState(() => _isSaving = true);
     try {
+      var avatar = _avatarUrl;
+      if (_avatarFile != null) {
+        try {
+          final uploadResponse = await _fileService.uploadAvatar(_avatarFile!);
+          final url = uploadResponse.data;
+          if (url != null && url.isNotEmpty) {
+            avatar = url;
+          } else {
+            if (!mounted) return;
+            await AppFeedback.showError(context, message: '头像上传失败');
+            return;
+          }
+        } catch (_) {
+          if (!mounted) return;
+          await AppFeedback.showError(context, message: '头像上传失败');
+          return;
+        }
+      }
+
+      if (!mounted) return;
+
       await ref
           .read(authControllerProvider.notifier)
           .updateProfile(
             UserUpdateDto(
               name: _nameController.text.trim(),
               info: _infoController.text.trim(),
-              avatar: _avatarUrl,
+              avatar: avatar,
             ),
           );
       if (!mounted) return;
@@ -732,16 +749,23 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
           .asData
           ?.value
           .errorMessage;
-      if (errorMessage != null && errorMessage.isNotEmpty && mounted) {
-        await AppFeedback.showError(context, message: errorMessage);
+      if (mounted) {
+        await AppFeedback.showError(
+          context,
+          message: errorMessage?.isNotEmpty == true
+              ? errorMessage!
+              : '个人资料更新失败，请稍后重试',
+        );
       }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider).asData?.value;
-    final isSubmitting = authState?.isSubmitting ?? false;
+    final isSubmitting = _isSaving || (authState?.isSubmitting ?? false);
 
     return Padding(
       padding: EdgeInsets.only(
@@ -761,20 +785,15 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
             // Avatar picker
             Center(
               child: GestureDetector(
-                onTap: _isUploadingAvatar ? null : _showAvatarOptions,
+                onTap: isSubmitting ? null : _showAvatarOptions,
                 child: Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    AppAvatar(
+                    _AvatarPreview(
+                      file: _avatarFile,
                       url: _avatarUrl,
                       name: _nameController.text,
-                      size: 88,
-                      radius: 44,
                     ),
-                    if (_isUploadingAvatar)
-                      const Positioned.fill(
-                        child: Center(child: CupertinoActivityIndicator()),
-                      ),
                     Positioned(
                       right: -4,
                       bottom: -4,
@@ -814,12 +833,39 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
             ),
             const SizedBox(height: 24),
             AppPrimaryButton(
-              onPressed: isSubmitting || _isUploadingAvatar ? null : _submit,
+              onPressed: isSubmitting ? null : _submit,
               child: Text(isSubmitting ? '保存中...' : '保存修改'),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _AvatarPreview extends StatelessWidget {
+  const _AvatarPreview({required this.file, required this.url, this.name});
+
+  final XFile? file;
+  final String url;
+  final String? name;
+
+  @override
+  Widget build(BuildContext context) {
+    final localFile = file;
+    if (localFile == null) {
+      return AppAvatar(url: url, name: name, size: 88, radius: 44);
+    }
+
+    return Container(
+      width: 88,
+      height: 88,
+      decoration: BoxDecoration(
+        color: CupertinoDynamicColor.resolve(AppColors.secondary, context),
+        borderRadius: BorderRadius.circular(44),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Image.file(File(localFile.path), fit: BoxFit.cover),
     );
   }
 }
