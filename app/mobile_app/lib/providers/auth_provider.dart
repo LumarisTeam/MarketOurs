@@ -11,6 +11,7 @@ import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/auth_storage.dart';
 import '../services/user_service.dart';
+import 'post_feed_provider.dart';
 
 enum AuthStatus { unknown, unauthenticated, authenticated }
 
@@ -92,6 +93,9 @@ class AuthController extends AsyncNotifier<AuthState> {
       final latestSession = await _storage.readSession();
       final restoredSession = (latestSession ?? session).copyWith(user: user);
       await _storage.saveUser(user);
+
+      ref.read(homeFeedProvider);
+
       return AuthState.authenticated(restoredSession);
     } catch (_) {
       await _clearStoredSessionSafely();
