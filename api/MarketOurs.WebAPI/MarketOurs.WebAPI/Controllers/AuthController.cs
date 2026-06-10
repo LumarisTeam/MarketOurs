@@ -269,11 +269,13 @@ public class AuthController(ILoginService loginService, IUserService userService
     /// <param name="provider">登录提供方 (如 GitHub, Google, Weixin)</param>
     /// <param name="returnUrl">登录成功后的回跳地址</param>
     /// <param name="purpose">用途: login 或 bind</param>
+    /// <param name="deviceType">设备类型</param>
     /// <returns>跳转至第三方平台的 Challenge 响应</returns>
     [HttpGet("external-login")]
     [AllowAnonymous]
     public async Task<IActionResult> ExternalLogin([FromServices] IAuthenticationSchemeProvider schemeProvider,
-        [FromQuery] string provider, [FromQuery] string returnUrl = "/", [FromQuery] string purpose = "login")
+        [FromQuery] string provider, [FromQuery] string returnUrl = "/", [FromQuery] string purpose = "login",
+        [FromQuery] string deviceType = "Web")
     {
         var scheme = (await schemeProvider.GetAllSchemesAsync())
             .FirstOrDefault(s => string.Equals(s.Name, provider, StringComparison.OrdinalIgnoreCase));
@@ -284,7 +286,7 @@ public class AuthController(ILoginService loginService, IUserService userService
                 $"provider={provider}");
         }
 
-        var redirectUrl = Url.Action(nameof(ExternalLoginCallback), "Auth", new { returnUrl });
+        var redirectUrl = Url.Action(nameof(ExternalLoginCallback), "Auth", new { returnUrl, deviceType });
         var properties = new AuthenticationProperties
         {
             RedirectUri = redirectUrl,
@@ -308,11 +310,12 @@ public class AuthController(ILoginService loginService, IUserService userService
     /// </summary>
     /// <param name="returnUrl">最终回跳地址</param>
     /// <param name="remoteError">远程错误信息 (如有)</param>
+    /// <param name="deviceType">设备类型</param>
     /// <returns>重定向至前端页面，并带上 AccessToken</returns>
     [HttpGet("external-login-callback")]
     [AllowAnonymous]
     public async Task<IActionResult> ExternalLoginCallback([FromQuery] string returnUrl = "/",
-        [FromQuery] string? remoteError = null)
+        [FromQuery] string? remoteError = null, [FromQuery] string deviceType = "Web")
     {
         if (remoteError != null)
         {
@@ -333,6 +336,7 @@ public class AuthController(ILoginService loginService, IUserService userService
         var provider = result.Properties?.Items[".AuthScheme"] ?? "Unknown";
         var providerId = result.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
         var email = result.Principal.FindFirstValue(ClaimTypes.Email);
+        var phone = result.Principal.FindFirstValue(ClaimTypes.MobilePhone);
         var name = result.Principal.FindFirstValue(ClaimTypes.Name) ?? email?.Split('@')[0];
         var avatar = result.Principal.FindFirstValue("urn:github:avatar")
                      ?? result.Principal.FindFirstValue("image")
@@ -343,9 +347,9 @@ public class AuthController(ILoginService loginService, IUserService userService
             return Redirect($"{returnUrl}?error={Uri.EscapeDataString("无法获取第三方用户信息")}");
         }
 
-        if (string.IsNullOrEmpty(email))
+        if (string.IsNullOrEmpty(phone))
         {
-            email = $"{providerId}@external.local";
+            phone = $"+test {providerId}";
         }
 
         try
@@ -357,8 +361,9 @@ public class AuthController(ILoginService loginService, IUserService userService
                 return Redirect($"{returnUrl}?message={Uri.EscapeDataString("绑定成功")}");
             }
 
-            var token = await loginService.LoginWithOAuthAsync(provider, providerId, email, name ?? "User", avatar,
-                "Web");
+            var token = await loginService.LoginWithOAuthAsync(provider, providerId, email ?? phone, name ?? "User",
+                avatar,
+                deviceType);
 
             // 登录成功后注销外部cookie，保持状态清晰
             await HttpContext.SignOutAsync("OAuth2");

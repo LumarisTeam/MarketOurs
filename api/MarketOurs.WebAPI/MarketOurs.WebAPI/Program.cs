@@ -161,6 +161,29 @@ builder.Services.AddAuthentication(options =>
             Environment.GetEnvironmentVariable("GITHUB_CLIENTSECRET", EnvironmentVariableTarget.Process) ?? "default";
         options.CallbackPath = "/Auth/signin-github";
         options.SignInScheme = "OAuth2";
+        options.Events.OnCreatingTicket = async context =>
+        {
+            // GitHub /user endpoint 的 email 字段在用户设为私密时返回 null
+            // 需要额外调用 /user/emails 获取主邮箱
+            var email = context.Identity?.FindFirst(ClaimTypes.Email)?.Value;
+            if (string.IsNullOrEmpty(email))
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Get, "https://api.github.com/user/emails");
+                request.Headers.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", context.AccessToken);
+                request.Headers.UserAgent.TryParseAdd("MarketOurs");
+                var response = await context.Backchannel.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    var emails = await response.Content.ReadFromJsonAsync<List<GitHubEmailItem>>();
+                    var primary = emails?.FirstOrDefault(e => e.Primary) ?? emails?.FirstOrDefault(e => e.Verified);
+                    if (primary != null && !string.IsNullOrEmpty(primary.Email))
+                    {
+                        context.Identity?.AddClaim(new Claim(ClaimTypes.Email, primary.Email));
+                    }
+                }
+            }
+        };
     })
     .AddGoogle(options =>
     {
@@ -538,3 +561,5 @@ app.MapMetrics("/api/metrics");
 app.MapHealthChecks("/api/health");
 
 app.Run();
+
+internal record GitHubEmailItem(string Email, bool Primary, bool Verified);
