@@ -299,7 +299,7 @@ public class AuthController(ILoginService loginService, IUserService userService
         // 如果是绑定，需要确保持有当前用户 ID
         if (purpose == "bind" && User.Identity?.IsAuthenticated == true)
         {
-            properties.Items["userId"] = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            properties.Items["mo_user_id"] = User.FindFirstValue(ClaimTypes.NameIdentifier);
         }
 
         return Challenge(properties, scheme.Name);
@@ -329,8 +329,8 @@ public class AuthController(ILoginService loginService, IUserService userService
         }
 
         var purpose = result.Properties?.Items["purpose"] ?? "login";
-        var userIdForBind = result.Properties?.Items.ContainsKey("userId") == true
-            ? result.Properties.Items["userId"]
+        var userIdForBind = result.Properties?.Items.ContainsKey("mo_user_id") == true
+            ? result.Properties.Items["mo_user_id"]
             : null;
 
         var provider = result.Properties?.Items[".AuthScheme"] ?? "Unknown";
@@ -349,7 +349,8 @@ public class AuthController(ILoginService loginService, IUserService userService
 
         if (string.Equals(provider, "GitHub", StringComparison.OrdinalIgnoreCase) && string.IsNullOrEmpty(email))
         {
-            return Redirect($"{returnUrl}?error={Uri.EscapeDataString("无法获取 GitHub 已验证邮箱，请确认 GitHub 账号至少有一个已验证邮箱并重新授权。")}");
+            return Redirect(
+                $"{returnUrl}?error={Uri.EscapeDataString("无法获取 GitHub 已验证邮箱，请确认 GitHub 账号至少有一个已验证邮箱并重新授权。")}");
         }
 
         if (string.IsNullOrEmpty(phone))
@@ -359,8 +360,13 @@ public class AuthController(ILoginService loginService, IUserService userService
 
         try
         {
-            if (purpose == "bind" && !string.IsNullOrEmpty(userIdForBind))
+            if (purpose == "bind")
             {
+                if (string.IsNullOrEmpty(userIdForBind))
+                {
+                    return Redirect($"{returnUrl}?error={Uri.EscapeDataString("请先登录")}");
+                }
+
                 await loginService.BindThirdPartyAsync(userIdForBind, provider, providerId);
                 await HttpContext.SignOutAsync("OAuth2");
                 return Redirect($"{returnUrl}?message={Uri.EscapeDataString("绑定成功")}");

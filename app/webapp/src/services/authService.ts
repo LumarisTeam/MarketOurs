@@ -1,4 +1,5 @@
 import { apiClient, BASE_URL } from './apiClient';
+import { getAccessToken } from './authSession';
 import type {
   LoginRequest,
   TokenDto,
@@ -49,6 +50,14 @@ export const authService = {
   verifyEmailCode: (data: VerifyCodeRequest) => apiClient.post<void>('/Auth/verify-email-code', data),
 
   getExternalLoginUrl: (provider: string, returnUrl: string, purpose: 'login' | 'bind' = 'login') => {
-    return `${BASE_URL}/Auth/external-login?provider=${provider}&returnUrl=${encodeURIComponent(returnUrl)}&purpose=${purpose}`;
+    let url = `${BASE_URL}/Auth/external-login?provider=${provider}&returnUrl=${encodeURIComponent(returnUrl)}&purpose=${purpose}`;
+    // 绑定操作需要传递 access_token，因为页面跳转不会携带 Authorization 头
+    if (purpose === 'bind') {
+      const token = getAccessToken();
+      if (token) {
+        url += `&access_token=${encodeURIComponent(token)}`;
+      }
+    }
+    return url;
   },
 };
