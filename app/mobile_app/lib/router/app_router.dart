@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../pages/auth/auth_loading_screen.dart';
 import '../pages/auth/forgot_password_screen.dart';
 import '../pages/auth/login_screen.dart';
+import '../pages/auth/oauth_webview_screen.dart';
 import '../pages/auth/register_screen.dart';
 import '../pages/auth/register_verify_screen.dart';
 import '../pages/auth/reset_password_screen.dart';
@@ -28,6 +29,7 @@ abstract final class AppRoutePaths {
   static const registerVerify = '/register/verify';
   static const forgotPassword = '/forgot-password';
   static const resetPassword = '/reset-password';
+  static const oauthWebView = '/oauth-webview';
   static const home = '/';
   static const notifications = '/notifications';
   static const hot = '/hot';
@@ -46,6 +48,7 @@ abstract final class AppRouteNames {
   static const registerVerify = 'register-verify';
   static const forgotPassword = 'forgot-password';
   static const resetPassword = 'reset-password';
+  static const oauthWebView = 'oauth-webview';
   static const home = 'home';
   static const notifications = 'notifications';
   static const hot = 'hot';
@@ -153,6 +156,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           account: state.uri.queryParameters['account'],
         ),
       ),
+      GoRoute(
+        path: AppRoutePaths.oauthWebView,
+        name: AppRouteNames.oauthWebView,
+        builder: (context, state) {
+          final provider = state.uri.queryParameters['provider'] ?? 'Github';
+          return OAuthWebViewScreen(provider: provider);
+        },
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
             MainShell(navigationShell: navigationShell),
@@ -247,6 +258,7 @@ const _authRoutes = {
   AppRoutePaths.registerVerify,
   AppRoutePaths.forgotPassword,
   AppRoutePaths.resetPassword,
+  AppRoutePaths.oauthWebView,
 };
 
 bool _isPublicRoute(String path) {

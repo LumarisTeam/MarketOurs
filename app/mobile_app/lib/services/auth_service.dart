@@ -166,4 +166,17 @@ class AuthService {
     );
     return ApiResponse.fromJson(response.data, (json) => json);
   }
+
+  String buildExternalLoginUrl({
+    required String provider,
+    required String returnUrl,
+    String purpose = 'login',
+  }) {
+    final encodedReturn = Uri.encodeQueryComponent(returnUrl);
+    return '${ApiService.baseUrl}/Auth/external-login?provider=$provider&returnUrl=$encodedReturn&purpose=$purpose';
+  }
+
+  static String get oauthCallbackPath => '/oauth-callback';
+
+  static String get oauthCallbackUrl => '${ApiService.baseUrl}$oauthCallbackPath';
 }

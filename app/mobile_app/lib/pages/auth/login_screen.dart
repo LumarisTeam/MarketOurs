@@ -89,6 +89,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     });
   }
 
+  void _handleOAuthLogin(String provider) {
+    context.push(
+      '${AppRoutePaths.oauthWebView}?provider=$provider',
+    );
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -310,11 +316,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 _SocialButton(
                   icon: CupertinoIcons.person_circle,
                   label: 'Ours',
+                  onPressed: () => _handleOAuthLogin('Ours'),
                 ),
                 const SizedBox(width: 24),
-                _SocialButton(icon: CupertinoIcons.globe, label: 'Google'),
+                _SocialButton(
+                  icon: CupertinoIcons.globe,
+                  label: 'Google',
+                  onPressed: () => _handleOAuthLogin('Google'),
+                ),
                 const SizedBox(width: 24),
-                _SocialButton(icon: CupertinoIcons.cloud, label: 'Github'),
+                _SocialButton(
+                  icon: CupertinoIcons.cloud,
+                  label: 'Github',
+                  onPressed: () => _handleOAuthLogin('Github'),
+                ),
               ],
             ),
           ],
@@ -325,9 +340,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 }
 
 class _SocialButton extends StatelessWidget {
-  const _SocialButton({required this.icon, required this.label});
+  const _SocialButton({
+    required this.icon,
+    required this.label,
+    this.onPressed,
+  });
   final IconData icon;
   final String label;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -335,7 +355,7 @@ class _SocialButton extends StatelessWidget {
       children: [
         CupertinoButton(
           padding: EdgeInsets.zero,
-          onPressed: () {},
+          onPressed: onPressed,
           child: Container(
             width: 48,
             height: 48,

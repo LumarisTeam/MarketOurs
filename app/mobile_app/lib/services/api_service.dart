@@ -13,6 +13,8 @@ class ApiService {
   static final ApiService _instance = ApiService._internal();
   static const String _apiBaseUrlOverride =
       'https://lumalisapi.luckyfishes.site';
+
+  static String get baseUrl => _resolveBaseUrl();
   static const String _skipAuthExtraKey = 'skipAuth';
   static const String _skipUnauthorizedHandlerExtraKey =
       'skipUnauthorizedHandler';

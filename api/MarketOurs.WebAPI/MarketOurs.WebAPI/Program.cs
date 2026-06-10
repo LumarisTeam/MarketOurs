@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
@@ -48,6 +49,14 @@ builder.Services.Configure<FormOptions>(options =>
 builder.Services.Configure<KestrelServerOptions>(options =>
 {
     options.Limits.MaxRequestBodySize = 10 * 1024 * 1024; // 10MB
+});
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+    options.RequireHeaderSymmetry = false;
 });
 
 builder.Services.AddControllers();
@@ -188,10 +197,13 @@ builder.Services.AddAuthentication(options =>
             OnCreatingTicket = async context =>
             {
                 var request = new HttpRequestMessage(HttpMethod.Get, context.Options.UserInformationEndpoint);
-                request.Headers.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-                request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", context.AccessToken);
+                request.Headers.Accept.Add(
+                    new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+                request.Headers.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", context.AccessToken);
 
-                var response = await context.Backchannel.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, context.HttpContext.RequestAborted);
+                var response = await context.Backchannel.SendAsync(request, HttpCompletionOption.ResponseHeadersRead,
+                    context.HttpContext.RequestAborted);
                 response.EnsureSuccessStatusCode();
 
                 var user = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
@@ -199,11 +211,12 @@ builder.Services.AddAuthentication(options =>
                 var root = user.RootElement;
                 var id = root.GetProperty("id").GetString();
                 var name = root.GetProperty("name").GetString();
-                
+
                 if (!string.IsNullOrEmpty(id))
                 {
                     context.Identity?.AddClaim(new Claim(ClaimTypes.NameIdentifier, id));
                 }
+
                 if (!string.IsNullOrEmpty(name))
                 {
                     context.Identity?.AddClaim(new Claim(ClaimTypes.Name, name));
@@ -507,6 +520,7 @@ app.UseStaticFiles();
 // 先配置会话中间件
 app.UseSession(); // 会话中间件应该在认证和跨域中间件之前
 
+app.UseForwardedHeaders();
 app.UseHttpsRedirection();
 app.UseAuthentication(); // 添加这行以启用身份验证中间件
 app.UseAuthorization();

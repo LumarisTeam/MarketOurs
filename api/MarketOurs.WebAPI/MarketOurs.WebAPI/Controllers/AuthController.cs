@@ -272,26 +272,34 @@ public class AuthController(ILoginService loginService, IUserService userService
     /// <returns>跳转至第三方平台的 Challenge 响应</returns>
     [HttpGet("external-login")]
     [AllowAnonymous]
-    public async Task<IActionResult> ExternalLogin([FromServices] IAuthenticationSchemeProvider schemeProvider, [FromQuery] string provider, [FromQuery] string returnUrl = "/", [FromQuery] string purpose = "login")
+    public async Task<IActionResult> ExternalLogin([FromServices] IAuthenticationSchemeProvider schemeProvider,
+        [FromQuery] string provider, [FromQuery] string returnUrl = "/", [FromQuery] string purpose = "login")
     {
         var scheme = (await schemeProvider.GetAllSchemesAsync())
             .FirstOrDefault(s => string.Equals(s.Name, provider, StringComparison.OrdinalIgnoreCase));
 
         if (scheme == null)
         {
-            throw new BusinessException(ErrorCode.OAuthProviderNotSupported, $"不支持的第三方登录: {provider}", 400, $"provider={provider}");
+            throw new BusinessException(ErrorCode.OAuthProviderNotSupported, $"不支持的第三方登录: {provider}", 400,
+                $"provider={provider}");
         }
 
         var redirectUrl = Url.Action(nameof(ExternalLoginCallback), "Auth", new { returnUrl });
-        var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
-        properties.Items["purpose"] = purpose;
-        
+        var properties = new AuthenticationProperties
+        {
+            RedirectUri = redirectUrl,
+            Items =
+            {
+                ["purpose"] = purpose
+            }
+        };
+
         // 如果是绑定，需要确保持有当前用户 ID
         if (purpose == "bind" && User.Identity?.IsAuthenticated == true)
         {
             properties.Items["userId"] = User.FindFirstValue(ClaimTypes.NameIdentifier);
         }
-        
+
         return Challenge(properties, scheme.Name);
     }
 
@@ -318,7 +326,9 @@ public class AuthController(ILoginService loginService, IUserService userService
         }
 
         var purpose = result.Properties?.Items["purpose"] ?? "login";
-        var userIdForBind = result.Properties?.Items.ContainsKey("userId") == true ? result.Properties.Items["userId"] : null;
+        var userIdForBind = result.Properties?.Items.ContainsKey("userId") == true
+            ? result.Properties.Items["userId"]
+            : null;
 
         var provider = result.Properties?.Items[".AuthScheme"] ?? "Unknown";
         var providerId = result.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -347,7 +357,8 @@ public class AuthController(ILoginService loginService, IUserService userService
                 return Redirect($"{returnUrl}?message={Uri.EscapeDataString("绑定成功")}");
             }
 
-            var token = await loginService.LoginWithOAuthAsync(provider, providerId, email, name ?? "User", avatar, "Web");
+            var token = await loginService.LoginWithOAuthAsync(provider, providerId, email, name ?? "User", avatar,
+                "Web");
 
             // 登录成功后注销外部cookie，保持状态清晰
             await HttpContext.SignOutAsync("OAuth2");

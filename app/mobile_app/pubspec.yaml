@@ -30,6 +30,7 @@ dependencies:
   image_picker: ^1.2.0
   carousel_slider: ^5.1.2
   photo_view: ^0.15.0
+  webview_flutter: ^4.10.0
 
 dev_dependencies:
   flutter_test:

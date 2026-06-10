@@ -437,6 +437,52 @@ class AuthController extends AsyncNotifier<AuthState> {
     await refreshProfile();
   }
 
+  Future<bool> handleOAuthTokens({
+    required String accessToken,
+    required String refreshToken,
+  }) async {
+    final current = state.asData?.value ?? AuthState.unauthenticated();
+    state = AsyncData(current.copyWith(isSubmitting: true, clearError: true));
+    var savedTokens = false;
+
+    try {
+      final token = TokenDto(
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+      );
+      await _storage.saveTokens(token);
+      savedTokens = true;
+      final user = await _fetchCurrentUser();
+      await _storage.saveUser(user);
+
+      state = AsyncData(
+        AuthState.authenticated(
+          AuthSession(
+            accessToken: token.accessToken,
+            refreshToken: token.refreshToken,
+            user: user,
+          ),
+        ),
+      );
+      return true;
+    } catch (error) {
+      if (savedTokens) {
+        await _clearStoredSessionSafely();
+        state = AsyncData(
+          AuthState.unauthenticated(errorMessage: _normalizeError(error)),
+        );
+        return false;
+      }
+      state = AsyncData(
+        current.copyWith(
+          isSubmitting: false,
+          errorMessage: _normalizeError(error),
+        ),
+      );
+      return false;
+    }
+  }
+
   Future<void> clearError() async {
     final current = state.asData?.value;
     if (current == null) {
