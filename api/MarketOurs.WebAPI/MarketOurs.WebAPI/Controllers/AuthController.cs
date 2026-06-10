@@ -228,10 +228,10 @@ public class AuthController(ILoginService loginService, IUserService userService
     /// <returns>操作结果描述</returns>
     [HttpPost("send-email-code")]
     [Authorize]
-    public async Task<ApiResponse> SendEmailCode()
+    public async Task<ApiResponse> SendEmailCode([FromQuery] string purpose = "verification")
     {
         var userId = this.GetRequiredUserId();
-        await userService.SendVerificationEmailAsync(userId);
+        await userService.SendVerificationEmailAsync(userId, ParseEmailVerificationPurpose(purpose));
         return ApiResponse.Success("验证码已发送至您的邮箱");
     }
 
@@ -272,6 +272,16 @@ public class AuthController(ILoginService loginService, IUserService userService
         var userId = this.GetRequiredUserId();
         await loginService.UnbindThirdPartyAsync(userId, request.Provider, request.Channel, request.Code);
         return ApiResponse.Success("解绑成功");
+    }
+
+    private static EmailVerificationPurpose ParseEmailVerificationPurpose(string purpose)
+    {
+        return purpose.Trim().ToLowerInvariant() switch
+        {
+            "unbind-third-party" or "third-party-unbind" => EmailVerificationPurpose.ThirdPartyUnbind,
+            "verification" or "email-verification" => EmailVerificationPurpose.EmailVerification,
+            _ => throw new BusinessException(ErrorCode.ParameterFormatError, "不支持的邮箱验证码用途")
+        };
     }
 
     /// <summary>

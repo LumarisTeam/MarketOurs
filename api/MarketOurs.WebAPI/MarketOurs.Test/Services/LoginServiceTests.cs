@@ -1,3 +1,4 @@
+using System.Text.Json;
 using MarketOurs.Data.DTOs;
 using MarketOurs.DataAPI.Configs;
 using MarketOurs.DataAPI.Exceptions;
@@ -209,5 +210,58 @@ public class LoginServiceTests
         Assert.That(ex!.ErrorCode, Is.EqualTo(ErrorCode.InvalidToken));
         _mockUserService.Verify(s => s.ClearThirdPartyBindingAsync(It.IsAny<string>(), It.IsAny<string>()),
             Times.Never);
+    }
+
+    [Test]
+    public async Task SendRegistrationCodeAsync_EmailAccount_UsesRegistrationTemplate()
+    {
+        // Arrange
+        var request = new UserCreateDto { Account = "new@test.com", Password = "password", Name = "New User" };
+        _mockDatabase.Setup(db => db.StringGetAsync(CacheKeys.PreRegisterData("reg-token"), It.IsAny<CommandFlags>()))
+            .ReturnsAsync(JsonSerializer.Serialize(request));
+        _mockEmailService.Setup(s => s.SendEmailWithTemplateAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<object>(),
+                It.IsAny<bool>()))
+            .ReturnsAsync(true);
+
+        // Act
+        var result = await _loginService.SendRegistrationCodeAsync("reg-token");
+
+        // Assert
+        Assert.That(result, Is.True);
+        _mockEmailService.Verify(s => s.SendEmailWithTemplateAsync(
+            "new@test.com",
+            "欢迎加入 MarketOurs - 验证您的注册信息",
+            EmailTemplates.RegistrationCode,
+            It.IsAny<object>(),
+            true), Times.Once);
+    }
+
+    [Test]
+    public async Task SendLoginCodeAsync_EmailAccount_UsesLoginTemplate()
+    {
+        // Arrange
+        _mockEmailService.Setup(s => s.SendEmailWithTemplateAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<object>(),
+                It.IsAny<bool>()))
+            .ReturnsAsync(true);
+
+        // Act
+        var result = await _loginService.SendLoginCodeAsync("login@test.com");
+
+        // Assert
+        Assert.That(result, Is.True);
+        _mockEmailService.Verify(s => s.SendEmailWithTemplateAsync(
+            "login@test.com",
+            "MarketOurs - 登录验证码",
+            EmailTemplates.LoginCode,
+            It.IsAny<object>(),
+            true), Times.Once);
     }
 }

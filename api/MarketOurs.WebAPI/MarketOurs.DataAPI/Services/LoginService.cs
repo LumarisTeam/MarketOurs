@@ -365,7 +365,7 @@ public class LoginService(
         if (isEmail)
         {
             var subject = "欢迎加入 MarketOurs - 验证您的注册信息";
-            var sent = await emailService.SendEmailWithTemplateAsync(request.Account, subject, UserService.VerificationEmailTemplate,
+            var sent = await emailService.SendEmailWithTemplateAsync(request.Account, subject, EmailTemplates.RegistrationCode,
                 new { token = code });
             if (!sent) throw new BusinessException(ErrorCode.ExternalServiceFailed, "注册验证码发送失败");
             return true;
@@ -453,7 +453,7 @@ public class LoginService(
         if (isEmail)
         {
             var subject = "MarketOurs - 登录验证码";
-            var sent = await emailService.SendEmailWithTemplateAsync(account, subject, UserService.VerificationEmailTemplate,
+            var sent = await emailService.SendEmailWithTemplateAsync(account, subject, EmailTemplates.LoginCode,
                 new { token = code });
             if (!sent) throw new BusinessException(ErrorCode.ExternalServiceFailed, "登录验证码发送失败");
             return true;

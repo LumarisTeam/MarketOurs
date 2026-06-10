@@ -333,4 +333,85 @@ public class UserServiceTests
             await _userService.ClearThirdPartyBindingAsync("1", "Twitter"));
         Assert.That(ex!.ErrorCode, Is.EqualTo(ErrorCode.ParameterFormatError));
     }
+
+    [Test]
+    public async Task SendVerificationEmailAsync_UsesEmailVerificationTemplate()
+    {
+        // Arrange
+        var user = new UserModel { Id = "1", Email = "verify@test.com" };
+        _mockUserRepo.Setup(r => r.GetByIdAsync("1")).ReturnsAsync(user);
+        _mockEmailService.Setup(s => s.SendEmailWithTemplateAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<object>(),
+                It.IsAny<bool>()))
+            .ReturnsAsync(true);
+
+        // Act
+        var result = await _userService.SendVerificationEmailAsync("1");
+
+        // Assert
+        Assert.That(result, Is.True);
+        _mockEmailService.Verify(s => s.SendEmailWithTemplateAsync(
+            "verify@test.com",
+            "欢迎加入 MarketOurs - 邮箱验证",
+            EmailTemplates.EmailVerification,
+            It.IsAny<object>(),
+            true), Times.Once);
+    }
+
+    [Test]
+    public async Task SendVerificationEmailAsync_ForThirdPartyUnbind_UsesUnbindTemplate()
+    {
+        // Arrange
+        var user = new UserModel { Id = "1", Email = "unbind@test.com" };
+        _mockUserRepo.Setup(r => r.GetByIdAsync("1")).ReturnsAsync(user);
+        _mockEmailService.Setup(s => s.SendEmailWithTemplateAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<object>(),
+                It.IsAny<bool>()))
+            .ReturnsAsync(true);
+
+        // Act
+        var result = await _userService.SendVerificationEmailAsync("1", EmailVerificationPurpose.ThirdPartyUnbind);
+
+        // Assert
+        Assert.That(result, Is.True);
+        _mockEmailService.Verify(s => s.SendEmailWithTemplateAsync(
+            "unbind@test.com",
+            "MarketOurs - 解绑第三方账号验证码",
+            EmailTemplates.ThirdPartyUnbindCode,
+            It.IsAny<object>(),
+            true), Times.Once);
+    }
+
+    [Test]
+    public async Task ForgotPasswordAsync_EmailAccount_UsesPasswordResetTemplate()
+    {
+        // Arrange
+        var user = new UserModel { Id = "1", Name = "Reset User", Email = "reset@test.com" };
+        _mockUserRepo.Setup(r => r.GetByAccountAsync("reset@test.com")).ReturnsAsync(user);
+        _mockEmailService.Setup(s => s.SendEmailWithTemplateAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<object>(),
+                It.IsAny<bool>()))
+            .ReturnsAsync(true);
+
+        // Act
+        var result = await _userService.ForgotPasswordAsync("reset@test.com");
+
+        // Assert
+        Assert.That(result, Is.True);
+        _mockEmailService.Verify(s => s.SendEmailWithTemplateAsync(
+            "reset@test.com",
+            "MarketOurs - 重置密码",
+            EmailTemplates.PasswordReset,
+            It.IsAny<object>(),
+            true), Times.Once);
+    }
 }
