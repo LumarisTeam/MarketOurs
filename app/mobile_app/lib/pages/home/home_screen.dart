@@ -7,6 +7,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/post_feed_provider.dart';
 import '../../router/app_router.dart';
 import '../../services/share_service.dart';
+import '../../services/error_messages.dart';
 import '../../ui/app_feedback.dart';
 import '../../ui/app_responsive.dart';
 import '../../ui/app_theme.dart';
@@ -116,7 +117,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         loading: () => const _FeedLoadingView(),
         error: (error, _) => _FeedErrorView(
-          message: '$error',
+          message: extractErrorFromException(error),
           onRetry: () => ref.read(homeFeedProvider.notifier).refresh(),
         ),
       ),

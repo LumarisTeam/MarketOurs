@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../providers/auth_provider.dart';
 import '../../router/app_router.dart';
+import '../../services/error_messages.dart';
 import '../../ui/app_feedback.dart';
 import '../../ui/app_fields.dart';
 import '../../ui/app_theme.dart';
@@ -58,12 +59,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       await AppFeedback.showSuccess(context, message: '验证码已发送');
     } catch (error) {
       if (!mounted) return;
-      // Handle the error directly here to avoid state listener side effects
-      String message = '发送失败，请稍后重试';
-      if (error.toString().isNotEmpty) {
-        message = error.toString().replaceFirst('Exception: ', '');
-      }
-      await AppFeedback.showError(context, message: message);
+      await AppFeedback.showError(
+        context,
+        message: extractErrorFromException(error),
+      );
     } finally {
       if (mounted) {
         setState(() => _isSendingCode = false);

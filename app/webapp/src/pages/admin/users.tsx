@@ -2,17 +2,10 @@ import { useEffect, useState } from "react"
 import { Search, ShieldAlert, ShieldCheck, Trash2 } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { adminService } from "../../services/adminService"
+import { extractUserMessage } from "../../services/errorCodes"
 import type { PagedResult, UserDto } from "../../types"
 
 const PAGE_SIZE = 10
-
-function getErrorMessage(error: unknown, fallback: string) {
-  if (typeof error === "object" && error !== null && "message" in error && typeof error.message === "string") {
-    return error.message
-  }
-
-  return fallback
-}
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat(undefined, {
@@ -45,7 +38,7 @@ export default function AdminUsersPage() {
 
         setUsers(response.data)
       } catch (err) {
-        setError(getErrorMessage(err, t("admin.common.load_error")))
+        setError(extractUserMessage(err, t("admin.common.load_error")))
       } finally {
         setIsLoading(false)
       }
@@ -72,7 +65,7 @@ export default function AdminUsersPage() {
       await refreshCurrentPage()
       setMessage(user.isActive ? t("admin.users.status_disabled") : t("admin.users.status_enabled"))
     } catch (err) {
-      setError(getErrorMessage(err, t("admin.common.action_error")))
+      setError(extractUserMessage(err, t("admin.common.action_error")))
     } finally {
       setActiveUserId(null)
     }
@@ -89,7 +82,7 @@ export default function AdminUsersPage() {
       await refreshCurrentPage(shouldStepBack ? page - 1 : page)
       setMessage(t("admin.users.deleted"))
     } catch (err) {
-      setError(getErrorMessage(err, t("admin.common.action_error")))
+      setError(extractUserMessage(err, t("admin.common.action_error")))
     } finally {
       setActiveUserId(null)
     }

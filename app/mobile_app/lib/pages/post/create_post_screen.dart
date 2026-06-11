@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../models/post.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/post_feed_provider.dart';
+import '../../services/error_messages.dart';
 import '../../router/app_router.dart';
 import '../../services/file_service.dart';
 import '../../ui/app_feedback.dart';
@@ -94,7 +95,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       if (!mounted) return;
       await AppFeedback.showError(
         context,
-        message: error.toString().replaceFirst('Exception: ', ''),
+        message: extractErrorFromException(error),
       );
     } finally {
       if (mounted) setState(() => _isSubmitting = false);

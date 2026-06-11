@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
 import '../models/auth.dart';
@@ -10,6 +9,7 @@ import '../models/user.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/auth_storage.dart';
+import '../services/error_messages.dart';
 import '../services/user_service.dart';
 import 'post_feed_provider.dart';
 
@@ -643,26 +643,7 @@ class AuthController extends AsyncNotifier<AuthState> {
   }
 
   String _normalizeError(Object error) {
-    if (error is DioException) {
-      final data = error.response?.data;
-      if (data is Map<String, dynamic>) {
-        final detail = data['detail'] ?? data['message'];
-        if (detail is String && detail.trim().isNotEmpty) {
-          return detail.trim();
-        }
-      }
-
-      final message = error.message?.trim();
-      if (message != null && message.isNotEmpty) {
-        return message;
-      }
-    }
-
-    final message = error.toString().trim();
-    if (message.startsWith('Exception:')) {
-      return message.substring('Exception:'.length).trim();
-    }
-    return message.isEmpty ? '操作失败，请稍后重试' : message;
+    return extractErrorFromException(error);
   }
 
   String _resolveDeviceType() {

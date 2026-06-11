@@ -10,6 +10,7 @@ import '../../providers/post_feed_provider.dart';
 import '../../router/app_router.dart';
 import '../../services/follow_service.dart';
 import '../../services/user_service.dart';
+import '../../services/error_messages.dart';
 import '../../ui/app_responsive.dart';
 import '../../ui/app_widgets.dart';
 
@@ -80,7 +81,7 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
         return;
       }
       setState(() {
-        _errorMessage = error.toString().replaceFirst('Exception: ', '');
+        _errorMessage = extractErrorFromException(error);
       });
     } finally {
       if (mounted) {

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { type RootState } from '../../stores';
 import { postService } from '../../services/postService';
 import { fileService } from '../../services/fileService';
+import { extractUserMessage } from '../../services/errorCodes';
 import { ImagePlus, X, Loader2, Send } from 'lucide-react';
 
 export default function CreatePostPage() {
@@ -72,7 +73,7 @@ export default function CreatePostPage() {
 
       navigate('/');
     } catch (err: any) {
-      setError(err.response?.data?.message || t('post.error_create_failed'));
+      setError(extractUserMessage(err, t('post.error_create_failed')));
     } finally {
       setIsSubmitting(false);
     }

@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../models/user.dart';
 import '../../providers/auth_provider.dart';
 import '../../router/app_router.dart';
+import '../../services/error_messages.dart';
 import '../../ui/app_feedback.dart';
 import '../../ui/app_fields.dart';
 import '../../ui/app_responsive.dart';
@@ -336,7 +337,7 @@ class _UnbindThirdPartyDialogState
       }
     } catch (error) {
       if (mounted) {
-        setState(() => _errorMessage = _normalizeError(error));
+        setState(() => _errorMessage = extractErrorFromException(error));
       }
     } finally {
       if (mounted) {
@@ -371,7 +372,7 @@ class _UnbindThirdPartyDialogState
       }
     } catch (error) {
       if (mounted) {
-        setState(() => _errorMessage = _normalizeError(error));
+        setState(() => _errorMessage = extractErrorFromException(error));
       }
     } finally {
       if (mounted) {
@@ -506,12 +507,4 @@ class _UnbindThirdPartyDialogState
 
   static bool _hasText(String? value) =>
       value != null && value.trim().isNotEmpty;
-
-  static String _normalizeError(Object error) {
-    final text = error.toString().trim();
-    if (text.startsWith('Exception:')) {
-      return text.substring('Exception:'.length).trim();
-    }
-    return text.isEmpty ? '操作失败，请稍后重试' : text;
-  }
 }

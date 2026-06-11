@@ -3,6 +3,7 @@ import { AreaChart } from "../../components/ui/chart"
 import { AlertCircle, Activity, FileText, MessageSquareWarning, Users } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { adminService } from "../../services/adminService"
+import { extractUserMessage } from "../../services/errorCodes"
 import type { AdminOverviewDto } from "../../types"
 
 const DATE_FORMATTER = new Intl.DateTimeFormat(undefined, {
@@ -13,14 +14,6 @@ const DATE_FORMATTER = new Intl.DateTimeFormat(undefined, {
 const RELATIVE_TIME_FORMATTER = new Intl.RelativeTimeFormat(undefined, {
   numeric: "auto",
 })
-
-function getErrorMessage(error: unknown, fallback: string) {
-  if (typeof error === "object" && error !== null && "message" in error && typeof error.message === "string") {
-    return error.message
-  }
-
-  return fallback
-}
 
 function formatRelativeTime(timestamp: string) {
   const target = new Date(timestamp).getTime()
@@ -55,7 +48,7 @@ export default function AdminDashboard() {
         const response = await adminService.getOverview()
         setOverview(response.data)
       } catch (err) {
-        setError(getErrorMessage(err, t("admin.common.load_error")))
+        setError(extractUserMessage(err, t("admin.common.load_error")))
       } finally {
         setIsLoading(false)
       }

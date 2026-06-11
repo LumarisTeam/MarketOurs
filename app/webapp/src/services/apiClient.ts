@@ -7,6 +7,7 @@ import {
 } from './authSession';
 import { store } from '../stores';
 import { logout } from '../stores/authSlice';
+import { getErrorMessage } from './errorCodes';
 
 export const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5053';
 
@@ -21,7 +22,18 @@ async function parseResponse<T>(response: Response): Promise<ApiResponse<T>> {
   const data = await response.json();
 
   if (!response.ok) {
-    throw data;
+    const userMessage = getErrorMessage(data.errorCode, data.message);
+    const error = new Error(userMessage) as Error & {
+      userMessage: string;
+      errorCode: number;
+      detail: string | null;
+      rawResponse: typeof data;
+    };
+    error.userMessage = userMessage;
+    error.errorCode = data.errorCode ?? 0;
+    error.detail = data.detail;
+    error.rawResponse = data;
+    throw error;
   }
 
   return data as ApiResponse<T>;

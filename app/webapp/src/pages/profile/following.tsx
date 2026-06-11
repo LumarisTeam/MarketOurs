@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link, useSearchParams } from "react-router";
 import { useSelector } from "react-redux";
-import { UserMinus, Ban, Loader2, Users, ArrowLeft } from "lucide-react";
+import { UserMinus, Ban, Loader2, Users, ArrowLeft, AlertCircle } from "lucide-react";
 import { followService } from "../../services/followService";
+import { extractUserMessage } from "../../services/errorCodes";
 import type { RootState } from "../../stores";
 import type { UserSimpleDto } from "../../types";
 
@@ -18,6 +19,7 @@ export default function FollowingPage() {
   const [blockedList, setBlockedList] = useState<UserSimpleDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     if (!currentUser) return;
@@ -32,6 +34,7 @@ export default function FollowingPage() {
       }
     } catch (err) {
       console.error("Failed to load list", err);
+      setError(extractUserMessage(err, "加载失败"));
     } finally {
       setLoading(false);
     }
@@ -48,6 +51,7 @@ export default function FollowingPage() {
       setFollowingList((prev) => prev.filter((u) => u.id !== userId));
     } catch (err) {
       console.error("Failed to unfollow", err);
+      setError(extractUserMessage(err, "操作失败"));
     } finally {
       setActionLoading(null);
     }
@@ -60,6 +64,7 @@ export default function FollowingPage() {
       setBlockedList((prev) => prev.filter((u) => u.id !== userId));
     } catch (err) {
       console.error("Failed to unblock", err);
+      setError(extractUserMessage(err, "操作失败"));
     } finally {
       setActionLoading(null);
     }
@@ -115,6 +120,17 @@ export default function FollowingPage() {
       {loading ? (
         <div className="flex justify-center py-16">
           <Loader2 className="animate-spin text-muted-foreground" size={32} />
+        </div>
+      ) : error ? (
+        <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-8 text-center">
+          <AlertCircle size={24} className="mx-auto mb-3 text-destructive" />
+          <p className="text-sm text-muted-foreground">{error}</p>
+          <button
+            onClick={loadData}
+            className="mt-4 rounded-xl bg-muted px-4 py-2 text-sm font-semibold hover:bg-border transition-colors"
+          >
+            重新加载
+          </button>
         </div>
       ) : list.length === 0 ? (
         <div className="rounded-[2rem] border border-dashed border-border bg-card px-6 py-16 text-center">

@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next"
 import { useSelector } from "react-redux"
 import { type RootState } from "../../stores"
 import { postService } from "../../services/postService"
+import { extractUserMessage } from "../../services/errorCodes"
 import type { PostDto } from "../../types"
 import { formatPostRelativeDate, getPostAuthorName, getPostExcerpt } from "../../lib/postDisplay"
 import { sharePost } from "../../lib/postShare"
@@ -47,10 +48,10 @@ export function PostCard({ post, onDelete }: { post: PostDto; onDelete?: (id: st
       } else if (outcome === "copied") {
         setShareFeedback("链接已复制");
       }
-    } catch (error) {
-      console.error(error);
-      setShareFeedback("分享失败，请稍后重试");
-    } finally {
+      } catch (error) {
+        console.error(error);
+        setShareFeedback(extractUserMessage(error, "分享失败，请稍后重试"));
+      } finally {
       window.setTimeout(() => setShareFeedback(null), 2500);
     }
   };
@@ -145,11 +146,13 @@ export default function HomePage() {
   const [searchInput, setSearchInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [feedError, setFeedError] = useState<string | null>(null);
   const observerTarget = useRef(null);
 
   const fetchPosts = useEffectEvent(async (pageNum: number, searchKw: string, append = true) => {
     if (loading) return;
     setLoading(true);
+    setFeedError(null);
     try {
       const res = await postService.getPosts(pageNum, 10, searchKw);
       const data = res.data;
@@ -161,6 +164,7 @@ export default function HomePage() {
       }
     } catch (err) {
       console.error(err);
+      setFeedError(extractUserMessage(err, t("common.error")));
     } finally {
       setLoading(false);
     }
@@ -212,6 +216,11 @@ export default function HomePage() {
       </form>
 
       <div className="space-y-6">
+        {feedError && (
+          <div className="p-4 rounded-2xl bg-destructive/10 text-destructive text-sm font-medium text-center animate-in fade-in duration-300">
+            {feedError}
+          </div>
+        )}
         {posts.map((post) => (
           <PostCard 
             key={post.id} 

@@ -16,6 +16,7 @@ import '../../services/comment_service.dart';
 import '../../services/follow_service.dart';
 import '../../services/share_service.dart';
 import '../../services/user_service.dart';
+import '../../services/error_messages.dart';
 import '../../ui/app_feedback.dart';
 import '../../ui/app_fields.dart';
 import '../../ui/app_responsive.dart';
@@ -99,7 +100,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     } catch (error) {
       if (!mounted) return;
       setState(() {
-        _errorMessage = error.toString().replaceFirst('Exception: ', '');
+        _errorMessage = extractErrorFromException(error);
         _isLoading = false;
       });
     }
@@ -114,7 +115,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         _syncCommentReactionState(_comments);
         _isCommentsLoading = false;
       });
-    } catch (_) {
+    } catch (error) {
       if (!mounted || commentsRequestId != _commentsRequestId) return;
       setState(() => _isCommentsLoading = false);
     }
@@ -197,7 +198,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       if (!mounted) return;
       await AppFeedback.showError(
         context,
-        message: error.toString().replaceFirst('Exception: ', ''),
+        message: extractErrorFromException(error),
       );
     } finally {
       if (mounted) setState(() => _isWorking = false);
@@ -233,7 +234,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       if (!mounted) return;
       await AppFeedback.showError(
         context,
-        message: error.toString().replaceFirst('Exception: ', ''),
+        message: extractErrorFromException(error),
       );
     } finally {
       if (mounted) setState(() => _isWorking = false);
@@ -288,7 +289,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       if (!mounted) return;
       await AppFeedback.showError(
         context,
-        message: error.toString().replaceFirst('Exception: ', ''),
+        message: extractErrorFromException(error),
       );
     } finally {
       if (mounted) setState(() => _isWorking = false);
@@ -315,7 +316,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       if (!mounted) return;
       await AppFeedback.showError(
         context,
-        message: error.toString().replaceFirst('Exception: ', ''),
+        message: extractErrorFromException(error),
       );
     } finally {
       if (mounted) setState(() => _isWorking = false);
@@ -335,7 +336,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       if (!mounted) return;
       await AppFeedback.showError(
         context,
-        message: error.toString().replaceFirst('Exception: ', ''),
+        message: extractErrorFromException(error),
       );
     } finally {
       if (mounted) setState(() => _isWorking = false);
@@ -484,7 +485,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       if (!mounted) return;
       await AppFeedback.showError(
         context,
-        message: error.toString().replaceFirst('Exception: ', ''),
+        message: extractErrorFromException(error),
       );
     } finally {
       if (mounted) setState(() => _isWorking = false);

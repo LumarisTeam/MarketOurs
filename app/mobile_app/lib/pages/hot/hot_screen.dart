@@ -6,6 +6,7 @@ import '../../models/post.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/post_feed_provider.dart';
 import '../../router/app_router.dart';
+import '../../services/error_messages.dart';
 import '../../ui/app_responsive.dart';
 import '../../ui/app_theme.dart';
 import '../../ui/app_widgets.dart';
@@ -64,7 +65,7 @@ class HotScreen extends ConsumerWidget {
             child: AppEmptyState(
               icon: CupertinoIcons.exclamationmark_triangle,
               title: '加载失败',
-              description: '$error',
+              description: extractErrorFromException(error),
               action: AppPrimaryButton(
                 onPressed: () => ref.read(hotFeedProvider.notifier).refresh(),
                 child: const Text('重新加载'),

@@ -6,6 +6,8 @@ import '../../models/user.dart';
 import '../../providers/auth_provider.dart';
 import '../../router/app_router.dart';
 import '../../services/follow_service.dart';
+import '../../services/error_messages.dart';
+import '../../ui/app_feedback.dart';
 import '../../ui/app_responsive.dart';
 import '../../ui/app_theme.dart';
 import '../../ui/app_widgets.dart';
@@ -71,8 +73,15 @@ class _FollowingScreenState extends ConsumerState<FollowingScreen> {
           if (mounted) setState(() => _blockedList = items);
         }
       }
-    } catch (_) {}
-    if (mounted) setState(() => _isLoading = false);
+    } catch (error) {
+      if (mounted) {
+        await AppFeedback.showError(
+          context,
+          message: extractErrorFromException(error),
+        );
+      }
+    }
+    if (mounted) setState(() => _actionLoadingId = null);
   }
 
   Future<void> _handleUnfollow(String userId) async {
@@ -84,7 +93,14 @@ class _FollowingScreenState extends ConsumerState<FollowingScreen> {
           _followingList.removeWhere((u) => u.id == userId);
         });
       }
-    } catch (_) {}
+    } catch (error) {
+      if (mounted) {
+        await AppFeedback.showError(
+          context,
+          message: extractErrorFromException(error),
+        );
+      }
+    }
     if (mounted) setState(() => _actionLoadingId = null);
   }
 
@@ -97,7 +113,14 @@ class _FollowingScreenState extends ConsumerState<FollowingScreen> {
           _blockedList.removeWhere((u) => u.id == userId);
         });
       }
-    } catch (_) {}
+    } catch (error) {
+      if (mounted) {
+        await AppFeedback.showError(
+          context,
+          message: extractErrorFromException(error),
+        );
+      }
+    }
     if (mounted) setState(() => _actionLoadingId = null);
   }
 

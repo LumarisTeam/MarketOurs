@@ -7,6 +7,7 @@ import type { PostDto, CommentDto } from "../../types"
 import { useSelector } from "react-redux"
 import type { RootState } from "../../stores"
 import { useTranslation } from "react-i18next"
+import { extractUserMessage } from "../../services/errorCodes"
 import type { i18n } from "i18next"
 import { formatDistanceToNow } from "date-fns"
 import { zhCN, enUS } from "date-fns/locale"
@@ -293,6 +294,7 @@ export default function PostDetailPage() {
   const [postLiked, setPostLiked] = useState(false)
   const [likedComments, setLikedComments] = useState<Set<string>>(new Set())
   const [shareFeedback, setShareFeedback] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
 
   // Editing state for post
   const [isEditingPost, setIsEditingPost] = useState(false)
@@ -310,11 +312,12 @@ export default function PostDetailPage() {
         setPostLiked(postRes.data.isLiked ?? false)
         setEditTitle(postRes.data.title)
         setEditContent(postRes.data.content)
-      } catch (err) {
-        if (err instanceof Error && err.name === 'AbortError') return;
-        console.error(err)
-      } finally {
-        if (!controller.signal.aborted) setLoading(false)
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') return;
+      console.error(err)
+      setActionError(extractUserMessage(err, t("common.error")));
+    } finally {
+      if (!controller.signal.aborted) setLoading(false)
       }
     }
     fetchPostData()
@@ -342,6 +345,7 @@ export default function PostDetailPage() {
       } catch (err) {
         if (err instanceof Error && err.name === 'AbortError') return;
         console.error("Failed to fetch comments", err)
+        setActionError(extractUserMessage(err, t("common.error")));
       } finally {
         if (!controller.signal.aborted) setCommentsLoading(false)
       }
@@ -364,6 +368,7 @@ export default function PostDetailPage() {
       }
     } catch (err) {
       console.error(err);
+      setActionError(extractUserMessage(err, t("common.error")));
     } finally {
       setSubmitting(false);
     }
@@ -377,6 +382,7 @@ export default function PostDetailPage() {
       navigate("/");
     } catch (err) {
       console.error(err);
+      setActionError(extractUserMessage(err, t("common.error")));
     } finally {
       setSubmitting(false);
     }
@@ -394,7 +400,7 @@ export default function PostDetailPage() {
       }
     } catch (error) {
       console.error(error);
-      setShareFeedback("分享失败，请稍后重试");
+      setShareFeedback(extractUserMessage(error, "分享失败，请稍后重试"));
     } finally {
       window.setTimeout(() => setShareFeedback(null), 2500);
     }
@@ -409,6 +415,7 @@ export default function PostDetailPage() {
       setPostLiked(isLiked);
     } catch (err) {
       console.error("Failed to like post", err);
+      setActionError(extractUserMessage(err, t("common.error")));
     }
   }
 
@@ -437,6 +444,7 @@ export default function PostDetailPage() {
       });
     } catch (err) {
       console.error("Failed to like comment", err);
+      setActionError(extractUserMessage(err, t("common.error")));
     }
   }
 
@@ -455,6 +463,7 @@ export default function PostDetailPage() {
       setComments(removeFromTree(comments));
     } catch (err) {
       console.error("Failed to delete comment", err);
+      setActionError(extractUserMessage(err, t("common.error")));
     }
   }
 
@@ -478,6 +487,7 @@ export default function PostDetailPage() {
       }
     } catch (err) {
       console.error("Failed to update comment", err);
+      setActionError(extractUserMessage(err, t("common.error")));
     }
   }
 
@@ -515,6 +525,7 @@ export default function PostDetailPage() {
       }
     } catch (err) {
       console.error("Failed to reply to comment", err);
+      setActionError(extractUserMessage(err, t("common.error")));
     }
   }
 
@@ -533,6 +544,7 @@ export default function PostDetailPage() {
       }
     } catch (err) {
       console.error(err)
+      setActionError(extractUserMessage(err, t("common.error")));
     } finally {
       setSubmitting(false)
     }
@@ -682,6 +694,12 @@ export default function PostDetailPage() {
         </footer>
         {shareFeedback ? <p className="text-sm font-medium text-primary">{shareFeedback}</p> : null}
       </article>
+
+      {actionError && (
+        <div className="p-4 rounded-2xl bg-destructive/10 text-destructive text-sm font-medium text-center animate-in fade-in duration-300">
+          {actionError}
+        </div>
+      )}
 
       <section className="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200">
         <div className="flex items-center justify-between">

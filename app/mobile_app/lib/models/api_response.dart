@@ -1,5 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 
+import '../services/error_messages.dart';
+
 part 'api_response.g.dart';
 
 @JsonSerializable(genericArgumentFactories: true)
@@ -21,6 +23,9 @@ class ApiResponse<T> {
     this.requestId,
     this.timestamp,
   });
+
+  String get userFacingMessage =>
+      errorMessageFromCode(errorCode, fallback: message);
 
   factory ApiResponse.fromJson(
     Map<String, dynamic> json,
