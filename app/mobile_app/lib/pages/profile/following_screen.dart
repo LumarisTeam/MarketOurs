@@ -81,7 +81,7 @@ class _FollowingScreenState extends ConsumerState<FollowingScreen> {
         );
       }
     }
-    if (mounted) setState(() => _actionLoadingId = null);
+    if (mounted) setState(() => _isLoading = false);
   }
 
   Future<void> _handleUnfollow(String userId) async {

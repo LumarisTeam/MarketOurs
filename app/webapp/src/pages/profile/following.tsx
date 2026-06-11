@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Link, useSearchParams } from "react-router";
 import { useSelector } from "react-redux";
 import { UserMinus, Ban, Loader2, Users, ArrowLeft, AlertCircle } from "lucide-react";
@@ -20,6 +20,7 @@ export default function FollowingPage() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const lastFetchedRef = useRef<{ tab: Tab; userId: string } | null>(null);
 
   const loadData = useCallback(async () => {
     if (!currentUser) return;
@@ -41,8 +42,16 @@ export default function FollowingPage() {
   }, [currentUser, activeTab]);
 
   useEffect(() => {
+    if (!currentUser) return;
+    if (
+      lastFetchedRef.current?.tab === activeTab &&
+      lastFetchedRef.current?.userId === currentUser.id
+    ) {
+      return;
+    }
+    lastFetchedRef.current = { tab: activeTab, userId: currentUser.id };
     loadData();
-  }, [loadData]);
+  }, [currentUser, activeTab, loadData]);
 
   const handleUnfollow = async (userId: string) => {
     setActionLoading(userId);
