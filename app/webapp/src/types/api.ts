@@ -1,6 +1,8 @@
 export interface ApiResponse<T = unknown> {
   code: number;
   errorCode: number;
+  /** 错误码名称如 "PostNotFound"，方便调试；客户端应基于 errorCode 做程序化判断 */
+  errorName: string;
   message: string;
   detail: string | null;
   data: T;

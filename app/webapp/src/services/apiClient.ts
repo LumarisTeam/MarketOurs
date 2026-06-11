@@ -26,11 +26,13 @@ async function parseResponse<T>(response: Response): Promise<ApiResponse<T>> {
     const error = new Error(userMessage) as Error & {
       userMessage: string;
       errorCode: number;
+      errorName: string;
       detail: string | null;
       rawResponse: typeof data;
     };
     error.userMessage = userMessage;
     error.errorCode = data.errorCode ?? 0;
+    error.errorName = data.errorName ?? '';
     error.detail = data.detail;
     error.rawResponse = data;
     throw error;

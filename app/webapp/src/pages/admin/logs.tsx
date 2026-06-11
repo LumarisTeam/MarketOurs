@@ -2,17 +2,10 @@ import { useEffect, useMemo, useState } from "react"
 import { Search, RotateCcw, Trash2 } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { adminService } from "../../services/adminService"
+import { extractUserMessage } from "../../services/errorCodes"
 import type { LogDistribution, LogEntry, LogStatistics, PaginatedResponse } from "../../types"
 
 const PAGE_SIZE = 20
-
-function getErrorMessage(error: unknown, fallback: string) {
-  if (typeof error === "object" && error !== null && "message" in error && typeof error.message === "string") {
-    return error.message
-  }
-
-  return fallback
-}
 
 function formatTimestamp(value: string) {
   return new Intl.DateTimeFormat(undefined, {
@@ -63,7 +56,7 @@ export default function AdminLogsPage() {
         setStatistics(statsResponse.data)
         setDistribution(distributionResponse.data)
       } catch (err) {
-        setError(getErrorMessage(err, t("admin.common.load_error")))
+        setError(extractUserMessage(err, t("admin.common.load_error")))
       } finally {
         setIsLoading(false)
       }
@@ -91,7 +84,7 @@ export default function AdminLogsPage() {
       setStatistics(statsResponse.data)
       setDistribution(distributionResponse.data)
     } catch (err) {
-      setError(getErrorMessage(err, t("admin.common.action_error")))
+      setError(extractUserMessage(err, t("admin.common.action_error")))
     } finally {
       setIsCleaning(false)
     }

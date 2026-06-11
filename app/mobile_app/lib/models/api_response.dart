@@ -8,6 +8,8 @@ part 'api_response.g.dart';
 class ApiResponse<T> {
   final int? code;
   final int? errorCode;
+  /// 错误码名称如 "PostNotFound"，方便调试；客户端应基于 errorCode 做程序化判断
+  final String? errorName;
   final String? message;
   final String? detail;
   final T? data;
@@ -17,6 +19,7 @@ class ApiResponse<T> {
   ApiResponse({
     this.code,
     this.errorCode,
+    this.errorName,
     this.message,
     this.detail,
     this.data,

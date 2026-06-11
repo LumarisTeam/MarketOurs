@@ -2,15 +2,8 @@ import { useEffect, useState } from "react"
 import { Ban, RefreshCw, Search, ShieldCheck, Trash2 } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { adminService } from "../../services/adminService"
+import { extractUserMessage } from "../../services/errorCodes"
 import type { BlacklistStats } from "../../types"
-
-function getErrorMessage(error: unknown, fallback: string) {
-  if (typeof error === "object" && error !== null && "message" in error && typeof error.message === "string") {
-    return error.message
-  }
-
-  return fallback
-}
 
 function formatTimestamp(value: string) {
   return new Intl.DateTimeFormat(undefined, {
@@ -46,7 +39,7 @@ export default function AdminBlacklistPage() {
         setError(null)
         await loadStats()
       } catch (err) {
-        setError(getErrorMessage(err, t("admin.common.load_error")))
+        setError(extractUserMessage(err, t("admin.common.load_error")))
       } finally {
         setIsLoading(false)
       }
@@ -64,7 +57,7 @@ export default function AdminBlacklistPage() {
       setMessage(response?.message || successMessage)
       await loadStats()
     } catch (err) {
-      setError(getErrorMessage(err, t("admin.common.action_error")))
+      setError(extractUserMessage(err, t("admin.common.action_error")))
     } finally {
       setIsWorking(false)
     }
@@ -118,7 +111,7 @@ export default function AdminBlacklistPage() {
       const response = await adminService.checkIp(checkIp.trim())
       setCheckResult(response.data)
     } catch (err) {
-      setError(getErrorMessage(err, t("admin.common.action_error")))
+      setError(extractUserMessage(err, t("admin.common.action_error")))
     } finally {
       setIsWorking(false)
     }

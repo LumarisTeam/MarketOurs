@@ -3,17 +3,10 @@ import { Search, Eye, Trash2, CheckCircle, XCircle } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { Link } from "react-router"
 import { adminService } from "../../services/adminService"
+import { extractUserMessage } from "../../services/errorCodes"
 import type { CommentDto, PagedResult } from "../../types"
 
 const PAGE_SIZE = 10
-
-function getErrorMessage(error: unknown, fallback: string) {
-  if (typeof error === "object" && error !== null && "message" in error && typeof error.message === "string") {
-    return error.message
-  }
-
-  return fallback
-}
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat(undefined, {
@@ -46,7 +39,7 @@ export default function AdminCommentsPage() {
 
         setComments(response.data)
       } catch (err) {
-        setError(getErrorMessage(err, t("admin.common.load_error")))
+        setError(extractUserMessage(err, t("admin.common.load_error")))
       } finally {
         setIsLoading(false)
       }
@@ -75,7 +68,7 @@ export default function AdminCommentsPage() {
       await refreshCurrentPage(shouldStepBack ? page - 1 : page)
       setMessage(t("admin.comments.deleted"))
     } catch (err) {
-      setError(getErrorMessage(err, t("admin.common.action_error")))
+      setError(extractUserMessage(err, t("admin.common.action_error")))
     } finally {
       setActiveCommentId(null)
     }
@@ -91,7 +84,7 @@ export default function AdminCommentsPage() {
       await refreshCurrentPage()
       setMessage(t(comment.isReview ? "admin.comments.review_reverted" : "admin.comments.review_approved"))
     } catch (err) {
-      setError(getErrorMessage(err, t("admin.common.action_error")))
+      setError(extractUserMessage(err, t("admin.common.action_error")))
     } finally {
       setActiveCommentId(null)
     }
