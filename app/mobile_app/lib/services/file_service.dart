@@ -82,7 +82,7 @@ class FileService {
       files.map((f) => MultipartFile.fromFile(f.path, filename: f.name)),
     );
 
-    final formData = FormData.fromMap({'files': payload});
+    final formData = FormData.fromMap({'file': payload});
 
     final queryParams = key != null ? {'key': key} : null;
     final response = await _api.post(

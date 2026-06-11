@@ -410,11 +410,12 @@ public class PostService(
         var user = await userRepo.GetByIdAsync(createDto.UserId);
         if (user == null) throw new ResourceAccessException(ErrorCode.UserNotFound, "用户不存在");
 
+        var images = NormalizeImages(createDto.Images);
         var post = new PostModel
         {
             Title = createDto.Title,
             Content = createDto.Content,
-            Images = createDto.Images,
+            Images = images,
             UserId = createDto.UserId,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
@@ -432,7 +433,12 @@ public class PostService(
             // 确认上传密钥：移除 Redis 追踪，文件正式归属于帖子
             if (!string.IsNullOrWhiteSpace(createDto.UploadKey))
             {
-                await uploadKeyService.GetAndRemoveFilesAsync(createDto.UploadKey);
+                var trackedImages = await uploadKeyService.GetAndRemoveFilesAsync(createDto.UploadKey);
+                if (MergeTrackedImages(post, trackedImages))
+                {
+                    await postRepo.UpdateAsync(post);
+                    InvalidateCache(post.Id);
+                }
             }
 
             if (reviewQueue != null)
@@ -461,7 +467,7 @@ public class PostService(
 
         post.Title = updateDto.Title;
         post.Content = updateDto.Content;
-        post.Images = updateDto.Images;
+        post.Images = NormalizeImages(updateDto.Images);
         post.UpdatedAt = DateTime.UtcNow;
         post.IsReview = isAdmin;
 
@@ -473,7 +479,12 @@ public class PostService(
             // 确认上传密钥
             if (!string.IsNullOrWhiteSpace(updateDto.UploadKey))
             {
-                await uploadKeyService.GetAndRemoveFilesAsync(updateDto.UploadKey);
+                var trackedImages = await uploadKeyService.GetAndRemoveFilesAsync(updateDto.UploadKey);
+                if (MergeTrackedImages(post, trackedImages))
+                {
+                    await postRepo.UpdateAsync(post);
+                    InvalidateCache(id);
+                }
             }
 
             if (reviewQueue != null && !isAdmin)
@@ -493,6 +504,29 @@ public class PostService(
         }
 
         return MapToDto(post);
+    }
+
+    private static List<string> NormalizeImages(IEnumerable<string>? images)
+    {
+        return images?
+            .Where(url => !string.IsNullOrWhiteSpace(url))
+            .Distinct(StringComparer.Ordinal)
+            .ToList() ?? [];
+    }
+
+    private static bool MergeTrackedImages(PostModel post, IEnumerable<string>? trackedImages)
+    {
+        var merged = post.Images
+            .Concat(trackedImages ?? [])
+            .Where(url => !string.IsNullOrWhiteSpace(url))
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
+
+        if (merged.SequenceEqual(post.Images)) return false;
+
+        post.Images = merged;
+        post.UpdatedAt = DateTime.UtcNow;
+        return true;
     }
 
     public async Task DeleteAsync(string id)

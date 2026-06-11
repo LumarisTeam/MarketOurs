@@ -5,6 +5,7 @@ using MarketOurs.DataAPI.Services;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using StackExchange.Redis;
 
@@ -22,6 +23,8 @@ public class PostServiceTests
     private Mock<IConnectionMultiplexer> _mockRedis;
     private Mock<IDatabase> _mockDatabase;
     private Mock<ILogger<PostService>> _mockLogger;
+    private Mock<ILogger<UploadKeyService>> _mockUploadKeyLogger;
+    private UploadKeyService _uploadKeyService;
     private PostService _postService;
 
     [SetUp]
@@ -36,9 +39,14 @@ public class PostServiceTests
         _mockRedis = new Mock<IConnectionMultiplexer>();
         _mockDatabase = new Mock<IDatabase>();
         _mockLogger = new Mock<ILogger<PostService>>();
+        _mockUploadKeyLogger = new Mock<ILogger<UploadKeyService>>();
 
         _mockRedis.Setup(r => r.GetDatabase(It.IsAny<int>(), It.IsAny<object>())).Returns(_mockDatabase.Object);
         var redisList = new List<IConnectionMultiplexer> { _mockRedis.Object };
+        _uploadKeyService = new UploadKeyService(
+            new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions())),
+            redisList,
+            _mockUploadKeyLogger.Object);
 
         // Setup MemoryCache mock
         object? expectedValue = null;
@@ -58,7 +66,7 @@ public class PostServiceTests
             _mockMemoryCache.Object,
             redisList,
             _mockLogger.Object,
-            null!,
+            _uploadKeyService,
             null!
         );
     }
@@ -159,6 +167,42 @@ public class PostServiceTests
         Assert.That(createdPost!.Title, Is.EqualTo("New Post"));
         Assert.That(createdPost.Content, Is.EqualTo("New Content"));
         Assert.That(createdPost.UserId, Is.EqualTo("1"));
+    }
+
+    [Test]
+    public async Task CreateAsync_WithUploadKeyTrackedImages_ShouldPersistTrackedImages()
+    {
+        // Arrange
+        var (uploadKey, _) = await _uploadKeyService.GenerateKeyAsync();
+        await _uploadKeyService.TrackFilesAsync(uploadKey, ["https://cdn.example.com/post-image.webp"]);
+
+        var createDto = new PostCreateDto
+        {
+            UserId = "1",
+            Title = "New Post",
+            Content = "New Content",
+            UploadKey = uploadKey
+        };
+        var user = new UserModel { Id = "1", Name = "User1" };
+        _mockUserRepo.Setup(r => r.GetByIdAsync("1")).ReturnsAsync(user);
+
+        PostModel? createdPost = null;
+        _mockPostRepo.Setup(r => r.CreateAsync(It.IsAny<PostModel>()))
+            .Callback<PostModel>(p =>
+            {
+                p.Id = "post-1";
+                createdPost = p;
+            })
+            .Returns(Task.CompletedTask);
+        _mockPostRepo.Setup(r => r.UpdateAsync(It.IsAny<PostModel>())).Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _postService.CreateAsync(createDto);
+
+        // Assert
+        Assert.That(result.Images, Is.EqualTo(new[] { "https://cdn.example.com/post-image.webp" }));
+        Assert.That(createdPost!.Images, Is.EqualTo(new[] { "https://cdn.example.com/post-image.webp" }));
+        _mockPostRepo.Verify(r => r.UpdateAsync(It.Is<PostModel>(p => p.Images.Count == 1)), Times.Once);
     }
 
     [Test]
