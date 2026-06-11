@@ -105,9 +105,14 @@ public class PostCreateDto
     /// <summary>
     /// 用户ID
     /// </summary>
-    [Required(ErrorMessage = "用户ID不能为空")] 
+    [Required(ErrorMessage = "用户ID不能为空")]
     [MaxLength(64, ErrorMessage = "用户ID长度不能超过64位")]
     public string UserId { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 上传密钥，用于关联已上传的图片。创建成功后自动确认，失败时自动清理。
+    /// </summary>
+    public string? UploadKey { get; set; }
 }
 
 /// <summary>
@@ -133,7 +138,12 @@ public class PostUpdateDto
     /// 图片列表
     /// </summary>
     public List<string> Images { get; set; } = [];
-    
+
+    /// <summary>
+    /// 上传密钥，用于关联新上传的图片。更新成功后自动确认，失败时自动清理。
+    /// </summary>
+    public string? UploadKey { get; set; }
+
     /// <summary>
     /// 是否通过审核
     /// </summary>

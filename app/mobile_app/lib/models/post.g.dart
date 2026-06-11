@@ -56,6 +56,7 @@ PostCreateDto _$PostCreateDtoFromJson(Map<String, dynamic> json) =>
           ?.map((e) => e as String)
           .toList(),
       userId: json['userId'] as String,
+      uploadKey: json['uploadKey'] as String?,
     );
 
 Map<String, dynamic> _$PostCreateDtoToJson(PostCreateDto instance) =>
@@ -64,6 +65,7 @@ Map<String, dynamic> _$PostCreateDtoToJson(PostCreateDto instance) =>
       'content': instance.content,
       'images': instance.images,
       'userId': instance.userId,
+      'uploadKey': instance.uploadKey,
     };
 
 PostUpdateDto _$PostUpdateDtoFromJson(Map<String, dynamic> json) =>
@@ -74,6 +76,7 @@ PostUpdateDto _$PostUpdateDtoFromJson(Map<String, dynamic> json) =>
           ?.map((e) => e as String)
           .toList(),
       isReview: json['isReview'] as bool?,
+      uploadKey: json['uploadKey'] as String?,
     );
 
 Map<String, dynamic> _$PostUpdateDtoToJson(PostUpdateDto instance) =>
@@ -82,4 +85,5 @@ Map<String, dynamic> _$PostUpdateDtoToJson(PostUpdateDto instance) =>
       'content': instance.content,
       'images': instance.images,
       'isReview': instance.isReview,
+      'uploadKey': instance.uploadKey,
     };

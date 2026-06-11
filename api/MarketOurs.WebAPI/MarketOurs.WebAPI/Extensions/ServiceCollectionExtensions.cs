@@ -31,8 +31,10 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<NotificationSyncBackgroundService>();
         services.AddHostedService<ReviewBackgroundService>();
         services.AddHostedService<DailyHotListBackgroundService>();
+        services.AddHostedService<UploadKeyCleanupService>();
 
         // Services
+        services.AddScoped<UploadKeyService>();
         services.AddScoped<ILockService, RedisLockService>();
         services.AddScoped<ILikeManager, LikeManager>();
         services.AddScoped<IFollowService, FollowService>();

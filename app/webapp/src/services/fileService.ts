@@ -1,10 +1,14 @@
 import { apiClient } from './apiClient';
 
 export const fileService = {
-  uploadImage: (file: File) => {
+  getUploadKey: () =>
+    apiClient.post<{ key: string; expiresIn: number }>('/File/upload/key'),
+
+  uploadImage: (file: File, key?: string) => {
     const formData = new FormData();
     formData.append('file', file);
-    return apiClient.post<string>('/File/upload/image', formData);
+    const endpoint = key ? `/File/upload/image?key=${encodeURIComponent(key)}` : '/File/upload/image';
+    return apiClient.post<string>(endpoint, formData);
   },
 
   uploadAvatar: (file: File) => {
@@ -13,9 +17,10 @@ export const fileService = {
     return apiClient.post<string>('/File/upload/avatar', formData);
   },
 
-  uploadImages: (files: File[]) => {
+  uploadImages: (files: File[], key?: string) => {
     const formData = new FormData();
     files.forEach((file) => formData.append('files', file));
-    return apiClient.post<string[]>('/File/upload/images', formData);
+    const endpoint = key ? `/File/upload/images?key=${encodeURIComponent(key)}` : '/File/upload/images';
+    return apiClient.post<string[]>(endpoint, formData);
   },
 };

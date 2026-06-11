@@ -12,6 +12,8 @@ public class S3StorageService(
     ILogger<S3StorageService> logger,
     S3StorageConfig config) : IStorageService
 {
+    private const int MaxBatchDeleteSize = 1000;
+
     public async Task<string> SaveFileAsync(IFormFile file, string subFolder = "uploads")
     {
         if (file == null || file.Length == 0)
@@ -70,6 +72,59 @@ public class S3StorageService(
 
         logger.LogError("S3 删除失败: {StatusCode}", response.HttpStatusCode);
         return false;
+    }
+
+    public async Task<int> DeleteFilesAsync(IEnumerable<string> fileUrls)
+    {
+        var urls = fileUrls.ToList();
+        if (urls.Count == 0) return 0;
+
+        // Separate S3 keys from local URLs
+        var s3Entries = new List<(string Url, string Key)>();
+        var localUrls = new List<string>();
+
+        foreach (var url in urls)
+        {
+            var key = ExtractKeyFromUrl(url);
+            if (key != null) s3Entries.Add((url, key));
+            else localUrls.Add(url);
+        }
+
+        var deleted = 0;
+
+        // Batch delete from S3 (up to 1000 per request)
+        foreach (var batch in s3Entries.Chunk(MaxBatchDeleteSize))
+        {
+            try
+            {
+                var request = new DeleteObjectsRequest
+                {
+                    BucketName = config.BucketName,
+                    Objects = batch.Select(e => new KeyVersion { Key = e.Key }).ToList()
+                };
+
+                var response = await s3Client.DeleteObjectsAsync(request);
+                deleted += response.DeletedObjects.Count;
+                if (response.DeleteErrors.Count > 0)
+                {
+                    logger.LogWarning("S3 batch delete had {ErrorCount} errors",
+                        response.DeleteErrors.Count);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "S3 batch delete failed for {Count} objects", batch.Length);
+            }
+        }
+
+        // Fall back to local deletes
+        foreach (var localUrl in localUrls)
+        {
+            if (await localStorageService.DeleteFileAsync(localUrl)) deleted++;
+        }
+
+        logger.LogInformation("S3 batch delete completed: {Deleted}/{Total}", deleted, urls.Count);
+        return deleted;
     }
 
     private string BuildKey(string subFolder, string fileName)

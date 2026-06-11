@@ -49,7 +49,9 @@ public class CacheScenariosTests
             _mockDistributedCache.Object,
             _realMemoryCache,
             redisList,
-            _mockLogger.Object
+            _mockLogger.Object,
+            null!,
+            null!
         );
         
         // Setup basic user and like mocks to avoid null refs

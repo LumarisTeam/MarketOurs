@@ -41,6 +41,14 @@ public static class CacheKeys
 
     #endregion
 
+    #region Upload (上传相关)
+
+    // 上传密钥 tracking (Redis) - Key 为 GUID, Value 为 JSON { urls: [...], createdAt: "..." }
+    public static string UploadKey(string key) => $"upload_key:{key}";
+    public static string UploadKeyPattern() => "upload_key:*";
+
+    #endregion
+
     #region Auth (身份验证相关)
 
     // 用户访问令牌 (Redis)

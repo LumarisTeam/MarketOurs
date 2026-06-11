@@ -1,6 +1,7 @@
 using MarketOurs.Data.DataModels;
 using MarketOurs.DataAPI.Configs;
 using MarketOurs.DataAPI.Repos;
+using MarketOurs.DataAPI.Services;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
@@ -81,6 +82,13 @@ public class ReviewBackgroundService(
                 {
                     await postRepo.SetReviewStatusAsync(message.TargetId, isApproved);
                     InvalidatePostCaches(targetId);
+
+                    // 审核不通过时删除帖子关联的图片
+                    if (!isApproved)
+                    {
+                        var storageService = scope.ServiceProvider.GetRequiredService<IStorageService>();
+                        await DeletePostImagesAsync(postRepo, storageService, message.TargetId);
+                    }
                 }
                 else
                 {
@@ -89,7 +97,7 @@ public class ReviewBackgroundService(
                 }
 
                 var a = isPost ? "贴子" : "评论";
-                
+
                 notificationQueue.Enqueue(new NotificationMessage()
                 {
                     UserId = userId,
@@ -112,6 +120,23 @@ public class ReviewBackgroundService(
         }
 
         logger.LogInformation("ReviewBackgroundService is stopping.");
+    }
+
+    private async Task DeletePostImagesAsync(IPostRepo postRepo, IStorageService storageService, string postId)
+    {
+        try
+        {
+            var post = await postRepo.GetByIdAsync(postId);
+            if (post?.Images is { Count: > 0 })
+            {
+                var deleted = await storageService.DeleteFilesAsync(post.Images);
+                logger.LogInformation("Review rejected: deleted {Count} images for post {PostId}", deleted, postId);
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to delete images for rejected post {PostId}", postId);
+        }
     }
 
     private void InvalidatePostCaches(string postId)

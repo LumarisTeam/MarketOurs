@@ -13,4 +13,9 @@ public interface IStorageService
     /// 删除文件
     /// </summary>
     Task<bool> DeleteFileAsync(string fileUrl);
+
+    /// <summary>
+    /// 批量删除文件，返回成功删除的数量
+    /// </summary>
+    Task<int> DeleteFilesAsync(IEnumerable<string> fileUrls);
 }

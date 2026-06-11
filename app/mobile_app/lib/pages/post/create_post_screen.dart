@@ -71,6 +71,13 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     // Compress images to WebP before upload to reduce file size
     final compressed = <CompressedImage>[];
     try {
+      // Request an upload key to bind images to the post
+      String? uploadKey;
+      if (_images.isNotEmpty) {
+        final keyResponse = await _fileService.getUploadKey();
+        uploadKey = (keyResponse.data?['key'] as String?) ?? '';
+      }
+
       if (_images.isNotEmpty) {
         compressed.addAll(
           await ImageCompressionService.compressAll(
@@ -86,6 +93,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
           ? <String>[]
           : (await _fileService.uploadImages(
               compressed.map(ImageCompressionService.toXFile).toList(),
+              key: uploadKey,
             )).data ??
               <String>[];
 
@@ -97,6 +105,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
               content: _contentController.text.trim(),
               images: uploadedImages,
               userId: user.id,
+              uploadKey: uploadKey,
             ),
           );
 

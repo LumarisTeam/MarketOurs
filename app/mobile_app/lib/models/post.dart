@@ -50,12 +50,14 @@ class PostCreateDto {
   final String content;
   final List<String>? images;
   final String userId;
+  final String? uploadKey;
 
   PostCreateDto({
     required this.title,
     required this.content,
     this.images,
     required this.userId,
+    this.uploadKey,
   });
 
   factory PostCreateDto.fromJson(Map<String, dynamic> json) =>
@@ -69,12 +71,14 @@ class PostUpdateDto {
   final String content;
   final List<String>? images;
   final bool? isReview;
+  final String? uploadKey;
 
   PostUpdateDto({
     required this.title,
     required this.content,
     this.images,
     this.isReview,
+    this.uploadKey,
   });
 
   factory PostUpdateDto.fromJson(Map<String, dynamic> json) =>

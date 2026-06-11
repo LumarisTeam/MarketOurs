@@ -7,12 +7,25 @@ import 'api_service.dart';
 class FileService {
   final _api = ApiService().dio;
 
-  Future<ApiResponse<String>> uploadImage(XFile file) async {
+  Future<ApiResponse<Map<String, dynamic>>> getUploadKey() async {
+    final response = await _api.post('/File/upload/key');
+    return ApiResponse<Map<String, dynamic>>.fromJson(
+      response.data,
+      (json) => json as Map<String, dynamic>,
+    );
+  }
+
+  Future<ApiResponse<String>> uploadImage(XFile file, {String? key}) async {
     final formData = FormData.fromMap({
       'file': await MultipartFile.fromFile(file.path, filename: file.name),
     });
 
-    final response = await _api.post('/File/upload/image', data: formData);
+    final queryParams = key != null ? {'key': key} : null;
+    final response = await _api.post(
+      '/File/upload/image',
+      data: formData,
+      queryParameters: queryParams,
+    );
     return ApiResponse<String>.fromJson(
       response.data,
       (json) => json as String,
@@ -35,7 +48,7 @@ class FileService {
     );
   }
 
-  Future<ApiResponse<List<String>>> uploadImages(List<XFile> files) async {
+  Future<ApiResponse<List<String>>> uploadImages(List<XFile> files, {String? key}) async {
     final payload = <MultipartFile>[];
     for (final file in files) {
       payload.add(await MultipartFile.fromFile(file.path, filename: file.name));
@@ -43,7 +56,12 @@ class FileService {
 
     final formData = FormData.fromMap({'files': payload});
 
-    final response = await _api.post('/File/upload/images', data: formData);
+    final queryParams = key != null ? {'key': key} : null;
+    final response = await _api.post(
+      '/File/upload/images',
+      data: formData,
+      queryParameters: queryParams,
+    );
     return ApiResponse<List<String>>.fromJson(
       response.data,
       (json) => (json as List<Object?>).cast<String>(),

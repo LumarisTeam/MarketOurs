@@ -55,7 +55,14 @@ export default function CreatePostPage() {
     setError(null);
 
     try {
-      // 1. Compress images to WebP, then upload
+      // 1. Request an upload key to bind images to the post
+      let uploadKey: string | undefined;
+      if (images.length > 0) {
+        const keyResponse = await fileService.getUploadKey();
+        uploadKey = keyResponse.data?.key;
+      }
+
+      // 2. Compress images to WebP, then upload with the key
       const compressed = await compressImages(images, {
         quality: 0.75,
         maxWidth: 1920,
@@ -63,18 +70,19 @@ export default function CreatePostPage() {
       });
       const uploadedImageUrls: string[] = [];
       for (const image of compressed) {
-        const response = await fileService.uploadImage(image);
+        const response = await fileService.uploadImage(image, uploadKey);
         if (response.data) {
           uploadedImageUrls.push(response.data);
         }
       }
 
-      // 2. Create post with image URLs
+      // 3. Create post with image URLs and upload key
       await postService.createPost({
         title,
         content,
         images: uploadedImageUrls,
         userId: user?.id || '',
+        uploadKey,
       });
 
       navigate('/');

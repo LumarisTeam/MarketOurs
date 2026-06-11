@@ -48,7 +48,9 @@ public class CacheAvalancheTests
             _mockDistributedCache.Object,
             _realMemoryCache,
             redisList,
-            _mockLogger.Object
+            _mockLogger.Object,
+            null!,
+            null!
         );
     }
 

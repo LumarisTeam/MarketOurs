@@ -56,7 +56,9 @@ public class PostConcurrencyTests
             _mockDistributedCache.Object,
             _mockMemoryCache.Object,
             redisList,
-            _mockLogger.Object
+            _mockLogger.Object,
+            null!,
+            null!
         );
     }
 

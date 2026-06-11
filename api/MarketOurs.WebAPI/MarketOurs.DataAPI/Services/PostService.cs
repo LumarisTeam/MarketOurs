@@ -129,6 +129,8 @@ public class PostService(
     IMemoryCache memoryCache,
     IEnumerable<IConnectionMultiplexer> redisEnumerable,
     ILogger<PostService> logger,
+    UploadKeyService uploadKeyService,
+    IStorageService storageService,
     ReviewMessageQueue? reviewQueue = null) : IPostService
 {
     private readonly IConnectionMultiplexer? _redis = redisEnumerable.FirstOrDefault();
@@ -422,11 +424,31 @@ public class PostService(
             IsReview = false
         };
 
-        await postRepo.CreateAsync(post);
-        InvalidateGlobalCaches();
-        if (reviewQueue != null)
+        try
         {
-            await reviewQueue.EnqueueAsync(new ReviewMessage(post.Id, ReviewType.Post));
+            await postRepo.CreateAsync(post);
+            InvalidateGlobalCaches();
+
+            // 确认上传密钥：移除 Redis 追踪，文件正式归属于帖子
+            if (!string.IsNullOrWhiteSpace(createDto.UploadKey))
+            {
+                await uploadKeyService.GetAndRemoveFilesAsync(createDto.UploadKey);
+            }
+
+            if (reviewQueue != null)
+            {
+                await reviewQueue.EnqueueAsync(new ReviewMessage(post.Id, ReviewType.Post));
+            }
+        }
+        catch
+        {
+            // 创建失败时清理上传密钥关联的文件
+            if (!string.IsNullOrWhiteSpace(createDto.UploadKey))
+            {
+                await uploadKeyService.DeleteFilesByKeyAsync(createDto.UploadKey, storageService);
+            }
+
+            throw;
         }
 
         return MapToDto(post);
@@ -443,11 +465,31 @@ public class PostService(
         post.UpdatedAt = DateTime.UtcNow;
         post.IsReview = isAdmin;
 
-        await postRepo.UpdateAsync(post);
-        InvalidateCache(id);
-        if (reviewQueue != null && !isAdmin)
+        try
         {
-            await reviewQueue.EnqueueAsync(new ReviewMessage(post.Id, ReviewType.Post));
+            await postRepo.UpdateAsync(post);
+            InvalidateCache(id);
+
+            // 确认上传密钥
+            if (!string.IsNullOrWhiteSpace(updateDto.UploadKey))
+            {
+                await uploadKeyService.GetAndRemoveFilesAsync(updateDto.UploadKey);
+            }
+
+            if (reviewQueue != null && !isAdmin)
+            {
+                await reviewQueue.EnqueueAsync(new ReviewMessage(post.Id, ReviewType.Post));
+            }
+        }
+        catch
+        {
+            // 更新失败时清理上传密钥关联的文件
+            if (!string.IsNullOrWhiteSpace(updateDto.UploadKey))
+            {
+                await uploadKeyService.DeleteFilesByKeyAsync(updateDto.UploadKey, storageService);
+            }
+
+            throw;
         }
 
         return MapToDto(post);

@@ -60,4 +60,15 @@ public class LocalStorageService(IWebHostEnvironment environment, ILogger<LocalS
 
         return Task.FromResult(false);
     }
+
+    public async Task<int> DeleteFilesAsync(IEnumerable<string> fileUrls)
+    {
+        var count = 0;
+        foreach (var url in fileUrls)
+        {
+            if (await DeleteFileAsync(url)) count++;
+        }
+        logger.LogInformation("批量删除完成: {Count}/{Total}", count, fileUrls.Count());
+        return count;
+    }
 }

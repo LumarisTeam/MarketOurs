@@ -156,6 +156,7 @@ export interface PostCreateDto {
   content: string;
   images?: string[];
   userId: string;
+  uploadKey?: string;
 }
 
 export interface PostUpdateDto {
@@ -163,6 +164,7 @@ export interface PostUpdateDto {
   content: string;
   images?: string[];
   isReview?: boolean;
+  uploadKey?: string;
 }
 
 /**

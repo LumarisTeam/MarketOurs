@@ -102,6 +102,70 @@ public class VercelBlobStorageService(
         return false;
     }
 
+    public async Task<int> DeleteFilesAsync(IEnumerable<string> fileUrls)
+    {
+        var urls = fileUrls.ToList();
+        if (urls.Count == 0) return 0;
+
+        // Separate Vercel Blob URLs from local URLs
+        var vercelUrls = new List<string>();
+        var localUrls = new List<string>();
+
+        foreach (var url in urls)
+        {
+            if (Uri.TryCreate(url, UriKind.Absolute, out var uri) &&
+                uri.Host.EndsWith(".blob.vercel-storage.com"))
+                vercelUrls.Add(url);
+            else
+                localUrls.Add(url);
+        }
+
+        var deleted = 0;
+
+        // Batch delete from Vercel Blob (supports array of URLs)
+        if (vercelUrls.Count > 0)
+        {
+            try
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Post, $"{BlobApiBaseUrl}/delete");
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", config.Token);
+                request.Headers.Add("x-api-version", "12");
+                request.Headers.Add("x-api-blob-request-id", Guid.NewGuid().ToString("N"));
+                request.Headers.Add("x-vercel-blob-store-id", config.StoreId);
+                request.Content = new StringContent(
+                    JsonSerializer.Serialize(new { urls = vercelUrls }),
+                    Encoding.UTF8,
+                    "application/json");
+
+                using var response = await httpClient.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    deleted += vercelUrls.Count;
+                    logger.LogInformation("Vercel Blob batch deleted {Count} files", vercelUrls.Count);
+                }
+                else
+                {
+                    var responseBody = await response.Content.ReadAsStringAsync();
+                    logger.LogError("Vercel Blob batch delete failed: {StatusCode} {Body}",
+                        response.StatusCode, responseBody);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Vercel Blob batch delete exception for {Count} files", vercelUrls.Count);
+            }
+        }
+
+        // Fall back to local deletes
+        foreach (var localUrl in localUrls)
+        {
+            if (await localStorageService.DeleteFileAsync(localUrl)) deleted++;
+        }
+
+        logger.LogInformation("Vercel Blob batch delete completed: {Deleted}/{Total}", deleted, urls.Count);
+        return deleted;
+    }
+
     private string BuildPathname(string subFolder, string fileName)
     {
         var parts = new[] { config.BaseUrl, subFolder.Trim('/'), fileName }
