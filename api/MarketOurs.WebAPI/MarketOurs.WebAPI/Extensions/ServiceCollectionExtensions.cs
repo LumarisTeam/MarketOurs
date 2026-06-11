@@ -60,6 +60,7 @@ public static class ServiceCollectionExtensions
     {
         // 注册存储服务
         services.AddScoped<LocalStorageService>();
+        services.AddScoped<ImageProcessingService>();
 
         var storageProvider =
             Environment.GetEnvironmentVariable("STORAGE_PROVIDER", EnvironmentVariableTarget.Process) ?? "";

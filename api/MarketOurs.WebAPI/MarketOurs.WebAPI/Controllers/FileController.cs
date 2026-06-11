@@ -10,7 +10,10 @@ namespace MarketOurs.WebAPI.Controllers;
 /// </summary>
 [ApiController]
 [Route("[controller]")]
-public class FileController(IStorageService storageService, ILogger<FileController> logger) : ControllerBase
+public class FileController(
+    IStorageService storageService,
+    ImageProcessingService imageProcessingService,
+    ILogger<FileController> logger) : ControllerBase
 {
     private static readonly string[] AllowedExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
 
@@ -36,9 +39,16 @@ public class FileController(IStorageService storageService, ILogger<FileControll
 
         try
         {
+            // GIF → Animated WebP 转换（非 GIF 原样放行）
+            var processed = await imageProcessingService.ProcessAsync(file);
+
             // 保存到 images 子目录
-            var url = await storageService.SaveFileAsync(file, "images");
+            var url = await storageService.SaveFileAsync(processed ?? file, "images");
             logger.LogInformation("用户上传图片成功: {Url}", url);
+
+            // 释放处理后的临时内存流
+            (processed as IDisposable)?.Dispose();
+
             return ApiResponse<string>.Success(url, "上传成功");
         }
         catch (Exception ex)
@@ -71,8 +81,13 @@ public class FileController(IStorageService storageService, ILogger<FileControll
 
         try
         {
-            var url = await storageService.SaveFileAsync(file, "avatars");
+            var processed = await imageProcessingService.ProcessAsync(file);
+
+            var url = await storageService.SaveFileAsync(processed ?? file, "avatars");
             logger.LogInformation("匿名上传头像成功: {Url}", url);
+
+            (processed as IDisposable)?.Dispose();
+
             return ApiResponse<string>.Success(url, "上传成功");
         }
         catch (Exception ex)
@@ -102,8 +117,12 @@ public class FileController(IStorageService storageService, ILogger<FileControll
                  where AllowedExtensions.Contains(extension)
                  select file)
         {
-            var url = await storageService.SaveFileAsync(file, "images");
+            var processed = await imageProcessingService.ProcessAsync(file);
+
+            var url = await storageService.SaveFileAsync(processed ?? file, "images");
             urls.Add(url);
+
+            (processed as IDisposable)?.Dispose();
         }
 
         return ApiResponse<List<string>>.Success(urls, $"成功上传 {urls.Count} 张图片");
