@@ -57,7 +57,20 @@ public class S3StorageService(
         var keyName = $"{Guid.NewGuid():N}{extension}";
         var key = BuildKey(subFolder, keyName);
 
-        await UploadStreamToS3Async(stream, key, contentType, stream.CanSeek ? stream.Length : -1);
+        await using var bufferedStream = stream.CanSeek ? null : new MemoryStream();
+        var uploadStream = stream;
+        if (bufferedStream != null)
+        {
+            await stream.CopyToAsync(bufferedStream);
+            bufferedStream.Position = 0;
+            uploadStream = bufferedStream;
+        }
+
+        var contentLength = uploadStream.CanSeek ? uploadStream.Length - uploadStream.Position : -1;
+        if (contentLength <= 0)
+            throw new ArgumentException("流为空");
+
+        await UploadStreamToS3Async(uploadStream, key, contentType, contentLength);
 
         var url = BuildAccessUrl(key);
         logger.LogInformation("[Perf] S3 SaveStream 总={TotalMs}ms key={Key}", sw.ElapsedMilliseconds, key);

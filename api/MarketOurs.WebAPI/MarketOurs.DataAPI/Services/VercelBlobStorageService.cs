@@ -73,6 +73,19 @@ public class VercelBlobStorageService(
         if (stream == null)
             throw new ArgumentException("流为空");
 
+        await using var bufferedStream = stream.CanSeek ? null : new MemoryStream();
+        var uploadStream = stream;
+        if (bufferedStream != null)
+        {
+            await stream.CopyToAsync(bufferedStream);
+            bufferedStream.Position = 0;
+            uploadStream = bufferedStream;
+        }
+
+        var contentLength = uploadStream.CanSeek ? uploadStream.Length - uploadStream.Position : -1;
+        if (contentLength <= 0)
+            throw new ArgumentException("流为空");
+
         var extension = Path.GetExtension(fileName).ToLowerInvariant();
         var blobFileName = $"{Guid.NewGuid():N}{extension}";
         var pathname = BuildPathname(subFolder, blobFileName);
@@ -87,8 +100,10 @@ public class VercelBlobStorageService(
         request.Headers.Add("x-add-random-suffix", "0");
         request.Headers.Add("x-allow-overwrite", "0");
         request.Headers.Add("x-cache-control-max-age", config.CacheControlMaxAgeSeconds.ToString());
-        request.Content = new StreamContent(stream);
+        request.Headers.Add("x-content-length", contentLength.ToString());
+        request.Content = new StreamContent(uploadStream);
         request.Content.Headers.ContentType = MediaTypeHeaderValue.Parse(contentType);
+        request.Content.Headers.ContentLength = contentLength;
         request.Headers.Add("x-content-type", request.Content.Headers.ContentType.MediaType);
 
         using var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
