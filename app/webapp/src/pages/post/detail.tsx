@@ -1,5 +1,5 @@
 import { Link, useParams, useNavigate } from "react-router"
-import { Heart, Share2, ArrowLeft, MoreHorizontal, Send, Loader2 } from "lucide-react"
+import { Heart, Share2, ArrowLeft, MoreHorizontal, Send, Loader2, ChevronLeft, ChevronRight, X } from "lucide-react"
 import { useState, useEffect } from "react"
 import { postService } from "../../services/postService"
 import { commentService } from "../../services/commentService"
@@ -57,6 +57,172 @@ function flattenReplies(root: CommentDto): FlatReply[] {
     (a, b) => new Date(a.comment.createdAt).getTime() - new Date(b.comment.createdAt).getTime()
   );
   return out;
+}
+
+function PostImageCarousel({ images, imageLabel }: { images: string[]; imageLabel: string }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
+  const hasMultipleImages = images.length > 1;
+  const safeCurrentIndex = Math.min(currentIndex, images.length - 1);
+
+  useEffect(() => {
+    if (viewerIndex === null) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setViewerIndex(null);
+      } else if (event.key === "ArrowLeft") {
+        setViewerIndex((index) => (index === null ? index : Math.max(0, index - 1)));
+      } else if (event.key === "ArrowRight") {
+        setViewerIndex((index) => (index === null ? index : Math.min(images.length - 1, index + 1)));
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [images.length, viewerIndex]);
+
+  const goToPrevious = () => {
+    setCurrentIndex((index) => Math.max(0, index - 1));
+  };
+
+  const goToNext = () => {
+    setCurrentIndex((index) => Math.min(images.length - 1, index + 1));
+  };
+
+  const goToViewerPrevious = () => {
+    setViewerIndex((index) => (index === null ? index : Math.max(0, index - 1)));
+  };
+
+  const goToViewerNext = () => {
+    setViewerIndex((index) => (index === null ? index : Math.min(images.length - 1, index + 1)));
+  };
+
+  return (
+    <>
+      <div className="my-8 space-y-4">
+        <div className="relative overflow-hidden rounded-[2rem] border border-border/50 bg-muted">
+          <div
+            className="flex transition-transform duration-500 ease-out"
+            style={{ transform: `translateX(-${safeCurrentIndex * 100}%)` }}
+          >
+            {images.map((img, idx) => (
+              <button
+                key={`${img}-${idx}`}
+                type="button"
+                onClick={() => setViewerIndex(idx)}
+                className="group relative min-w-full aspect-video overflow-hidden bg-muted text-left"
+              >
+                <img
+                  src={img}
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                  alt={`${imageLabel} ${idx + 1}`}
+                  loading={idx === 0 ? "eager" : "lazy"}
+                />
+              </button>
+            ))}
+          </div>
+
+          {hasMultipleImages && (
+            <>
+              <button
+                type="button"
+                onClick={goToPrevious}
+                disabled={safeCurrentIndex === 0}
+                className="absolute left-3 top-1/2 grid size-10 -translate-y-1/2 place-items-center rounded-full bg-background/85 text-foreground shadow-lg backdrop-blur transition-all hover:bg-background disabled:pointer-events-none disabled:opacity-35"
+                aria-label="Previous image"
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <button
+                type="button"
+                onClick={goToNext}
+                disabled={safeCurrentIndex === images.length - 1}
+                className="absolute right-3 top-1/2 grid size-10 -translate-y-1/2 place-items-center rounded-full bg-background/85 text-foreground shadow-lg backdrop-blur transition-all hover:bg-background disabled:pointer-events-none disabled:opacity-35"
+                aria-label="Next image"
+              >
+                <ChevronRight size={20} />
+              </button>
+              <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full bg-background/85 px-3 py-2 shadow-lg backdrop-blur">
+                {images.map((_, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setCurrentIndex(idx)}
+                    className={cn(
+                      "size-2 rounded-full transition-all",
+                      idx === safeCurrentIndex ? "w-5 bg-primary" : "bg-muted-foreground/40 hover:bg-muted-foreground/70"
+                    )}
+                    aria-label={`Go to image ${idx + 1}`}
+                  />
+                ))}
+              </div>
+              <div className="absolute right-3 top-3 rounded-full bg-background/85 px-3 py-1.5 text-xs font-bold text-foreground shadow-lg backdrop-blur">
+                {safeCurrentIndex + 1} / {images.length}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {viewerIndex !== null && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 p-4 backdrop-blur-sm animate-in fade-in duration-200"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setViewerIndex(null)}
+        >
+          <button
+            type="button"
+            onClick={() => setViewerIndex(null)}
+            className="absolute right-4 top-4 grid size-11 place-items-center rounded-full bg-muted text-foreground transition-colors hover:bg-border"
+            aria-label="Close image viewer"
+          >
+            <X size={22} />
+          </button>
+          {hasMultipleImages && (
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                goToViewerPrevious();
+              }}
+              disabled={viewerIndex === 0}
+              className="absolute left-4 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-full bg-muted text-foreground transition-colors hover:bg-border disabled:opacity-35"
+              aria-label="Previous image"
+            >
+              <ChevronLeft size={24} />
+            </button>
+          )}
+          <img
+            src={images[viewerIndex]}
+            className="max-h-[88vh] max-w-[92vw] rounded-2xl object-contain shadow-2xl"
+            alt={`${imageLabel} ${viewerIndex + 1}`}
+            onClick={(event) => event.stopPropagation()}
+          />
+          {hasMultipleImages && (
+            <>
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  goToViewerNext();
+                }}
+                disabled={viewerIndex === images.length - 1}
+                className="absolute right-4 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-full bg-muted text-foreground transition-colors hover:bg-border disabled:opacity-35"
+                aria-label="Next image"
+              >
+                <ChevronRight size={24} />
+              </button>
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-muted px-4 py-2 text-sm font-bold text-foreground">
+                {viewerIndex + 1} / {images.length}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </>
+  );
 }
 
 function CommentItem({
@@ -624,16 +790,7 @@ export default function PostDetailPage() {
         </header>
 
         {post.images && post.images.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-8">
-            {post.images.map((img, idx) => (
-              <img 
-                key={idx}
-                src={img} 
-                className="w-full h-auto rounded-[2rem] object-cover bg-muted border border-border/50"
-                alt={`${t("nav.post")} image ${idx + 1}`}
-              />
-            ))}
-          </div>
+          <PostImageCarousel key={post.id} images={post.images} imageLabel={`${t("nav.post")} image`} />
         )}
 
         <div className="prose prose-lg dark:prose-invert max-w-none">
