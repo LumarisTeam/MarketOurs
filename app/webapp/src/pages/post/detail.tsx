@@ -1,20 +1,24 @@
 import { Link, useParams, useNavigate } from "react-router"
-import { Heart, Share2, ArrowLeft, MoreHorizontal, Send, Loader2, ChevronLeft, ChevronRight, X } from "lucide-react"
-import { useState, useEffect } from "react"
+import { Heart, Share2, ArrowLeft, MoreHorizontal, Send, Loader2, ChevronLeft, ChevronRight, X, ImagePlus } from "lucide-react"
+import { useState, useEffect, useRef } from "react"
 import { postService } from "../../services/postService"
 import { commentService } from "../../services/commentService"
+import { fileService } from "../../services/fileService"
+import { compressImages } from "../../services/imageCompression"
 import type { PostDto, CommentDto } from "../../types"
 import { useSelector } from "react-redux"
 import type { RootState } from "../../stores"
 import { useTranslation } from "react-i18next"
 import { extractUserMessage } from "../../services/errorCodes"
-import type { i18n } from "i18next"
+import type { i18n, TFunction } from "i18next"
 import { formatDistanceToNow } from "date-fns"
 import { zhCN, enUS } from "date-fns/locale"
 import { cn } from "../../lib/utils"
 import { sharePost } from "../../lib/postShare"
 
-const formatDate = (dateString: string, i18nInstance: i18n, updatedAtString?: string, t?: any) => {
+const MAX_COMMENT_IMAGES = 3;
+
+const formatDate = (dateString: string, i18nInstance: i18n, updatedAtString?: string, t?: TFunction) => {
   try {
     const date = new Date(dateString);
     const display = formatDistanceToNow(date, { 
@@ -57,6 +61,124 @@ function flattenReplies(root: CommentDto): FlatReply[] {
     (a, b) => new Date(a.comment.createdAt).getTime() - new Date(b.comment.createdAt).getTime()
   );
   return out;
+}
+
+async function uploadCommentImageFiles(
+  files: File[],
+  onProgress?: (fraction: number) => void,
+): Promise<string[]> {
+  if (files.length === 0) return [];
+
+  const keyResponse = await fileService.getUploadKey();
+  const uploadKey = keyResponse.data?.key;
+  const compressed = await compressImages(files, {
+    quality: 0.75,
+    maxWidth: 1920,
+    maxHeight: 1920,
+  });
+  return (await fileService.uploadStream(compressed, uploadKey, onProgress)).data ?? [];
+}
+
+function CommentImageGrid({ images, imageLabel }: { images: string[]; imageLabel: string }) {
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
+  if (images.length === 0) return null;
+
+  return (
+    <>
+      <div className={cn("mt-3 grid gap-2", images.length === 1 ? "max-w-[220px] grid-cols-1" : "grid-cols-3 max-w-[300px]")}>
+        {images.map((image, index) => (
+          <button
+            key={`${image}-${index}`}
+            type="button"
+            onClick={() => setViewerIndex(index)}
+            className="aspect-square overflow-hidden rounded-xl border border-border/50 bg-muted"
+          >
+            <img src={image} alt={`${imageLabel} ${index + 1}`} className="h-full w-full object-cover" loading="lazy" />
+          </button>
+        ))}
+      </div>
+
+      {viewerIndex !== null && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 p-4 backdrop-blur-sm animate-in fade-in duration-200"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setViewerIndex(null)}
+        >
+          <button
+            type="button"
+            onClick={() => setViewerIndex(null)}
+            className="absolute right-4 top-4 grid size-11 place-items-center rounded-full bg-muted text-foreground transition-colors hover:bg-border"
+            aria-label="Close image viewer"
+          >
+            <X size={22} />
+          </button>
+          <img
+            src={images[viewerIndex]}
+            className="max-h-[88vh] max-w-[92vw] rounded-2xl object-contain shadow-2xl"
+            alt={`${imageLabel} ${viewerIndex + 1}`}
+            onClick={(event) => event.stopPropagation()}
+          />
+        </div>
+      )}
+    </>
+  );
+}
+
+function ImagePreviewStrip({
+  previews,
+  onRemove,
+}: {
+  previews: string[];
+  onRemove: (index: number) => void;
+}) {
+  if (previews.length === 0) return null;
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {previews.map((preview, index) => (
+        <div key={`${preview}-${index}`} className="relative size-20 overflow-hidden rounded-xl border border-border bg-muted">
+          <img src={preview} alt="" className="h-full w-full object-cover" />
+          <button
+            type="button"
+            onClick={() => onRemove(index)}
+            className="absolute right-1 top-1 grid size-6 place-items-center rounded-full bg-background/85 text-foreground shadow-sm transition-colors hover:bg-destructive hover:text-destructive-foreground"
+            aria-label="Remove image"
+          >
+            <X size={12} />
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ExistingImageEditor({
+  images,
+  onRemove,
+}: {
+  images: string[];
+  onRemove: (index: number) => void;
+}) {
+  if (images.length === 0) return null;
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {images.map((image, index) => (
+        <div key={`${image}-${index}`} className="relative size-20 overflow-hidden rounded-xl border border-border bg-muted">
+          <img src={image} alt="" className="h-full w-full object-cover" />
+          <button
+            type="button"
+            onClick={() => onRemove(index)}
+            className="absolute right-1 top-1 grid size-6 place-items-center rounded-full bg-background/85 text-foreground shadow-sm transition-colors hover:bg-destructive hover:text-destructive-foreground"
+            aria-label="Remove image"
+          >
+            <X size={12} />
+          </button>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 function PostImageCarousel({ images, imageLabel }: { images: string[]; imageLabel: string }) {
@@ -243,21 +365,45 @@ function CommentItem({
   replyTo?: CommentDto | null;
   // 仅顶层评论传入:其下被展平的所有回复
   replies?: FlatReply[];
-  user: any;
-  i18n: any;
-  t: any;
-  onUpdate: (id: string, content: string) => Promise<void>;
-  onReply: (parentId: string, content: string) => Promise<void>;
+  user: RootState["auth"]["user"];
+  i18n: i18n;
+  t: TFunction;
+  onUpdate: (id: string, content: string, images: string[]) => Promise<void>;
+  onReply: (parentId: string, content: string, images: string[]) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
   onLike: (id: string) => Promise<void>;
   likedComments: Set<string>;
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
+  const [editExistingImages, setEditExistingImages] = useState<string[]>(comment.images || []);
+  const [editImageFiles, setEditImageFiles] = useState<File[]>([]);
+  const [editImagePreviews, setEditImagePreviews] = useState<string[]>([]);
+  const [editUploadProgress, setEditUploadProgress] = useState<number | null>(null);
   const [isReplying, setIsReplying] = useState(false);
   const [replyContent, setReplyContent] = useState("");
+  const [replyImageFiles, setReplyImageFiles] = useState<File[]>([]);
+  const [replyImagePreviews, setReplyImagePreviews] = useState<string[]>([]);
+  const [replyUploadProgress, setReplyUploadProgress] = useState<number | null>(null);
   const [replySubmitting, setReplySubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const editPreviewRef = useRef<string[]>([]);
+  const replyPreviewRef = useRef<string[]>([]);
+
+  useEffect(() => {
+    editPreviewRef.current = editImagePreviews;
+  }, [editImagePreviews]);
+
+  useEffect(() => {
+    replyPreviewRef.current = replyImagePreviews;
+  }, [replyImagePreviews]);
+
+  useEffect(() => {
+    return () => {
+      editPreviewRef.current.forEach((preview) => URL.revokeObjectURL(preview));
+      replyPreviewRef.current.forEach((preview) => URL.revokeObjectURL(preview));
+    };
+  }, []);
 
   const isMe = user && comment.userId.toLowerCase() === user.id.toLowerCase();
   const isAdmin = user && user.role === 'Admin';
@@ -267,9 +413,18 @@ function CommentItem({
   const authorAvatar = comment.author?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${comment.userId}`;
 
   const handleSave = async () => {
-    if (!editContent.trim()) return;
-    await onUpdate(comment.id, editContent);
-    setIsEditing(false);
+    if (!editContent.trim() && editExistingImages.length === 0 && editImageFiles.length === 0) return;
+    try {
+      setEditUploadProgress(editImageFiles.length > 0 ? 0 : null);
+      const uploadedImages = await uploadCommentImageFiles(editImageFiles, setEditUploadProgress);
+      await onUpdate(comment.id, editContent, [...editExistingImages, ...uploadedImages]);
+      editImagePreviews.forEach((preview) => URL.revokeObjectURL(preview));
+      setEditImageFiles([]);
+      setEditImagePreviews([]);
+      setIsEditing(false);
+    } finally {
+      setEditUploadProgress(null);
+    }
   };
 
   const handleDelete = async () => {
@@ -284,15 +439,51 @@ function CommentItem({
   };
 
   const handleSubmitReply = async () => {
-    if (!replyContent.trim()) return;
+    if (!replyContent.trim() && replyImageFiles.length === 0) return;
     setReplySubmitting(true);
     try {
-      await onReply(comment.id, replyContent);
+      setReplyUploadProgress(replyImageFiles.length > 0 ? 0 : null);
+      const uploadedImages = await uploadCommentImageFiles(replyImageFiles, setReplyUploadProgress);
+      await onReply(comment.id, replyContent, uploadedImages);
       setReplyContent("");
+      replyImagePreviews.forEach((preview) => URL.revokeObjectURL(preview));
+      setReplyImageFiles([]);
+      setReplyImagePreviews([]);
       setIsReplying(false);
     } finally {
       setReplySubmitting(false);
+      setReplyUploadProgress(null);
     }
+  };
+
+  const addEditImages = (files: FileList | null) => {
+    if (!files) return;
+    const remaining = MAX_COMMENT_IMAGES - editExistingImages.length - editImageFiles.length;
+    const nextFiles = Array.from(files).slice(0, Math.max(0, remaining));
+    if (nextFiles.length === 0) return;
+    setEditImageFiles((prev) => [...prev, ...nextFiles]);
+    setEditImagePreviews((prev) => [...prev, ...nextFiles.map((file) => URL.createObjectURL(file))]);
+  };
+
+  const addReplyImages = (files: FileList | null) => {
+    if (!files) return;
+    const remaining = MAX_COMMENT_IMAGES - replyImageFiles.length;
+    const nextFiles = Array.from(files).slice(0, Math.max(0, remaining));
+    if (nextFiles.length === 0) return;
+    setReplyImageFiles((prev) => [...prev, ...nextFiles]);
+    setReplyImagePreviews((prev) => [...prev, ...nextFiles.map((file) => URL.createObjectURL(file))]);
+  };
+
+  const removeEditFile = (index: number) => {
+    URL.revokeObjectURL(editImagePreviews[index]);
+    setEditImageFiles((prev) => prev.filter((_, i) => i !== index));
+    setEditImagePreviews((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const removeReplyFile = (index: number) => {
+    URL.revokeObjectURL(replyImagePreviews[index]);
+    setReplyImageFiles((prev) => prev.filter((_, i) => i !== index));
+    setReplyImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -316,9 +507,42 @@ function CommentItem({
                 onChange={(e) => setEditContent(e.target.value)}
                 className="w-full min-h-[100px] bg-transparent border border-border/50 rounded-xl p-3 outline-none focus:border-primary transition-colors resize-none text-sm"
               />
+              <div className="space-y-3">
+                <ExistingImageEditor
+                  images={editExistingImages}
+                  onRemove={(index) => setEditExistingImages((prev) => prev.filter((_, i) => i !== index))}
+                />
+                <ImagePreviewStrip previews={editImagePreviews} onRemove={removeEditFile} />
+                <div className="flex items-center gap-3">
+                  <label className={cn(
+                    "grid size-9 place-items-center rounded-xl border border-border bg-muted transition-colors",
+                    editExistingImages.length + editImageFiles.length < MAX_COMMENT_IMAGES ? "cursor-pointer hover:border-primary hover:text-primary" : "opacity-40"
+                  )}>
+                    <ImagePlus size={16} />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      disabled={editExistingImages.length + editImageFiles.length >= MAX_COMMENT_IMAGES}
+                      onChange={(event) => {
+                        addEditImages(event.target.files);
+                        event.target.value = "";
+                      }}
+                      className="hidden"
+                    />
+                  </label>
+                  <span className="text-xs text-muted-foreground">{editExistingImages.length + editImageFiles.length} / {MAX_COMMENT_IMAGES}</span>
+                </div>
+                {editUploadProgress !== null && (
+                  <div className="h-1.5 overflow-hidden rounded-full bg-secondary">
+                    <div className="h-full bg-primary transition-all" style={{ width: `${editUploadProgress * 100}%` }} />
+                  </div>
+                )}
+              </div>
               <div className="flex gap-2">
                 <button
                   onClick={handleSave}
+                  disabled={!editContent.trim() && editExistingImages.length === 0 && editImageFiles.length === 0}
                   className="text-xs font-bold px-3 py-1.5 rounded-lg bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
                 >
                   {t("post.save")}
@@ -327,6 +551,10 @@ function CommentItem({
                   onClick={() => {
                     setIsEditing(false);
                     setEditContent(comment.content);
+                    setEditExistingImages(comment.images || []);
+                    editImagePreviews.forEach((preview) => URL.revokeObjectURL(preview));
+                    setEditImageFiles([]);
+                    setEditImagePreviews([]);
                   }}
                   className="text-xs font-bold px-3 py-1.5 rounded-lg bg-muted hover:bg-border transition-colors"
                 >
@@ -347,6 +575,7 @@ function CommentItem({
               {comment.content}
             </p>
           )}
+          {!isEditing && <CommentImageGrid images={comment.images || []} imageLabel="Comment image" />}
         </div>
         
         <div className="flex items-center gap-4 ml-2">
@@ -400,17 +629,48 @@ function CommentItem({
               className="w-full min-h-[80px] bg-muted/30 border border-border/50 rounded-2xl p-3 outline-none focus:border-primary transition-all text-sm resize-none"
               autoFocus
             />
+            <ImagePreviewStrip previews={replyImagePreviews} onRemove={removeReplyFile} />
+            <div className="flex items-center gap-3">
+              <label className={cn(
+                "grid size-9 place-items-center rounded-xl border border-border bg-muted transition-colors",
+                replyImageFiles.length < MAX_COMMENT_IMAGES ? "cursor-pointer hover:border-primary hover:text-primary" : "opacity-40"
+              )}>
+                <ImagePlus size={16} />
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  disabled={replyImageFiles.length >= MAX_COMMENT_IMAGES}
+                  onChange={(event) => {
+                    addReplyImages(event.target.files);
+                    event.target.value = "";
+                  }}
+                  className="hidden"
+                />
+              </label>
+              <span className="text-xs text-muted-foreground">{replyImageFiles.length} / {MAX_COMMENT_IMAGES}</span>
+            </div>
+            {replyUploadProgress !== null && (
+              <div className="h-1.5 overflow-hidden rounded-full bg-secondary">
+                <div className="h-full bg-primary transition-all" style={{ width: `${replyUploadProgress * 100}%` }} />
+              </div>
+            )}
             <div className="flex gap-2">
               <button
                 onClick={handleSubmitReply}
-                disabled={!replyContent.trim() || replySubmitting}
+                disabled={(!replyContent.trim() && replyImageFiles.length === 0) || replySubmitting}
                 className="text-xs font-bold px-4 py-2 rounded-xl bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-all flex items-center gap-2"
               >
                 {replySubmitting ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
                 {t("post.submit")}
               </button>
               <button
-                onClick={() => setIsReplying(false)}
+                onClick={() => {
+                  setIsReplying(false);
+                  replyImagePreviews.forEach((preview) => URL.revokeObjectURL(preview));
+                  setReplyImageFiles([]);
+                  setReplyImagePreviews([]);
+                }}
                 className="text-xs font-bold px-4 py-2 rounded-xl bg-muted hover:bg-border transition-all"
               >
                 {t("post.cancel")}
@@ -453,6 +713,10 @@ export default function PostDetailPage() {
   const [post, setPost] = useState<PostDto | null>(null)
   const [comments, setComments] = useState<CommentDto[]>([])
   const [commentContent, setCommentContent] = useState("")
+  const [commentImageFiles, setCommentImageFiles] = useState<File[]>([])
+  const [commentImagePreviews, setCommentImagePreviews] = useState<string[]>([])
+  const [commentUploadProgress, setCommentUploadProgress] = useState<number | null>(null)
+  const commentPreviewRef = useRef<string[]>([])
   const [loading, setLoading] = useState(true)
   const [commentsLoading, setCommentsLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -488,7 +752,7 @@ export default function PostDetailPage() {
     }
     fetchPostData()
     return () => controller.abort()
-  }, [id])
+  }, [id, t])
 
   useEffect(() => {
     if (!id) return;
@@ -518,7 +782,32 @@ export default function PostDetailPage() {
     }
     fetchComments()
     return () => controller.abort()
-  }, [id, commentSort])
+  }, [id, commentSort, t])
+
+  useEffect(() => {
+    commentPreviewRef.current = commentImagePreviews;
+  }, [commentImagePreviews]);
+
+  useEffect(() => {
+    return () => {
+      commentPreviewRef.current.forEach((preview) => URL.revokeObjectURL(preview));
+    };
+  }, []);
+
+  const addCommentImages = (files: FileList | null) => {
+    if (!files) return;
+    const remaining = MAX_COMMENT_IMAGES - commentImageFiles.length;
+    const nextFiles = Array.from(files).slice(0, Math.max(0, remaining));
+    if (nextFiles.length === 0) return;
+    setCommentImageFiles((prev) => [...prev, ...nextFiles]);
+    setCommentImagePreviews((prev) => [...prev, ...nextFiles.map((file) => URL.createObjectURL(file))]);
+  };
+
+  const removeCommentImage = (index: number) => {
+    URL.revokeObjectURL(commentImagePreviews[index]);
+    setCommentImageFiles((prev) => prev.filter((_, i) => i !== index));
+    setCommentImagePreviews((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const handlePostUpdate = async () => {
     if (!id || !editTitle.trim() || !editContent.trim()) return;
@@ -633,9 +922,9 @@ export default function PostDetailPage() {
     }
   }
 
-  const handleCommentUpdate = async (commentId: string, content: string) => {
+  const handleCommentUpdate = async (commentId: string, content: string, images: string[]) => {
     try {
-      const res = await commentService.updateComment(commentId, { content });
+      const res = await commentService.updateComment(commentId, { content, images });
       if (res.data) {
         // Update the comment in the local state tree
         const updateInTree = (list: CommentDto[]): CommentDto[] => {
@@ -657,11 +946,12 @@ export default function PostDetailPage() {
     }
   }
 
-  const handleCommentReply = async (parentId: string, content: string) => {
+  const handleCommentReply = async (parentId: string, content: string, images: string[]) => {
     if (!id || !user) return;
     try {
       const res = await commentService.createComment({
         content,
+        images,
         userId: user.id,
         postId: id,
         parentCommentId: parentId
@@ -696,23 +986,30 @@ export default function PostDetailPage() {
   }
 
   const handleCommentSubmit = async () => {
-    if (!commentContent.trim() || !user || !id) return;
+    if ((!commentContent.trim() && commentImageFiles.length === 0) || !user || !id) return;
     setSubmitting(true)
     try {
+      setCommentUploadProgress(commentImageFiles.length > 0 ? 0 : null);
+      const uploadedImages = await uploadCommentImageFiles(commentImageFiles, setCommentUploadProgress);
       const res = await commentService.createComment({
         content: commentContent,
+        images: uploadedImages,
         userId: user.id,
         postId: id
       });
       if (res.data) {
         setComments([{ ...res.data, author: { id: user.id, name: user.name, avatar: user.avatar } }, ...comments]);
         setCommentContent("");
+        commentImagePreviews.forEach((preview) => URL.revokeObjectURL(preview));
+        setCommentImageFiles([]);
+        setCommentImagePreviews([]);
       }
     } catch (err) {
       console.error(err)
       setActionError(extractUserMessage(err, t("common.error")));
     } finally {
       setSubmitting(false)
+      setCommentUploadProgress(null)
     }
   }
 
@@ -889,22 +1186,48 @@ export default function PostDetailPage() {
         </div>
 
         {user ? (
-          <div className="flex gap-4 p-2 pl-4 rounded-4xl bg-muted/50 border border-border/50 focus-within:border-primary/30 focus-within:ring-4 focus-within:ring-primary/5 transition-all">
-            <input
-              type="text"
+          <div className="space-y-3 rounded-3xl bg-muted/50 border border-border/50 p-3 focus-within:border-primary/30 focus-within:ring-4 focus-within:ring-primary/5 transition-all">
+            <textarea
               placeholder={t("post.comment_placeholder")}
               value={commentContent}
               onChange={(e) => setCommentContent(e.target.value)}
-              className="flex-1 bg-transparent border-none outline-none py-3 text-sm"
-              onKeyDown={(e) => e.key === 'Enter' && handleCommentSubmit()}
+              className="min-h-[76px] w-full resize-none bg-transparent border-none outline-none px-2 py-2 text-sm"
             />
-            <button 
-              onClick={handleCommentSubmit}
-              disabled={!commentContent.trim() || submitting}
-              className="p-3 rounded-2xl bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-all shadow-lg shadow-primary/20"
-            >
-              {submitting ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
-            </button>
+            <ImagePreviewStrip previews={commentImagePreviews} onRemove={removeCommentImage} />
+            {commentUploadProgress !== null && (
+              <div className="h-1.5 overflow-hidden rounded-full bg-secondary">
+                <div className="h-full bg-primary transition-all" style={{ width: `${commentUploadProgress * 100}%` }} />
+              </div>
+            )}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <label className={cn(
+                  "grid size-10 place-items-center rounded-2xl border border-border bg-background/70 transition-colors",
+                  commentImageFiles.length < MAX_COMMENT_IMAGES ? "cursor-pointer hover:border-primary hover:text-primary" : "opacity-40"
+                )}>
+                  <ImagePlus size={18} />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    disabled={commentImageFiles.length >= MAX_COMMENT_IMAGES}
+                    onChange={(event) => {
+                      addCommentImages(event.target.files);
+                      event.target.value = "";
+                    }}
+                    className="hidden"
+                  />
+                </label>
+                <span className="text-xs text-muted-foreground">{commentImageFiles.length} / {MAX_COMMENT_IMAGES}</span>
+              </div>
+              <button 
+                onClick={handleCommentSubmit}
+                disabled={(!commentContent.trim() && commentImageFiles.length === 0) || submitting}
+                className="p-3 rounded-2xl bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-all shadow-lg shadow-primary/20"
+              >
+                {submitting ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+              </button>
+            </div>
           </div>
         ) : (
           <div className="p-4 rounded-[2rem] bg-muted/50 border border-border/50 text-center">

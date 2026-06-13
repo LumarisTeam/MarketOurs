@@ -91,7 +91,6 @@ public class CommentCreateDto
     /// <summary>
     /// 评论内容
     /// </summary>
-    [Required(ErrorMessage = "评论内容不能为空")] 
     [MaxLength(512, ErrorMessage = "评论内容长度不能超过512位")] 
     public string Content { get; set; } = string.Empty;
 
@@ -129,7 +128,6 @@ public class CommentUpdateDto
     /// <summary>
     /// 评论内容
     /// </summary>
-    [Required(ErrorMessage = "评论内容不能为空")] 
     [MaxLength(512, ErrorMessage = "评论内容长度不能超过512位")] 
     public string Content { get; set; } = string.Empty;
 

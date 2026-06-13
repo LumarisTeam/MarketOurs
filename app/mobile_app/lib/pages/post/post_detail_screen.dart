@@ -1,9 +1,11 @@
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 
 import 'image_viewer_screen.dart';
 
@@ -13,7 +15,9 @@ import '../../providers/auth_provider.dart';
 import '../../providers/post_feed_provider.dart';
 import '../../router/app_router.dart';
 import '../../services/comment_service.dart';
+import '../../services/file_service.dart';
 import '../../services/follow_service.dart';
+import '../../services/image_compression_service.dart';
 import '../../services/share_service.dart';
 import '../../services/user_service.dart';
 import '../../services/error_messages.dart';
@@ -22,6 +26,20 @@ import '../../ui/app_fields.dart';
 import '../../ui/app_responsive.dart';
 import '../../ui/app_theme.dart';
 import '../../ui/app_widgets.dart';
+
+const int _maxCommentImages = 3;
+
+class _CommentDraft {
+  const _CommentDraft({
+    required this.content,
+    this.existingImages = const [],
+    this.newImages = const [],
+  });
+
+  final String content;
+  final List<String> existingImages;
+  final List<XFile> newImages;
+}
 
 class PostDetailScreen extends ConsumerStatefulWidget {
   const PostDetailScreen({super.key, required this.postId});
@@ -35,6 +53,8 @@ class PostDetailScreen extends ConsumerStatefulWidget {
 class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   final _commentService = CommentService();
   final _commentController = TextEditingController();
+  final _imagePicker = ImagePicker();
+  final _fileService = FileService();
   final _shareService = const ShareService();
   final _followService = FollowService();
   final _userService = UserService();
@@ -43,6 +63,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   bool _isLoading = true;
   bool _isCommentsLoading = false;
   bool _isWorking = false;
+  final List<XFile> _commentImages = [];
+  double? _commentUploadProgress;
   String? _errorMessage;
   String _commentSort = 'recent';
   bool _postLiked = false;
@@ -209,13 +231,20 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     }
 
     final content = _commentController.text.trim();
-    if (content.isEmpty) return;
+    if (content.isEmpty && _commentImages.isEmpty) return;
 
     setState(() => _isWorking = true);
     try {
+      final uploadedImages = await _uploadCommentImages(
+        _commentImages,
+        onProgress: (fraction) {
+          if (mounted) setState(() => _commentUploadProgress = fraction);
+        },
+      );
       final response = await _commentService.createComment(
         CommentCreateDto(
           content: content,
+          images: uploadedImages,
           userId: user.id,
           postId: widget.postId,
         ),
@@ -224,6 +253,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       if (newComment != null) {
         _insertCommentLocally(newComment);
         _commentController.clear();
+        setState(() {
+          _commentImages.clear();
+          _commentUploadProgress = null;
+        });
         if (mounted) await AppFeedback.showSuccess(context, message: '评论已发布');
       }
     } catch (error) {
@@ -233,7 +266,12 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         message: extractErrorFromException(error),
       );
     } finally {
-      if (mounted) setState(() => _isWorking = false);
+      if (mounted) {
+        setState(() {
+          _isWorking = false;
+          _commentUploadProgress = null;
+        });
+      }
     }
   }
 
@@ -258,19 +296,24 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       return;
     }
 
-    final content = await _openTextComposer(
+    final draft = await _openCommentComposer(
       title: '回复评论',
       initialValue: '',
       hintText: '输入回复内容',
     );
-    if (content == null || content.trim().isEmpty) return;
+    if (draft == null ||
+        (draft.content.trim().isEmpty && draft.newImages.isEmpty)) {
+      return;
+    }
 
     setState(() => _isWorking = true);
     try {
+      final uploadedImages = await _uploadCommentImages(draft.newImages);
       final response = await _commentService.replyToComment(
         comment.id,
         CommentCreateDto(
-          content: content.trim(),
+          content: draft.content.trim(),
+          images: uploadedImages,
           userId: user.id,
           postId: widget.postId,
           parentCommentId: comment.id,
@@ -293,20 +336,28 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }
 
   Future<void> _editComment(CommentDto comment) async {
-    final content = await _openTextComposer(
+    final draft = await _openCommentComposer(
       title: '编辑评论',
       initialValue: comment.content ?? '',
       hintText: '更新评论内容',
+      initialImages: comment.images ?? const [],
     );
-    if (content == null || content.trim().isEmpty) return;
+    if (draft == null ||
+        (draft.content.trim().isEmpty &&
+            draft.existingImages.isEmpty &&
+            draft.newImages.isEmpty)) {
+      return;
+    }
 
     setState(() => _isWorking = true);
     try {
+      final uploadedImages = await _uploadCommentImages(draft.newImages);
+      final nextImages = [...draft.existingImages, ...uploadedImages];
       await _commentService.updateComment(
         comment.id,
-        CommentUpdateDto(content: content.trim()),
+        CommentUpdateDto(content: draft.content.trim(), images: nextImages),
       );
-      _updateCommentLocally(comment.id, content.trim());
+      _updateCommentLocally(comment.id, draft.content.trim(), nextImages);
       if (mounted) await AppFeedback.showSuccess(context, message: '评论已更新');
     } catch (error) {
       if (!mounted) return;
@@ -316,6 +367,57 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       );
     } finally {
       if (mounted) setState(() => _isWorking = false);
+    }
+  }
+
+  Future<void> _pickCommentImages() async {
+    final remaining = _maxCommentImages - _commentImages.length;
+    if (remaining <= 0) return;
+
+    final picked = await _imagePicker.pickMultiImage();
+    if (picked.isEmpty) return;
+
+    setState(() {
+      _commentImages.addAll(picked.take(remaining));
+    });
+  }
+
+  void _removeCommentImage(int index) {
+    setState(() => _commentImages.removeAt(index));
+  }
+
+  Future<List<String>> _uploadCommentImages(
+    List<XFile> images, {
+    void Function(double fraction)? onProgress,
+  }) async {
+    if (images.isEmpty) return <String>[];
+
+    final compressed = <CompressedImage>[];
+    try {
+      final results = await Future.wait([
+        _fileService.getUploadKey().then(
+          (r) => (r.data?['key'] as String?) ?? '',
+        ),
+        ImageCompressionService.compressAll(
+          images,
+          quality: ImageCompressionService.postImageQuality,
+          maxWidth: ImageCompressionService.postMaxWidth,
+          maxHeight: ImageCompressionService.postMaxHeight,
+        ),
+      ]);
+
+      var uploadKey = results[0] as String?;
+      if (uploadKey?.isEmpty == true) uploadKey = null;
+      compressed.addAll(results[1] as List<CompressedImage>);
+
+      return (await _fileService.uploadStream(
+            compressed.map(ImageCompressionService.toXFile).toList(),
+            key: uploadKey,
+            onProgress: onProgress,
+          )).data ??
+          <String>[];
+    } finally {
+      ImageCompressionService.cleanup(compressed);
     }
   }
 
@@ -376,10 +478,14 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     );
   }
 
-  void _updateCommentLocally(String commentId, String newContent) {
+  void _updateCommentLocally(
+    String commentId,
+    String newContent,
+    List<String> images,
+  ) {
     setState(() {
       _comments = _comments
-          .map((c) => _updateCommentInTree(c, commentId, newContent))
+          .map((c) => _updateCommentInTree(c, commentId, newContent, images))
           .toList();
     });
   }
@@ -388,9 +494,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     CommentDto comment,
     String commentId,
     String newContent,
+    List<String> images,
   ) {
     if (comment.id == commentId) {
-      return _copyComment(comment, content: newContent);
+      return _copyComment(comment, content: newContent, images: images);
     }
     if (comment.repliedComments == null || comment.repliedComments!.isEmpty) {
       return comment;
@@ -398,7 +505,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     return _copyComment(
       comment,
       repliedComments: comment.repliedComments!
-          .map((r) => _updateCommentInTree(r, commentId, newContent))
+          .map((r) => _updateCommentInTree(r, commentId, newContent, images))
           .toList(),
     );
   }
@@ -430,12 +537,13 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   CommentDto _copyComment(
     CommentDto c, {
     String? content,
+    List<String>? images,
     List<CommentDto>? repliedComments,
   }) {
     return CommentDto(
       id: c.id,
       content: content ?? c.content,
-      images: c.images,
+      images: images ?? c.images,
       likes: c.likes,
       dislikes: c.dislikes,
       isLiked: c.isLiked,
@@ -509,40 +617,101 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     return AppFeedback.confirm(context, message: message, destructive: true);
   }
 
-  Future<String?> _openTextComposer({
+  Future<_CommentDraft?> _openCommentComposer({
     required String title,
     required String initialValue,
     required String hintText,
+    List<String> initialImages = const [],
   }) async {
     final controller = TextEditingController(text: initialValue);
-    final result = await showAppBottomSheet<String>(
+    final existingImages = List<String>.from(
+      initialImages.take(_maxCommentImages),
+    );
+    final selectedImages = <XFile>[];
+    final result = await showAppBottomSheet<_CommentDraft>(
       context: context,
       builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 20,
-            right: 20,
-            top: 20,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: AppTextStyles.sectionTitle(context)),
-              const SizedBox(height: 16),
-              AppTextField(
-                controller: controller,
-                maxLines: 5,
-                placeholder: hintText,
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            Future<void> pickImages() async {
+              final remaining =
+                  _maxCommentImages -
+                  existingImages.length -
+                  selectedImages.length;
+              if (remaining <= 0) return;
+
+              final picked = await _imagePicker.pickMultiImage();
+              if (picked.isEmpty) return;
+
+              setSheetState(() {
+                selectedImages.addAll(picked.take(remaining));
+              });
+            }
+
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
               ),
-              const SizedBox(height: 20),
-              AppPrimaryButton(
-                onPressed: () => Navigator.of(context).pop(controller.text),
-                child: const Text('保存'),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: AppTextStyles.sectionTitle(context)),
+                  const SizedBox(height: 16),
+                  AppTextField(
+                    controller: controller,
+                    maxLines: 5,
+                    placeholder: hintText,
+                  ),
+                  const SizedBox(height: 12),
+                  _CommentComposerImages(
+                    existingImages: existingImages,
+                    localImages: selectedImages,
+                    onRemoveExisting: (index) {
+                      setSheetState(() => existingImages.removeAt(index));
+                    },
+                    onRemoveLocal: (index) {
+                      setSheetState(() => selectedImages.removeAt(index));
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        onPressed:
+                            existingImages.length + selectedImages.length >=
+                                _maxCommentImages
+                            ? null
+                            : pickImages,
+                        child: const Icon(CupertinoIcons.photo),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${existingImages.length + selectedImages.length} / $_maxCommentImages',
+                        style: AppTextStyles.label(context),
+                      ),
+                      const Spacer(),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  AppPrimaryButton(
+                    onPressed: () => Navigator.of(context).pop(
+                      _CommentDraft(
+                        content: controller.text,
+                        existingImages: List<String>.from(existingImages),
+                        newImages: List<XFile>.from(selectedImages),
+                      ),
+                    ),
+                    child: const Text('保存'),
+                  ),
+                ],
               ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
@@ -1069,47 +1238,82 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 ),
                 borderRadius: BorderRadius.circular(AppRadii.xl),
               ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Expanded(
-                    child: Container(
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: CupertinoDynamicColor.resolve(
-                          AppColors.secondary,
-                          context,
-                        ),
-                        borderRadius: BorderRadius.circular(AppRadii.pill),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      alignment: Alignment.centerLeft,
-                      child: CupertinoTextField(
-                        controller: _commentController,
-                        placeholder: '写下你的评论...',
-                        placeholderStyle: AppTextStyles.muted(context),
-                        decoration: null,
-                        style: AppTextStyles.body(
-                          context,
-                        ).copyWith(fontSize: 15),
-                        cursorColor: AppColors.primary,
-                      ),
-                    ),
+                  _CommentComposerImages(
+                    localImages: _commentImages,
+                    onRemoveLocal: _removeCommentImage,
                   ),
-                  const SizedBox(width: 12),
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    onPressed: _isWorking ? null : _submitComment,
-                    child: Text(
-                      '发布',
-                      style: TextStyle(
-                        color: AppColors.primary.withValues(
-                          alpha: _isWorking ? 0.5 : 1.0,
+                  if (_commentImages.isNotEmpty) const SizedBox(height: 10),
+                  if (_commentUploadProgress != null) ...[
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(AppRadii.sm),
+                      child: Container(
+                        height: 5,
+                        color: AppColors.secondary,
+                        alignment: Alignment.centerLeft,
+                        child: FractionallySizedBox(
+                          widthFactor: _commentUploadProgress!.clamp(0.0, 1.0),
+                          child: Container(height: 5, color: AppColors.primary),
                         ),
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
                       ),
                     ),
+                    const SizedBox(height: 10),
+                  ],
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        onPressed:
+                            _isWorking ||
+                                _commentImages.length >= _maxCommentImages
+                            ? null
+                            : _pickCommentImages,
+                        child: const Icon(CupertinoIcons.photo, size: 22),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Container(
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: CupertinoDynamicColor.resolve(
+                              AppColors.secondary,
+                              context,
+                            ),
+                            borderRadius: BorderRadius.circular(AppRadii.pill),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          alignment: Alignment.centerLeft,
+                          child: CupertinoTextField(
+                            controller: _commentController,
+                            placeholder: '写下你的评论...',
+                            placeholderStyle: AppTextStyles.muted(context),
+                            decoration: null,
+                            style: AppTextStyles.body(
+                              context,
+                            ).copyWith(fontSize: 15),
+                            cursorColor: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        onPressed: _isWorking ? null : _submitComment,
+                        child: Text(
+                          '发布',
+                          style: TextStyle(
+                            color: AppColors.primary.withValues(
+                              alpha: _isWorking ? 0.5 : 1.0,
+                            ),
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -1675,6 +1879,7 @@ class _CommentCard extends StatelessWidget {
                   context,
                 ).copyWith(fontSize: 15, height: 1.5),
               ),
+              _CommentImageGrid(images: comment.images ?? const []),
               const SizedBox(height: 8),
               Row(
                 children: [
@@ -1716,6 +1921,128 @@ class _CommentCard extends StatelessWidget {
     if (diff.inHours < 1) return '${diff.inMinutes}分钟前';
     if (diff.inDays < 1) return '${diff.inHours}小时前';
     return '${date.year}-${date.month}-${date.day}';
+  }
+}
+
+class _CommentImageGrid extends StatelessWidget {
+  const _CommentImageGrid({required this.images});
+
+  final List<String> images;
+
+  @override
+  Widget build(BuildContext context) {
+    if (images.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          for (var i = 0; i < images.length && i < _maxCommentImages; i++)
+            GestureDetector(
+              onTap: () {
+                Navigator.of(context).push(
+                  CupertinoPageRoute<void>(
+                    builder: (_) =>
+                        ImageViewerScreen(images: images, initialIndex: i),
+                  ),
+                );
+              },
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(AppRadii.md),
+                child: Image.network(
+                  images[i],
+                  width: images.length == 1 ? 132 : 82,
+                  height: images.length == 1 ? 132 : 82,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    width: images.length == 1 ? 132 : 82,
+                    height: images.length == 1 ? 132 : 82,
+                    color: AppColors.secondary,
+                    alignment: Alignment.center,
+                    child: const Icon(CupertinoIcons.photo),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CommentComposerImages extends StatelessWidget {
+  const _CommentComposerImages({
+    this.existingImages = const [],
+    this.localImages = const [],
+    this.onRemoveExisting,
+    this.onRemoveLocal,
+  });
+
+  final List<String> existingImages;
+  final List<XFile> localImages;
+  final ValueChanged<int>? onRemoveExisting;
+  final ValueChanged<int>? onRemoveLocal;
+
+  @override
+  Widget build(BuildContext context) {
+    if (existingImages.isEmpty && localImages.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: [
+        for (var i = 0; i < existingImages.length; i++)
+          _ComposerImageTile(
+            image: Image.network(existingImages[i], fit: BoxFit.cover),
+            onRemove: onRemoveExisting == null
+                ? null
+                : () => onRemoveExisting!(i),
+          ),
+        for (var i = 0; i < localImages.length; i++)
+          _ComposerImageTile(
+            image: Image.file(File(localImages[i].path), fit: BoxFit.cover),
+            onRemove: onRemoveLocal == null ? null : () => onRemoveLocal!(i),
+          ),
+      ],
+    );
+  }
+}
+
+class _ComposerImageTile extends StatelessWidget {
+  const _ComposerImageTile({required this.image, this.onRemove});
+
+  final Widget image;
+  final VoidCallback? onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(AppRadii.md),
+          child: SizedBox(width: 72, height: 72, child: image),
+        ),
+        if (onRemove != null)
+          Positioned(
+            right: -8,
+            top: -8,
+            child: CupertinoButton(
+              padding: EdgeInsets.zero,
+              onPressed: onRemove,
+              child: const Icon(
+                CupertinoIcons.xmark_circle_fill,
+                color: AppColors.destructive,
+                size: 24,
+              ),
+            ),
+          ),
+      ],
+    );
   }
 }
 

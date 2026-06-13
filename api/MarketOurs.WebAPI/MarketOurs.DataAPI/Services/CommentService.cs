@@ -186,8 +186,8 @@ public class CommentService(
 
         var comment = new CommentModel
         {
-            Content = createDto.Content,
-            Images = createDto.Images,
+            Content = createDto.Content?.Trim() ?? string.Empty,
+            Images = NormalizeImages(createDto.Images),
             UserId = createDto.UserId,
             PostId = createDto.PostId,
             ParentCommentId = createDto.ParentCommentId,
@@ -261,8 +261,8 @@ public class CommentService(
         var comment = await commentRepo.GetByIdAsync(id);
         if (comment == null) throw new ResourceAccessException(ErrorCode.CommentNotFound, "评论不存在");
 
-        comment.Content = updateDto.Content;
-        comment.Images = updateDto.Images;
+        comment.Content = updateDto.Content?.Trim() ?? string.Empty;
+        comment.Images = NormalizeImages(updateDto.Images);
         comment.UpdatedAt = DateTime.UtcNow;
         comment.IsReview = isAdmin;
 
@@ -352,5 +352,13 @@ public class CommentService(
             PostId = comment.PostId,
             ParentCommentId = comment.ParentCommentId
         };
+    }
+
+    private static List<string> NormalizeImages(IEnumerable<string>? images)
+    {
+        return images?
+            .Where(image => !string.IsNullOrWhiteSpace(image))
+            .Select(image => image.Trim())
+            .ToList() ?? [];
     }
 }

@@ -76,7 +76,13 @@ public class CommentServiceTests
     {
         var user = new UserModel { Id = "user_1" };
         var post = new PostModel { Id = "post_1", UserId = "author_1" };
-        var createDto = new CommentCreateDto { UserId = "user_1", PostId = "post_1", Content = "New Comment" };
+        var createDto = new CommentCreateDto
+        {
+            UserId = "user_1",
+            PostId = "post_1",
+            Content = "New Comment",
+            Images = ["https://blob.example/comment-1.webp"]
+        };
 
         _mockUserRepo.Setup(r => r.GetByIdAsync("user_1")).ReturnsAsync(user);
         _mockPostRepo.Setup(r => r.GetByIdAsync("post_1")).ReturnsAsync(post);
@@ -93,8 +99,10 @@ public class CommentServiceTests
         var result = await _commentService.CreateAsync(createDto);
 
         Assert.That(result.IsReview, Is.False);
+        Assert.That(result.Images, Is.EqualTo(createDto.Images));
         Assert.That(createdComment, Is.Not.Null);
         Assert.That(createdComment!.IsReview, Is.False);
+        Assert.That(createdComment.Images, Is.EqualTo(createDto.Images));
 
         await using var enumerator = _reviewQueue.DequeueAllAsync(CancellationToken.None).GetAsyncEnumerator();
         Assert.That(await enumerator.MoveNextAsync(), Is.True);
@@ -116,10 +124,18 @@ public class CommentServiceTests
         _mockCommentRepo.Setup(r => r.GetByIdAsync("comment_1")).ReturnsAsync(comment);
         _mockCommentRepo.Setup(r => r.UpdateAsync(It.IsAny<CommentModel>())).Returns(Task.CompletedTask);
 
-        var result = await _commentService.UpdateAsync("comment_1", new CommentUpdateDto { Content = "New" }, false);
+        var result = await _commentService.UpdateAsync("comment_1", new CommentUpdateDto
+        {
+            Content = "New",
+            Images = ["/uploads/comments/new.webp"]
+        }, false);
 
         Assert.That(result.IsReview, Is.False);
-        _mockCommentRepo.Verify(r => r.UpdateAsync(It.Is<CommentModel>(c => !c.IsReview && c.Content == "New")), Times.Once);
+        Assert.That(result.Images, Is.EqualTo(new[] { "/uploads/comments/new.webp" }));
+        _mockCommentRepo.Verify(r => r.UpdateAsync(It.Is<CommentModel>(c =>
+            !c.IsReview &&
+            c.Content == "New" &&
+            c.Images.SequenceEqual(new[] { "/uploads/comments/new.webp" }))), Times.Once);
 
         await using var enumerator = _reviewQueue.DequeueAllAsync(CancellationToken.None).GetAsyncEnumerator();
         Assert.That(await enumerator.MoveNextAsync(), Is.True);
