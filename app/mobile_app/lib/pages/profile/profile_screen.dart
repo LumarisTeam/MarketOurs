@@ -148,6 +148,24 @@ class ProfileScreen extends ConsumerWidget {
                     const _ThemeModeSection(),
                     const SizedBox(height: 16),
                     _ProfileSection(
+                      title: '关于',
+                      children: [
+                        _NavRow(
+                          icon: CupertinoIcons.doc_text,
+                          title: '用户协议',
+                          subtitle: '查看平台使用条款',
+                          onTap: () => context.push(AppRoutePaths.terms),
+                        ),
+                        _NavRow(
+                          icon: CupertinoIcons.shield_lefthalf_fill,
+                          title: '隐私条款',
+                          subtitle: '了解我们如何保护你的信息',
+                          onTap: () => context.push(AppRoutePaths.privacy),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    _ProfileSection(
                       title: '账户安全',
                       children: [
                         _NavRow(

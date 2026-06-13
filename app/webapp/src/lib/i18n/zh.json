@@ -22,6 +22,11 @@
     "logout": "退出登录",
     "toggle_language": "切换为英文"
   },
+  "legal": {
+    "terms": "用户协议",
+    "privacy": "隐私条款",
+    "last_updated": "最后更新日期"
+  },
   "auth": {
     "welcome_back": "欢迎回来",
     "signin_to_account": "登录您的 光汇 账号",

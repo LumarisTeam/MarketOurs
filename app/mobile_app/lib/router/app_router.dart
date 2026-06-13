@@ -19,6 +19,8 @@ import '../pages/profile/following_screen.dart';
 import '../pages/profile/profile_screen.dart';
 import '../pages/profile/public_profile_screen.dart';
 import '../pages/notification/notification_screen.dart';
+import '../pages/legal/terms_screen.dart';
+import '../pages/legal/privacy_screen.dart';
 import '../pages/main_shell.dart';
 import '../providers/auth_provider.dart';
 import '../providers/notification_provider.dart';
@@ -41,6 +43,8 @@ abstract final class AppRoutePaths {
   static const publicProfile = '/user/:userId';
   static const createPost = '/post/create';
   static const postDetail = '/post/:postId';
+  static const terms = '/terms';
+  static const privacy = '/privacy';
 }
 
 abstract final class AppRouteNames {
@@ -61,6 +65,8 @@ abstract final class AppRouteNames {
   static const publicProfile = 'public-profile';
   static const createPost = 'create-post';
   static const postDetail = 'post-detail';
+  static const terms = 'terms';
+  static const privacy = 'privacy';
 }
 
 abstract final class AppRouteParams {
@@ -269,6 +275,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           return PostDetailScreen(postId: postId);
         },
       ),
+      GoRoute(
+        path: AppRoutePaths.terms,
+        name: AppRouteNames.terms,
+        builder: (context, state) => const TermsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutePaths.privacy,
+        name: AppRouteNames.privacy,
+        builder: (context, state) => const PrivacyScreen(),
+      ),
     ],
   );
 });
@@ -283,6 +299,9 @@ const _authRoutes = {
 };
 
 bool _isPublicRoute(String path) {
+  // Legal pages are publicly accessible.
+  if (path == AppRoutePaths.terms || path == AppRoutePaths.privacy) return true;
+
   // Post detail pages (e.g. /post/abc123) are publicly viewable, but NOT /post/create.
   if (path == AppRoutePaths.createPost) return false;
   final postDetailPattern = RegExp(r'^/post/[^/]+$');

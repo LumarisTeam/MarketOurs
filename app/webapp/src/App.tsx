@@ -23,6 +23,8 @@ import PublicProfilePage from "./pages/profile/public"
 import FollowingPage from "./pages/profile/following"
 import ForgotPasswordPage from "./pages/forgot-password"
 import ResetPasswordPage from "./pages/profile/reset-password"
+import TermsPage from "./pages/legal/terms"
+import PrivacyPage from "./pages/legal/privacy"
 import { useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import type { RootState } from "./stores"
@@ -85,6 +87,8 @@ export function App() {
             <Route path="/following" element={<FollowingPage />} />
             <Route path="/user/:id" element={<PublicProfilePage />} />
             <Route path="/profile/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
           </Route>
 
           {/* Admin Routes with AdminLayout and AdminGuard */}
