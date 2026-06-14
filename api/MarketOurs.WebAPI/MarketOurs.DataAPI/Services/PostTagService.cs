@@ -10,6 +10,7 @@ public interface IPostTagService
 {
     Task<List<PostTagDto>> GetActiveAsync();
     Task<List<PostTagDto>> GetAllAsync();
+    Task<PostTagDto?> GetByIdAsync(string id);
     Task<PostTagDto> CreateAsync(PostTagCreateDto dto);
     Task<PostTagDto> UpdateAsync(string id, PostTagUpdateDto dto);
     Task<PostTagDto> DeactivateAsync(string id);
@@ -55,6 +56,18 @@ public class PostTagService(IPostTagRepo postTagRepo, IMemoryCache memoryCache) 
         return tags;
     }
 
+    public async Task<PostTagDto?> GetByIdAsync(string id)
+    {
+        var normalizedId = id.Trim();
+        if (string.IsNullOrWhiteSpace(normalizedId))
+        {
+            throw new BusinessException(ErrorCode.ParameterEmpty, "标签 ID 不能为空");
+        }
+
+        var tag = await postTagRepo.GetByIdAsync(normalizedId);
+        return tag == null ? null : MapToDto(tag);
+    }
+
     public async Task<PostTagDto> CreateAsync(PostTagCreateDto dto)
     {
         var name = NormalizeName(dto.Name);
@@ -68,7 +81,6 @@ public class PostTagService(IPostTagRepo postTagRepo, IMemoryCache memoryCache) 
         var tag = new PostTagModel
         {
             Name = name,
-            Color = NormalizeColor(dto.Color),
             IsActive = true,
             CreatedAt = now,
             UpdatedAt = now
@@ -92,7 +104,6 @@ public class PostTagService(IPostTagRepo postTagRepo, IMemoryCache memoryCache) 
         }
 
         tag.Name = name;
-        tag.Color = NormalizeColor(dto.Color);
         tag.IsActive = dto.IsActive;
         tag.UpdatedAt = DateTime.UtcNow;
 
@@ -143,7 +154,6 @@ public class PostTagService(IPostTagRepo postTagRepo, IMemoryCache memoryCache) 
         {
             Id = tag.Id,
             Name = tag.Name,
-            Color = tag.Color,
             IsActive = tag.IsActive,
             CreatedAt = tag.CreatedAt,
             UpdatedAt = tag.UpdatedAt
@@ -159,11 +169,5 @@ public class PostTagService(IPostTagRepo postTagRepo, IMemoryCache memoryCache) 
         }
 
         return normalized;
-    }
-
-    private static string NormalizeColor(string? color)
-    {
-        var normalized = color?.Trim();
-        return string.IsNullOrWhiteSpace(normalized) ? "#64748b" : normalized;
     }
 }

@@ -8,6 +8,11 @@ final postServiceProvider = Provider<PostService>((ref) => PostService());
 final homeFeedProvider = AsyncNotifierProvider<HomeFeedNotifier, HomeFeedState>(
   HomeFeedNotifier.new,
 );
+final tagFeedProvider = AsyncNotifierProvider.family<
+  TagFeedNotifier,
+  HomeFeedState,
+  String
+>(TagFeedNotifier.new);
 final hotFeedProvider = AsyncNotifierProvider<HotFeedNotifier, HotFeedState>(
   HotFeedNotifier.new,
 );
@@ -134,6 +139,104 @@ class HomeFeedNotifier extends AsyncNotifier<HomeFeedState> {
             pageIndex: pageIndex,
             pageSize: _pageSize,
             keyword: keyword,
+          );
+    final page = response.data;
+
+    if (page == null) {
+      throw Exception(response.message ?? '帖子数据为空');
+    }
+
+    return HomeFeedState(
+      posts: [...previousPosts, ...page.items],
+      pageIndex: page.pageIndex,
+      hasNextPage: page.hasNextPage,
+      isLoadingMore: false,
+      isRefreshing: false,
+      keyword: keyword,
+    );
+  }
+}
+
+class TagFeedNotifier extends AsyncNotifier<HomeFeedState> {
+  TagFeedNotifier(this.tagId);
+
+  static const int _pageSize = 20;
+  final String tagId;
+
+  @override
+  Future<HomeFeedState> build() => _fetchPage(pageIndex: 1);
+
+  Future<void> refresh() async {
+    final currentState = state.asData?.value;
+    if (currentState == null) {
+      state = const AsyncLoading();
+    } else {
+      state = AsyncData(currentState.copyWith(isRefreshing: true));
+    }
+
+    state = await AsyncValue.guard(
+      () => _fetchPage(pageIndex: 1, keyword: currentState?.keyword ?? ''),
+    );
+  }
+
+  Future<void> search(String keyword) async {
+    final trimmedKeyword = keyword.trim();
+    final currentState = state.asData?.value;
+    if (currentState == null) {
+      state = const AsyncLoading();
+    } else {
+      state = AsyncData(
+        currentState.copyWith(isRefreshing: true, keyword: trimmedKeyword),
+      );
+    }
+
+    state = await AsyncValue.guard(
+      () => _fetchPage(pageIndex: 1, keyword: trimmedKeyword),
+    );
+  }
+
+  Future<void> clearSearch() => search('');
+  Future<void> setSearchKeyword(String keyword) => search(keyword);
+
+  Future<void> loadMore() async {
+    final currentState = state.asData?.value;
+    if (currentState == null ||
+        currentState.isLoadingMore ||
+        !currentState.hasNextPage) {
+      return;
+    }
+
+    state = AsyncData(currentState.copyWith(isLoadingMore: true));
+
+    try {
+      final nextState = await _fetchPage(
+        pageIndex: currentState.pageIndex + 1,
+        previousPosts: currentState.posts,
+        keyword: currentState.keyword,
+      );
+      state = AsyncData(nextState);
+    } catch (_) {
+      state = AsyncData(currentState.copyWith(isLoadingMore: false));
+    }
+  }
+
+  Future<HomeFeedState> _fetchPage({
+    required int pageIndex,
+    List<PostDto> previousPosts = const [],
+    String keyword = '',
+  }) async {
+    final service = ref.read(postServiceProvider);
+    final response = keyword.isEmpty
+        ? await service.getPosts(
+            pageIndex: pageIndex,
+            pageSize: _pageSize,
+            tagId: tagId,
+          )
+        : await service.searchPosts(
+            pageIndex: pageIndex,
+            pageSize: _pageSize,
+            keyword: keyword,
+            tagId: tagId,
           );
     final page = response.data;
 

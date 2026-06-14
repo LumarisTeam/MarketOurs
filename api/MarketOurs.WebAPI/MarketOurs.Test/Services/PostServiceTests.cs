@@ -80,7 +80,8 @@ public class PostServiceTests
             new PostModel { Id = "1", Title = "Post 1", Content = "Content 1" },
             new PostModel { Id = "2", Title = "Post 2", Content = "Content 2" }
         };
-        _mockPostRepo.Setup(r => r.GetAllAsync(It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync(posts);
+        _mockPostRepo.Setup(r => r.CountAsync(null)).ReturnsAsync(2);
+        _mockPostRepo.Setup(r => r.GetAllAsync(It.IsAny<int>(), It.IsAny<int>(), null)).ReturnsAsync(posts);
 
         _mockLikeManager.Setup(m => m.GetPostLikesAsync(It.IsAny<string>(), It.IsAny<int>())).ReturnsAsync(10);
         _mockLikeManager.Setup(m => m.GetPostDislikesAsync(It.IsAny<string>(), It.IsAny<int>())).ReturnsAsync(2);
@@ -98,6 +99,18 @@ public class PostServiceTests
         Assert.That(result.Items[0].Likes, Is.EqualTo(10));
         Assert.That(result.Items[0].Dislikes, Is.EqualTo(2));
         Assert.That(result.Items[0].Watch, Is.EqualTo(100));
+    }
+
+    [Test]
+    public async Task GetAllAsync_WithTagId_ShouldPassTrimmedFilterToRepo()
+    {
+        _mockPostRepo.Setup(r => r.CountAsync("tag-1")).ReturnsAsync(0);
+        _mockPostRepo.Setup(r => r.GetAllAsync(1, 10, "tag-1")).ReturnsAsync([]);
+
+        await _postService.GetAllAsync(new PaginationParams { TagId = "  tag-1  " });
+
+        _mockPostRepo.Verify(r => r.CountAsync("tag-1"), Times.Once);
+        _mockPostRepo.Verify(r => r.GetAllAsync(1, 10, "tag-1"), Times.Once);
     }
 
     [Test]
@@ -247,8 +260,8 @@ public class PostServiceTests
 
         Assert.That(result.Items, Is.Empty);
         Assert.That(result.TotalCount, Is.EqualTo(0));
-        _mockPostRepo.Verify(r => r.SearchCountAsync(It.IsAny<string>()), Times.Never);
-        _mockPostRepo.Verify(r => r.SearchAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never);
+        _mockPostRepo.Verify(r => r.SearchCountAsync(It.IsAny<string>(), It.IsAny<string?>()), Times.Never);
+        _mockPostRepo.Verify(r => r.SearchAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>()), Times.Never);
     }
 
     [Test]
@@ -259,8 +272,8 @@ public class PostServiceTests
             new() { Id = "post-1", Title = "二手单反相机", Content = "9 成新", IsReview = true }
         };
 
-        _mockPostRepo.Setup(r => r.SearchCountAsync("相机")).ReturnsAsync(1);
-        _mockPostRepo.Setup(r => r.SearchAsync("相机", 2, 5)).ReturnsAsync(posts);
+        _mockPostRepo.Setup(r => r.SearchCountAsync("相机", null)).ReturnsAsync(1);
+        _mockPostRepo.Setup(r => r.SearchAsync("相机", 2, 5, null)).ReturnsAsync(posts);
         _mockLikeManager.Setup(m => m.GetPostLikesAsync("post-1", It.IsAny<int>())).ReturnsAsync(7);
         _mockLikeManager.Setup(m => m.GetPostDislikesAsync("post-1", It.IsAny<int>())).ReturnsAsync(1);
         _mockDatabase.Setup(db => db.StringGetAsync(It.IsAny<RedisKey>(), It.IsAny<CommandFlags>()))
@@ -277,7 +290,23 @@ public class PostServiceTests
         Assert.That(result.Items, Has.Count.EqualTo(1));
         Assert.That(result.Items[0].Title, Does.Contain("相机"));
         Assert.That(result.Items[0].Likes, Is.EqualTo(7));
-        _mockPostRepo.Verify(r => r.SearchCountAsync("相机"), Times.Once);
-        _mockPostRepo.Verify(r => r.SearchAsync("相机", 2, 5), Times.Once);
+        _mockPostRepo.Verify(r => r.SearchCountAsync("相机", null), Times.Once);
+        _mockPostRepo.Verify(r => r.SearchAsync("相机", 2, 5, null), Times.Once);
+    }
+
+    [Test]
+    public async Task SearchAsync_WithKeywordAndTagId_ShouldPassTrimmedValuesToRepo()
+    {
+        _mockPostRepo.Setup(r => r.SearchCountAsync("相机", "tag-camera")).ReturnsAsync(0);
+        _mockPostRepo.Setup(r => r.SearchAsync("相机", 1, 10, "tag-camera")).ReturnsAsync([]);
+
+        await _postService.SearchAsync(new PaginationParams
+        {
+            Keyword = " 相机 ",
+            TagId = " tag-camera "
+        });
+
+        _mockPostRepo.Verify(r => r.SearchCountAsync("相机", "tag-camera"), Times.Once);
+        _mockPostRepo.Verify(r => r.SearchAsync("相机", 1, 10, "tag-camera"), Times.Once);
     }
 }

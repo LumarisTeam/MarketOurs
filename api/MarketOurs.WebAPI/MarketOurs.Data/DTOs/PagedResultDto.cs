@@ -25,6 +25,11 @@ public class PaginationParams
     /// 搜索关键词
     /// </summary>
     public string? Keyword { get; set; }
+
+    /// <summary>
+    /// 按标签筛选
+    /// </summary>
+    public string? TagId { get; set; }
 }
 
 /// <summary>

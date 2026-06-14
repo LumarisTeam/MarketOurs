@@ -6,13 +6,10 @@ import { extractUserMessage } from "../../services/errorCodes"
 import type { PostTagDto } from "../../types"
 import { PostTagBadge } from "../../components/post/PostTagBadge"
 
-const DEFAULT_COLOR = "#64748b"
-
 export default function AdminTagsPage() {
   const { t } = useTranslation()
   const [tags, setTags] = useState<PostTagDto[]>([])
   const [name, setName] = useState("")
-  const [color, setColor] = useState(DEFAULT_COLOR)
   const [isLoading, setIsLoading] = useState(true)
   const [activeId, setActiveId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -47,9 +44,8 @@ export default function AdminTagsPage() {
       setActiveId("new")
       setError(null)
       setMessage(null)
-      await adminService.createPostTag({ name: name.trim(), color })
+      await adminService.createPostTag({ name: name.trim() })
       setName("")
-      setColor(DEFAULT_COLOR)
       await loadTags()
       setMessage(t("admin.tags.created"))
     } catch (err) {
@@ -59,7 +55,7 @@ export default function AdminTagsPage() {
     }
   }
 
-  const handleUpdate = async (tag: PostTagDto, updates: Partial<Pick<PostTagDto, "name" | "color" | "isActive">>) => {
+  const handleUpdate = async (tag: PostTagDto, updates: Partial<Pick<PostTagDto, "name" | "isActive">>) => {
     const next = { ...tag, ...updates }
     try {
       setActiveId(tag.id)
@@ -67,7 +63,6 @@ export default function AdminTagsPage() {
       setMessage(null)
       await adminService.updatePostTagDefinition(tag.id, {
         name: next.name,
-        color: next.color,
         isActive: next.isActive,
       })
       await loadTags()
@@ -98,18 +93,11 @@ export default function AdminTagsPage() {
       ) : null}
 
       <form onSubmit={handleCreate} className="rounded-[2rem] border border-border/50 bg-card p-5">
-        <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_160px_auto]">
+        <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
           <input
             value={name}
             onChange={(event) => setName(event.target.value)}
             placeholder={t("admin.tags.name_placeholder")}
-            className="h-11 rounded-xl border border-border/50 bg-muted/40 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/20"
-            maxLength={32}
-          />
-          <input
-            value={color}
-            onChange={(event) => setColor(event.target.value)}
-            placeholder="#64748b"
             className="h-11 rounded-xl border border-border/50 bg-muted/40 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/20"
             maxLength={32}
           />
@@ -135,8 +123,8 @@ export default function AdminTagsPage() {
               const isBusy = activeId === tag.id
               return (
                 <div key={tag.id} className="grid gap-3 p-4 md:grid-cols-[180px_minmax(0,1fr)_150px_auto] md:items-center">
-                  <PostTagBadge tag={tag} />
-                  <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_150px]">
+                  <PostTagBadge tag={tag} clickable={false} />
+                  <div className="grid gap-2">
                     <input
                       defaultValue={tag.name}
                       maxLength={32}
@@ -144,15 +132,6 @@ export default function AdminTagsPage() {
                       onBlur={(event) => {
                         const nextName = event.target.value.trim()
                         if (nextName && nextName !== tag.name) void handleUpdate(tag, { name: nextName })
-                      }}
-                    />
-                    <input
-                      defaultValue={tag.color}
-                      maxLength={32}
-                      className="h-10 rounded-xl border border-border/50 bg-muted/30 px-3 text-sm outline-none focus:ring-2 focus:ring-primary/20"
-                      onBlur={(event) => {
-                        const nextColor = event.target.value.trim()
-                        if (nextColor && nextColor !== tag.color) void handleUpdate(tag, { color: nextColor })
                       }}
                     />
                   </div>

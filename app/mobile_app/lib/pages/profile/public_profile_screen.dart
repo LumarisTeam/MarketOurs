@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_app/ui/app_theme.dart';
 
+import '../../components/post_tag_pill.dart';
 import '../../models/post.dart';
 import '../../models/user.dart';
 import '../../providers/auth_provider.dart';
@@ -329,6 +330,10 @@ class _PostPreview extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (post.tag != null) ...[
+            PostTagPill(tag: post.tag),
+            const SizedBox(height: 8),
+          ],
           Text(
             post.title?.trim().isNotEmpty == true
                 ? post.title!.trim()

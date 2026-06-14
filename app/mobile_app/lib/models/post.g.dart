@@ -9,7 +9,6 @@ part of 'post.dart';
 PostTagDto _$PostTagDtoFromJson(Map<String, dynamic> json) => PostTagDto(
   id: json['id'] as String,
   name: json['name'] as String?,
-  color: json['color'] as String?,
   isActive: json['isActive'] as bool?,
   createdAt: json['createdAt'] == null
       ? null
@@ -23,7 +22,6 @@ Map<String, dynamic> _$PostTagDtoToJson(PostTagDto instance) =>
     <String, dynamic>{
       'id': instance.id,
       'name': instance.name,
-      'color': instance.color,
       'isActive': instance.isActive,
       'createdAt': instance.createdAt?.toIso8601String(),
       'updatedAt': instance.updatedAt?.toIso8601String(),

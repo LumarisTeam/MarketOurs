@@ -110,8 +110,18 @@
     "sort_recent": "最新",
     "sort_hot": "最热",
     "sort_by": "排序方式"
-    },
-    "profile": {
+  },
+  "tag": {
+    "title": "标签：{{name}}",
+    "subtitle": "这里收集了带有这个标签的公开帖子。",
+    "inactive_subtitle": "这个标签已停用，但历史公开帖子仍然会显示在这里。",
+    "search_placeholder": "在 {{name}} 标签下搜索帖子...",
+    "empty_posts": "这个标签下暂时还没有公开帖子。",
+    "not_found_title": "这个标签暂时不可用",
+    "not_found": "没有找到这个标签，或者它已经不存在。",
+    "back_to_feed": "返回首页"
+  },
+  "profile": {
     "title": "个人中心",
     "edit_profile": "编辑资料",
     "save_changes": "保存修改",
@@ -285,7 +295,7 @@
       "inactive": "已停用",
       "activate": "启用",
       "deactivate": "停用",
-      "blur_hint": "修改名称或颜色后离开输入框会自动保存。"
+      "blur_hint": "修改名称后离开输入框会自动保存。"
     },
     "comments": {
       "title": "评论管理",

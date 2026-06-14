@@ -26,6 +26,7 @@ import ForgotPasswordPage from "./pages/forgot-password"
 import ResetPasswordPage from "./pages/profile/reset-password"
 import TermsPage from "./pages/legal/terms"
 import PrivacyPage from "./pages/legal/privacy"
+import TagPage from "./pages/tag"
 import { useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import type { RootState } from "./stores"
@@ -78,6 +79,7 @@ export function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/hot" element={<HotPage />} />
             <Route path="/post/:id" element={<PostDetailPage />} />
+            <Route path="/tag/:id" element={<TagPage />} />
             <Route path="/post/create" element={<CreatePostPage />} />
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/login" element={<LoginPage />} />

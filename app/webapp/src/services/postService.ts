@@ -10,11 +10,12 @@ import type {
 } from '../types';
 
 export const postService = {
-  getPosts: (pageIndex?: number, pageSize?: number, keyword?: string) => {
+  getPosts: (pageIndex?: number, pageSize?: number, keyword?: string, tagId?: string) => {
     const params = new URLSearchParams();
     if (pageIndex !== undefined) params.append('PageIndex', pageIndex.toString());
     if (pageSize !== undefined) params.append('PageSize', pageSize.toString());
     if (keyword) params.append('Keyword', keyword);
+    if (tagId) params.append('TagId', tagId);
     return apiClient.get<PagedResult<PostDto>>(`/Post?${params.toString()}`);
   },
 
@@ -49,14 +50,18 @@ export const postService = {
   getPostComments: (id: string, type: string, options?: RequestInit) =>
     apiClient.get<CommentDto[]>(`/Post/${id}/comments/${type}`, options),
 
-  searchPosts: (pageIndex?: number, pageSize?: number, keyword?: string) => {
+  searchPosts: (pageIndex?: number, pageSize?: number, keyword?: string, tagId?: string) => {
     const params = new URLSearchParams();
     if (pageIndex !== undefined) params.append('PageIndex', pageIndex.toString());
     if (pageSize !== undefined) params.append('PageSize', pageSize.toString());
     if (keyword) params.append('Keyword', keyword);
+    if (tagId) params.append('TagId', tagId);
     return apiClient.get<PagedResult<PostDto>>(`/Post/search?${params.toString()}`);
   },
 
   getPostTags: () =>
     apiClient.get<PostTagDto[]>('/PostTag'),
+
+  getPostTag: (id: string) =>
+    apiClient.get<PostTagDto>(`/PostTag/${id}`),
 };

@@ -2,6 +2,7 @@ using MarketOurs.Data.DTOs;
 using MarketOurs.DataAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MarketOurs.DataAPI.Exceptions;
 
 namespace MarketOurs.WebAPI.Controllers;
 
@@ -21,6 +22,19 @@ public class PostTagController(IPostTagService postTagService) : ControllerBase
     public async Task<ApiResponse<List<PostTagDto>>> GetAll()
     {
         return ApiResponse<List<PostTagDto>>.Success(await postTagService.GetAllAsync(), "获取成功");
+    }
+
+    [HttpGet("{id}")]
+    [AllowAnonymous]
+    public async Task<ApiResponse<PostTagDto>> GetById(string id)
+    {
+        var tag = await postTagService.GetByIdAsync(id);
+        if (tag == null)
+        {
+            throw new ResourceAccessException(ErrorCode.InvalidStatusForOperation, "标签不存在", httpStatusCode: 404, resourceName: "PostTag", resourceId: id);
+        }
+
+        return ApiResponse<PostTagDto>.Success(tag, "获取成功");
     }
 
     [HttpPost]

@@ -137,7 +137,6 @@ export interface ChangePasswordRequest {
 export interface PostTagDto {
   id: string;
   name: string;
-  color: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -145,12 +144,10 @@ export interface PostTagDto {
 
 export interface PostTagCreateDto {
   name: string;
-  color?: string;
 }
 
 export interface PostTagUpdateDto {
   name: string;
-  color?: string;
   isActive: boolean;
 }
 

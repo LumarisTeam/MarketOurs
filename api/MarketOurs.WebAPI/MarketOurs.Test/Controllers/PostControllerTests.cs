@@ -38,6 +38,21 @@ public class PostControllerTests : ControllerTestBase
     }
 
     [Test]
+    public async Task GetAll_WithTagId_ShouldPassFilterToService()
+    {
+        var pagedResult = PagedResultDto<PostDto>.Success([], 0, 1, 10);
+        PaginationParams? captured = null;
+        _mockPostService.Setup(s => s.GetAllAsync(It.IsAny<PaginationParams>()))
+            .Callback<PaginationParams>(p => captured = p)
+            .ReturnsAsync(pagedResult);
+
+        await _controller.GetAll(new PaginationParams { TagId = "tag-1" });
+
+        Assert.That(captured, Is.Not.Null);
+        Assert.That(captured!.TagId, Is.EqualTo("tag-1"));
+    }
+
+    [Test]
     public async Task GetByUserId_ShouldReturnPagedPosts()
     {
         var posts = new List<PostDto> { new PostDto { Id = "1", Title = "Post 1", UserId = "user-1" } };
@@ -57,7 +72,7 @@ public class PostControllerTests : ControllerTestBase
     {
         // Arrange
         var post = new PostDto { Id = "1", Title = "Post 1" };
-        _mockPostService.Setup(s => s.GetByIdAsync("1", null)).ReturnsAsync(post);
+        _mockPostService.Setup(s => s.GetByIdAsync("1", "1")).ReturnsAsync(post);
         _mockPostService.Setup(s => s.IncrementWatchAsync("1")).Returns(Task.CompletedTask);
 
         // Act
@@ -117,7 +132,7 @@ public class PostControllerTests : ControllerTestBase
         var ex = Assert.ThrowsAsync<AuthException>(async () => await _controller.Update("1", updateDto));
 
         // Assert
-        Assert.That(ex!.ErrorCode, Is.EqualTo(ErrorCode.InsufficientPermission));
+        Assert.That(ex!.ErrorCode, Is.EqualTo(ErrorCode.PostEditDenied));
         Assert.That(ex.HttpStatusCode, Is.EqualTo(403));
     }
 
@@ -136,5 +151,20 @@ public class PostControllerTests : ControllerTestBase
         // Assert
         Assert.That(result.Code, Is.EqualTo(200));
         _mockPostService.Verify(s => s.DeleteAsync("1"), Times.Once);
+    }
+
+    [Test]
+    public async Task Search_WithTagId_ShouldPassFilterToService()
+    {
+        var pagedResult = PagedResultDto<PostDto>.Success([], 0, 1, 10);
+        PaginationParams? captured = null;
+        _mockPostService.Setup(s => s.SearchAsync(It.IsAny<PaginationParams>()))
+            .Callback<PaginationParams>(p => captured = p)
+            .ReturnsAsync(pagedResult);
+
+        await _controller.Search(new PaginationParams { Keyword = "相机", TagId = "tag-2" });
+
+        Assert.That(captured, Is.Not.Null);
+        Assert.That(captured!.TagId, Is.EqualTo("tag-2"));
     }
 }

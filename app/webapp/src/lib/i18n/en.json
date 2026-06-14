@@ -110,8 +110,18 @@
     "sort_recent": "Recent",
     "sort_hot": "Hot",
     "sort_by": "Sort by"
-    },
-    "profile": {
+  },
+  "tag": {
+    "title": "Tag: {{name}}",
+    "subtitle": "Browse all public posts under this tag.",
+    "inactive_subtitle": "This tag has been deactivated, but its historical public posts are still available here.",
+    "search_placeholder": "Search posts in {{name}}...",
+    "empty_posts": "There are no public posts under this tag yet.",
+    "not_found_title": "This tag is unavailable",
+    "not_found": "We couldn't find this tag.",
+    "back_to_feed": "Back to Home"
+  },
+  "profile": {
     "title": "Profile",
     "edit_profile": "Edit Profile",
     "save_changes": "Save Changes",
@@ -285,7 +295,7 @@
       "inactive": "Inactive",
       "activate": "Activate",
       "deactivate": "Deactivate",
-      "blur_hint": "Name and color changes are saved when the input loses focus."
+      "blur_hint": "Name changes are saved when the input loses focus."
     },
     "comments": {
       "title": "Comments",

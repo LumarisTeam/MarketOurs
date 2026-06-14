@@ -180,7 +180,7 @@ export default function CreatePostPage() {
               ))}
             </select>
             {tagId ? (
-              <PostTagBadge tag={tags.find((tag) => tag.id === tagId)} fallback={t('post.tag_label')} />
+              <PostTagBadge tag={tags.find((tag) => tag.id === tagId)} fallback={t('post.tag_label')} clickable={false} />
             ) : null}
           </div>
 

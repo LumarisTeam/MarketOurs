@@ -25,6 +25,7 @@ class PostService {
     int pageIndex = 1,
     int pageSize = 10,
     String? keyword,
+    String? tagId,
   }) async {
     final response = await _api.get(
       '/Post',
@@ -32,6 +33,7 @@ class PostService {
         'PageIndex': pageIndex,
         'PageSize': pageSize,
         'Keyword': keyword,
+        'TagId': tagId,
       }..removeWhere((_, value) => value == null),
     );
     return _parsePagedPosts(response.data);
@@ -41,6 +43,7 @@ class PostService {
     int pageIndex = 1,
     int pageSize = 10,
     String? keyword,
+    String? tagId,
   }) async {
     final response = await _api.get(
       '/Post/search',
@@ -48,6 +51,7 @@ class PostService {
         'PageIndex': pageIndex,
         'PageSize': pageSize,
         'Keyword': keyword,
+        'TagId': tagId,
       }..removeWhere((_, value) => value == null),
     );
     return _parsePagedPosts(response.data);
@@ -90,6 +94,14 @@ class PostService {
       (json) => (json as List)
           .map((item) => PostTagDto.fromJson(item as Map<String, dynamic>))
           .toList(),
+    );
+  }
+
+  Future<ApiResponse<PostTagDto>> getPostTag(String id) async {
+    final response = await _api.get('/PostTag/$id');
+    return ApiResponse<PostTagDto>.fromJson(
+      response.data as Map<String, dynamic>,
+      (json) => PostTagDto.fromJson(json as Map<String, dynamic>),
     );
   }
 

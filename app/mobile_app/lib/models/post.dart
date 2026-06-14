@@ -7,7 +7,6 @@ part 'post.g.dart';
 class PostTagDto {
   final String id;
   final String? name;
-  final String? color;
   final bool? isActive;
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -15,7 +14,6 @@ class PostTagDto {
   PostTagDto({
     required this.id,
     this.name,
-    this.color,
     this.isActive,
     this.createdAt,
     this.updatedAt,

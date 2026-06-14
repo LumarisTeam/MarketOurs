@@ -184,7 +184,7 @@ export default function AdminPostsPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-col gap-2">
-                          <PostTagBadge tag={post.tag} />
+                          <PostTagBadge tag={post.tag} clickable={false} />
                           <select
                             value={post.tagId ?? ""}
                             disabled={isBusy}

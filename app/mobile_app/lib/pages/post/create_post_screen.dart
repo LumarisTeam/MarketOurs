@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../components/post_tag_pill.dart';
 import '../../models/post.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/post_feed_provider.dart';
@@ -411,7 +412,11 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 6),
-                _PostTagPill(tag: _selectedTag, emptyText: '无标签'),
+                PostTagPill(
+                  tag: _selectedTag,
+                  emptyText: '无标签',
+                  clickable: false,
+                ),
               ],
             ),
           ),
@@ -424,46 +429,6 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       ),
     );
   }
-}
-
-class _PostTagPill extends StatelessWidget {
-  const _PostTagPill({required this.tag, required this.emptyText});
-
-  final PostTagDto? tag;
-  final String emptyText;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = _parseColor(tag?.color);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: tag == null ? AppColors.secondary : color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(
-          color: tag == null
-              ? CupertinoDynamicColor.resolve(AppColors.border, context)
-              : color.withValues(alpha: 0.35),
-        ),
-      ),
-      child: Text(
-        tag?.name?.trim().isNotEmpty == true ? tag!.name!.trim() : emptyText,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w700,
-          color: tag == null ? AppColors.mutedForeground : color,
-        ),
-      ),
-    );
-  }
-}
-
-Color _parseColor(String? value) {
-  final normalized = value?.trim().replaceFirst('#', '');
-  if (normalized == null || normalized.isEmpty) return AppColors.primary;
-  final hex = normalized.length == 6 ? 'FF$normalized' : normalized;
-  final parsed = int.tryParse(hex, radix: 16);
-  return parsed == null ? AppColors.primary : Color(parsed);
 }
 
 class _ImagePreview extends StatelessWidget {

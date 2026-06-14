@@ -13,8 +13,6 @@ public class PostTagModel : DataModel
 
     [Required] [MaxLength(32)] public string Name { get; set; } = "";
 
-    [Required] [MaxLength(32)] public string Color { get; set; } = "#64748b";
-
     public bool IsActive { get; set; } = true;
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -27,7 +25,6 @@ public class PostTagModel : DataModel
 
         Id = tagModel.Id;
         Name = tagModel.Name;
-        Color = tagModel.Color;
         IsActive = tagModel.IsActive;
         CreatedAt = tagModel.CreatedAt;
         UpdatedAt = tagModel.UpdatedAt;

@@ -1,18 +1,35 @@
 import type { PostTagDto } from "../../types"
+import { Link } from "react-router"
 
-export function PostTagBadge({ tag, fallback }: { tag?: PostTagDto | null; fallback?: string }) {
+export function PostTagBadge({
+  tag,
+  fallback,
+  clickable = true,
+}: {
+  tag?: PostTagDto | null
+  fallback?: string
+  clickable?: boolean
+}) {
   if (!tag) return null
 
+  const className = "inline-flex w-fit items-center rounded-full border border-primary/15 bg-primary/8 px-2.5 py-1 text-xs font-bold text-primary transition-colors"
+  const label = tag.name || fallback
+
+  if (!clickable) {
+    return (
+      <span className={className}>
+        {label}
+      </span>
+    )
+  }
+
   return (
-    <span
-      className="inline-flex w-fit items-center rounded-full border px-2.5 py-1 text-xs font-bold"
-      style={{
-        borderColor: `${tag.color}55`,
-        backgroundColor: `${tag.color}18`,
-        color: tag.color,
-      }}
+    <Link
+      to={`/tag/${tag.id}`}
+      onClick={(event) => event.stopPropagation()}
+      className={`${className} hover:border-primary/30 hover:bg-primary/12`}
     >
-      {tag.name || fallback}
-    </span>
+      {label}
+    </Link>
   )
 }

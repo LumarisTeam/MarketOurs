@@ -10,6 +10,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Caching.Memory;
 using Moq;
 using StackExchange.Redis;
 
@@ -23,6 +24,7 @@ public class PostSearchAndHotIntegrationTests : IntegrationTestBase
     private IPostService _postService;
     private IPostRepo _postRepo;
     private IUserRepo _userRepo;
+    private IPostTagService _postTagService;
     private IConnectionMultiplexer _redis;
 
     [SetUp]
@@ -37,6 +39,7 @@ public class PostSearchAndHotIntegrationTests : IntegrationTestBase
         services.AddScoped<IUserRepo, UserRepo>();
         services.AddScoped<IPostRepo, PostRepo>();
         services.AddScoped<ICommentRepo, CommentRepo>();
+        services.AddScoped<IPostTagRepo, PostTagRepo>();
 
         _redis = CreateRedisConnection();
         _redis.GetDatabase().Execute("FLUSHDB");
@@ -51,6 +54,7 @@ public class PostSearchAndHotIntegrationTests : IntegrationTestBase
         services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IPostService, PostService>();
+        services.AddScoped<IPostTagService, PostTagService>();
 
         var mockEmail = new Mock<IEmailService>();
         services.AddSingleton(mockEmail.Object);
@@ -59,12 +63,14 @@ public class PostSearchAndHotIntegrationTests : IntegrationTestBase
         _postService = _serviceProvider.GetRequiredService<IPostService>();
         _postRepo = _serviceProvider.GetRequiredService<IPostRepo>();
         _userRepo = _serviceProvider.GetRequiredService<IUserRepo>();
+        _postTagService = _serviceProvider.GetRequiredService<IPostTagService>();
 
         using var scope = _serviceProvider.CreateScope();
         var ctx = await scope.ServiceProvider
             .GetRequiredService<IDbContextFactory<MarketContext>>().CreateDbContextAsync();
         ctx.Database.ExecuteSqlRaw("TRUNCATE TABLE \"users\" CASCADE");
         ctx.Database.ExecuteSqlRaw("TRUNCATE TABLE \"posts\" CASCADE");
+        ctx.Database.ExecuteSqlRaw("TRUNCATE TABLE \"post_tags\" CASCADE");
     }
 
     [TearDown]
@@ -135,6 +141,94 @@ public class PostSearchAndHotIntegrationTests : IntegrationTestBase
             results = await _postService.SearchAsync(new PaginationParams { Keyword = longKeyword }));
         Assert.That(results, Is.Not.Null);
         Assert.That(results.Items, Is.Empty);
+    }
+
+    [Test]
+    public async Task GetAllAsync_WithTagId_ReturnsOnlyReviewedPostsForThatTag()
+    {
+        var user = await SeedUserAsync();
+        var resaleTag = await _postTagService.CreateAsync(new PostTagCreateDto { Name = "二手闲置" });
+        var campusTag = await _postTagService.CreateAsync(new PostTagCreateDto { Name = "校园生活" });
+
+        await _postRepo.CreateAsync(new PostModel
+        {
+            Title = "二手相机",
+            Content = "成色很好",
+            UserId = user.Id,
+            TagId = resaleTag.Id,
+            IsReview = true
+        });
+        await _postRepo.CreateAsync(new PostModel
+        {
+            Title = "未审核的二手相机",
+            Content = "不应展示",
+            UserId = user.Id,
+            TagId = resaleTag.Id,
+            IsReview = false
+        });
+        await _postRepo.CreateAsync(new PostModel
+        {
+            Title = "社团招新",
+            Content = "欢迎参加",
+            UserId = user.Id,
+            TagId = campusTag.Id,
+            IsReview = true
+        });
+
+        var result = await _postService.GetAllAsync(new PaginationParams { TagId = resaleTag.Id });
+
+        Assert.That(result.Items, Has.Count.EqualTo(1));
+        Assert.That(result.Items[0].TagId, Is.EqualTo(resaleTag.Id));
+        Assert.That(result.Items[0].Title, Is.EqualTo("二手相机"));
+    }
+
+    [Test]
+    public async Task SearchAsync_WithKeywordAndTagId_FiltersWithinTag()
+    {
+        var user = await SeedUserAsync();
+        var cameraTag = await _postTagService.CreateAsync(new PostTagCreateDto { Name = "数码科技" });
+        var socialTag = await _postTagService.CreateAsync(new PostTagCreateDto { Name = "生活闲聊" });
+
+        await _postRepo.CreateAsync(new PostModel
+        {
+            Title = "二手相机",
+            Content = "佳能相机",
+            UserId = user.Id,
+            TagId = cameraTag.Id,
+            IsReview = true
+        });
+        await _postRepo.CreateAsync(new PostModel
+        {
+            Title = "相机吐槽",
+            Content = "闲聊一下镜头",
+            UserId = user.Id,
+            TagId = socialTag.Id,
+            IsReview = true
+        });
+
+        var result = await _postService.SearchAsync(new PaginationParams { Keyword = "相机", TagId = cameraTag.Id });
+
+        Assert.That(result.Items, Has.Count.EqualTo(1));
+        Assert.That(result.Items[0].TagId, Is.EqualTo(cameraTag.Id));
+        Assert.That(result.Items[0].Title, Is.EqualTo("二手相机"));
+    }
+
+    [Test]
+    public async Task GetTagLists_AndDetails_InactiveTagHiddenFromActiveListButStillReadable()
+    {
+        var tag = await _postTagService.CreateAsync(new PostTagCreateDto { Name = "恋爱交友" });
+        await _postTagService.UpdateAsync(tag.Id, new PostTagUpdateDto
+        {
+            Name = tag.Name,
+            IsActive = false
+        });
+
+        var activeTags = await _postTagService.GetActiveAsync();
+        var detail = await _postTagService.GetByIdAsync(tag.Id);
+
+        Assert.That(activeTags.Any(x => x.Id == tag.Id), Is.False);
+        Assert.That(detail, Is.Not.Null);
+        Assert.That(detail!.IsActive, Is.False);
     }
 
     [Test]

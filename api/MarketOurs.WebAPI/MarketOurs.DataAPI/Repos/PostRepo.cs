@@ -6,8 +6,8 @@ namespace MarketOurs.DataAPI.Repos;
 
 public interface IPostRepo
 {
-    Task<List<PostModel>> GetAllAsync(int pageIndex, int pageSize);
-    Task<int> CountAsync();
+    Task<List<PostModel>> GetAllAsync(int pageIndex, int pageSize, string? tagId = null);
+    Task<int> CountAsync(string? tagId = null);
     Task<List<PostModel>> GetByUserIdAsync(string userId, int pageIndex, int pageSize);
     Task<int> CountByUserIdAsync(string userId);
     Task<List<PostModel>> GetHotAsync(int count);
@@ -20,8 +20,8 @@ public interface IPostRepo
     Task<List<UserModel>?> GetDislikeUsersAsync(string id, DateTime before, DateTime after);
     Task<UserModel?> GetAuthorAsync(string id);
     Task<List<CommentModel>?> GetCommentsAsync(string id, string type);
-    Task<List<PostModel>> SearchAsync(string keyword, int pageIndex, int pageSize);
-    Task<int> SearchCountAsync(string keyword);
+    Task<List<PostModel>> SearchAsync(string keyword, int pageIndex, int pageSize, string? tagId = null);
+    Task<int> SearchCountAsync(string keyword, string? tagId = null);
 
     Task CreateAsync(PostModel post);
     Task UpdateAsync(PostModel post);
@@ -42,24 +42,24 @@ public interface IPostRepo
 
 public class PostRepo(IDbContextFactory<MarketContext> factory) : IPostRepo
 {
-    public async Task<List<PostModel>> GetAllAsync(int pageIndex, int pageSize)
+    public async Task<List<PostModel>> GetAllAsync(int pageIndex, int pageSize, string? tagId = null)
     {
         await using var context = await factory.CreateDbContextAsync();
         return await context.Posts
             .AsNoTracking()
             .Include(x => x.User)
             .Include(x => x.Tag)
-            .Where(x => x.IsReview)
+            .Where(x => x.IsReview && (string.IsNullOrWhiteSpace(tagId) || x.TagId == tagId))
             .OrderByDescending(x => x.CreatedAt)
             .Skip((pageIndex - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
     }
 
-    public async Task<int> CountAsync()
+    public async Task<int> CountAsync(string? tagId = null)
     {
         await using var context = await factory.CreateDbContextAsync();
-        return await context.Posts.CountAsync(x => x.IsReview);
+        return await context.Posts.CountAsync(x => x.IsReview && (string.IsNullOrWhiteSpace(tagId) || x.TagId == tagId));
     }
 
     public async Task<List<PostModel>> GetByUserIdAsync(string userId, int pageIndex, int pageSize)
@@ -189,7 +189,7 @@ public class PostRepo(IDbContextFactory<MarketContext> factory) : IPostRepo
             .ToListAsync();
     }
 
-    public async Task<List<PostModel>> SearchAsync(string keyword, int pageIndex, int pageSize)
+    public async Task<List<PostModel>> SearchAsync(string keyword, int pageIndex, int pageSize, string? tagId = null)
     {
         await using var context = await factory.CreateDbContextAsync();
         var offset = (pageIndex - 1) * pageSize;
@@ -202,7 +202,9 @@ public class PostRepo(IDbContextFactory<MarketContext> factory) : IPostRepo
                     .FromSqlInterpolated($"""
                         SELECT *
                         FROM posts
-                        WHERE "IsReview" AND ("Title" @@@ {keyword} OR "Content" @@@ {keyword})
+                        WHERE "IsReview"
+                          AND ({tagId} IS NULL OR "TagId" = {tagId})
+                          AND ("Title" @@@ {keyword} OR "Content" @@@ {keyword})
                         ORDER BY pdb.score("Id") DESC, "CreatedAt" DESC
                         LIMIT {pageSize} OFFSET {offset}
                         """)
@@ -213,12 +215,14 @@ public class PostRepo(IDbContextFactory<MarketContext> factory) : IPostRepo
             }
             catch
             {
-                return await SearchWithILike(context, keyword, pageIndex, pageSize);
+                return await SearchWithILike(context, keyword, pageIndex, pageSize, tagId);
             }
         }
 
         return await context.Posts
-            .Where(x => x.IsReview && (x.Title.Contains(keyword) || x.Content.Contains(keyword)))
+            .Where(x => x.IsReview
+                && (string.IsNullOrWhiteSpace(tagId) || x.TagId == tagId)
+                && (x.Title.Contains(keyword) || x.Content.Contains(keyword)))
             .Include(x => x.User)
             .Include(x => x.Tag)
             .OrderByDescending(x => x.CreatedAt)
@@ -227,7 +231,7 @@ public class PostRepo(IDbContextFactory<MarketContext> factory) : IPostRepo
             .ToListAsync();
     }
 
-    public async Task<int> SearchCountAsync(string keyword)
+    public async Task<int> SearchCountAsync(string keyword, string? tagId = null)
     {
         await using var context = await factory.CreateDbContextAsync();
 
@@ -239,27 +243,33 @@ public class PostRepo(IDbContextFactory<MarketContext> factory) : IPostRepo
                     .FromSqlInterpolated($"""
                         SELECT *
                         FROM posts
-                        WHERE "IsReview" AND ("Title" @@@ {keyword} OR "Content" @@@ {keyword})
+                        WHERE "IsReview"
+                          AND ({tagId} IS NULL OR "TagId" = {tagId})
+                          AND ("Title" @@@ {keyword} OR "Content" @@@ {keyword})
                         """)
                     .AsNoTracking()
                     .CountAsync();
             }
             catch
             {
-                return await SearchCountWithILike(context, keyword);
+                return await SearchCountWithILike(context, keyword, tagId);
             }
         }
 
         return await context.Posts
-            .Where(x => x.IsReview && (x.Title.Contains(keyword) || x.Content.Contains(keyword)))
+            .Where(x => x.IsReview
+                && (string.IsNullOrWhiteSpace(tagId) || x.TagId == tagId)
+                && (x.Title.Contains(keyword) || x.Content.Contains(keyword)))
             .CountAsync();
     }
 
-    private static Task<List<PostModel>> SearchWithILike(MarketContext context, string keyword, int pageIndex, int pageSize)
+    private static Task<List<PostModel>> SearchWithILike(MarketContext context, string keyword, int pageIndex, int pageSize, string? tagId)
     {
         return context.Posts
             .AsNoTracking()
-            .Where(x => x.IsReview && EF.Functions.ILike(x.Title + " " + x.Content, $"%{keyword}%"))
+            .Where(x => x.IsReview
+                && (string.IsNullOrWhiteSpace(tagId) || x.TagId == tagId)
+                && EF.Functions.ILike(x.Title + " " + x.Content, $"%{keyword}%"))
             .Include(x => x.User)
             .Include(x => x.Tag)
             .OrderByDescending(x => x.CreatedAt)
@@ -268,11 +278,13 @@ public class PostRepo(IDbContextFactory<MarketContext> factory) : IPostRepo
             .ToListAsync();
     }
 
-    private static Task<int> SearchCountWithILike(MarketContext context, string keyword)
+    private static Task<int> SearchCountWithILike(MarketContext context, string keyword, string? tagId)
     {
         return context.Posts
             .AsNoTracking()
-            .Where(x => x.IsReview && EF.Functions.ILike(x.Title + " " + x.Content, $"%{keyword}%"))
+            .Where(x => x.IsReview
+                && (string.IsNullOrWhiteSpace(tagId) || x.TagId == tagId)
+                && EF.Functions.ILike(x.Title + " " + x.Content, $"%{keyword}%"))
             .CountAsync();
     }
 

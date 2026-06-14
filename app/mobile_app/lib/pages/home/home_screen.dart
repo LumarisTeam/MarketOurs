@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../components/post_tag_pill.dart';
 import '../../models/post.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/post_feed_provider.dart';
@@ -334,7 +335,7 @@ class _PostCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (post.tag != null) ...[
-                  _PostTagPill(tag: post.tag),
+                  PostTagPill(tag: post.tag),
                   const SizedBox(height: 8),
                 ],
                 Text(
@@ -445,41 +446,6 @@ class _PostCard extends StatelessWidget {
     if (diff.inDays < 7) return '${diff.inDays}天前';
     return '${dateTime.year}-${dateTime.month}-${dateTime.day}';
   }
-}
-
-class _PostTagPill extends StatelessWidget {
-  const _PostTagPill({required this.tag});
-
-  final PostTagDto? tag;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = _parseColor(tag?.color);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: color.withValues(alpha: 0.35)),
-      ),
-      child: Text(
-        tag?.name?.trim().isNotEmpty == true ? tag!.name!.trim() : '标签',
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w700,
-          color: color,
-        ),
-      ),
-    );
-  }
-}
-
-Color _parseColor(String? value) {
-  final normalized = value?.trim().replaceFirst('#', '');
-  if (normalized == null || normalized.isEmpty) return AppColors.primary;
-  final hex = normalized.length == 6 ? 'FF$normalized' : normalized;
-  final parsed = int.tryParse(hex, radix: 16);
-  return parsed == null ? AppColors.primary : Color(parsed);
 }
 
 class _StatItem extends StatelessWidget {

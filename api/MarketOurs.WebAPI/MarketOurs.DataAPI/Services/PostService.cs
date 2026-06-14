@@ -152,8 +152,9 @@ public class PostService(
     /// <inheritdoc/>
     public async Task<PagedResultDto<PostDto>> GetAllAsync(PaginationParams @params)
     {
-        var totalCount = await postRepo.CountAsync();
-        var posts = await postRepo.GetAllAsync(@params.PageIndex, @params.PageSize);
+        var tagId = NormalizeTagId(@params.TagId);
+        var totalCount = await postRepo.CountAsync(tagId);
+        var posts = await postRepo.GetAllAsync(@params.PageIndex, @params.PageSize, tagId);
         var dtos = posts.Select(MapToDto).ToList();
         await Task.WhenAll(dtos.Select(dto => FillDynamicData(dto)));
 
@@ -665,16 +666,23 @@ public class PostService(
     public async Task<PagedResultDto<PostDto>> SearchAsync(PaginationParams @params)
     {
         var keyword = @params.Keyword?.Trim();
+        var tagId = NormalizeTagId(@params.TagId);
         if (string.IsNullOrWhiteSpace(keyword))
             return PagedResultDto<PostDto>.Success([], 0, @params.PageIndex, @params.PageSize);
 
-        var totalCount = await postRepo.SearchCountAsync(keyword);
-        var results = await postRepo.SearchAsync(keyword, @params.PageIndex, @params.PageSize);
+        var totalCount = await postRepo.SearchCountAsync(keyword, tagId);
+        var results = await postRepo.SearchAsync(keyword, @params.PageIndex, @params.PageSize, tagId);
         var dtos = results.Select(MapToDto).ToList();
 
         await Task.WhenAll(dtos.Select(dto => FillDynamicData(dto)));
 
         return PagedResultDto<PostDto>.Success(dtos, totalCount, @params.PageIndex, @params.PageSize);
+    }
+
+    private static string? NormalizeTagId(string? tagId)
+    {
+        var normalized = tagId?.Trim();
+        return string.IsNullOrWhiteSpace(normalized) ? null : normalized;
     }
 
     public async Task<PostDto> UpdateReviewAsync(string id, bool isReview)
