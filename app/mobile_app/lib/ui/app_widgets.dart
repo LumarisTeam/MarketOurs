@@ -19,6 +19,7 @@ class AppPageScaffold extends StatelessWidget {
     this.physics = const BouncingScrollPhysics(
       parent: AlwaysScrollableScrollPhysics(),
     ),
+    this.resizeToAvoidBottomInset = true,
     this.child,
     this.slivers,
   }) : assert(
@@ -38,6 +39,7 @@ class AppPageScaffold extends StatelessWidget {
   final EdgeInsets? padding;
   final ScrollController? scrollController;
   final ScrollPhysics? physics;
+  final bool resizeToAvoidBottomInset;
   final Widget? child;
   final List<Widget>? slivers;
 
@@ -51,6 +53,9 @@ class AppPageScaffold extends StatelessWidget {
 
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
+      resizeToAvoidBottomInset: bottomBar == null
+          ? resizeToAvoidBottomInset
+          : false,
       child: Stack(
         children: [
           CustomScrollView(
