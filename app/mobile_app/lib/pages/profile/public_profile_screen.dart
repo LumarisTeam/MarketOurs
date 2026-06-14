@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:mobile_app/components/post_card.dart';
 import 'package:mobile_app/ui/app_theme.dart';
 
-import '../../components/post_tag_pill.dart';
 import '../../models/post.dart';
 import '../../models/user.dart';
 import '../../providers/auth_provider.dart';
@@ -185,7 +184,7 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
                   if (isMe) ...[
                     const SizedBox(height: 12),
                     AppSecondaryButton(
-                      onPressed: () => context.push(AppRoutePaths.profile),
+                      onPressed: () => context.go(AppRoutePaths.profile),
                       child: const Text('管理我的资料'),
                     ),
                   ],
