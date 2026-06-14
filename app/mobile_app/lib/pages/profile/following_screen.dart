@@ -127,79 +127,72 @@ class _FollowingScreenState extends ConsumerState<FollowingScreen> {
 
     return AppPageScaffold(
       title: '社交管理',
-      child: CustomScrollView(
-        physics: const BouncingScrollPhysics(
-          parent: AlwaysScrollableScrollPhysics(),
-        ),
-        slivers: [
-          CupertinoSliverRefreshControl(onRefresh: _loadData),
-          SliverToBoxAdapter(
-            child: AppResponsiveCenter(
-              padding: AppResponsive.sliverPagePadding(context),
-              child: Column(
-                children: [
-                  CupertinoSlidingSegmentedControl<String>(
-                    groupValue: _activeTab,
-                    backgroundColor: CupertinoDynamicColor.resolve(
-                      AppColors.secondary,
-                      context,
-                    ),
-                    children: const {
-                      'following': Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Text('我的关注', style: TextStyle(fontSize: 14)),
-                      ),
-                      'blocked': Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Text('屏蔽列表', style: TextStyle(fontSize: 14)),
-                      ),
-                    },
-                    onValueChanged: (v) {
-                      if (v != null && v != _activeTab) {
-                        setState(() => _activeTab = v);
-                      }
-                    },
+      slivers: [
+        CupertinoSliverRefreshControl(onRefresh: _loadData),
+        SliverToBoxAdapter(
+          child: AppResponsiveCenter(
+            padding: AppResponsive.sliverPagePadding(context),
+            child: Column(
+              children: [
+                CupertinoSlidingSegmentedControl<String>(
+                  groupValue: _activeTab,
+                  backgroundColor: CupertinoDynamicColor.resolve(
+                    AppColors.secondary,
+                    context,
                   ),
-                  const SizedBox(height: 20),
-                  if (_isLoading)
-                    const Padding(
-                      padding: EdgeInsets.only(top: 40),
-                      child: CupertinoActivityIndicator(),
-                    )
-                  else if (list.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 40),
-                      child: AppEmptyState(
-                        icon: _activeTab == 'following'
-                            ? CupertinoIcons.person_2
-                            : CupertinoIcons.hand_raised,
-                        title: _activeTab == 'following'
-                            ? '还没有关注任何人'
-                            : '没有屏蔽任何人',
-                        description: _activeTab == 'following'
-                            ? '去发现感兴趣的用户并关注他们吧'
-                            : '你的屏蔽列表是空的',
-                      ),
-                    )
-                  else
-                    ...list.map(
-                      (user) => _UserTile(
-                        user: user,
-                        isBlocked: _activeTab == 'blocked',
-                        isLoading: _actionLoadingId == user.id,
-                        onAction: () => _activeTab == 'following'
-                            ? _handleUnfollow(user.id!)
-                            : _handleUnblock(user.id!),
-                        onTap: () =>
-                            context.push(buildPublicProfileLocation(user.id!)),
-                      ),
+                  children: const {
+                    'following': Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      child: Text('我的关注', style: TextStyle(fontSize: 14)),
                     ),
-                ],
-              ),
+                    'blocked': Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      child: Text('屏蔽列表', style: TextStyle(fontSize: 14)),
+                    ),
+                  },
+                  onValueChanged: (v) {
+                    if (v != null && v != _activeTab) {
+                      setState(() => _activeTab = v);
+                    }
+                  },
+                ),
+                const SizedBox(height: 20),
+                if (_isLoading)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 40),
+                    child: CupertinoActivityIndicator(),
+                  )
+                else if (list.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 40),
+                    child: AppEmptyState(
+                      icon: _activeTab == 'following'
+                          ? CupertinoIcons.person_2
+                          : CupertinoIcons.hand_raised,
+                      title: _activeTab == 'following' ? '还没有关注任何人' : '没有屏蔽任何人',
+                      description: _activeTab == 'following'
+                          ? '去发现感兴趣的用户并关注他们吧'
+                          : '你的屏蔽列表是空的',
+                    ),
+                  )
+                else
+                  ...list.map(
+                    (user) => _UserTile(
+                      user: user,
+                      isBlocked: _activeTab == 'blocked',
+                      isLoading: _actionLoadingId == user.id,
+                      onAction: () => _activeTab == 'following'
+                          ? _handleUnfollow(user.id!)
+                          : _handleUnblock(user.id!),
+                      onTap: () =>
+                          context.push(buildPublicProfileLocation(user.id!)),
+                    ),
+                  ),
+              ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

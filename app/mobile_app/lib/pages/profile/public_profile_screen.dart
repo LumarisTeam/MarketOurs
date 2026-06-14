@@ -132,65 +132,65 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
     final authState = ref.watch(authControllerProvider).asData?.value;
     final isMe = authState?.user?.id == widget.userId;
 
+    if (_isLoading) {
+      return const AppPageScaffold(
+        title: '用户主页',
+        child: Center(child: CupertinoActivityIndicator()),
+      );
+    }
+
+    if (_errorMessage != null || _profile == null) {
+      return AppPageScaffold(
+        title: '用户主页',
+        child: _ErrorState(message: _errorMessage ?? '用户不存在', onRetry: _load),
+      );
+    }
+
     return AppPageScaffold(
       title: '用户主页',
-      child: _isLoading
-          ? const Center(child: CupertinoActivityIndicator())
-          : _errorMessage != null || _profile == null
-          ? _ErrorState(message: _errorMessage ?? '用户不存在', onRetry: _load)
-          : CustomScrollView(
-              physics: const BouncingScrollPhysics(
-                parent: AlwaysScrollableScrollPhysics(),
-              ),
-              slivers: [
-                CupertinoSliverRefreshControl(onRefresh: _load),
-                SliverToBoxAdapter(
-                  child: AppResponsiveCenter(
-                    padding: AppResponsive.sliverPagePadding(context),
-                    child: AppTwoPane(
-                      key: const ValueKey('public-profile-responsive-two-pane'),
-                      secondaryFirstOnWide: true,
-                      secondary: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          _ProfileHero(profile: _profile!, isMe: isMe),
-                          const SizedBox(height: 12),
-                          _FollowStats(
-                            followerCount: _followerCount,
-                            followingCount: _followingCount,
-                          ),
-                          if (!isMe &&
-                              ref
-                                      .watch(authControllerProvider)
-                                      .asData
-                                      ?.value
-                                      .user !=
-                                  null) ...[
-                            const SizedBox(height: 12),
-                            _FollowBlockButtons(
-                              isFollowing: _isFollowing,
-                              isBlocked: _isBlocked,
-                              isLoading: _followLoading,
-                              onToggleFollow: _handleToggleFollow,
-                              onToggleBlock: _handleToggleBlock,
-                            ),
-                          ],
-                          if (isMe) ...[
-                            const SizedBox(height: 12),
-                            AppSecondaryButton(
-                              onPressed: () =>
-                                  context.push(AppRoutePaths.profile),
-                              child: const Text('管理我的资料'),
-                            ),
-                          ],
-                        ],
-                      ),
-                      primary: _RecentPostsSection(posts: _recentPosts),
-                    ),
+      slivers: [
+        CupertinoSliverRefreshControl(onRefresh: _load),
+        SliverToBoxAdapter(
+          child: AppResponsiveCenter(
+            padding: AppResponsive.sliverPagePadding(context),
+            child: AppTwoPane(
+              key: const ValueKey('public-profile-responsive-two-pane'),
+              secondaryFirstOnWide: true,
+              secondary: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _ProfileHero(profile: _profile!, isMe: isMe),
+                  const SizedBox(height: 12),
+                  _FollowStats(
+                    followerCount: _followerCount,
+                    followingCount: _followingCount,
                   ),
-                ),
-              ],
+                  if (!isMe &&
+                      ref.watch(authControllerProvider).asData?.value.user !=
+                          null) ...[
+                    const SizedBox(height: 12),
+                    _FollowBlockButtons(
+                      isFollowing: _isFollowing,
+                      isBlocked: _isBlocked,
+                      isLoading: _followLoading,
+                      onToggleFollow: _handleToggleFollow,
+                      onToggleBlock: _handleToggleBlock,
+                    ),
+                  ],
+                  if (isMe) ...[
+                    const SizedBox(height: 12),
+                    AppSecondaryButton(
+                      onPressed: () => context.push(AppRoutePaths.profile),
+                      child: const Text('管理我的资料'),
+                    ),
+                  ],
+                ],
+              ),
+              primary: _RecentPostsSection(posts: _recentPosts),
             ),
+          ),
+        ),
+      ],
     );
   }
 }
