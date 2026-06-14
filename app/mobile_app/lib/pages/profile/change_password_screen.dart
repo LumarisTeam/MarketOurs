@@ -7,6 +7,7 @@ import '../../router/app_router.dart';
 import '../../ui/app_feedback.dart';
 import '../../ui/app_responsive.dart';
 import '../../ui/app_widgets.dart';
+import '../../utils/dto_validation.dart';
 import '../auth/password_form_field.dart';
 
 class ChangePasswordScreen extends ConsumerStatefulWidget {
@@ -92,14 +93,14 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
             PasswordFormField(
               controller: _newPasswordController,
               placeholder: '新密码，至少 6 位',
+              maxLength: DtoLimits.userPasswordMax,
               validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return '请输入新密码';
-                }
-                if (value.length < 6) {
-                  return '密码至少 6 位';
-                }
-                return null;
+                return passwordLengthValidator(
+                  value,
+                  emptyMessage: '请输入新密码',
+                  minMessage: '密码至少 ${DtoLimits.userPasswordMin} 位',
+                  maxMessage: '密码长度不能超过 ${DtoLimits.userPasswordMax} 位',
+                );
               },
             ),
             const SizedBox(height: 16),

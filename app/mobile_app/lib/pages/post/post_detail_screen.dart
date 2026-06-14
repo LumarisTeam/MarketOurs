@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -26,6 +27,7 @@ import '../../ui/app_fields.dart';
 import '../../ui/app_responsive.dart';
 import '../../ui/app_theme.dart';
 import '../../ui/app_widgets.dart';
+import '../../utils/dto_validation.dart';
 
 const int _maxCommentImages = 3;
 
@@ -232,6 +234,13 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 
     final content = _commentController.text.trim();
     if (content.isEmpty && _commentImages.isEmpty) return;
+    if (content.length > DtoLimits.commentContentMax) {
+      await AppFeedback.showError(
+        context,
+        message: '评论内容长度不能超过 ${DtoLimits.commentContentMax} 位',
+      );
+      return;
+    }
 
     setState(() => _isWorking = true);
     try {
@@ -305,6 +314,14 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         (draft.content.trim().isEmpty && draft.newImages.isEmpty)) {
       return;
     }
+    if (draft.content.trim().length > DtoLimits.commentContentMax) {
+      if (!mounted) return;
+      await AppFeedback.showError(
+        context,
+        message: '评论内容长度不能超过 ${DtoLimits.commentContentMax} 位',
+      );
+      return;
+    }
 
     setState(() => _isWorking = true);
     try {
@@ -346,6 +363,14 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         (draft.content.trim().isEmpty &&
             draft.existingImages.isEmpty &&
             draft.newImages.isEmpty)) {
+      return;
+    }
+    if (draft.content.trim().length > DtoLimits.commentContentMax) {
+      if (!mounted) return;
+      await AppFeedback.showError(
+        context,
+        message: '评论内容长度不能超过 ${DtoLimits.commentContentMax} 位',
+      );
       return;
     }
 
@@ -568,6 +593,12 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       content: post.content ?? '',
     );
     if (values == null) return;
+    final validationError = _validatePostDraft(values.$1, values.$2);
+    if (validationError != null) {
+      if (!mounted) return;
+      await AppFeedback.showError(context, message: validationError);
+      return;
+    }
 
     setState(() => _isWorking = true);
     try {
@@ -665,6 +696,13 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     controller: controller,
                     maxLines: 5,
                     placeholder: hintText,
+                    maxLength: DtoLimits.commentContentMax,
+                    validator: (v) => optionalMaxValidator(
+                      v,
+                      max: DtoLimits.commentContentMax,
+                      maxMessage:
+                          '评论内容长度不能超过 ${DtoLimits.commentContentMax} 位',
+                    ),
                   ),
                   const SizedBox(height: 12),
                   _CommentComposerImages(
@@ -742,12 +780,17 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
             children: [
               Text('编辑帖子', style: AppTextStyles.sectionTitle(context)),
               const SizedBox(height: 16),
-              AppTextField(controller: titleController, placeholder: '标题'),
+              AppTextField(
+                controller: titleController,
+                placeholder: '标题',
+                maxLength: DtoLimits.postTitleMax,
+              ),
               const SizedBox(height: 12),
               AppTextField(
                 controller: contentController,
                 maxLines: 6,
                 placeholder: '内容',
+                maxLength: DtoLimits.postContentMax,
               ),
               const SizedBox(height: 20),
               AppPrimaryButton(
@@ -768,6 +811,23 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     titleController.dispose();
     contentController.dispose();
     return result;
+  }
+
+  String? _validatePostDraft(String title, String content) {
+    final titleError = requiredMaxValidator(
+      title,
+      emptyMessage: '请输入标题',
+      max: DtoLimits.postTitleMax,
+      maxMessage: '标题长度不能超过 ${DtoLimits.postTitleMax} 位',
+    );
+    if (titleError != null) return titleError;
+
+    return requiredMaxValidator(
+      content,
+      emptyMessage: '请输入内容',
+      max: DtoLimits.postContentMax,
+      maxMessage: '内容长度不能超过 ${DtoLimits.postContentMax} 位',
+    );
   }
 
   Widget _buildActionBar(
@@ -1295,6 +1355,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                               context,
                             ).copyWith(fontSize: 15),
                             cursorColor: AppColors.primary,
+                            inputFormatters: [
+                              LengthLimitingTextInputFormatter(
+                                DtoLimits.commentContentMax,
+                              ),
+                            ],
                           ),
                         ),
                       ),

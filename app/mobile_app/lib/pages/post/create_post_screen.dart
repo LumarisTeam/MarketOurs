@@ -17,6 +17,7 @@ import '../../ui/app_fields.dart';
 import '../../ui/app_responsive.dart';
 import '../../ui/app_theme.dart';
 import '../../ui/app_widgets.dart';
+import '../../utils/dto_validation.dart';
 
 class CreatePostScreen extends ConsumerStatefulWidget {
   const CreatePostScreen({super.key});
@@ -260,14 +261,26 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
           AppTextField(
             controller: _titleController,
             placeholder: '帖子标题',
-            validator: (v) => v?.trim().isEmpty == true ? '请输入标题' : null,
+            maxLength: DtoLimits.postTitleMax,
+            validator: (v) => requiredMaxValidator(
+              v,
+              emptyMessage: '请输入标题',
+              max: DtoLimits.postTitleMax,
+              maxMessage: '标题长度不能超过 ${DtoLimits.postTitleMax} 位',
+            ),
           ),
           const SizedBox(height: 16),
           AppTextField(
             controller: _contentController,
             placeholder: '分享此刻的新鲜事...',
             maxLines: AppResponsive.isDesktop(context) ? 12 : 8,
-            validator: (v) => v?.trim().isEmpty == true ? '请输入内容' : null,
+            maxLength: DtoLimits.postContentMax,
+            validator: (v) => requiredMaxValidator(
+              v,
+              emptyMessage: '请输入内容',
+              max: DtoLimits.postContentMax,
+              maxMessage: '内容长度不能超过 ${DtoLimits.postContentMax} 位',
+            ),
           ),
         ],
       ),

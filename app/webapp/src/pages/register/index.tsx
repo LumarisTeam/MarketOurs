@@ -6,6 +6,7 @@ import { fileService } from "../../services/fileService";
 import { compressImage } from "../../services/imageCompression";
 import { User, Mail, Lock, Loader2, ArrowRight, RefreshCw, Image, Camera } from "lucide-react";
 import { PasswordField } from "../../components/auth/PasswordField";
+import { DTO_LIMITS, passwordLength, requiredMax } from "../../lib/dtoValidation";
 
 export default function RegisterPage() {
   const { t } = useTranslation();
@@ -75,6 +76,11 @@ export default function RegisterPage() {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const phoneRegex = /^1[3-9]\d{9}$/;
 
+    if (value.length > DTO_LIMITS.userAccountMax) {
+      setAccountType('invalid');
+      return false;
+    }
+
     if (emailRegex.test(value)) {
       setAccountType('email');
       return true;
@@ -90,7 +96,7 @@ export default function RegisterPage() {
   const validatePassword = (value: string) => {
     // At least 6 characters, one uppercase, one lowercase, one number
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
-    const isValid = passwordRegex.test(value);
+    const isValid = value.length <= DTO_LIMITS.userPasswordMax && passwordRegex.test(value);
     setIsPasswordValid(isValid);
     return isValid;
   };
@@ -111,6 +117,30 @@ export default function RegisterPage() {
     e.preventDefault();
     setIsLoading(true);
     setError("");
+
+    const nameError = requiredMax(
+      name,
+      DTO_LIMITS.userNameMax,
+      "用户名不能为空",
+      `用户名长度不能超过 ${DTO_LIMITS.userNameMax} 位`,
+    );
+    const accountError = requiredMax(
+      account,
+      DTO_LIMITS.userAccountMax,
+      "账号不能为空",
+      `账号长度不能超过 ${DTO_LIMITS.userAccountMax} 位`,
+    );
+    const passwordError = passwordLength(
+      password,
+      "密码不能为空",
+      `密码长度不能少于 ${DTO_LIMITS.userPasswordMin} 位`,
+      `密码长度不能超过 ${DTO_LIMITS.userPasswordMax} 位`,
+    );
+    if (nameError || accountError || passwordError || accountType === 'invalid' || !isPasswordValid) {
+      setError(nameError || accountError || passwordError || t("auth.error_registration_failed"));
+      setIsLoading(false);
+      return;
+    }
 
     try {
       let avatar = avatarUrl;
@@ -289,6 +319,7 @@ export default function RegisterPage() {
                     placeholder={t("auth.display_name_placeholder")}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                    maxLength={DTO_LIMITS.userNameMax}
                     className="w-full pl-12 pr-4 py-3 rounded-2xl bg-muted/50 border border-border/50 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                     required
                   />
@@ -304,6 +335,7 @@ export default function RegisterPage() {
                     placeholder={t("auth.account_placeholder")}
                     value={account}
                     onChange={(e) => handleAccountChange(e.target.value)}
+                    maxLength={DTO_LIMITS.userAccountMax}
                     className={`w-full pl-12 pr-4 py-3 rounded-2xl bg-muted/50 border outline-none transition-all ${
                       isAccountDirty && accountType === 'invalid'
                         ? 'border-destructive focus:ring-destructive/20'
@@ -324,6 +356,7 @@ export default function RegisterPage() {
                   placeholder={t("auth.password_placeholder")}
                   value={password}
                   onChange={(e) => handlePasswordChange(e.target.value)}
+                  maxLength={DTO_LIMITS.userPasswordMax}
                   className={`w-full pl-12 pr-12 py-3 rounded-2xl bg-muted/50 border outline-none transition-all ${
                     isPasswordDirty && !isPasswordValid
                       ? 'border-destructive focus:ring-destructive/20'

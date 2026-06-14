@@ -11,6 +11,7 @@ class PasswordFormField extends StatefulWidget {
     this.onFieldSubmitted,
     this.onChanged,
     this.textInputAction,
+    this.maxLength,
   });
 
   final TextEditingController? controller;
@@ -19,6 +20,7 @@ class PasswordFormField extends StatefulWidget {
   final ValueChanged<String>? onFieldSubmitted;
   final ValueChanged<String>? onChanged;
   final TextInputAction? textInputAction;
+  final int? maxLength;
 
   @override
   State<PasswordFormField> createState() => _PasswordFormFieldState();
@@ -46,6 +48,7 @@ class _PasswordFormFieldState extends State<PasswordFormField> {
       onChanged: widget.onChanged,
       textInputAction: widget.textInputAction,
       obscureText: _obscureText,
+      maxLength: widget.maxLength,
     );
   }
 }

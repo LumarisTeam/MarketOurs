@@ -17,6 +17,7 @@ import '../../ui/app_fields.dart';
 import '../../ui/app_responsive.dart';
 import '../../ui/app_theme.dart';
 import '../../ui/app_widgets.dart';
+import '../../utils/dto_validation.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -858,12 +859,27 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
             ),
             const SizedBox(height: 16),
 
-            AppTextField(controller: _nameController, placeholder: '昵称'),
+            AppTextField(
+              controller: _nameController,
+              placeholder: '昵称',
+              maxLength: DtoLimits.userNameMax,
+              validator: (v) => optionalMaxValidator(
+                v,
+                max: DtoLimits.userNameMax,
+                maxMessage: '用户名长度不能超过 ${DtoLimits.userNameMax} 位',
+              ),
+            ),
             const SizedBox(height: 12),
             AppTextField(
               controller: _infoController,
               placeholder: '个人简介',
               maxLines: 3,
+              maxLength: DtoLimits.userInfoMax,
+              validator: (v) => optionalMaxValidator(
+                v,
+                max: DtoLimits.userInfoMax,
+                maxMessage: '个人简介长度不能超过 ${DtoLimits.userInfoMax} 位',
+              ),
             ),
             const SizedBox(height: 24),
             AppPrimaryButton(

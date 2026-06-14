@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { userService } from "../../services/userService";
 import { Lock, Loader2, ArrowRight, ShieldCheck, AlertCircle, CheckCircle2 } from "lucide-react";
 import { PasswordField } from "../../components/auth/PasswordField";
+import { DTO_LIMITS, passwordLength } from "../../lib/dtoValidation";
 
 export default function ResetPasswordPage() {
   const { t } = useTranslation();
@@ -21,7 +22,7 @@ export default function ResetPasswordPage() {
 
   const validatePassword = (value: string) => {
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
-    const isValid = passwordRegex.test(value);
+    const isValid = value.length <= DTO_LIMITS.userPasswordMax && passwordRegex.test(value);
     setIsPasswordValid(isValid);
     return isValid;
   };
@@ -36,6 +37,16 @@ export default function ResetPasswordPage() {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
       setError(t("profile.passwords_not_match"));
+      return;
+    }
+    const passwordError = passwordLength(
+      newPassword,
+      "新密码不能为空",
+      `新密码长度不能少于 ${DTO_LIMITS.userPasswordMin} 位`,
+      `新密码长度不能超过 ${DTO_LIMITS.userPasswordMax} 位`,
+    );
+    if (passwordError) {
+      setError(passwordError);
       return;
     }
 
@@ -87,6 +98,7 @@ export default function ResetPasswordPage() {
                   placeholder={t("profile.old_password_placeholder")}
                   value={oldPassword}
                   onChange={(e) => setOldPassword(e.target.value)}
+                  maxLength={DTO_LIMITS.userPasswordMax}
                   className="w-full pl-12 pr-12 py-3 rounded-2xl bg-muted/50 border border-border/50 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                   required
                 />
@@ -99,6 +111,7 @@ export default function ResetPasswordPage() {
                   placeholder={t("auth.new_password_placeholder")}
                   value={newPassword}
                   onChange={(e) => handleNewPasswordChange(e.target.value)}
+                  maxLength={DTO_LIMITS.userPasswordMax}
                   className={`w-full pl-12 pr-12 py-3 rounded-2xl bg-muted/50 border outline-none transition-all ${
                     isPasswordDirty && !isPasswordValid 
                       ? 'border-destructive focus:ring-destructive/20' 
@@ -121,6 +134,7 @@ export default function ResetPasswordPage() {
                   placeholder={t("profile.confirm_password")}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
+                  maxLength={DTO_LIMITS.userPasswordMax}
                   className={`w-full pl-12 pr-12 py-3 rounded-2xl bg-muted/50 border outline-none transition-all ${
                     confirmPassword && newPassword !== confirmPassword
                       ? 'border-destructive focus:ring-destructive/20' 

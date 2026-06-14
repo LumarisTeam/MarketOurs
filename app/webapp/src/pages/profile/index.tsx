@@ -27,6 +27,7 @@ import {
   ArrowRight
 } from "lucide-react";
 import type { UserDto } from "../../types";
+import { DTO_LIMITS, optionalMax, requiredMax } from "../../lib/dtoValidation";
 
 type ThirdPartyProvider = 'Ours' | 'Github' | 'Google' | 'Weixin';
 type VerificationChannel = 'email' | 'phone';
@@ -102,6 +103,14 @@ export default function ProfilePage() {
   };
 
   const handleUpdate = async () => {
+    const nameError = optionalMax(name, DTO_LIMITS.userNameMax, `用户名长度不能超过 ${DTO_LIMITS.userNameMax} 位`);
+    const infoError = optionalMax(info, DTO_LIMITS.userInfoMax, `个人简介长度不能超过 ${DTO_LIMITS.userInfoMax} 位`);
+    const avatarError = optionalMax(avatar, DTO_LIMITS.userAvatarMax, `头像地址长度不能超过 ${DTO_LIMITS.userAvatarMax} 位`);
+    if (nameError || infoError || avatarError) {
+      setMessage({ type: 'error', text: nameError || infoError || avatarError || t("common.error") });
+      return;
+    }
+
     setIsLoading(true);
     setMessage(null);
     try {
@@ -167,6 +176,14 @@ export default function ProfilePage() {
 
   const handleSendCode = async () => {
     if (!newValue) return;
+    const valueError = showVerifyModal === 'email'
+      ? requiredMax(newValue, DTO_LIMITS.userEmailMax, "邮箱不能为空", `邮箱长度不能超过 ${DTO_LIMITS.userEmailMax} 位`)
+      : requiredMax(newValue, DTO_LIMITS.userPhoneMax, "手机号不能为空", `手机号长度不能超过 ${DTO_LIMITS.userPhoneMax} 位`);
+    if (valueError) {
+      setMessage({ type: 'error', text: valueError });
+      return;
+    }
+
     setIsVerifying(true);
     try {
       if (showVerifyModal === 'email') {
@@ -414,6 +431,7 @@ export default function ProfilePage() {
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                    maxLength={DTO_LIMITS.userNameMax}
                     className="w-full px-4 py-3 rounded-2xl bg-muted/50 border border-border/50 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                   />
                 ) : (
@@ -432,6 +450,7 @@ export default function ProfilePage() {
                   <textarea
                     value={info}
                     onChange={(e) => setInfo(e.target.value)}
+                    maxLength={DTO_LIMITS.userInfoMax}
                     placeholder={t("profile.info_placeholder")}
                     rows={4}
                     className="w-full px-4 py-3 rounded-2xl bg-muted/50 border border-border/50 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none"
@@ -634,6 +653,7 @@ export default function ProfilePage() {
                     type="text"
                     value={newValue}
                     onChange={(e) => setNewValue(e.target.value)}
+                    maxLength={showVerifyModal === 'email' ? DTO_LIMITS.userEmailMax : DTO_LIMITS.userPhoneMax}
                     className="w-full px-4 py-3 rounded-2xl bg-muted/50 border border-border/50 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                     placeholder={showVerifyModal === 'email' ? "new@email.com" : "13800138000"}
                   />

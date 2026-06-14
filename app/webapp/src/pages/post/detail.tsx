@@ -15,8 +15,11 @@ import { formatDistanceToNow } from "date-fns"
 import { zhCN, enUS } from "date-fns/locale"
 import { cn } from "../../lib/utils"
 import { sharePost } from "../../lib/postShare"
+import { DTO_LIMITS, requiredMax } from "../../lib/dtoValidation"
 
 const MAX_COMMENT_IMAGES = 3;
+
+const commentLengthError = `评论内容长度不能超过 ${DTO_LIMITS.commentContentMax} 位`;
 
 const formatDate = (dateString: string, i18nInstance: i18n, updatedAtString?: string, t?: TFunction) => {
   try {
@@ -414,6 +417,7 @@ function CommentItem({
 
   const handleSave = async () => {
     if (!editContent.trim() && editExistingImages.length === 0 && editImageFiles.length === 0) return;
+    if (editContent.trim().length > DTO_LIMITS.commentContentMax) return;
     try {
       setEditUploadProgress(editImageFiles.length > 0 ? 0 : null);
       const uploadedImages = await uploadCommentImageFiles(editImageFiles, setEditUploadProgress);
@@ -440,6 +444,7 @@ function CommentItem({
 
   const handleSubmitReply = async () => {
     if (!replyContent.trim() && replyImageFiles.length === 0) return;
+    if (replyContent.trim().length > DTO_LIMITS.commentContentMax) return;
     setReplySubmitting(true);
     try {
       setReplyUploadProgress(replyImageFiles.length > 0 ? 0 : null);
@@ -505,6 +510,7 @@ function CommentItem({
               <textarea
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
+                maxLength={DTO_LIMITS.commentContentMax}
                 className="w-full min-h-[100px] bg-transparent border border-border/50 rounded-xl p-3 outline-none focus:border-primary transition-colors resize-none text-sm"
               />
               <div className="space-y-3">
@@ -626,6 +632,7 @@ function CommentItem({
               placeholder={`${t("post.reply")} @${authorName}...`}
               value={replyContent}
               onChange={(e) => setReplyContent(e.target.value)}
+              maxLength={DTO_LIMITS.commentContentMax}
               className="w-full min-h-[80px] bg-muted/30 border border-border/50 rounded-2xl p-3 outline-none focus:border-primary transition-all text-sm resize-none"
               autoFocus
             />
@@ -810,7 +817,23 @@ export default function PostDetailPage() {
   };
 
   const handlePostUpdate = async () => {
-    if (!id || !editTitle.trim() || !editContent.trim()) return;
+    if (!id) return;
+    const titleError = requiredMax(
+      editTitle,
+      DTO_LIMITS.postTitleMax,
+      "标题不能为空",
+      `标题长度不能超过 ${DTO_LIMITS.postTitleMax} 位`,
+    );
+    const contentError = requiredMax(
+      editContent,
+      DTO_LIMITS.postContentMax,
+      "内容不能为空",
+      `内容长度不能超过 ${DTO_LIMITS.postContentMax} 位`,
+    );
+    if (titleError || contentError) {
+      setActionError(titleError || contentError);
+      return;
+    }
     setSubmitting(true)
     try {
       const res = await postService.updatePost(id, {
@@ -923,6 +946,10 @@ export default function PostDetailPage() {
   }
 
   const handleCommentUpdate = async (commentId: string, content: string, images: string[]) => {
+    if (content.trim().length > DTO_LIMITS.commentContentMax) {
+      setActionError(commentLengthError);
+      return;
+    }
     try {
       const res = await commentService.updateComment(commentId, { content, images });
       if (res.data) {
@@ -948,6 +975,10 @@ export default function PostDetailPage() {
 
   const handleCommentReply = async (parentId: string, content: string, images: string[]) => {
     if (!id || !user) return;
+    if (content.trim().length > DTO_LIMITS.commentContentMax) {
+      setActionError(commentLengthError);
+      return;
+    }
     try {
       const res = await commentService.createComment({
         content,
@@ -987,6 +1018,10 @@ export default function PostDetailPage() {
 
   const handleCommentSubmit = async () => {
     if ((!commentContent.trim() && commentImageFiles.length === 0) || !user || !id) return;
+    if (commentContent.trim().length > DTO_LIMITS.commentContentMax) {
+      setActionError(commentLengthError);
+      return;
+    }
     setSubmitting(true)
     try {
       setCommentUploadProgress(commentImageFiles.length > 0 ? 0 : null);
@@ -1044,6 +1079,7 @@ export default function PostDetailPage() {
               type="text"
               value={editTitle}
               onChange={(e) => setEditTitle(e.target.value)}
+              maxLength={DTO_LIMITS.postTitleMax}
               className="w-full text-4xl sm:text-5xl font-black tracking-tight leading-[1.1] bg-transparent border-b border-primary/30 outline-none focus:border-primary transition-colors"
             />
           ) : (
@@ -1095,6 +1131,7 @@ export default function PostDetailPage() {
             <textarea
               value={editContent}
               onChange={(e) => setEditContent(e.target.value)}
+              maxLength={DTO_LIMITS.postContentMax}
               className="w-full min-h-[300px] text-lg leading-relaxed bg-transparent border border-border/50 rounded-2xl p-4 outline-none focus:border-primary transition-colors resize-none"
             />
           ) : (
@@ -1191,6 +1228,7 @@ export default function PostDetailPage() {
               placeholder={t("post.comment_placeholder")}
               value={commentContent}
               onChange={(e) => setCommentContent(e.target.value)}
+              maxLength={DTO_LIMITS.commentContentMax}
               className="min-h-[76px] w-full resize-none bg-transparent border-none outline-none px-2 py-2 text-sm"
             />
             <ImagePreviewStrip previews={commentImagePreviews} onRemove={removeCommentImage} />

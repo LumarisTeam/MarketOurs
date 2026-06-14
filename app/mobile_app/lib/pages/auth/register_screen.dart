@@ -14,6 +14,7 @@ import '../../ui/app_feedback.dart';
 import '../../ui/app_fields.dart';
 import '../../ui/app_theme.dart';
 import '../../ui/app_widgets.dart';
+import '../../utils/dto_validation.dart';
 import 'auth_scaffold.dart';
 import 'password_form_field.dart';
 
@@ -70,13 +71,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   bool _validateAccount(String value) {
-    final valid = _emailRegex.hasValue(value) || _phoneRegex.hasValue(value);
+    final valid =
+        value.length <= DtoLimits.userAccountMax &&
+        (_emailRegex.hasValue(value) || _phoneRegex.hasValue(value));
     setState(() => _isAccountValid = valid);
     return valid;
   }
 
   bool _validatePassword(String value) {
-    final valid = _passwordRegex.hasValue(value);
+    final valid =
+        value.length <= DtoLimits.userPasswordMax &&
+        _passwordRegex.hasValue(value);
     setState(() => _isPasswordValid = valid);
     return valid;
   }
@@ -326,6 +331,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             AppTextField(
               controller: _nameController,
               placeholder: '给自己起个名字',
+              maxLength: DtoLimits.userNameMax,
               prefix: Icon(
                 CupertinoIcons.person,
                 color: AppColors.mutedForeground,
@@ -334,6 +340,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
                   return '请输入显示名称';
+                }
+                if (value.trim().length > DtoLimits.userNameMax) {
+                  return '用户名长度不能超过 ${DtoLimits.userNameMax} 位';
                 }
                 return null;
               },
@@ -347,6 +356,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               controller: _accountController,
               placeholder: '邮箱或手机号',
               keyboardType: TextInputType.emailAddress,
+              maxLength: DtoLimits.userAccountMax,
               prefix: Icon(
                 CupertinoIcons.mail,
                 color: AppColors.mutedForeground,
@@ -355,6 +365,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
                   return '请输入账号';
+                }
+                if (value.trim().length > DtoLimits.userAccountMax) {
+                  return '账号长度不能超过 ${DtoLimits.userAccountMax} 位';
                 }
                 if (_isAccountDirty && !_isAccountValid) {
                   return '请输入有效的邮箱或手机号';
@@ -386,6 +399,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             PasswordFormField(
               controller: _passwordController,
               placeholder: '密码，至少6位，含大小写字母和数字',
+              maxLength: DtoLimits.userPasswordMax,
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return '请输入密码';

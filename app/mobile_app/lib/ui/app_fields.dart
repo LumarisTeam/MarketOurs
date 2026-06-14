@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 
 import 'app_theme.dart';
 
@@ -16,6 +17,7 @@ class AppTextField extends StatefulWidget {
     this.prefix,
     this.suffix,
     this.obscureText = false,
+    this.maxLength,
   });
 
   final TextEditingController? controller;
@@ -29,6 +31,7 @@ class AppTextField extends StatefulWidget {
   final Widget? prefix;
   final Widget? suffix;
   final bool obscureText;
+  final int? maxLength;
 
   @override
   State<AppTextField> createState() => _AppTextFieldState();
@@ -86,6 +89,9 @@ class _AppTextFieldState extends State<AppTextField> {
                 textInputAction: widget.textInputAction,
                 maxLines: widget.maxLines,
                 obscureText: widget.obscureText,
+                inputFormatters: widget.maxLength == null
+                    ? null
+                    : [LengthLimitingTextInputFormatter(widget.maxLength)],
                 onChanged: (v) {
                     field.didChange(v);
                     widget.onChanged?.call(v);

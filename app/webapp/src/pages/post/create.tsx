@@ -8,6 +8,7 @@ import { fileService } from '../../services/fileService';
 import { compressImages } from '../../services/imageCompression';
 import { extractUserMessage } from '../../services/errorCodes';
 import { ImagePlus, X, Loader2, Send } from 'lucide-react';
+import { DTO_LIMITS, requiredMax } from '../../lib/dtoValidation';
 
 export default function CreatePostPage() {
   const navigate = useNavigate();
@@ -47,8 +48,20 @@ export default function CreatePostPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !content.trim()) {
-      setError(t('post.error_empty'));
+    const titleError = requiredMax(
+      title,
+      DTO_LIMITS.postTitleMax,
+      t('post.error_empty'),
+      `标题长度不能超过 ${DTO_LIMITS.postTitleMax} 位`,
+    );
+    const contentError = requiredMax(
+      content,
+      DTO_LIMITS.postContentMax,
+      t('post.error_empty'),
+      `内容长度不能超过 ${DTO_LIMITS.postContentMax} 位`,
+    );
+    if (titleError || contentError) {
+      setError(titleError || contentError);
       return;
     }
 
@@ -110,6 +123,7 @@ export default function CreatePostPage() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder={t('post.title_placeholder')}
+              maxLength={DTO_LIMITS.postTitleMax}
               className="flex h-12 w-full rounded-2xl border border-input bg-background/50 px-4 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary transition-all disabled:cursor-not-allowed disabled:opacity-50"
               required
             />
@@ -124,6 +138,7 @@ export default function CreatePostPage() {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder={t('post.content_placeholder')}
+              maxLength={DTO_LIMITS.postContentMax}
               className="flex min-h-[200px] w-full rounded-2xl border border-input bg-background/50 px-4 py-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary transition-all disabled:cursor-not-allowed disabled:opacity-50 resize-none"
               required
             />
