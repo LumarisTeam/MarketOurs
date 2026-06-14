@@ -134,13 +134,23 @@ public class UserControllerTests : ControllerTestBase
     public async Task GetPublicProfileById_WhenUserExists_ShouldReturnPublicProfile()
     {
         var profile = new PublicUserProfileDto { Id = "2", Name = "Public User" };
+        var stats = new FollowStatsDto
+        {
+            FollowerCount = 12,
+            FollowingCount = 7,
+            IsFollowing = true
+        };
         _mockUserService.Setup(s => s.GetPublicProfileByIdAsync("2")).ReturnsAsync(profile);
+        _mockFollowService.Setup(s => s.GetFollowStatsAsync("2", "1")).ReturnsAsync(stats);
 
         var result = await _controller.GetPublicProfileById("2");
 
         Assert.That(result.Code, Is.EqualTo(200));
         Assert.That(result.Data, Is.Not.Null);
         Assert.That(result.Data!.Name, Is.EqualTo("Public User"));
+        Assert.That(result.Data.FollowerCount, Is.EqualTo(12));
+        Assert.That(result.Data.FollowingCount, Is.EqualTo(7));
+        Assert.That(result.Data.RelationshipStatus?.IsFollowing, Is.True);
     }
 
     [Test]

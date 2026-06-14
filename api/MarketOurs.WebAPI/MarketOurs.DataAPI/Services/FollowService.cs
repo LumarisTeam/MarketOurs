@@ -66,11 +66,13 @@ public class FollowService(
     ILogger<FollowService> logger) : IFollowService
 {
     private readonly IConnectionMultiplexer? _redis = redisEnumerable.FirstOrDefault();
+    private sealed record BaseFollowStats(int FollowerCount, int FollowingCount);
 
     // 关系集合从数据库重建后的过期时间。
     // 取较短值是为了给 cache-aside 的并发竞态兜底：万一“读重建”与“写删除”交错导致集合短暂残缺，
     // 也会在该时间内自动失效并重新从数据库重建，而不会长期脏读。
     private static readonly TimeSpan SetRebuildTtl = TimeSpan.FromMinutes(30);
+    private static readonly TimeSpan FollowStatsCacheTtl = TimeSpan.FromSeconds(30);
 
     public async Task<FollowToggleResult> ToggleFollowAsync(string followerId, string followingId)
     {
@@ -172,21 +174,39 @@ public class FollowService(
 
     public async Task<FollowStatsDto> GetFollowStatsAsync(string userId, string? viewerUserId = null)
     {
-        var followerCount = await GetFollowerCountAsync(userId);
-        var followingCount = await GetFollowingCountAsync(userId);
+        var baseStats = await memoryCache.GetOrCreateAsync(
+            CacheKeys.FollowStats(userId),
+            async entry =>
+            {
+                entry.AbsoluteExpirationRelativeToNow = FollowStatsCacheTtl;
+                entry.Size = 1;
+
+                var followerCountTask = GetFollowerCountAsync(userId);
+                var followingCountTask = GetFollowingCountAsync(userId);
+                await Task.WhenAll(followerCountTask, followingCountTask);
+
+                return new BaseFollowStats(followerCountTask.Result, followingCountTask.Result);
+            }) ?? new BaseFollowStats(0, 0);
 
         var stats = new FollowStatsDto
         {
-            FollowerCount = followerCount,
-            FollowingCount = followingCount
+            FollowerCount = baseStats.FollowerCount,
+            FollowingCount = baseStats.FollowingCount
         };
 
         if (!string.IsNullOrEmpty(viewerUserId) && viewerUserId != userId)
         {
-            stats.IsFollowing = await IsFollowingAsync(viewerUserId, userId);
-            stats.IsFollowedBy = await IsFollowingAsync(userId, viewerUserId);
-            stats.IsBlocked = await IsBlockedAsync(viewerUserId, userId);
-            stats.IsBlockedBy = await IsBlockedAsync(userId, viewerUserId);
+            var isFollowingTask = IsFollowingAsync(viewerUserId, userId);
+            var isFollowedByTask = IsFollowingAsync(userId, viewerUserId);
+            var isBlockedTask = IsBlockedAsync(viewerUserId, userId);
+            var isBlockedByTask = IsBlockedAsync(userId, viewerUserId);
+
+            await Task.WhenAll(isFollowingTask, isFollowedByTask, isBlockedTask, isBlockedByTask);
+
+            stats.IsFollowing = isFollowingTask.Result;
+            stats.IsFollowedBy = isFollowedByTask.Result;
+            stats.IsBlocked = isBlockedTask.Result;
+            stats.IsBlockedBy = isBlockedByTask.Result;
         }
 
         return stats;
@@ -320,10 +340,14 @@ public class FollowService(
     {
         if (_redis != null)
         {
-            var members = await GetRelationSetAsync(
-                CacheKeys.UserFollowers(userId),
-                () => userRepo.GetFollowerIdsAsync(userId));
-            return members.Length;
+            var db = _redis.GetDatabase();
+            var key = CacheKeys.UserFollowers(userId);
+            var count = await db.SetLengthAsync(key);
+
+            if (count > 0 || await db.KeyExistsAsync(key))
+            {
+                return (int)count;
+            }
         }
 
         return await userRepo.GetFollowerCountAsync(userId);
@@ -333,10 +357,14 @@ public class FollowService(
     {
         if (_redis != null)
         {
-            var members = await GetRelationSetAsync(
-                CacheKeys.UserFollowing(userId),
-                () => userRepo.GetFollowingIdsAsync(userId));
-            return members.Length;
+            var db = _redis.GetDatabase();
+            var key = CacheKeys.UserFollowing(userId);
+            var count = await db.SetLengthAsync(key);
+
+            if (count > 0 || await db.KeyExistsAsync(key))
+            {
+                return (int)count;
+            }
         }
 
         return await userRepo.GetFollowingCountAsync(userId);
@@ -346,50 +374,39 @@ public class FollowService(
     {
         if (_redis != null)
         {
-            var members = await GetRelationSetAsync(
-                CacheKeys.UserFollowing(followerId),
-                () => userRepo.GetFollowingIdsAsync(followerId));
-            return members.Any(m => m == followingId);
+            var db = _redis.GetDatabase();
+            var key = CacheKeys.UserFollowing(followerId);
+
+            if (await db.SetContainsAsync(key, followingId))
+            {
+                return true;
+            }
+
+            if (await db.KeyExistsAsync(key))
+            {
+                return false;
+            }
         }
 
         return await userRepo.IsFollowingAsync(followerId, followingId);
-    }
-
-    /// <summary>
-    /// 读取关系集合（cache-aside）。命中则直接返回；未命中则从数据库全量加载、写回 Redis 并设置较短 TTL。
-    /// 关键不变量：Redis 中的关系集合要么是数据库的“完整镜像”，要么不存在 —— 绝不允许存在“残缺集合”，
-    /// 因此 SetLength / 成员判断才可信。写操作（关注/取关/屏蔽）只删除受影响的 key，不做增量修改。
-    /// </summary>
-    private async Task<RedisValue[]> GetRelationSetAsync(string key, Func<Task<List<string>>> loadFromDb)
-    {
-        var db = _redis!.GetDatabase();
-
-        if (await db.KeyExistsAsync(key))
-        {
-            return await db.SetMembersAsync(key);
-        }
-
-        var ids = await loadFromDb();
-        if (ids.Count == 0)
-        {
-            // 数据库中也没有任何关系：不缓存空集合（避免占用 key），直接返回空。
-            return [];
-        }
-
-        var values = ids.Select(id => (RedisValue)id).ToArray();
-        await db.SetAddAsync(key, values);
-        await db.KeyExpireAsync(key, SetRebuildTtl);
-        return values;
     }
 
     private async Task<bool> IsBlockedAsync(string blockerId, string blockedId)
     {
         if (_redis != null)
         {
-            var members = await GetRelationSetAsync(
-                CacheKeys.UserBlocked(blockerId),
-                () => userRepo.GetBlockedUserIdsByMeAsync(blockerId));
-            return members.Any(m => m == blockedId);
+            var db = _redis.GetDatabase();
+            var key = CacheKeys.UserBlocked(blockerId);
+
+            if (await db.SetContainsAsync(key, blockedId))
+            {
+                return true;
+            }
+
+            if (await db.KeyExistsAsync(key))
+            {
+                return false;
+            }
         }
 
         return await userRepo.IsBlockedAsync(blockerId, blockedId);

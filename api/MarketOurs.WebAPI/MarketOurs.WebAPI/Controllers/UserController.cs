@@ -138,12 +138,16 @@ public class UserController(
     public async Task<ApiResponse<PublicUserProfileDto>> GetPublicProfileById(string id)
     {
         logger.LogInformation("Public profile requested: {Id}", id);
-        var user = await userService.GetPublicProfileByIdAsync(id);
+        var viewerUserId = this.GetOptionalUserId();
+        var userTask = userService.GetPublicProfileByIdAsync(id);
+        var statsTask = followService.GetFollowStatsAsync(id, viewerUserId);
+
+        await Task.WhenAll(userTask, statsTask);
+
+        var user = userTask.Result;
         if (user == null) throw new ResourceAccessException(ErrorCode.UserNotFound, "用户不存在");
 
-        // 获取关注统计数据
-        var viewerUserId = this.GetOptionalUserId();
-        var stats = await followService.GetFollowStatsAsync(id, viewerUserId);
+        var stats = statsTask.Result;
 
         user.FollowerCount = stats.FollowerCount;
         user.FollowingCount = stats.FollowingCount;
