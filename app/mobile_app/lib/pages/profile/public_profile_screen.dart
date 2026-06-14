@@ -26,12 +26,19 @@ class PublicProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
+  static const int _pageSize = 10;
+
   final _userService = UserService();
   final _followService = FollowService();
+  late final ScrollController _scrollController;
+  int _loadVersion = 0;
   PublicUserProfileDto? _profile;
   List<PostDto> _recentPosts = const [];
   bool _isLoading = true;
   String? _errorMessage;
+  int _postsPageIndex = 1;
+  bool _hasNextPage = false;
+  bool _isLoadingMore = false;
 
   bool _isFollowing = false;
   bool _isBlocked = false;
@@ -42,53 +49,143 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController()..addListener(_handleScroll);
+    _load();
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_handleScroll)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _handleScroll() {
+    if (!_scrollController.hasClients || _isLoadingMore || !_hasNextPage) {
+      return;
+    }
+
+    final position = _scrollController.position;
+    if (position.pixels >= position.maxScrollExtent - 240) {
+      _loadMorePosts();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant PublicProfileScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.userId == widget.userId) {
+      return;
+    }
+
+    if (_scrollController.hasClients) {
+      _scrollController.jumpTo(0);
+    }
     _load();
   }
 
   Future<void> _load() async {
+    final requestVersion = ++_loadVersion;
+    final requestUserId = widget.userId;
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
+      _profile = null;
+      _recentPosts = const [];
+      _postsPageIndex = 1;
+      _hasNextPage = false;
+      _isLoadingMore = false;
     });
 
     try {
-      final profileFuture = _userService.getPublicProfile(widget.userId);
+      final profileFuture = _userService.getPublicProfile(requestUserId);
       final postsFuture = ref
           .read(postServiceProvider)
-          .getUserPosts(widget.userId, pageIndex: 1, pageSize: 6)
-          .then((response) => response.data?.items ?? const <PostDto>[])
-          .catchError((_) => const <PostDto>[]);
+          .getUserPosts(requestUserId, pageIndex: 1, pageSize: _pageSize);
 
       final profileResponse = await profileFuture;
-      final posts = await postsFuture;
+      final postsResponse = await postsFuture;
       final profile = profileResponse.data;
+      final postsPage = postsResponse.data;
 
       if (profile == null) {
         throw Exception('用户不存在');
       }
 
-      if (!mounted) {
+      if (!mounted ||
+          requestVersion != _loadVersion ||
+          requestUserId != widget.userId) {
         return;
       }
 
       setState(() {
         _profile = profile;
-        _recentPosts = posts;
+        _recentPosts = postsPage?.items ?? const <PostDto>[];
+        _postsPageIndex = postsPage?.pageIndex ?? 1;
+        _hasNextPage = postsPage?.hasNextPage ?? false;
         _followerCount = profile.followerCount;
         _followingCount = profile.followingCount;
         _isFollowing = profile.relationshipStatus?.isFollowing ?? false;
         _isBlocked = profile.relationshipStatus?.isBlocked ?? false;
       });
     } catch (error) {
-      if (!mounted) {
+      if (!mounted ||
+          requestVersion != _loadVersion ||
+          requestUserId != widget.userId) {
         return;
       }
       setState(() {
         _errorMessage = extractErrorFromException(error);
       });
     } finally {
-      if (mounted) {
+      if (mounted &&
+          requestVersion == _loadVersion &&
+          requestUserId == widget.userId) {
         setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _loadMorePosts() async {
+    if (_isLoadingMore || !_hasNextPage) return;
+
+    final requestVersion = _loadVersion;
+    final requestUserId = widget.userId;
+
+    setState(() => _isLoadingMore = true);
+    try {
+      final response = await ref
+          .read(postServiceProvider)
+          .getUserPosts(
+            requestUserId,
+            pageIndex: _postsPageIndex + 1,
+            pageSize: _pageSize,
+          );
+      final page = response.data;
+      if (!mounted ||
+          page == null ||
+          requestVersion != _loadVersion ||
+          requestUserId != widget.userId) {
+        return;
+      }
+
+      final existingIds = _recentPosts.map((post) => post.id).toSet();
+      final nextItems = page.items.where((post) => !existingIds.contains(post.id)).toList();
+
+      setState(() {
+        _recentPosts = [..._recentPosts, ...nextItems];
+        _postsPageIndex = page.pageIndex;
+        _hasNextPage = page.hasNextPage;
+      });
+    } catch (_) {
+      // Keep current posts and allow retry on next scroll.
+    } finally {
+      if (mounted &&
+          requestVersion == _loadVersion &&
+          requestUserId == widget.userId) {
+        setState(() => _isLoadingMore = false);
       }
     }
   }
@@ -152,6 +249,7 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
     return AppPageScaffold(
       title: '用户主页',
       navigationBarStyle: AppNavigationBarStyle.compact,
+      scrollController: _scrollController,
       slivers: [
         CupertinoSliverRefreshControl(onRefresh: _load),
         SliverToBoxAdapter(
@@ -190,7 +288,11 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
                   ],
                 ],
               ),
-              primary: _RecentPostsSection(posts: _recentPosts),
+              primary: _RecentPostsSection(
+                posts: _recentPosts,
+                isLoadingMore: _isLoadingMore,
+                hasNextPage: _hasNextPage,
+              ),
             ),
           ),
         ),
@@ -200,9 +302,15 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
 }
 
 class _RecentPostsSection extends StatelessWidget {
-  const _RecentPostsSection({required this.posts});
+  const _RecentPostsSection({
+    required this.posts,
+    required this.isLoadingMore,
+    required this.hasNextPage,
+  });
 
   final List<PostDto> posts;
+  final bool isLoadingMore;
+  final bool hasNextPage;
 
   @override
   Widget build(BuildContext context) {
@@ -230,6 +338,21 @@ class _RecentPostsSection extends StatelessWidget {
             (post) => Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: SimplePostCard(post: post),
+            ),
+          ),
+        if (isLoadingMore)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Center(child: CupertinoActivityIndicator()),
+          )
+        else if (!hasNextPage && posts.isNotEmpty)
+          const Padding(
+            padding: EdgeInsets.only(top: 4, bottom: 12),
+            child: Center(
+              child: Text(
+                '已经到底了',
+                style: TextStyle(color: CupertinoColors.systemGrey),
+              ),
             ),
           ),
       ],

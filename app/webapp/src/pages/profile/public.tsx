@@ -1,5 +1,5 @@
 import { Link, useParams } from "react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { ArrowRight, Calendar, FileText, Loader2, Sparkles, UserPlus, UserMinus, Ban } from "lucide-react";
@@ -7,7 +7,7 @@ import { userService } from "../../services/userService";
 import { postService } from "../../services/postService";
 import { followService } from "../../services/followService";
 import type { RootState } from "../../stores";
-import type { PostDto, PublicUserProfileDto } from "../../types";
+import type { PagedResult, PostDto, PublicUserProfileDto } from "../../types";
 import { PostTagBadge } from "../../components/post/PostTagBadge";
 
 const RECENT_POST_FETCH_SIZE = 10;
@@ -19,12 +19,35 @@ export default function PublicProfilePage() {
 
   const [profile, setProfile] = useState<PublicUserProfileDto | null>(null);
   const [recentPosts, setRecentPosts] = useState<PostDto[]>([]);
+  const [postsTotalCount, setPostsTotalCount] = useState(0);
+  const [postsPageIndex, setPostsPageIndex] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const pageIndexRef = useRef(1);
+  const totalCountRef = useRef(0);
+
+  useEffect(() => {
+    pageIndexRef.current = postsPageIndex;
+  }, [postsPageIndex]);
+
+  useEffect(() => {
+    totalCountRef.current = postsTotalCount;
+  }, [postsTotalCount]);
 
   useEffect(() => {
     if (!id) {
       setError(t("profile.public_not_found"));
+      setProfile(null);
+      setRecentPosts([]);
+      setPostsTotalCount(0);
+      setPostsPageIndex(1);
+      pageIndexRef.current = 1;
+      totalCountRef.current = 0;
+      setHasNextPage(false);
+      setIsLoadingMore(false);
       setLoading(false);
       return;
     }
@@ -34,6 +57,14 @@ export default function PublicProfilePage() {
     const fetchPublicProfile = async () => {
       setLoading(true);
       setError(null);
+      setProfile(null);
+      setRecentPosts([]);
+      setPostsTotalCount(0);
+      setPostsPageIndex(1);
+      pageIndexRef.current = 1;
+      totalCountRef.current = 0;
+      setHasNextPage(false);
+      setIsLoadingMore(false);
 
       try {
         const [userResponse, postsResponse] = await Promise.all([
@@ -46,10 +77,16 @@ export default function PublicProfilePage() {
         }
 
         const userData = userResponse.data;
-        const posts = postsResponse.data?.items ?? [];
+        const postsPage = postsResponse.data as PagedResult<PostDto> | undefined;
+        const posts = postsPage?.items ?? [];
 
         setProfile(userData);
         setRecentPosts(posts);
+        setPostsTotalCount(postsPage?.totalCount ?? posts.length);
+        setPostsPageIndex(postsPage?.pageIndex ?? 1);
+        pageIndexRef.current = postsPage?.pageIndex ?? 1;
+        totalCountRef.current = postsPage?.totalCount ?? posts.length;
+        setHasNextPage(postsPage?.hasNextPage ?? false);
       } catch (err) {
         console.error("Failed to fetch public profile", err);
         if (!cancelled) {
@@ -68,6 +105,60 @@ export default function PublicProfilePage() {
       cancelled = true;
     };
   }, [id, t]);
+
+  useEffect(() => {
+    if (!id || !hasNextPage || isLoadingMore || loading) {
+      return;
+    }
+
+    const target = loadMoreRef.current;
+    if (!target) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry?.isIntersecting) {
+          void loadMorePosts();
+        }
+      },
+      { rootMargin: "240px 0px" },
+    );
+
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [id, hasNextPage, isLoadingMore, loading, postsPageIndex]);
+
+  const loadMorePosts = async () => {
+    if (!id || isLoadingMore || !hasNextPage) {
+      return;
+    }
+
+    setIsLoadingMore(true);
+    try {
+      const response = await postService.getUserPosts(id, pageIndexRef.current + 1, RECENT_POST_FETCH_SIZE);
+      const page = response.data;
+      const items = page?.items ?? [];
+
+      setRecentPosts((current) => {
+        const existingIds = new Set(current.map((post) => post.id));
+        const nextItems = items.filter((post) => !existingIds.has(post.id));
+        return [...current, ...nextItems];
+      });
+      const nextTotalCount = page?.totalCount ?? totalCountRef.current;
+      const nextPageIndex = page?.pageIndex ?? pageIndexRef.current + 1;
+      totalCountRef.current = nextTotalCount;
+      pageIndexRef.current = nextPageIndex;
+      setPostsTotalCount(nextTotalCount);
+      setPostsPageIndex(nextPageIndex);
+      setHasNextPage(page?.hasNextPage ?? false);
+    } catch (err) {
+      console.error("Failed to load more public posts", err);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
 
   const [isFollowing, setIsFollowing] = useState(false);
   const [isBlocked, setIsBlocked] = useState(false);
@@ -251,7 +342,7 @@ export default function PublicProfilePage() {
                 <FileText size={18} />
                 <span className="text-sm font-medium">{t("profile.recent_posts")}</span>
               </div>
-              <p className="text-lg font-bold">{recentPosts.length}</p>
+              <p className="text-lg font-bold">{postsTotalCount}</p>
             </div>
           </div>
         </div>
@@ -285,6 +376,12 @@ export default function PublicProfilePage() {
                 </div>
               </Link>
             ))}
+            <div ref={loadMoreRef} className="flex min-h-12 items-center justify-center">
+              {isLoadingMore ? <Loader2 className="animate-spin text-primary" size={20} /> : null}
+              {!isLoadingMore && !hasNextPage ? (
+                <p className="text-sm text-muted-foreground">{t("common.no_more_posts")}</p>
+              ) : null}
+            </div>
           </div>
         ) : (
           <div className="rounded-[2rem] border border-dashed border-border bg-card px-6 py-10 text-center text-muted-foreground">
