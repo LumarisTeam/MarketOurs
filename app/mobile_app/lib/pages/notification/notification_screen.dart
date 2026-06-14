@@ -93,41 +93,32 @@ class _NotificationScreenState extends State<NotificationScreen> {
               context,
             ).withValues(alpha: 0.94),
             border: null,
-            trailing: CupertinoButton(
-              padding: EdgeInsets.zero,
-              minimumSize: Size.zero,
-              onPressed: () {
-                showCupertinoModalPopup<void>(
-                  context: context,
-                  builder: (_) => CupertinoActionSheet(
-                    actions: [
-                      CupertinoActionSheetAction(
-                        onPressed: () async {
-                          Navigator.of(context).pop();
-                          await _markAllAsReadOptimistically();
-                        },
-                        child: const Text('全部标为已读'),
-                      ),
-                      CupertinoActionSheetAction(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            CupertinoPageRoute(
-                              builder: (_) =>
-                                  PushSettingsScreen(service: widget.service),
-                            ),
-                          );
-                        },
-                        child: const Text('推送设置'),
-                      ),
-                    ],
-                    cancelButton: CupertinoActionSheetAction(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('取消'),
-                    ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (_notifications.any((n) => !n.isRead))
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    minimumSize: Size.zero,
+                    onPressed: () async {
+                      await _markAllAsReadOptimistically();
+                    },
+                    child: const Icon(CupertinoIcons.trash, size: 24),
                   ),
-                );
-              },
-              child: const Icon(CupertinoIcons.ellipsis_circle, size: 24),
+                CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size.zero,
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      CupertinoPageRoute(
+                        builder: (_) =>
+                            PushSettingsScreen(service: widget.service),
+                      ),
+                    );
+                  },
+                  child: const Icon(CupertinoIcons.settings, size: 24),
+                ),
+              ],
             ),
           ),
           CupertinoSliverRefreshControl(onRefresh: _loadNotifications),
