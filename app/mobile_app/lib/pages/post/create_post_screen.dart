@@ -1,11 +1,10 @@
-import 'dart:io';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../components/post_tag_pill.dart';
+import '../../components/post_editor_form.dart';
+import '../../components/post_tag_selector.dart';
 import '../../models/post.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/post_feed_provider.dart';
@@ -14,10 +13,6 @@ import '../../router/app_router.dart';
 import '../../services/file_service.dart';
 import '../../services/image_compression_service.dart';
 import '../../ui/app_feedback.dart';
-import '../../ui/app_fields.dart';
-import '../../ui/app_responsive.dart';
-import '../../ui/app_theme.dart';
-import '../../ui/app_widgets.dart';
 import '../../utils/dto_validation.dart';
 
 class CreatePostScreen extends ConsumerStatefulWidget {
@@ -77,34 +72,13 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   }
 
   Future<void> _selectTag() async {
-    await showCupertinoModalPopup<void>(
-      context: context,
-      builder: (ctx) => CupertinoActionSheet(
-        title: const Text('选择标签'),
-        message: const Text('标签由管理员预设，可不选择。'),
-        actions: [
-          CupertinoActionSheetAction(
-            onPressed: () {
-              setState(() => _selectedTag = null);
-              Navigator.of(ctx).pop();
-            },
-            child: const Text('无标签'),
-          ),
-          for (final tag in _tags)
-            CupertinoActionSheetAction(
-              onPressed: () {
-                setState(() => _selectedTag = tag);
-                Navigator.of(ctx).pop();
-              },
-              child: Text(tag.name ?? '未命名标签'),
-            ),
-        ],
-        cancelButton: CupertinoActionSheetAction(
-          onPressed: () => Navigator.of(ctx).pop(),
-          child: const Text('取消'),
-        ),
-      ),
+    final nextTag = await showPostTagPicker(
+      context,
+      tags: _tags,
+      selectedTag: _selectedTag,
     );
+    if (!mounted) return;
+    setState(() => _selectedTag = nextTag);
   }
 
   Future<void> _submit() async {
@@ -196,70 +170,11 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     }
   }
 
-  Widget _buildUploadProgress() {
-    final fraction = _uploadProgress ?? 0;
-    final percent = (fraction * 100).round();
-    return AppTappableCard(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-      radius: AppRadii.lg,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                '正在上传图片',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppColors.mutedForeground,
-                ),
-              ),
-              Text(
-                '$percent%',
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(AppRadii.sm),
-            child: Container(
-              height: 6,
-              color: AppColors.secondary,
-              alignment: Alignment.centerLeft,
-              child: FractionallySizedBox(
-                widthFactor: fraction,
-                child: Container(height: 6, color: AppColors.primary),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      backgroundColor: AppColors.background,
       navigationBar: CupertinoNavigationBar(
         middle: const Text('发布帖子'),
-        backgroundColor: CupertinoDynamicColor.resolve(
-          AppColors.background,
-          context,
-        ).withValues(alpha: 0.94),
-        border: Border(
-          bottom: BorderSide(
-            color: CupertinoDynamicColor.resolve(
-              AppColors.border,
-              context,
-            ).withValues(alpha: 0.3),
-          ),
-        ),
         trailing: CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: _isSubmitting ? null : _submit,
@@ -275,195 +190,36 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
           child: ListView(
             padding: EdgeInsets.zero,
             children: [
-              AppResponsiveCenter(
-                maxWidth: AppResponsive.formMaxWidth(context),
-                padding: AppResponsive.pagePadding(context, narrow: 20),
-                child: AppTwoPane(
-                  primary: _buildEditorCard(),
-                  secondary: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _buildImageCard(),
-                      const SizedBox(height: 12),
-                      _buildTagCard(),
-                      if (_uploadProgress != null) ...[
-                        const SizedBox(height: 12),
-                        _buildUploadProgress(),
-                      ],
-                      const SizedBox(height: 20),
-                      AppPrimaryButton(
-                        onPressed: _isSubmitting ? null : _submit,
-                        child: Text(_isSubmitting ? '发布中...' : '立即发布'),
-                      ),
-                    ],
-                  ),
+              PostEditorForm(
+                layout: PostEditorLayout.page,
+                titleController: _titleController,
+                contentController: _contentController,
+                selectedTag: _selectedTag,
+                existingImages: const [],
+                localImages: _images,
+                onPickTag: _isSubmitting ? null : _selectTag,
+                onPickImages: _isSubmitting ? null : _pickImages,
+                onRemoveLocalImage: _isSubmitting ? null : _removeImage,
+                onSubmit: _isSubmitting ? null : _submit,
+                submitLabel: _isSubmitting ? '发布中...' : '立即发布',
+                uploadProgress: _uploadProgress,
+                titleValidator: (v) => requiredMaxValidator(
+                  v,
+                  emptyMessage: '请输入标题',
+                  max: DtoLimits.postTitleMax,
+                  maxMessage: '标题长度不能超过 ${DtoLimits.postTitleMax} 位',
+                ),
+                contentValidator: (v) => requiredMaxValidator(
+                  v,
+                  emptyMessage: '请输入内容',
+                  max: DtoLimits.postContentMax,
+                  maxMessage: '内容长度不能超过 ${DtoLimits.postContentMax} 位',
                 ),
               ),
             ],
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildEditorCard() {
-    return AppTappableCard(
-      padding: const EdgeInsets.all(20),
-      radius: AppRadii.lg,
-      child: Column(
-        children: [
-          AppTextField(
-            controller: _titleController,
-            placeholder: '帖子标题',
-            maxLength: DtoLimits.postTitleMax,
-            validator: (v) => requiredMaxValidator(
-              v,
-              emptyMessage: '请输入标题',
-              max: DtoLimits.postTitleMax,
-              maxMessage: '标题长度不能超过 ${DtoLimits.postTitleMax} 位',
-            ),
-          ),
-          const SizedBox(height: 16),
-          AppTextField(
-            controller: _contentController,
-            placeholder: '分享此刻的新鲜事...',
-            maxLines: AppResponsive.isDesktop(context) ? 12 : 8,
-            maxLength: DtoLimits.postContentMax,
-            validator: (v) => requiredMaxValidator(
-              v,
-              emptyMessage: '请输入内容',
-              max: DtoLimits.postContentMax,
-              maxMessage: '内容长度不能超过 ${DtoLimits.postContentMax} 位',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildImageCard() {
-    return AppTappableCard(
-      padding: const EdgeInsets.all(20),
-      radius: AppRadii.lg,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                '图片',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-              ),
-              CupertinoButton(
-                padding: EdgeInsets.zero,
-                onPressed: _isSubmitting ? null : _pickImages,
-                child: const Text(
-                  '添加图片',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          if (_images.isEmpty)
-            Container(
-              height: 120,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: AppColors.secondary,
-                borderRadius: BorderRadius.circular(AppRadii.md),
-              ),
-              child: const Text(
-                '还没选择图片',
-                style: TextStyle(color: AppColors.mutedForeground),
-              ),
-            )
-          else
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: [
-                for (var i = 0; i < _images.length; i++)
-                  _ImagePreview(
-                    image: _images[i],
-                    onRemove: () => _removeImage(i),
-                  ),
-              ],
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTagCard() {
-    return AppTappableCard(
-      padding: const EdgeInsets.all(20),
-      radius: AppRadii.lg,
-      onPressed: _isSubmitting ? null : _selectTag,
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  '标签',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(height: 6),
-                PostTagPill(
-                  tag: _selectedTag,
-                  emptyText: '无标签',
-                  clickable: false,
-                ),
-              ],
-            ),
-          ),
-          const Icon(
-            CupertinoIcons.chevron_down,
-            size: 18,
-            color: AppColors.mutedForeground,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ImagePreview extends StatelessWidget {
-  const _ImagePreview({required this.image, required this.onRemove});
-  final XFile image;
-  final VoidCallback onRemove;
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(AppRadii.md),
-          child: Image.file(
-            File(image.path),
-            width: 90,
-            height: 90,
-            fit: BoxFit.cover,
-          ),
-        ),
-        Positioned(
-          right: -8,
-          top: -8,
-          child: CupertinoButton(
-            padding: EdgeInsets.zero,
-            onPressed: onRemove,
-            child: const Icon(
-              CupertinoIcons.xmark_circle_fill,
-              color: AppColors.destructive,
-              size: 24,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

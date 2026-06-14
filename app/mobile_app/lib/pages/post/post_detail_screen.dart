@@ -10,7 +10,9 @@ import 'package:image_picker/image_picker.dart';
 
 import 'image_viewer_screen.dart';
 
+import '../../components/post_editor_form.dart';
 import '../../components/post_tag_pill.dart';
+import '../../components/post_tag_selector.dart';
 import '../../models/comment.dart';
 import '../../models/post.dart';
 import '../../models/user.dart';
@@ -51,12 +53,14 @@ class _PostDraft {
     required this.content,
     this.existingImages = const [],
     this.newImages = const [],
+    this.tag,
   });
 
   final String title;
   final String content;
   final List<String> existingImages;
   final List<XFile> newImages;
+  final PostTagDto? tag;
 }
 
 class PostDetailScreen extends ConsumerStatefulWidget {
@@ -679,10 +683,20 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     final post = _post;
     if (post == null) return;
 
+    List<PostTagDto> tags = const [];
+    try {
+      final response = await ref.read(postServiceProvider).getPostTags();
+      tags = response.data ?? const <PostTagDto>[];
+    } catch (_) {
+      tags = const <PostTagDto>[];
+    }
+
     final draft = await _openPostEditor(
       title: post.title ?? '',
       content: post.content ?? '',
       initialImages: post.images ?? const [],
+      initialTag: post.tag,
+      availableTags: tags,
     );
     if (draft == null) return;
     final validationError = _validatePostDraft(draft.title, draft.content);
@@ -705,6 +719,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               content: draft.content,
               images: nextImages,
               uploadKey: uploadResult.uploadKey,
+              tagId: draft.tag?.id,
             ),
           );
       if (mounted && result.data != null) {
@@ -855,11 +870,14 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     required String title,
     required String content,
     List<String> initialImages = const [],
+    PostTagDto? initialTag,
+    List<PostTagDto> availableTags = const [],
   }) async {
     final titleController = TextEditingController(text: title);
     final contentController = TextEditingController(text: content);
     final existingImages = List<String>.from(initialImages);
     final selectedImages = <XFile>[];
+    PostTagDto? selectedTag = initialTag;
 
     final result = await showAppBottomSheet<_PostDraft>(
       context: context,
@@ -875,6 +893,18 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               });
             }
 
+            Future<void> selectTag() async {
+              final nextTag = await showPostTagPicker(
+                context,
+                tags: availableTags,
+                selectedTag: selectedTag,
+              );
+              if (!context.mounted) return;
+              setSheetState(() {
+                selectedTag = nextTag;
+              });
+            }
+
             return Padding(
               padding: EdgeInsets.only(
                 left: 20,
@@ -882,66 +912,35 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 top: 20,
                 bottom: MediaQuery.of(context).viewInsets.bottom + 20,
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('编辑帖子', style: AppTextStyles.sectionTitle(context)),
-                  const SizedBox(height: 16),
-                  AppTextField(
-                    controller: titleController,
-                    placeholder: '标题',
-                    maxLength: DtoLimits.postTitleMax,
-                  ),
-                  const SizedBox(height: 12),
-                  AppTextField(
-                    controller: contentController,
-                    maxLines: 6,
-                    placeholder: '内容',
-                    maxLength: DtoLimits.postContentMax,
-                  ),
-                  const SizedBox(height: 12),
-                  _CommentComposerImages(
-                    existingImages: existingImages,
-                    localImages: selectedImages,
-                    onRemoveExisting: (index) {
-                      setSheetState(() => existingImages.removeAt(index));
-                    },
-                    onRemoveLocal: (index) {
-                      setSheetState(() => selectedImages.removeAt(index));
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      CupertinoButton(
-                        padding: EdgeInsets.zero,
-                        onPressed: pickImages,
-                        child: const Icon(CupertinoIcons.photo),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        '${existingImages.length + selectedImages.length} 张图片',
-                        style: AppTextStyles.label(context),
-                      ),
-                      const Spacer(),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  AppPrimaryButton(
-                    onPressed: () {
-                      Navigator.of(context).pop(
-                        _PostDraft(
-                          title: titleController.text.trim(),
-                          content: contentController.text.trim(),
-                          existingImages: List<String>.from(existingImages),
-                          newImages: List<XFile>.from(selectedImages),
-                        ),
-                      );
-                    },
-                    child: const Text('保存修改'),
-                  ),
-                ],
+              child: PostEditorForm(
+                layout: PostEditorLayout.sheet,
+                headerText: '编辑帖子',
+                titleController: titleController,
+                contentController: contentController,
+                selectedTag: selectedTag,
+                existingImages: existingImages,
+                localImages: selectedImages,
+                onPickTag: availableTags.isEmpty ? null : selectTag,
+                onPickImages: pickImages,
+                onRemoveExistingImage: (index) {
+                  setSheetState(() => existingImages.removeAt(index));
+                },
+                onRemoveLocalImage: (index) {
+                  setSheetState(() => selectedImages.removeAt(index));
+                },
+                onSubmit: () {
+                  Navigator.of(context).pop(
+                    _PostDraft(
+                      title: titleController.text.trim(),
+                      content: contentController.text.trim(),
+                      existingImages: List<String>.from(existingImages),
+                      newImages: List<XFile>.from(selectedImages),
+                      tag: selectedTag,
+                    ),
+                  );
+                },
+                submitLabel: '保存修改',
+                tagEmptyText: availableTags.isEmpty ? '暂无标签' : '无标签',
               ),
             );
           },
