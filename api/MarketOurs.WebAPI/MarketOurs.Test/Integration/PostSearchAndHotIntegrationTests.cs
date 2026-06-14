@@ -86,14 +86,29 @@ public class PostSearchAndHotIntegrationTests : IntegrationTestBase
     {
         var user = await SeedUserAsync();
         await _postRepo.CreateAsync(new PostModel
-            { Title = "二手单反相机", Content = "9 成新，价格美丽", UserId = user.Id });
+            { Title = "二手单反相机", Content = "9 成新，价格美丽", UserId = user.Id, IsReview = true });
         await _postRepo.CreateAsync(new PostModel
-            { Title = "旧手机出售", Content = "苹果 14", UserId = user.Id });
+            { Title = "旧手机出售", Content = "苹果 14", UserId = user.Id, IsReview = true });
 
         var results = await _postService.SearchAsync(new PaginationParams { Keyword = "相机" });
 
         Assert.That(results.Items, Has.Count.EqualTo(1));
         Assert.That(results.Items[0].Title, Does.Contain("相机"));
+    }
+
+    [Test]
+    public async Task SearchAsync_UnreviewedPost_IsExcluded()
+    {
+        var user = await SeedUserAsync();
+        await _postRepo.CreateAsync(new PostModel
+            { Title = "审核中的相机", Content = "这条不应该公开", UserId = user.Id, IsReview = false });
+        await _postRepo.CreateAsync(new PostModel
+            { Title = "已审核相机", Content = "这条可以公开", UserId = user.Id, IsReview = true });
+
+        var results = await _postService.SearchAsync(new PaginationParams { Keyword = "相机" });
+
+        Assert.That(results.Items, Has.Count.EqualTo(1));
+        Assert.That(results.Items[0].Title, Is.EqualTo("已审核相机"));
     }
 
     [Test]
@@ -131,7 +146,7 @@ public class PostSearchAndHotIntegrationTests : IntegrationTestBase
             await _postRepo.CreateAsync(new PostModel
             {
                 Title = $"Post {i}", Content = "Content", UserId = user.Id,
-                Watch = i * 10, Likes = i * 3
+                Watch = i * 10, Likes = i * 3, IsReview = true
             });
         }
 
@@ -152,7 +167,7 @@ public class PostSearchAndHotIntegrationTests : IntegrationTestBase
     {
         var user = await SeedUserAsync();
         await _postRepo.CreateAsync(new PostModel
-            { Title = "Hot One", Content = "c", UserId = user.Id, Watch = 100 });
+            { Title = "Hot One", Content = "c", UserId = user.Id, Watch = 100, IsReview = true });
 
         // First call populates caches
         await _postService.GetHotAsync();
@@ -166,7 +181,7 @@ public class PostSearchAndHotIntegrationTests : IntegrationTestBase
     public async Task IncrementWatchAsync_AtThreshold_SyncsToDB()
     {
         var user = await SeedUserAsync();
-        var post = new PostModel { Title = "Watch Test", Content = "c", UserId = user.Id, Watch = 0 };
+        var post = new PostModel { Title = "Watch Test", Content = "c", UserId = user.Id, Watch = 0, IsReview = true };
         await _postRepo.CreateAsync(post);
 
         // Increment exactly 10 times (WatchSyncThreshold = 10)
@@ -189,7 +204,7 @@ public class PostSearchAndHotIntegrationTests : IntegrationTestBase
     public async Task IncrementWatchAsync_ConcurrentIncrements_CountIsAccurate()
     {
         var user = await SeedUserAsync();
-        var post = new PostModel { Title = "Concurrent Watch", Content = "c", UserId = user.Id };
+        var post = new PostModel { Title = "Concurrent Watch", Content = "c", UserId = user.Id, IsReview = true };
         await _postRepo.CreateAsync(post);
 
         const int totalIncrements = 50;

@@ -18,24 +18,28 @@ class HomeFeedState {
     required this.pageIndex,
     required this.hasNextPage,
     required this.isLoadingMore,
+    required this.keyword,
   });
 
   final List<PostDto> posts;
   final int pageIndex;
   final bool hasNextPage;
   final bool isLoadingMore;
+  final String keyword;
 
   HomeFeedState copyWith({
     List<PostDto>? posts,
     int? pageIndex,
     bool? hasNextPage,
     bool? isLoadingMore,
+    String? keyword,
   }) {
     return HomeFeedState(
       posts: posts ?? this.posts,
       pageIndex: pageIndex ?? this.pageIndex,
       hasNextPage: hasNextPage ?? this.hasNextPage,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      keyword: keyword ?? this.keyword,
     );
   }
 }
@@ -66,8 +70,21 @@ class HomeFeedNotifier extends AsyncNotifier<HomeFeedState> {
       state = const AsyncLoading();
     }
 
-    state = await AsyncValue.guard(() => _fetchPage(pageIndex: 1));
+    state = await AsyncValue.guard(
+      () => _fetchPage(pageIndex: 1, keyword: currentState?.keyword ?? ''),
+    );
   }
+
+  Future<void> search(String keyword) async {
+    final trimmedKeyword = keyword.trim();
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(
+      () => _fetchPage(pageIndex: 1, keyword: trimmedKeyword),
+    );
+  }
+
+  Future<void> clearSearch() => search('');
+  Future<void> setSearchKeyword(String keyword) => search(keyword);
 
   Future<void> loadMore() async {
     final currentState = state.asData?.value;
@@ -83,6 +100,7 @@ class HomeFeedNotifier extends AsyncNotifier<HomeFeedState> {
       final nextState = await _fetchPage(
         pageIndex: currentState.pageIndex + 1,
         previousPosts: currentState.posts,
+        keyword: currentState.keyword,
       );
       state = AsyncData(nextState);
     } catch (_) {
@@ -94,12 +112,16 @@ class HomeFeedNotifier extends AsyncNotifier<HomeFeedState> {
   Future<HomeFeedState> _fetchPage({
     required int pageIndex,
     List<PostDto> previousPosts = const [],
+    String keyword = '',
   }) async {
     final service = ref.read(postServiceProvider);
-    final response = await service.getPosts(
-      pageIndex: pageIndex,
-      pageSize: _pageSize,
-    );
+    final response = keyword.isEmpty
+        ? await service.getPosts(pageIndex: pageIndex, pageSize: _pageSize)
+        : await service.searchPosts(
+            pageIndex: pageIndex,
+            pageSize: _pageSize,
+            keyword: keyword,
+          );
     final page = response.data;
 
     if (page == null) {
@@ -111,6 +133,7 @@ class HomeFeedNotifier extends AsyncNotifier<HomeFeedState> {
       pageIndex: page.pageIndex,
       hasNextPage: page.hasNextPage,
       isLoadingMore: false,
+      keyword: keyword,
     );
   }
 }

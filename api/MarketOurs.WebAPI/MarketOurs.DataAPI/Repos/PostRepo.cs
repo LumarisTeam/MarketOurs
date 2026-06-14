@@ -186,41 +186,35 @@ public class PostRepo(IDbContextFactory<MarketContext> factory) : IPostRepo
     public async Task<List<PostModel>> SearchAsync(string keyword, int pageIndex, int pageSize)
     {
         await using var context = await factory.CreateDbContextAsync();
+        var offset = (pageIndex - 1) * pageSize;
 
-        // 优先使用 ParadeDB 的 pg_search (BM25)
         if (context.Database.IsNpgsql())
         {
-            try 
+            try
             {
-                // 尝试使用 @@@ 操作符进行高性能 BM25 搜索
                 return await context.Posts
-                    .FromSqlRaw("SELECT * FROM posts WHERE posts @@@ {0}", keyword)
+                    .FromSqlInterpolated($"""
+                        SELECT *
+                        FROM posts
+                        WHERE "IsReview" AND ("Title" @@@ {keyword} OR "Content" @@@ {keyword})
+                        ORDER BY pdb.score("Id") DESC, "CreatedAt" DESC
+                        LIMIT {pageSize} OFFSET {offset}
+                        """)
+                    .AsNoTracking()
                     .Include(x => x.User)
-                    .Where(x => x.IsReview)
-                    .OrderByDescending(x => x.CreatedAt)
-                    .Skip((pageIndex - 1) * pageSize)
-                    .Take(pageSize)
                     .ToListAsync();
             }
             catch
             {
-                // 如果 ParadeDB 索引未就绪，则回退到 ILike 搜索
-                return await context.Posts
-                    .Where(x => x.IsReview && EF.Functions.ILike(x.Title + " " + x.Content, $"%{keyword}%"))
-                    .Include(x => x.User)
-                    .OrderByDescending(x => x.CreatedAt)
-                    .Skip((pageIndex - 1) * pageSize)
-                    .Take(pageSize)
-                    .ToListAsync();
+                return await SearchWithILike(context, keyword, pageIndex, pageSize);
             }
         }
 
-        // SQLite 或其他数据库回退：简单关键词匹配
         return await context.Posts
             .Where(x => x.IsReview && (x.Title.Contains(keyword) || x.Content.Contains(keyword)))
             .Include(x => x.User)
             .OrderByDescending(x => x.CreatedAt)
-            .Skip((pageIndex - 1) * pageSize)
+            .Skip(offset)
             .Take(pageSize)
             .ToListAsync();
     }
@@ -234,20 +228,42 @@ public class PostRepo(IDbContextFactory<MarketContext> factory) : IPostRepo
             try
             {
                 return await context.Posts
-                    .FromSqlRaw("SELECT * FROM posts WHERE posts @@@ {0}", keyword)
-                    .Where(x => x.IsReview)
+                    .FromSqlInterpolated($"""
+                        SELECT *
+                        FROM posts
+                        WHERE "IsReview" AND ("Title" @@@ {keyword} OR "Content" @@@ {keyword})
+                        """)
+                    .AsNoTracking()
                     .CountAsync();
             }
             catch
             {
-                return await context.Posts
-                    .Where(x => x.IsReview && EF.Functions.ILike(x.Title + " " + x.Content, $"%{keyword}%"))
-                    .CountAsync();
+                return await SearchCountWithILike(context, keyword);
             }
         }
 
         return await context.Posts
             .Where(x => x.IsReview && (x.Title.Contains(keyword) || x.Content.Contains(keyword)))
+            .CountAsync();
+    }
+
+    private static Task<List<PostModel>> SearchWithILike(MarketContext context, string keyword, int pageIndex, int pageSize)
+    {
+        return context.Posts
+            .AsNoTracking()
+            .Where(x => x.IsReview && EF.Functions.ILike(x.Title + " " + x.Content, $"%{keyword}%"))
+            .Include(x => x.User)
+            .OrderByDescending(x => x.CreatedAt)
+            .Skip((pageIndex - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+    }
+
+    private static Task<int> SearchCountWithILike(MarketContext context, string keyword)
+    {
+        return context.Posts
+            .AsNoTracking()
+            .Where(x => x.IsReview && EF.Functions.ILike(x.Title + " " + x.Content, $"%{keyword}%"))
             .CountAsync();
     }
 

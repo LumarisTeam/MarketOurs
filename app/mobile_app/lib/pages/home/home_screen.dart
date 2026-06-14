@@ -104,6 +104,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   placeholder: '搜索帖子、话题或用户',
                   borderRadius: BorderRadius.circular(AppRadii.md),
                   backgroundColor: AppColors.secondary,
+                  onSubmitted: (value) =>
+                      ref.read(homeFeedProvider.notifier).search(value),
+                  onChanged: (value) {
+                    if (value.trim().isEmpty && state.keyword.isNotEmpty) {
+                      ref.read(homeFeedProvider.notifier).clearSearch();
+                    }
+                  },
                 ),
               ),
             ),
@@ -111,6 +118,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: _PostListSection(
                 posts: state.posts,
                 isLoadingMore: state.isLoadingMore,
+                keyword: state.keyword,
               ),
             ),
           ],
@@ -126,20 +134,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 }
 
 class _PostListSection extends StatelessWidget {
-  const _PostListSection({required this.posts, required this.isLoadingMore});
+  const _PostListSection({
+    required this.posts,
+    required this.isLoadingMore,
+    required this.keyword,
+  });
 
   final List<PostDto> posts;
   final bool isLoadingMore;
+  final String keyword;
 
   @override
   Widget build(BuildContext context) {
     final columnCount = AppResponsive.listColumnCount(context);
 
     if (posts.isEmpty) {
-      return const AppEmptyState(
-        icon: CupertinoIcons.news,
-        title: '还没有帖子',
-        description: '等第一位同学来发布内容，或者稍后再刷新看看。',
+      return AppEmptyState(
+        icon: keyword.isEmpty ? CupertinoIcons.news : CupertinoIcons.search,
+        title: keyword.isEmpty ? '还没有帖子' : '没有找到相关帖子',
+        description: keyword.isEmpty
+            ? '等第一位同学来发布内容，或者稍后再刷新看看。'
+            : '换个关键词试试，或者清空搜索回到首页。',
       );
     }
 
@@ -173,7 +188,10 @@ class _PostListSection extends StatelessWidget {
               runSpacing: spacing,
               children: [
                 for (final post in posts)
-                  SizedBox(width: itemWidth, child: _PostCard(post: post)),
+                  SizedBox(
+                    width: itemWidth,
+                    child: _PostCard(post: post),
+                  ),
               ],
             );
           },

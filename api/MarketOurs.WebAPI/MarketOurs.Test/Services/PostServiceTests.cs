@@ -239,4 +239,45 @@ public class PostServiceTests
         _mockPostRepo.Verify(r => r.DeleteAsync("1"), Times.Once);
         _mockMemoryCache.Verify(m => m.Remove(It.IsAny<object>()), Times.AtLeastOnce);
     }
+
+    [Test]
+    public async Task SearchAsync_WithEmptyKeyword_ReturnsEmptyPageWithoutRepoSearch()
+    {
+        var result = await _postService.SearchAsync(new PaginationParams { Keyword = "   " });
+
+        Assert.That(result.Items, Is.Empty);
+        Assert.That(result.TotalCount, Is.EqualTo(0));
+        _mockPostRepo.Verify(r => r.SearchCountAsync(It.IsAny<string>()), Times.Never);
+        _mockPostRepo.Verify(r => r.SearchAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never);
+    }
+
+    [Test]
+    public async Task SearchAsync_WithKeyword_TrimsKeywordAndReturnsDynamicData()
+    {
+        var posts = new List<PostModel>
+        {
+            new() { Id = "post-1", Title = "二手单反相机", Content = "9 成新", IsReview = true }
+        };
+
+        _mockPostRepo.Setup(r => r.SearchCountAsync("相机")).ReturnsAsync(1);
+        _mockPostRepo.Setup(r => r.SearchAsync("相机", 2, 5)).ReturnsAsync(posts);
+        _mockLikeManager.Setup(m => m.GetPostLikesAsync("post-1", It.IsAny<int>())).ReturnsAsync(7);
+        _mockLikeManager.Setup(m => m.GetPostDislikesAsync("post-1", It.IsAny<int>())).ReturnsAsync(1);
+        _mockDatabase.Setup(db => db.StringGetAsync(It.IsAny<RedisKey>(), It.IsAny<CommandFlags>()))
+            .ReturnsAsync(RedisValue.Null);
+
+        var result = await _postService.SearchAsync(new PaginationParams
+        {
+            Keyword = "  相机  ",
+            PageIndex = 2,
+            PageSize = 5
+        });
+
+        Assert.That(result.TotalCount, Is.EqualTo(1));
+        Assert.That(result.Items, Has.Count.EqualTo(1));
+        Assert.That(result.Items[0].Title, Does.Contain("相机"));
+        Assert.That(result.Items[0].Likes, Is.EqualTo(7));
+        _mockPostRepo.Verify(r => r.SearchCountAsync("相机"), Times.Once);
+        _mockPostRepo.Verify(r => r.SearchAsync("相机", 2, 5), Times.Once);
+    }
 }

@@ -174,6 +174,38 @@ void main() {
     expect(find.text('桌面响应式帖子 B'), findsOneWidget);
   });
 
+  testWidgets('submits home search keyword to feed notifier', (tester) async {
+    final storage = _TestAuthStorage(
+      session: AuthSession(accessToken: 'access', refreshToken: 'refresh'),
+    );
+    final feed = _FakeHomeFeedNotifier();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authStorageProvider.overrideWithValue(storage),
+          authServiceProvider.overrideWithValue(
+            _FakeAuthService(user: _demoUser),
+          ),
+          homeFeedProvider.overrideWith(() => feed),
+          hotFeedProvider.overrideWith(() => _FakeHotFeedNotifier()),
+        ],
+        child: const MarketOursApp(),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const ValueKey('home-responsive-search-field')),
+      '  相机  ',
+    );
+    await tester.testTextInput.receiveAction(TextInputAction.search);
+    await tester.pumpAndSettle();
+
+    expect(feed.lastSearchKeyword, '相机');
+  });
+
   testWidgets('responsive helpers classify desktop layout', (tester) async {
     tester.view
       ..physicalSize = const Size(1366, 900)
@@ -409,6 +441,7 @@ class _FakeHomeFeedNotifier extends HomeFeedNotifier {
   _FakeHomeFeedNotifier({this.posts = const []});
 
   final List<PostDto> posts;
+  String? lastSearchKeyword;
 
   @override
   Future<HomeFeedState> build() async {
@@ -417,6 +450,21 @@ class _FakeHomeFeedNotifier extends HomeFeedNotifier {
       pageIndex: 1,
       hasNextPage: false,
       isLoadingMore: false,
+      keyword: '',
+    );
+  }
+
+  @override
+  Future<void> search(String keyword) async {
+    lastSearchKeyword = keyword.trim();
+    state = AsyncData(
+      HomeFeedState(
+        posts: posts,
+        pageIndex: 1,
+        hasNextPage: false,
+        isLoadingMore: false,
+        keyword: lastSearchKeyword!,
+      ),
     );
   }
 }

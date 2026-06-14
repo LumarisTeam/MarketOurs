@@ -154,7 +154,10 @@ export default function HomePage() {
     setLoading(true);
     setFeedError(null);
     try {
-      const res = await postService.getPosts(pageNum, 10, searchKw);
+      const trimmedKeyword = searchKw.trim();
+      const res = trimmedKeyword
+        ? await postService.searchPosts(pageNum, 10, trimmedKeyword)
+        : await postService.getPosts(pageNum, 10);
       const data = res.data;
       if (data && data.items) {
         setPosts(prev => append ? [...prev, ...data.items] : data.items);
@@ -183,7 +186,7 @@ export default function HomePage() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setPage(1);
-    setKeyword(searchInput);
+    setKeyword(searchInput.trim());
   };
 
   useEffect(() => {

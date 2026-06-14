@@ -646,11 +646,12 @@ public class PostService(
 
     public async Task<PagedResultDto<PostDto>> SearchAsync(PaginationParams @params)
     {
-        if (string.IsNullOrWhiteSpace(@params.Keyword))
+        var keyword = @params.Keyword?.Trim();
+        if (string.IsNullOrWhiteSpace(keyword))
             return PagedResultDto<PostDto>.Success([], 0, @params.PageIndex, @params.PageSize);
 
-        var totalCount = await postRepo.SearchCountAsync(@params.Keyword);
-        var results = await postRepo.SearchAsync(@params.Keyword, @params.PageIndex, @params.PageSize);
+        var totalCount = await postRepo.SearchCountAsync(keyword);
+        var results = await postRepo.SearchAsync(keyword, @params.PageIndex, @params.PageSize);
         var dtos = results.Select(MapToDto).ToList();
 
         await Task.WhenAll(dtos.Select(dto => FillDynamicData(dto)));
