@@ -91,10 +91,10 @@ Map<String, dynamic> _$PostCreateDtoToJson(PostCreateDto instance) =>
     <String, dynamic>{
       'title': instance.title,
       'content': instance.content,
-      'images': instance.images,
+      'images': ?instance.images,
       'userId': instance.userId,
-      'uploadKey': instance.uploadKey,
-      'tagId': instance.tagId,
+      'uploadKey': ?instance.uploadKey,
+      'tagId': ?instance.tagId,
     };
 
 PostUpdateDto _$PostUpdateDtoFromJson(Map<String, dynamic> json) =>
@@ -113,8 +113,8 @@ Map<String, dynamic> _$PostUpdateDtoToJson(PostUpdateDto instance) =>
     <String, dynamic>{
       'title': instance.title,
       'content': instance.content,
-      'images': instance.images,
-      'isReview': instance.isReview,
-      'uploadKey': instance.uploadKey,
-      'tagId': instance.tagId,
+      'images': ?instance.images,
+      'isReview': ?instance.isReview,
+      'uploadKey': ?instance.uploadKey,
+      'tagId': ?instance.tagId,
     };

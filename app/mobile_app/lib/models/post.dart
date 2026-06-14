@@ -69,7 +69,7 @@ class PostDto {
   Map<String, dynamic> toJson() => _$PostDtoToJson(this);
 }
 
-@JsonSerializable()
+@JsonSerializable(includeIfNull: false)
 class PostCreateDto {
   final String title;
   final String content;
@@ -92,7 +92,7 @@ class PostCreateDto {
   Map<String, dynamic> toJson() => _$PostCreateDtoToJson(this);
 }
 
-@JsonSerializable()
+@JsonSerializable(includeIfNull: false)
 class PostUpdateDto {
   final String title;
   final String content;

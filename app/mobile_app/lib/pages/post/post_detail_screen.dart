@@ -45,6 +45,20 @@ class _CommentDraft {
   final List<XFile> newImages;
 }
 
+class _PostDraft {
+  const _PostDraft({
+    required this.title,
+    required this.content,
+    this.existingImages = const [],
+    this.newImages = const [],
+  });
+
+  final String title;
+  final String content;
+  final List<String> existingImages;
+  final List<XFile> newImages;
+}
+
 class PostDetailScreen extends ConsumerStatefulWidget {
   const PostDetailScreen({super.key, required this.postId});
 
@@ -451,6 +465,44 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     }
   }
 
+  Future<({List<String> images, String? uploadKey})> _uploadPostImages(
+    List<XFile> images, {
+    void Function(double fraction)? onProgress,
+  }) async {
+    if (images.isEmpty) return (images: <String>[], uploadKey: null);
+
+    final compressed = <CompressedImage>[];
+    try {
+      final results = await Future.wait([
+        _fileService.getUploadKey().then(
+          (r) => (r.data?['key'] as String?) ?? '',
+        ),
+        ImageCompressionService.compressAll(
+          images,
+          quality: ImageCompressionService.postImageQuality,
+          maxWidth: ImageCompressionService.postMaxWidth,
+          maxHeight: ImageCompressionService.postMaxHeight,
+        ),
+      ]);
+
+      var uploadKey = results[0] as String?;
+      if (uploadKey?.isEmpty == true) uploadKey = null;
+      compressed.addAll(results[1] as List<CompressedImage>);
+
+      final uploadedImages =
+          (await _fileService.uploadStream(
+            compressed.map(ImageCompressionService.toXFile).toList(),
+            key: uploadKey,
+            onProgress: onProgress,
+          )).data ??
+          <String>[];
+
+      return (images: uploadedImages, uploadKey: uploadKey);
+    } finally {
+      ImageCompressionService.cleanup(compressed);
+    }
+  }
+
   Future<void> _deleteComment(CommentDto comment) async {
     final confirmed = await _confirm('确定删除这条评论吗？');
     if (confirmed != true) return;
@@ -627,12 +679,13 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     final post = _post;
     if (post == null) return;
 
-    final values = await _openPostEditor(
+    final draft = await _openPostEditor(
       title: post.title ?? '',
       content: post.content ?? '',
+      initialImages: post.images ?? const [],
     );
-    if (values == null) return;
-    final validationError = _validatePostDraft(values.$1, values.$2);
+    if (draft == null) return;
+    final validationError = _validatePostDraft(draft.title, draft.content);
     if (validationError != null) {
       if (!mounted) return;
       await AppFeedback.showError(context, message: validationError);
@@ -641,14 +694,17 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 
     setState(() => _isWorking = true);
     try {
+      final uploadResult = await _uploadPostImages(draft.newImages);
+      final nextImages = [...draft.existingImages, ...uploadResult.images];
       final result = await ref
           .read(postServiceProvider)
           .updatePost(
             post.id,
             PostUpdateDto(
-              title: values.$1,
-              content: values.$2,
-              images: post.images,
+              title: draft.title,
+              content: draft.content,
+              images: nextImages,
+              uploadKey: uploadResult.uploadKey,
             ),
           );
       if (mounted && result.data != null) {
@@ -795,53 +851,100 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     return result;
   }
 
-  Future<(String, String)?> _openPostEditor({
+  Future<_PostDraft?> _openPostEditor({
     required String title,
     required String content,
+    List<String> initialImages = const [],
   }) async {
     final titleController = TextEditingController(text: title);
     final contentController = TextEditingController(text: content);
+    final existingImages = List<String>.from(initialImages);
+    final selectedImages = <XFile>[];
 
-    final result = await showAppBottomSheet<(String, String)>(
+    final result = await showAppBottomSheet<_PostDraft>(
       context: context,
       builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 20,
-            right: 20,
-            top: 20,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('编辑帖子', style: AppTextStyles.sectionTitle(context)),
-              const SizedBox(height: 16),
-              AppTextField(
-                controller: titleController,
-                placeholder: '标题',
-                maxLength: DtoLimits.postTitleMax,
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            Future<void> pickImages() async {
+              final picked = await _imagePicker.pickMultiImage();
+              if (picked.isEmpty) return;
+
+              setSheetState(() {
+                selectedImages.addAll(picked);
+              });
+            }
+
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
               ),
-              const SizedBox(height: 12),
-              AppTextField(
-                controller: contentController,
-                maxLines: 6,
-                placeholder: '内容',
-                maxLength: DtoLimits.postContentMax,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('编辑帖子', style: AppTextStyles.sectionTitle(context)),
+                  const SizedBox(height: 16),
+                  AppTextField(
+                    controller: titleController,
+                    placeholder: '标题',
+                    maxLength: DtoLimits.postTitleMax,
+                  ),
+                  const SizedBox(height: 12),
+                  AppTextField(
+                    controller: contentController,
+                    maxLines: 6,
+                    placeholder: '内容',
+                    maxLength: DtoLimits.postContentMax,
+                  ),
+                  const SizedBox(height: 12),
+                  _CommentComposerImages(
+                    existingImages: existingImages,
+                    localImages: selectedImages,
+                    onRemoveExisting: (index) {
+                      setSheetState(() => existingImages.removeAt(index));
+                    },
+                    onRemoveLocal: (index) {
+                      setSheetState(() => selectedImages.removeAt(index));
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        onPressed: pickImages,
+                        child: const Icon(CupertinoIcons.photo),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${existingImages.length + selectedImages.length} 张图片',
+                        style: AppTextStyles.label(context),
+                      ),
+                      const Spacer(),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  AppPrimaryButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(
+                        _PostDraft(
+                          title: titleController.text.trim(),
+                          content: contentController.text.trim(),
+                          existingImages: List<String>.from(existingImages),
+                          newImages: List<XFile>.from(selectedImages),
+                        ),
+                      );
+                    },
+                    child: const Text('保存修改'),
+                  ),
+                ],
               ),
-              const SizedBox(height: 20),
-              AppPrimaryButton(
-                onPressed: () {
-                  Navigator.of(context).pop((
-                    titleController.text.trim(),
-                    contentController.text.trim(),
-                  ));
-                },
-                child: const Text('保存修改'),
-              ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
