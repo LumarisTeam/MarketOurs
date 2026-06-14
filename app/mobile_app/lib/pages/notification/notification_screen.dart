@@ -105,7 +105,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     },
                     child: const Icon(CupertinoIcons.trash, size: 24),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 20),
                 ],
                 CupertinoButton(
                   padding: EdgeInsets.zero,

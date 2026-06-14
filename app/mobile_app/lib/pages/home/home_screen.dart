@@ -8,6 +8,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/post_feed_provider.dart';
 import '../../router/app_router.dart';
 import '../../services/error_messages.dart';
+import '../../ui/app_feedback.dart';
 import '../../ui/app_responsive.dart';
 import '../../ui/app_theme.dart';
 import '../../ui/app_widgets.dart';
@@ -22,6 +23,9 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   late final ScrollController _scrollController;
   final _searchController = TextEditingController();
+  List<PostTagDto> _tags = const [];
+  bool _hasLoadedTags = false;
+  bool _isLoadingTags = false;
 
   @override
   void initState() {
@@ -49,6 +53,80 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
+  Future<void> _openTagPicker() async {
+    if (_isLoadingTags) {
+      return;
+    }
+
+    setState(() => _isLoadingTags = true);
+
+    try {
+      if (!_hasLoadedTags) {
+        final response = await ref.read(postServiceProvider).getPostTags();
+        final tags = (response.data ?? const <PostTagDto>[])
+            .where((tag) => tag.isActive != false)
+            .toList()
+          ..sort((a, b) {
+            final aName = a.name?.trim() ?? '';
+            final bName = b.name?.trim() ?? '';
+            return aName.compareTo(bName);
+          });
+
+        if (!mounted) return;
+        setState(() {
+          _tags = tags;
+          _hasLoadedTags = true;
+        });
+      }
+
+      if (!mounted) return;
+
+      if (_tags.isEmpty) {
+        await AppFeedback.showInfo(context, message: '当前没有可进入的标签');
+        return;
+      }
+
+      final selectedTag = await showCupertinoModalPopup<PostTagDto>(
+        context: context,
+        builder: (ctx) => CupertinoActionSheet(
+          title: const Text('进入标签页'),
+          message: const Text('选择一个标签，查看该标签下的帖子。'),
+          actions: [
+            for (final tag in _tags)
+              CupertinoActionSheetAction(
+                onPressed: () => Navigator.of(ctx).pop(tag),
+                child: Text(
+                  tag.name?.trim().isNotEmpty == true
+                      ? tag.name!.trim()
+                      : '未命名标签',
+                ),
+              ),
+          ],
+          cancelButton: CupertinoActionSheetAction(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('取消'),
+          ),
+        ),
+      );
+
+      if (!mounted || selectedTag == null) {
+        return;
+      }
+
+      context.push(buildTagLocation(selectedTag.id));
+    } catch (error) {
+      if (!mounted) return;
+      await AppFeedback.showError(
+        context,
+        message: extractErrorFromException(error),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoadingTags = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final feedAsync = ref.watch(homeFeedProvider);
@@ -71,20 +149,36 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 context,
               ).withValues(alpha: 0.94),
               border: null,
-              trailing: CupertinoButton(
-                padding: EdgeInsets.zero,
-                onPressed: () {
-                  if (isAuthenticated) {
-                    context.push(AppRoutePaths.createPost);
-                  } else {
-                    context.go(AppRoutePaths.login);
-                  }
-                },
-                child: const Icon(
-                  CupertinoIcons.plus_circle_fill,
-                  size: 28,
-                  color: AppColors.primary,
-                ),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: _openTagPicker,
+                    child: _isLoadingTags
+                        ? const CupertinoActivityIndicator(radius: 10)
+                        : const Icon(
+                            CupertinoIcons.tag_fill,
+                            size: 24,
+                            color: AppColors.primary,
+                          ),
+                  ),
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () {
+                      if (isAuthenticated) {
+                        context.push(AppRoutePaths.createPost);
+                      } else {
+                        context.go(AppRoutePaths.login);
+                      }
+                    },
+                    child: const Icon(
+                      CupertinoIcons.plus_circle_fill,
+                      size: 28,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ],
               ),
             ),
             CupertinoSliverRefreshControl(
