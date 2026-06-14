@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mobile_app/components/post_tag_pill.dart';
 import 'package:mobile_app/models/post.dart';
 import 'package:mobile_app/router/app_router.dart';
 import 'package:mobile_app/services/share_service.dart';
@@ -244,10 +243,6 @@ class SimplePostCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (post.tag != null) ...[
-                  PostTagPill(tag: post.tag),
-                  const SizedBox(height: 8),
-                ],
                 Text(
                   post.title?.trim().isNotEmpty == true
                       ? post.title!.trim()
