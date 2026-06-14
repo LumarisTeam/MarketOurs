@@ -86,6 +86,24 @@ public class MarketContext(DbContextOptions<MarketContext> options) : DbContext(
             .HasIndex(x => x.Name)
             .IsUnique();
 
+        modelBuilder.Entity<UserModel>()
+            .HasIndex(x => x.Email);
+
+        modelBuilder.Entity<UserModel>()
+            .HasIndex(x => x.Phone);
+
+        modelBuilder.Entity<UserModel>()
+            .HasIndex(x => x.GithubId);
+
+        modelBuilder.Entity<UserModel>()
+            .HasIndex(x => x.GoogleId);
+
+        modelBuilder.Entity<UserModel>()
+            .HasIndex(x => x.WeixinId);
+
+        modelBuilder.Entity<UserModel>()
+            .HasIndex(x => x.OursId);
+
         // 帖子列表查询：WHERE IsReview ORDER BY CreatedAt DESC
         // 复合索引覆盖筛选 + 排序，避免全表扫描与排序
         modelBuilder.Entity<PostModel>()
@@ -94,9 +112,18 @@ public class MarketContext(DbContextOptions<MarketContext> options) : DbContext(
         modelBuilder.Entity<PostModel>()
             .HasIndex(x => x.TagId);
 
+        modelBuilder.Entity<PostModel>()
+            .HasIndex(x => new { x.UserId, x.CreatedAt });
+
+        modelBuilder.Entity<PostModel>()
+            .HasIndex(x => new { x.IsReview, x.TagId, x.CreatedAt });
+
         // 评论查询：WHERE PostId（详情页加载评论的热路径）
         modelBuilder.Entity<CommentModel>()
             .HasIndex(x => x.PostId);
+
+        modelBuilder.Entity<CommentModel>()
+            .HasIndex(x => new { x.PostId, x.IsReview });
 
         // 评论审核 + 排序辅助
         modelBuilder.Entity<CommentModel>()

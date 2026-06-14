@@ -149,8 +149,11 @@ public class UserService(
     /// <inheritdoc/>
     public async Task<PagedResultDto<UserDto>> GetAllAsync(PaginationParams @params)
     {
-        var totalCount = await userRepo.CountAsync();
-        var users = await userRepo.GetAllAsync(@params.PageIndex, @params.PageSize);
+        var totalCountTask = userRepo.CountAsync();
+        var usersTask = userRepo.GetAllAsync(@params.PageIndex, @params.PageSize);
+        await Task.WhenAll(totalCountTask, usersTask);
+        var totalCount = totalCountTask.Result;
+        var users = usersTask.Result;
         return PagedResultDto<UserDto>.Success(users.Select(MapToDto).ToList(), totalCount, @params.PageIndex,
             @params.PageSize);
     }
@@ -161,8 +164,11 @@ public class UserService(
         if (string.IsNullOrWhiteSpace(@params.Keyword))
             return PagedResultDto<UserDto>.Success([], 0, @params.PageIndex, @params.PageSize);
 
-        var totalCount = await userRepo.SearchCountAsync(@params.Keyword);
-        var users = await userRepo.SearchAsync(@params.Keyword, @params.PageIndex, @params.PageSize);
+        var totalCountTask = userRepo.SearchCountAsync(@params.Keyword);
+        var usersTask = userRepo.SearchAsync(@params.Keyword, @params.PageIndex, @params.PageSize);
+        await Task.WhenAll(totalCountTask, usersTask);
+        var totalCount = totalCountTask.Result;
+        var users = usersTask.Result;
         return PagedResultDto<UserDto>.Success(users.Select(MapToDto).ToList(), totalCount, @params.PageIndex,
             @params.PageSize);
     }
@@ -177,8 +183,7 @@ public class UserService(
     /// <inheritdoc/>
     public async Task<PublicUserProfileDto?> GetPublicProfileByIdAsync(string id)
     {
-        var user = await userRepo.GetByIdAsync(id);
-        return user != null ? MapToPublicProfileDto(user) : null;
+        return await userRepo.GetPublicProfileByIdAsync(id);
     }
 
     /// <inheritdoc/>

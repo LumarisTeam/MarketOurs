@@ -1,5 +1,6 @@
 using MarketOurs.Data;
 using MarketOurs.Data.DataModels;
+using MarketOurs.Data.DTOs;
 using Microsoft.EntityFrameworkCore;
 
 namespace MarketOurs.DataAPI.Repos;
@@ -7,10 +8,13 @@ namespace MarketOurs.DataAPI.Repos;
 public interface IPostRepo
 {
     Task<List<PostModel>> GetAllAsync(int pageIndex, int pageSize, string? tagId = null);
+    Task<List<PostDto>> GetAllDtosAsync(int pageIndex, int pageSize, string? tagId = null);
     Task<int> CountAsync(string? tagId = null);
     Task<List<PostModel>> GetByUserIdAsync(string userId, int pageIndex, int pageSize);
+    Task<List<PostDto>> GetByUserDtosAsync(string userId, int pageIndex, int pageSize);
     Task<int> CountByUserIdAsync(string userId);
     Task<List<PostModel>> GetHotAsync(int count);
+    Task<List<PostDto>> GetHotDtosAsync(int count);
     Task<PostModel?> GetByIdAsync(string id);
     Task<PostModel?> GetReviewedByIdAsync(string id);
     Task<List<PostModel>?> GetByDateAsync(DateTime before, DateTime after);
@@ -19,8 +23,9 @@ public interface IPostRepo
     Task<List<UserModel>?> GetDislikeUsersAsync(string id);
     Task<List<UserModel>?> GetDislikeUsersAsync(string id, DateTime before, DateTime after);
     Task<UserModel?> GetAuthorAsync(string id);
-    Task<List<CommentModel>?> GetCommentsAsync(string id, string type);
+    Task<List<CommentModel>> GetCommentsAsync(string id, string? requesterUserId, bool isAdmin);
     Task<List<PostModel>> SearchAsync(string keyword, int pageIndex, int pageSize, string? tagId = null);
+    Task<List<PostDto>> SearchDtosAsync(string keyword, int pageIndex, int pageSize, string? tagId = null);
     Task<int> SearchCountAsync(string keyword, string? tagId = null);
 
     Task CreateAsync(PostModel post);
@@ -56,6 +61,18 @@ public class PostRepo(IDbContextFactory<MarketContext> factory) : IPostRepo
             .ToListAsync();
     }
 
+    public async Task<List<PostDto>> GetAllDtosAsync(int pageIndex, int pageSize, string? tagId = null)
+    {
+        await using var context = await factory.CreateDbContextAsync();
+        return await ProjectPostDtos(context.Posts
+            .AsNoTracking()
+            .Where(x => x.IsReview && (string.IsNullOrWhiteSpace(tagId) || x.TagId == tagId))
+            .OrderByDescending(x => x.CreatedAt)
+            .Skip((pageIndex - 1) * pageSize)
+            .Take(pageSize))
+            .ToListAsync();
+    }
+
     public async Task<int> CountAsync(string? tagId = null)
     {
         await using var context = await factory.CreateDbContextAsync();
@@ -73,6 +90,18 @@ public class PostRepo(IDbContextFactory<MarketContext> factory) : IPostRepo
             .OrderByDescending(x => x.CreatedAt)
             .Skip((pageIndex - 1) * pageSize)
             .Take(pageSize)
+            .ToListAsync();
+    }
+
+    public async Task<List<PostDto>> GetByUserDtosAsync(string userId, int pageIndex, int pageSize)
+    {
+        await using var context = await factory.CreateDbContextAsync();
+        return await ProjectPostDtos(context.Posts
+            .AsNoTracking()
+            .Where(x => x.UserId == userId)
+            .OrderByDescending(x => x.CreatedAt)
+            .Skip((pageIndex - 1) * pageSize)
+            .Take(pageSize))
             .ToListAsync();
     }
 
@@ -95,10 +124,22 @@ public class PostRepo(IDbContextFactory<MarketContext> factory) : IPostRepo
             .ToListAsync();
     }
 
+    public async Task<List<PostDto>> GetHotDtosAsync(int count)
+    {
+        await using var context = await factory.CreateDbContextAsync();
+        return await ProjectPostDtos(context.Posts
+            .AsNoTracking()
+            .Where(x => x.IsReview)
+            .OrderByDescending(x => x.Watch + (x.Likes * 3) - (x.Dislikes * 2))
+            .Take(count))
+            .ToListAsync();
+    }
+
     public async Task<PostModel?> GetByIdAsync(string id)
     {
         await using var context = await factory.CreateDbContextAsync();
         return await context.Posts
+            .AsNoTracking()
             .Include(x => x.User)
             .Include(x => x.Tag)
             .Where(x => x.Id == id)
@@ -176,16 +217,27 @@ public class PostRepo(IDbContextFactory<MarketContext> factory) : IPostRepo
             .FirstOrDefaultAsync();
     }
 
-    public async Task<List<CommentModel>?> GetCommentsAsync(string id, string type)
+    public async Task<List<CommentModel>> GetCommentsAsync(string id, string? requesterUserId, bool isAdmin)
     {
         await using var context = await factory.CreateDbContextAsync();
-
-        // 无论何种排序，都先获取贴子的所有评论（包含子评论）
-        // 在该方案中，我们选择获取属于该 PostId 的所有评论，让 Service 层负责构建树
-        return await context.Commits
+        var query = context.Commits
             .AsNoTracking()
             .Include(x => x.User)
-            .Where(x => x.PostId == id)
+            .Where(x => x.PostId == id);
+
+        if (!isAdmin)
+        {
+            if (string.IsNullOrWhiteSpace(requesterUserId))
+            {
+                query = query.Where(x => x.IsReview);
+            }
+            else
+            {
+                query = query.Where(x => x.IsReview || x.UserId == requesterUserId);
+            }
+        }
+
+        return await query
             .ToListAsync();
     }
 
@@ -220,6 +272,7 @@ public class PostRepo(IDbContextFactory<MarketContext> factory) : IPostRepo
         }
 
         return await context.Posts
+            .AsNoTracking()
             .Where(x => x.IsReview
                 && (string.IsNullOrWhiteSpace(tagId) || x.TagId == tagId)
                 && (x.Title.Contains(keyword) || x.Content.Contains(keyword)))
@@ -229,6 +282,12 @@ public class PostRepo(IDbContextFactory<MarketContext> factory) : IPostRepo
             .Skip(offset)
             .Take(pageSize)
             .ToListAsync();
+    }
+
+    public async Task<List<PostDto>> SearchDtosAsync(string keyword, int pageIndex, int pageSize, string? tagId = null)
+    {
+        var posts = await SearchAsync(keyword, pageIndex, pageSize, tagId);
+        return posts.Select(MapToDto).ToList();
     }
 
     public async Task<int> SearchCountAsync(string keyword, string? tagId = null)
@@ -286,6 +345,72 @@ public class PostRepo(IDbContextFactory<MarketContext> factory) : IPostRepo
                 && (string.IsNullOrWhiteSpace(tagId) || x.TagId == tagId)
                 && EF.Functions.ILike(x.Title + " " + x.Content, $"%{keyword}%"))
             .CountAsync();
+    }
+
+    private static IQueryable<PostDto> ProjectPostDtos(IQueryable<PostModel> query)
+    {
+        return query.Select(post => new PostDto
+        {
+            Id = post.Id,
+            Title = post.Title,
+            Content = post.Content,
+            Images = post.Images,
+            CreatedAt = post.CreatedAt,
+            UpdatedAt = post.UpdatedAt,
+            UserId = post.UserId,
+            TagId = post.TagId,
+            Likes = post.Likes,
+            Dislikes = post.Dislikes,
+            Watch = post.Watch,
+            IsReview = post.IsReview,
+            Author = new UserSimpleDto
+            {
+                Id = post.User.Id,
+                Name = post.User.Name,
+                Avatar = post.User.Avatar
+            },
+            Tag = post.Tag == null ? null : new PostTagDto
+            {
+                Id = post.Tag.Id,
+                Name = post.Tag.Name,
+                IsActive = post.Tag.IsActive,
+                CreatedAt = post.Tag.CreatedAt,
+                UpdatedAt = post.Tag.UpdatedAt
+            }
+        });
+    }
+
+    private static PostDto MapToDto(PostModel post)
+    {
+        return new PostDto
+        {
+            Id = post.Id,
+            Title = post.Title,
+            Content = post.Content,
+            Images = post.Images,
+            CreatedAt = post.CreatedAt,
+            UpdatedAt = post.UpdatedAt,
+            UserId = post.UserId,
+            TagId = post.TagId,
+            Tag = post.Tag == null ? null : new PostTagDto
+            {
+                Id = post.Tag.Id,
+                Name = post.Tag.Name,
+                IsActive = post.Tag.IsActive,
+                CreatedAt = post.Tag.CreatedAt,
+                UpdatedAt = post.Tag.UpdatedAt
+            },
+            Author = post.User == null ? null : new UserSimpleDto
+            {
+                Id = post.User.Id,
+                Name = post.User.Name,
+                Avatar = post.User.Avatar
+            },
+            Likes = post.Likes,
+            Dislikes = post.Dislikes,
+            Watch = post.Watch,
+            IsReview = post.IsReview
+        };
     }
 
     public async Task CreateAsync(PostModel post)

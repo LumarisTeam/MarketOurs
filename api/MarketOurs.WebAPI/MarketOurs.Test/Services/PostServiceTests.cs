@@ -56,6 +56,35 @@ public class PostServiceTests
         _mockMemoryCache
             .Setup(m => m.CreateEntry(It.IsAny<object>()))
             .Returns(new Mock<ICacheEntry>().Object);
+        _mockLikeManager
+            .Setup(m => m.GetPostCountsBatchAsync(
+                It.IsAny<IReadOnlyCollection<string>>(),
+                It.IsAny<Func<string, string>>(),
+                It.IsAny<IReadOnlyDictionary<string, int>>()))
+            .ReturnsAsync((IReadOnlyCollection<string> ids, Func<string, string> _, IReadOnlyDictionary<string, int> fallbacks) =>
+                ids.ToDictionary(id => id, id => fallbacks.TryGetValue(id, out var value) ? value : 0));
+        _mockLikeManager
+            .Setup(m => m.GetCommentCountsBatchAsync(
+                It.IsAny<IReadOnlyCollection<string>>(),
+                It.IsAny<Func<string, string>>(),
+                It.IsAny<IReadOnlyDictionary<string, int>>()))
+            .ReturnsAsync((IReadOnlyCollection<string> ids, Func<string, string> _, IReadOnlyDictionary<string, int> fallbacks) =>
+                ids.ToDictionary(id => id, id => fallbacks.TryGetValue(id, out var value) ? value : 0));
+        _mockLikeManager
+            .Setup(m => m.GetPostReactionStateBatchAsync(It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<string>()))
+            .ReturnsAsync(new Dictionary<string, (bool IsLiked, bool IsDisliked)>());
+        _mockPostRepo
+            .Setup(r => r.GetAllDtosAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>()))
+            .ReturnsAsync([]);
+        _mockPostRepo
+            .Setup(r => r.GetByUserDtosAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>()))
+            .ReturnsAsync([]);
+        _mockPostRepo
+            .Setup(r => r.GetHotDtosAsync(It.IsAny<int>()))
+            .ReturnsAsync([]);
+        _mockPostRepo
+            .Setup(r => r.SearchDtosAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>()))
+            .ReturnsAsync([]);
 
         _postService = new PostService(
             _mockPostRepo.Object,
@@ -81,10 +110,18 @@ public class PostServiceTests
             new PostModel { Id = "2", Title = "Post 2", Content = "Content 2" }
         };
         _mockPostRepo.Setup(r => r.CountAsync(null)).ReturnsAsync(2);
-        _mockPostRepo.Setup(r => r.GetAllAsync(It.IsAny<int>(), It.IsAny<int>(), null)).ReturnsAsync(posts);
+        _mockPostRepo.Setup(r => r.GetAllDtosAsync(It.IsAny<int>(), It.IsAny<int>(), null))
+            .ReturnsAsync(posts.Select(PostService.MapToDto).ToList());
 
         _mockLikeManager.Setup(m => m.GetPostLikesAsync(It.IsAny<string>(), It.IsAny<int>())).ReturnsAsync(10);
         _mockLikeManager.Setup(m => m.GetPostDislikesAsync(It.IsAny<string>(), It.IsAny<int>())).ReturnsAsync(2);
+        _mockLikeManager
+            .Setup(m => m.GetPostCountsBatchAsync(It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<Func<string, string>>(), It.IsAny<IReadOnlyDictionary<string, int>>()))
+            .ReturnsAsync((IReadOnlyCollection<string> ids, Func<string, string> keyFactory, IReadOnlyDictionary<string, int> _) =>
+            {
+                var value = keyFactory("1").EndsWith(":likes", StringComparison.Ordinal) ? 10 : 2;
+                return ids.ToDictionary(id => id, _ => value);
+            });
 
         _mockDatabase.Setup(db => db.StringGetAsync(It.IsAny<RedisKey>(), It.IsAny<CommandFlags>()))
             .ReturnsAsync(new RedisValue("100"));
@@ -105,12 +142,12 @@ public class PostServiceTests
     public async Task GetAllAsync_WithTagId_ShouldPassTrimmedFilterToRepo()
     {
         _mockPostRepo.Setup(r => r.CountAsync("tag-1")).ReturnsAsync(0);
-        _mockPostRepo.Setup(r => r.GetAllAsync(1, 10, "tag-1")).ReturnsAsync([]);
+        _mockPostRepo.Setup(r => r.GetAllDtosAsync(1, 10, "tag-1")).ReturnsAsync([]);
 
         await _postService.GetAllAsync(new PaginationParams { TagId = "  tag-1  " });
 
         _mockPostRepo.Verify(r => r.CountAsync("tag-1"), Times.Once);
-        _mockPostRepo.Verify(r => r.GetAllAsync(1, 10, "tag-1"), Times.Once);
+        _mockPostRepo.Verify(r => r.GetAllDtosAsync(1, 10, "tag-1"), Times.Once);
     }
 
     [Test]
@@ -123,9 +160,17 @@ public class PostServiceTests
         };
 
         _mockPostRepo.Setup(r => r.CountByUserIdAsync("user-1")).ReturnsAsync(2);
-        _mockPostRepo.Setup(r => r.GetByUserIdAsync("user-1", It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync(posts);
+        _mockPostRepo.Setup(r => r.GetByUserDtosAsync("user-1", It.IsAny<int>(), It.IsAny<int>()))
+            .ReturnsAsync(posts.Select(PostService.MapToDto).ToList());
         _mockLikeManager.Setup(m => m.GetPostLikesAsync(It.IsAny<string>(), It.IsAny<int>())).ReturnsAsync(3);
         _mockLikeManager.Setup(m => m.GetPostDislikesAsync(It.IsAny<string>(), It.IsAny<int>())).ReturnsAsync(1);
+        _mockLikeManager
+            .Setup(m => m.GetPostCountsBatchAsync(It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<Func<string, string>>(), It.IsAny<IReadOnlyDictionary<string, int>>()))
+            .ReturnsAsync((IReadOnlyCollection<string> ids, Func<string, string> keyFactory, IReadOnlyDictionary<string, int> _) =>
+            {
+                var value = keyFactory("1").EndsWith(":likes", StringComparison.Ordinal) ? 3 : 1;
+                return ids.ToDictionary(id => id, _ => value);
+            });
         _mockDatabase.Setup(db => db.StringGetAsync(It.IsAny<RedisKey>(), It.IsAny<CommandFlags>()))
             .ReturnsAsync(new RedisValue("9"));
 
@@ -273,9 +318,17 @@ public class PostServiceTests
         };
 
         _mockPostRepo.Setup(r => r.SearchCountAsync("相机", null)).ReturnsAsync(1);
-        _mockPostRepo.Setup(r => r.SearchAsync("相机", 2, 5, null)).ReturnsAsync(posts);
+        _mockPostRepo.Setup(r => r.SearchDtosAsync("相机", 2, 5, null))
+            .ReturnsAsync(posts.Select(PostService.MapToDto).ToList());
         _mockLikeManager.Setup(m => m.GetPostLikesAsync("post-1", It.IsAny<int>())).ReturnsAsync(7);
         _mockLikeManager.Setup(m => m.GetPostDislikesAsync("post-1", It.IsAny<int>())).ReturnsAsync(1);
+        _mockLikeManager
+            .Setup(m => m.GetPostCountsBatchAsync(It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<Func<string, string>>(), It.IsAny<IReadOnlyDictionary<string, int>>()))
+            .ReturnsAsync((IReadOnlyCollection<string> ids, Func<string, string> keyFactory, IReadOnlyDictionary<string, int> _) =>
+            {
+                var value = keyFactory("post-1").EndsWith(":likes", StringComparison.Ordinal) ? 7 : 1;
+                return ids.ToDictionary(id => id, _ => value);
+            });
         _mockDatabase.Setup(db => db.StringGetAsync(It.IsAny<RedisKey>(), It.IsAny<CommandFlags>()))
             .ReturnsAsync(RedisValue.Null);
 
@@ -291,14 +344,14 @@ public class PostServiceTests
         Assert.That(result.Items[0].Title, Does.Contain("相机"));
         Assert.That(result.Items[0].Likes, Is.EqualTo(7));
         _mockPostRepo.Verify(r => r.SearchCountAsync("相机", null), Times.Once);
-        _mockPostRepo.Verify(r => r.SearchAsync("相机", 2, 5, null), Times.Once);
+        _mockPostRepo.Verify(r => r.SearchDtosAsync("相机", 2, 5, null), Times.Once);
     }
 
     [Test]
     public async Task SearchAsync_WithKeywordAndTagId_ShouldPassTrimmedValuesToRepo()
     {
         _mockPostRepo.Setup(r => r.SearchCountAsync("相机", "tag-camera")).ReturnsAsync(0);
-        _mockPostRepo.Setup(r => r.SearchAsync("相机", 1, 10, "tag-camera")).ReturnsAsync([]);
+        _mockPostRepo.Setup(r => r.SearchDtosAsync("相机", 1, 10, "tag-camera")).ReturnsAsync([]);
 
         await _postService.SearchAsync(new PaginationParams
         {
@@ -307,6 +360,28 @@ public class PostServiceTests
         });
 
         _mockPostRepo.Verify(r => r.SearchCountAsync("相机", "tag-camera"), Times.Once);
-        _mockPostRepo.Verify(r => r.SearchAsync("相机", 1, 10, "tag-camera"), Times.Once);
+        _mockPostRepo.Verify(r => r.SearchDtosAsync("相机", 1, 10, "tag-camera"), Times.Once);
+    }
+
+    [Test]
+    public async Task GetCommentsAsync_ForAnonymousUser_ShouldOnlyUseReviewedCommentsFromRepo()
+    {
+        var comments = new List<CommentModel>
+        {
+            new() { Id = "c1", PostId = "post-1", UserId = "user-1", Content = "公开评论", IsReview = true }
+        };
+
+        _mockPostRepo
+            .Setup(r => r.GetCommentsAsync("post-1", null, false))
+            .ReturnsAsync(comments);
+        _mockLikeManager
+            .Setup(m => m.GetCommentCountsBatchAsync(It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<Func<string, string>>(), It.IsAny<IReadOnlyDictionary<string, int>>()))
+            .ReturnsAsync(new Dictionary<string, int> { ["c1"] = 4 });
+
+        var result = await _postService.GetCommentsAsync("post-1", "New", null, false);
+
+        Assert.That(result, Has.Count.EqualTo(1));
+        Assert.That(result[0].Id, Is.EqualTo("c1"));
+        _mockPostRepo.Verify(r => r.GetCommentsAsync("post-1", null, false), Times.Once);
     }
 }

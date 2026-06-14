@@ -153,10 +153,13 @@ public class PostService(
     public async Task<PagedResultDto<PostDto>> GetAllAsync(PaginationParams @params)
     {
         var tagId = NormalizeTagId(@params.TagId);
-        var totalCount = await postRepo.CountAsync(tagId);
-        var posts = await postRepo.GetAllAsync(@params.PageIndex, @params.PageSize, tagId);
-        var dtos = posts.Select(MapToDto).ToList();
-        await Task.WhenAll(dtos.Select(dto => FillDynamicData(dto)));
+        var totalCountTask = postRepo.CountAsync(tagId);
+        var postsTask = postRepo.GetAllDtosAsync(@params.PageIndex, @params.PageSize, tagId);
+        await Task.WhenAll(totalCountTask, postsTask);
+        var totalCount = totalCountTask.Result;
+        var posts = postsTask.Result;
+        var dtos = posts.ToList();
+        await FillPostsDynamicDataAsync(dtos);
 
         return PagedResultDto<PostDto>.Success(dtos, totalCount, @params.PageIndex, @params.PageSize);
     }
@@ -197,8 +200,7 @@ public class PostService(
 
             if (dtos == null)
             {
-                var posts = await postRepo.GetHotAsync(count);
-                dtos = posts.Select(MapToDto).ToList();
+                dtos = await postRepo.GetHotDtosAsync(count);
                 try
                 {
                     await distributedCache.SetStringAsync(distCacheKey, JsonSerializer.Serialize(dtos),
@@ -234,18 +236,21 @@ public class PostService(
     private async Task<List<PostDto>> FillListAsync(List<PostDto> source, string? requesterUserId = null)
     {
         var clones = source.Select(ClonePostDto).ToList();
-        await Task.WhenAll(clones.Select(dto => FillDynamicData(dto, requesterUserId)));
+        await FillPostsDynamicDataAsync(clones, requesterUserId);
         return clones;
     }
 
     /// <inheritdoc/>
     public async Task<PagedResultDto<PostDto>> GetByUserIdAsync(string userId, PaginationParams @params)
     {
-        var totalCount = await postRepo.CountByUserIdAsync(userId);
-        var posts = await postRepo.GetByUserIdAsync(userId, @params.PageIndex, @params.PageSize);
-        var dtos = posts.Select(MapToDto).ToList();
+        var totalCountTask = postRepo.CountByUserIdAsync(userId);
+        var postsTask = postRepo.GetByUserDtosAsync(userId, @params.PageIndex, @params.PageSize);
+        await Task.WhenAll(totalCountTask, postsTask);
+        var totalCount = totalCountTask.Result;
+        var posts = postsTask.Result;
+        var dtos = posts.ToList();
 
-        await Task.WhenAll(dtos.Select(dto => FillDynamicData(dto)));
+        await FillPostsDynamicDataAsync(dtos);
 
         return PagedResultDto<PostDto>.Success(dtos, totalCount, @params.PageIndex, @params.PageSize);
     }
@@ -352,6 +357,54 @@ public class PostService(
         dto.IsLiked = likedTask != null && await likedTask;
         dto.IsDisliked = dislikedTask != null && await dislikedTask;
         return dto;
+    }
+
+    private async Task FillPostsDynamicDataAsync(List<PostDto> dtos, string? requesterUserId = null)
+    {
+        if (dtos.Count == 0)
+        {
+            return;
+        }
+
+        var postIds = dtos.Select(dto => dto.Id).ToArray();
+        var likeFallbacks = dtos.ToDictionary(dto => dto.Id, dto => dto.Likes);
+        var dislikeFallbacks = dtos.ToDictionary(dto => dto.Id, dto => dto.Dislikes);
+        var watchFallbacks = dtos.ToDictionary(dto => dto.Id, dto => dto.Watch);
+
+        var likeCountsTask = likeManager.GetPostCountsBatchAsync(postIds, CacheKeys.PostLikes, likeFallbacks);
+        var dislikeCountsTask = likeManager.GetPostCountsBatchAsync(postIds, CacheKeys.PostDislikes, dislikeFallbacks);
+        var watchCountsTask = GetPostWatchBatchAsync(postIds, watchFallbacks);
+        Task<Dictionary<string, (bool IsLiked, bool IsDisliked)>>? reactionStatesTask = null;
+
+        if (!string.IsNullOrWhiteSpace(requesterUserId))
+        {
+            reactionStatesTask = likeManager.GetPostReactionStateBatchAsync(postIds, requesterUserId);
+        }
+
+        await Task.WhenAll(new Task[]
+        {
+            likeCountsTask,
+            dislikeCountsTask,
+            watchCountsTask
+        }.Concat(reactionStatesTask != null ? [reactionStatesTask] : []));
+
+        var likeCounts = likeCountsTask.Result ?? new Dictionary<string, int>();
+        var dislikeCounts = dislikeCountsTask.Result ?? new Dictionary<string, int>();
+        var watchCounts = watchCountsTask.Result ?? new Dictionary<string, int>();
+        var reactionStates = reactionStatesTask?.Result;
+
+        foreach (var dto in dtos)
+        {
+            dto.Likes = likeCounts.GetValueOrDefault(dto.Id, dto.Likes);
+            dto.Dislikes = dislikeCounts.GetValueOrDefault(dto.Id, dto.Dislikes);
+            dto.Watch = watchCounts.GetValueOrDefault(dto.Id, dto.Watch);
+
+            if (reactionStates != null && reactionStates.TryGetValue(dto.Id, out var state))
+            {
+                dto.IsLiked = state.IsLiked;
+                dto.IsDisliked = state.IsDisliked;
+            }
+        }
     }
 
     private static PostDto ClonePostDto(PostDto dto)
@@ -585,12 +638,11 @@ public class PostService(
             return cachedComments;
         }
 
-        var comments = await postRepo.GetCommentsAsync(id, type);
-        if (comments == null || comments.Count == 0) return [];
+        var comments = await postRepo.GetCommentsAsync(id, requesterUserId, isAdmin);
+        if (comments.Count == 0) return [];
 
         var allDtos = comments
             .Select(CommentService.MapToDto)
-            .Where(dto => dto.IsReview || isAdmin || (!string.IsNullOrWhiteSpace(requesterUserId) && dto.UserId == requesterUserId))
             .ToList();
 
         // 登录用户:一次性批量查出该用户在本帖下点赞/点踩的评论集合,
@@ -603,16 +655,26 @@ public class PostService(
         }
 
         // 填充点赞/点踩计数(O(1) Redis SCARD,并行执行);点赞状态用上面的批量集合判断。
-        await Task.WhenAll(allDtos.Select(async dto =>
+        var commentIds = allDtos.Select(dto => dto.Id).ToArray();
+        var likeFallbacks = allDtos.ToDictionary(dto => dto.Id, dto => dto.Likes);
+        var dislikeFallbacks = allDtos.ToDictionary(dto => dto.Id, dto => dto.Dislikes);
+        var commentLikesTask = likeManager.GetCommentCountsBatchAsync(commentIds, CacheKeys.CommentLikes, likeFallbacks);
+        var commentDislikesTask = likeManager.GetCommentCountsBatchAsync(commentIds, CacheKeys.CommentDislikes, dislikeFallbacks);
+        await Task.WhenAll(commentLikesTask, commentDislikesTask);
+
+        var commentLikes = commentLikesTask.Result;
+        var commentDislikes = commentDislikesTask.Result;
+
+        foreach (var dto in allDtos)
         {
-            dto.Likes = await likeManager.GetCommentLikesAsync(dto.Id, dto.Likes);
-            dto.Dislikes = await likeManager.GetCommentDislikesAsync(dto.Id, dto.Dislikes);
+            dto.Likes = commentLikes.GetValueOrDefault(dto.Id, dto.Likes);
+            dto.Dislikes = commentDislikes.GetValueOrDefault(dto.Id, dto.Dislikes);
             if (likedSet != null)
             {
                 dto.IsLiked = likedSet.Contains(dto.Id);
                 dto.IsDisliked = dislikedSet!.Contains(dto.Id);
             }
-        }));
+        }
 
         // 构建树形结构
         var commentDict = allDtos.ToDictionary(c => c.Id);
@@ -670,11 +732,14 @@ public class PostService(
         if (string.IsNullOrWhiteSpace(keyword))
             return PagedResultDto<PostDto>.Success([], 0, @params.PageIndex, @params.PageSize);
 
-        var totalCount = await postRepo.SearchCountAsync(keyword, tagId);
-        var results = await postRepo.SearchAsync(keyword, @params.PageIndex, @params.PageSize, tagId);
-        var dtos = results.Select(MapToDto).ToList();
+        var totalCountTask = postRepo.SearchCountAsync(keyword, tagId);
+        var resultsTask = postRepo.SearchDtosAsync(keyword, @params.PageIndex, @params.PageSize, tagId);
+        await Task.WhenAll(totalCountTask, resultsTask);
+        var totalCount = totalCountTask.Result;
+        var results = resultsTask.Result;
+        var dtos = results.ToList();
 
-        await Task.WhenAll(dtos.Select(dto => FillDynamicData(dto)));
+        await FillPostsDynamicDataAsync(dtos);
 
         return PagedResultDto<PostDto>.Success(dtos, totalCount, @params.PageIndex, @params.PageSize);
     }
@@ -740,6 +805,43 @@ public class PostService(
         }
 
         return fallbackCount;
+    }
+
+    private async Task<Dictionary<string, int>> GetPostWatchBatchAsync(
+        IReadOnlyCollection<string> postIds,
+        IReadOnlyDictionary<string, int> fallbackCounts)
+    {
+        var result = postIds.ToDictionary(id => id, id => fallbackCounts.GetValueOrDefault(id, 0));
+        if (postIds.Count == 0 || _redis == null)
+        {
+            return result;
+        }
+
+        try
+        {
+            var db = _redis.GetDatabase();
+            var tasks = postIds.ToDictionary(id => id, id => db.StringGetAsync(CacheKeys.PostWatch(id)));
+            await Task.WhenAll(tasks.Values);
+
+            foreach (var (postId, task) in tasks)
+            {
+                var fallback = fallbackCounts.GetValueOrDefault(postId, 0);
+                if (task.Result.HasValue && int.TryParse(task.Result.ToString(), out var count))
+                {
+                    result[postId] = Math.Max(count, fallback);
+                }
+                else
+                {
+                    result[postId] = fallback;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to get post watch counts from Redis batch");
+        }
+
+        return result;
     }
 
     private void InvalidateCache(string postId)

@@ -13,6 +13,20 @@ namespace MarketOurs.DataAPI.Services;
 /// </summary>
 public interface ILikeManager
 {
+    Task<Dictionary<string, int>> GetPostCountsBatchAsync(
+        IReadOnlyCollection<string> postIds,
+        Func<string, string> keyFactory,
+        IReadOnlyDictionary<string, int> fallbackCounts);
+
+    Task<Dictionary<string, (bool IsLiked, bool IsDisliked)>> GetPostReactionStateBatchAsync(
+        IReadOnlyCollection<string> postIds,
+        string userId);
+
+    Task<Dictionary<string, int>> GetCommentCountsBatchAsync(
+        IReadOnlyCollection<string> commentIds,
+        Func<string, string> keyFactory,
+        IReadOnlyDictionary<string, int> fallbackCounts);
+
     // --- 帖子相关 ---
 
     /// <summary>
@@ -88,6 +102,72 @@ public class LikeManager(
 {
     private readonly IConnectionMultiplexer? _redis = redisEnumerable.FirstOrDefault();
     private static readonly TimeSpan CacheTtl = TimeSpan.FromDays(7);
+
+    public async Task<Dictionary<string, int>> GetPostCountsBatchAsync(
+        IReadOnlyCollection<string> postIds,
+        Func<string, string> keyFactory,
+        IReadOnlyDictionary<string, int> fallbackCounts) =>
+        await GetCountsBatchAsync(postIds, keyFactory, fallbackCounts);
+
+    public async Task<Dictionary<string, (bool IsLiked, bool IsDisliked)>> GetPostReactionStateBatchAsync(
+        IReadOnlyCollection<string> postIds,
+        string userId)
+    {
+        var result = new Dictionary<string, (bool IsLiked, bool IsDisliked)>();
+        if (postIds.Count == 0)
+        {
+            return result;
+        }
+
+        if (_redis == null)
+        {
+            foreach (var postId in postIds)
+            {
+                result[postId] = (
+                    await IsPostLikedAsync(postId, userId),
+                    await IsPostDislikedAsync(postId, userId));
+            }
+
+            return result;
+        }
+
+        try
+        {
+            var db = _redis.GetDatabase();
+            var tasks = postIds.ToDictionary(
+                postId => postId,
+                postId => new
+                {
+                    Liked = db.SetContainsAsync(CacheKeys.PostLikes(postId), userId),
+                    Disliked = db.SetContainsAsync(CacheKeys.PostDislikes(postId), userId)
+                });
+
+            await Task.WhenAll(tasks.Values.SelectMany(x => new Task[] { x.Liked, x.Disliked }));
+
+            foreach (var (postId, state) in tasks)
+            {
+                result[postId] = (state.Liked.Result, state.Disliked.Result);
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to read post reaction states from Redis batch");
+            foreach (var postId in postIds)
+            {
+                result[postId] = (
+                    await IsPostLikedAsync(postId, userId),
+                    await IsPostDislikedAsync(postId, userId));
+            }
+        }
+
+        return result;
+    }
+
+    public async Task<Dictionary<string, int>> GetCommentCountsBatchAsync(
+        IReadOnlyCollection<string> commentIds,
+        Func<string, string> keyFactory,
+        IReadOnlyDictionary<string, int> fallbackCounts) =>
+        await GetCountsBatchAsync(commentIds, keyFactory, fallbackCounts);
 
     /// <summary>
     /// Lua 脚本：原子化点赞/点踩切换
@@ -184,6 +264,43 @@ public class LikeManager(
             logger.LogWarning(ex, "Failed to read count from Redis for key {Key}", key);
         }
         return fallbackCount;
+    }
+
+    private async Task<Dictionary<string, int>> GetCountsBatchAsync(
+        IReadOnlyCollection<string> ids,
+        Func<string, string> keyFactory,
+        IReadOnlyDictionary<string, int> fallbackCounts)
+    {
+        var result = ids.ToDictionary(id => id, id => fallbackCounts.TryGetValue(id, out var fallback) ? fallback : 0);
+        if (ids.Count == 0 || _redis == null)
+        {
+            return result;
+        }
+
+        try
+        {
+            var db = _redis.GetDatabase();
+            var tasks = ids.ToDictionary(
+                id => id,
+                id => db.SetLengthAsync(keyFactory(id)));
+
+            await Task.WhenAll(tasks.Values);
+
+            foreach (var (id, task) in tasks)
+            {
+                var length = (int)task.Result;
+                if (length > 0 || !fallbackCounts.TryGetValue(id, out var fallback) || fallback == 0)
+                {
+                    result[id] = length;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to read Redis batch counts");
+        }
+
+        return result;
     }
 
     private async Task<bool> IsMemberAsync(string key, string userId, Func<Task<List<UserModel>?>> dbFetcher)

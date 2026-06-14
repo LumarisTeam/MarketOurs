@@ -97,7 +97,14 @@ public class UserServiceTests
             Avatar = "avatar.png",
             Info = "Hello"
         };
-        _mockUserRepo.Setup(r => r.GetByIdAsync("1")).ReturnsAsync(user);
+        _mockUserRepo.Setup(r => r.GetPublicProfileByIdAsync("1")).ReturnsAsync(new PublicUserProfileDto
+        {
+            Id = "1",
+            Name = "Test User",
+            Role = "User",
+            Avatar = "avatar.png",
+            Info = "Hello"
+        });
 
         var result = await _userService.GetPublicProfileByIdAsync("1");
 

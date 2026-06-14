@@ -53,6 +53,7 @@ public class CommentRepo(IDbContextFactory<MarketContext> factory) : ICommentRep
         await using var context = await factory.CreateDbContextAsync();
 
         var query = context.Commits
+            .AsNoTracking()
             .Include(x => x.User)
             .AsQueryable();
 
@@ -86,6 +87,7 @@ public class CommentRepo(IDbContextFactory<MarketContext> factory) : ICommentRep
         await using var context = await factory.CreateDbContextAsync();
 
         IQueryable<CommentModel> query = context.Commits
+            .AsNoTracking()
             .Include(x => x.User)
             .Include(x => x.Post)
             .Where(x => x.Content.Contains(keyword));
@@ -119,6 +121,7 @@ public class CommentRepo(IDbContextFactory<MarketContext> factory) : ICommentRep
         await using var context = await factory.CreateDbContextAsync();
 
         return await context.Commits
+            .AsNoTracking()
             .Include(x => x.User)
             .Where(x => x.Id == id)
             .FirstOrDefaultAsync();
@@ -129,6 +132,7 @@ public class CommentRepo(IDbContextFactory<MarketContext> factory) : ICommentRep
         await using var context = await factory.CreateDbContextAsync();
 
         return await context.Commits
+            .AsNoTracking()
             .Include(x => x.User)
             .Where(x => x.Id == id && x.IsReview)
             .FirstOrDefaultAsync();

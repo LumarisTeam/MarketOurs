@@ -72,6 +72,7 @@ builder.Services.AddOpenApi(opt => { opt.AddDocumentTransformer<BearerSecuritySc
 #region 配置管理
 
 builder.Services.ConfigServices();
+builder.Services.AddSingleton<SlowQueryLoggingInterceptor>();
 
 #endregion
 
@@ -373,24 +374,26 @@ if (string.IsNullOrEmpty(sql))
 
 if (string.IsNullOrEmpty(sql))
 {
-    builder.Services.AddDbContextFactory<MarketContext>(opt =>
+    builder.Services.AddPooledDbContextFactory<MarketContext>((services, opt) =>
     {
         opt.UseSqlite("Data Source=Data.db",
             o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
         opt.ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
-    });
+        opt.AddInterceptors(services.GetRequiredService<SlowQueryLoggingInterceptor>());
+    }, poolSize: 64);
 
     builder.Services.AddDataProtection()
         .PersistKeysToFileSystem(new DirectoryInfo("./keys"));
 }
 else
 {
-    builder.Services.AddDbContextFactory<MarketContext>(opt =>
+    builder.Services.AddPooledDbContextFactory<MarketContext>((services, opt) =>
     {
         opt.UseNpgsql(sql,
             o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
         opt.ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
-    });
+        opt.AddInterceptors(services.GetRequiredService<SlowQueryLoggingInterceptor>());
+    }, poolSize: 64);
 
     builder.Services.AddDataProtection()
         .PersistKeysToPostgres(sql, true);
@@ -618,6 +621,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication(); // 添加这行以启用身份验证中间件
 app.UseAuthorization();
 app.UseCors();
+app.UseMiddleware<RequestMetricsMiddleware>();
 
 // 添加 Prometheus HTTP 请求指标收集中间件
 app.UseHttpMetrics();

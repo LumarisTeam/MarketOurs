@@ -214,4 +214,46 @@ public class LikeManagerTests
         _mockPostRepo.Verify(r => r.GetLikeUsersAsync(postId), Times.Once);
         _mockDatabase.Verify(db => db.SetAddAsync(likeKey, It.IsAny<RedisValue[]>(), It.IsAny<CommandFlags>()), Times.Once);
     }
+
+    [Test]
+    public async Task GetPostCountsBatchAsync_ShouldReturnRedisCountsOrFallback()
+    {
+        var postIds = new[] { "post1", "post2" };
+        _mockDatabase.Setup(db => db.SetLengthAsync(CacheKeys.PostLikes("post1"), It.IsAny<CommandFlags>()))
+            .ReturnsAsync(8);
+        _mockDatabase.Setup(db => db.SetLengthAsync(CacheKeys.PostLikes("post2"), It.IsAny<CommandFlags>()))
+            .ReturnsAsync(0);
+
+        var result = await _likeManager.GetPostCountsBatchAsync(
+            postIds,
+            CacheKeys.PostLikes,
+            new Dictionary<string, int>
+            {
+                ["post1"] = 3,
+                ["post2"] = 5
+            });
+
+        Assert.That(result["post1"], Is.EqualTo(8));
+        Assert.That(result["post2"], Is.EqualTo(5));
+    }
+
+    [Test]
+    public async Task GetPostReactionStateBatchAsync_ShouldReturnRedisMembership()
+    {
+        _mockDatabase.Setup(db => db.SetContainsAsync(CacheKeys.PostLikes("post1"), "user1", It.IsAny<CommandFlags>()))
+            .ReturnsAsync(true);
+        _mockDatabase.Setup(db => db.SetContainsAsync(CacheKeys.PostDislikes("post1"), "user1", It.IsAny<CommandFlags>()))
+            .ReturnsAsync(false);
+        _mockDatabase.Setup(db => db.SetContainsAsync(CacheKeys.PostLikes("post2"), "user1", It.IsAny<CommandFlags>()))
+            .ReturnsAsync(false);
+        _mockDatabase.Setup(db => db.SetContainsAsync(CacheKeys.PostDislikes("post2"), "user1", It.IsAny<CommandFlags>()))
+            .ReturnsAsync(true);
+
+        var result = await _likeManager.GetPostReactionStateBatchAsync(new[] { "post1", "post2" }, "user1");
+
+        Assert.That(result["post1"].IsLiked, Is.True);
+        Assert.That(result["post1"].IsDisliked, Is.False);
+        Assert.That(result["post2"].IsLiked, Is.False);
+        Assert.That(result["post2"].IsDisliked, Is.True);
+    }
 }

@@ -1,5 +1,6 @@
 using MarketOurs.Data;
 using MarketOurs.Data.DataModels;
+using MarketOurs.Data.DTOs;
 using MarketOurs.DataAPI.Exceptions;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,6 +14,7 @@ public interface IUserRepo
     Task<int> SearchCountAsync(string keyword);
     Task<UserModel?> GetByIdAsync(string id);
     Task<UserModel?> GetByAccountAsync(string account);
+    Task<PublicUserProfileDto?> GetPublicProfileByIdAsync(string id);
     Task<UserModel?> GetByThirdPartyIdAsync(string provider, string providerId);
     Task<List<UserModel>> GetByDateAsync(DateTime before, DateTime after);
     Task<List<PostModel>?> GetPostsAsync(string id);
@@ -48,6 +50,7 @@ public class UserRepo(IDbContextFactory<MarketContext> factory) : IUserRepo
     {
         await using var context = await factory.CreateDbContextAsync();
         return await context.Users
+            .AsNoTracking()
             .OrderByDescending(x => x.CreatedAt)
             .Skip((pageIndex - 1) * pageSize)
             .Take(pageSize)
@@ -64,6 +67,7 @@ public class UserRepo(IDbContextFactory<MarketContext> factory) : IUserRepo
     {
         await using var context = await factory.CreateDbContextAsync();
         return await context.Users
+            .AsNoTracking()
             .Where(x => x.Name.Contains(keyword) || x.Email.Contains(keyword) || x.Phone.Contains(keyword))
             .OrderByDescending(x => x.CreatedAt)
             .Skip((pageIndex - 1) * pageSize)
@@ -83,6 +87,7 @@ public class UserRepo(IDbContextFactory<MarketContext> factory) : IUserRepo
     {
         await using var context = await factory.CreateDbContextAsync();
         return await context.Users
+            .AsNoTracking()
             .Where(x => x.Id == id)
             .FirstOrDefaultAsync();
     }
@@ -94,7 +99,27 @@ public class UserRepo(IDbContextFactory<MarketContext> factory) : IUserRepo
         await using var context = await factory.CreateDbContextAsync();
 
         return await context.Users
+            .AsNoTracking()
             .Where(x => account.Contains('@') ? x.Email == account : x.Phone == account) // 如果含有 @ 的话就是 email
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<PublicUserProfileDto?> GetPublicProfileByIdAsync(string id)
+    {
+        await using var context = await factory.CreateDbContextAsync();
+
+        return await context.Users
+            .AsNoTracking()
+            .Where(x => x.Id == id)
+            .Select(x => new PublicUserProfileDto
+            {
+                Id = x.Id,
+                Name = x.Name,
+                Role = x.Role,
+                Avatar = x.Avatar,
+                Info = x.Info,
+                CreatedAt = x.CreatedAt
+            })
             .FirstOrDefaultAsync();
     }
 
@@ -106,10 +131,10 @@ public class UserRepo(IDbContextFactory<MarketContext> factory) : IUserRepo
 
         return provider.ToLower() switch
         {
-            "github" => await context.Users.FirstOrDefaultAsync(x => x.GithubId == providerId),
-            "google" => await context.Users.FirstOrDefaultAsync(x => x.GoogleId == providerId),
-            "weixin" => await context.Users.FirstOrDefaultAsync(x => x.WeixinId == providerId),
-            "ours" => await context.Users.FirstOrDefaultAsync(x => x.OursId == providerId),
+            "github" => await context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.GithubId == providerId),
+            "google" => await context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.GoogleId == providerId),
+            "weixin" => await context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.WeixinId == providerId),
+            "ours" => await context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.OursId == providerId),
             _ => null
         };
     }
