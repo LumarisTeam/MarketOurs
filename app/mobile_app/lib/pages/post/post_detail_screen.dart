@@ -13,6 +13,7 @@ import 'image_viewer_screen.dart';
 import '../../components/post_tag_pill.dart';
 import '../../models/comment.dart';
 import '../../models/post.dart';
+import '../../models/user.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/post_feed_provider.dart';
 import '../../router/app_router.dart';
@@ -259,7 +260,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           postId: widget.postId,
         ),
       );
-      final newComment = response.data;
+      final newComment = response.data == null
+          ? null
+          : _withAuthorFallback(response.data!, user);
       if (newComment != null) {
         _insertCommentLocally(newComment);
         _commentController.clear();
@@ -336,7 +339,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           parentCommentId: comment.id,
         ),
       );
-      final newReply = response.data;
+      final newReply = response.data == null
+          ? null
+          : _withAuthorFallback(response.data!, user);
       if (newReply != null) {
         _insertReplyLocally(comment.id, newReply);
         if (mounted) await AppFeedback.showSuccess(context, message: '回复已发送');
@@ -581,6 +586,40 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       parentCommentId: c.parentCommentId,
       repliedComments: repliedComments ?? c.repliedComments,
       isReview: c.isReview,
+    );
+  }
+
+  CommentDto _withAuthorFallback(CommentDto comment, UserDto currentUser) {
+    final author = comment.author;
+    final hasAuthorInfo =
+        author?.id?.trim().isNotEmpty == true ||
+        author?.name?.trim().isNotEmpty == true ||
+        author?.avatar?.trim().isNotEmpty == true;
+
+    if (hasAuthorInfo) {
+      return comment;
+    }
+
+    return CommentDto(
+      id: comment.id,
+      content: comment.content,
+      images: comment.images,
+      likes: comment.likes,
+      dislikes: comment.dislikes,
+      isLiked: comment.isLiked,
+      isDisliked: comment.isDisliked,
+      createdAt: comment.createdAt,
+      updatedAt: comment.updatedAt,
+      userId: comment.userId,
+      author: UserSimpleDto(
+        id: currentUser.id,
+        name: currentUser.name,
+        avatar: currentUser.avatar,
+      ),
+      postId: comment.postId,
+      parentCommentId: comment.parentCommentId,
+      repliedComments: comment.repliedComments,
+      isReview: comment.isReview,
     );
   }
 

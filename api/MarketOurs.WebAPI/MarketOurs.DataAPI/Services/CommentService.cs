@@ -248,6 +248,7 @@ public class CommentService(
             logger.LogWarning(ex, "Failed to enqueue notification for comment creation");
         }
 
+        comment.User = user;
         return MapToDto(comment);
     }
 
