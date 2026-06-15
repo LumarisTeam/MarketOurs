@@ -56,7 +56,9 @@
 			</dict>
 		</dict>
 		<key>NSPhotoLibraryUsageDescription</key>
-		<string>选择相册中的图片以发布帖子。</string>
+		<string>选择或保存图片到系统相册。</string>
+		<key>NSPhotoLibraryAddUsageDescription</key>
+		<string>保存帖子图片到系统相册。</string>
 		<key>NSCameraUsageDescription</key>
 		<string>使用相机拍摄头像或帖子图片。</string>
 		<key>UIApplicationSceneManifest</key>
