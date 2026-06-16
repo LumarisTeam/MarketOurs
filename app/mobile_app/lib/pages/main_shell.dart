@@ -1,41 +1,77 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../providers/post_feed_provider.dart';
+import '../ui/app_feedback.dart';
 import '../ui/app_responsive.dart';
 import '../ui/app_theme.dart';
 
-class MainShell extends ConsumerWidget {
+class MainShell extends ConsumerStatefulWidget {
   const MainShell({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
 
+  @override
+  ConsumerState<MainShell> createState() => _MainShellState();
+}
+
+class _MainShellState extends ConsumerState<MainShell> {
+  static const _exitWindow = Duration(seconds: 2);
+
+  DateTime? _lastExitAttemptAt;
+
   void _onTap(BuildContext context, int index) {
-    navigationShell.goBranch(
+    if (index != widget.navigationShell.currentIndex) {
+      _lastExitAttemptAt = null;
+    }
+
+    widget.navigationShell.goBranch(
       index,
-      initialLocation: index == navigationShell.currentIndex,
+      initialLocation: index == widget.navigationShell.currentIndex,
     );
   }
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isTablet = AppResponsive.isTablet(context);
+  void _handleHomeExitAttempt() {
+    final now = DateTime.now();
+    final lastExitAttemptAt = _lastExitAttemptAt;
 
-    return CupertinoPageScaffold(
+    if (lastExitAttemptAt != null &&
+        now.difference(lastExitAttemptAt) <= _exitWindow) {
+      unawaited(SystemNavigator.pop());
+      return;
+    }
+
+    _lastExitAttemptAt = now;
+    unawaited(ref.read(homeFeedProvider.notifier).refresh());
+    unawaited(AppFeedback.showInfo(context, message: '再按一次退出光汇'));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isTablet = AppResponsive.isTablet(context);
+    final shouldInterceptExit =
+        !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+
+    final scaffold = CupertinoPageScaffold(
       backgroundColor: AppColors.background,
       child: isTablet
           ? Row(
               children: [
                 _TabletSideNavigation(
-                  currentIndex: navigationShell.currentIndex,
+                  currentIndex: widget.navigationShell.currentIndex,
                   onTap: (index) => _onTap(context, index),
                 ),
-                Expanded(child: navigationShell),
+                Expanded(child: widget.navigationShell),
               ],
             )
           : Column(
               children: [
-                Expanded(child: navigationShell),
+                Expanded(child: widget.navigationShell),
                 CupertinoTabBar(
                   backgroundColor: CupertinoDynamicColor.resolve(
                     AppColors.background,
@@ -54,7 +90,7 @@ class MainShell extends ConsumerWidget {
                       width: 0.5,
                     ),
                   ),
-                  currentIndex: navigationShell.currentIndex,
+                  currentIndex: widget.navigationShell.currentIndex,
                   onTap: (index) => _onTap(context, index),
                   items: _navigationItems
                       .map(
@@ -68,6 +104,21 @@ class MainShell extends ConsumerWidget {
                 ),
               ],
             ),
+    );
+
+    if (!shouldInterceptExit) {
+      return scaffold;
+    }
+
+    return PopScope(
+      canPop: widget.navigationShell.currentIndex != 0,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop || widget.navigationShell.currentIndex != 0) {
+          return;
+        }
+        _handleHomeExitAttempt();
+      },
+      child: scaffold,
     );
   }
 }

@@ -206,6 +206,40 @@ void main() {
     expect(feed.lastSearchKeyword, '相机');
   });
 
+  testWidgets('first back on home refreshes and shows exit hint', (
+    tester,
+  ) async {
+    final storage = _TestAuthStorage(
+      session: AuthSession(accessToken: 'access', refreshToken: 'refresh'),
+    );
+    final feed = _FakeHomeFeedNotifier();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authStorageProvider.overrideWithValue(storage),
+          authServiceProvider.overrideWithValue(
+            _FakeAuthService(user: _demoUser),
+          ),
+          homeFeedProvider.overrideWith(() => feed),
+          hotFeedProvider.overrideWith(() => _FakeHotFeedNotifier()),
+        ],
+        child: const MarketOursApp(),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    await tester.binding.handlePopRoute();
+    await tester.pump();
+
+    expect(feed.refreshCallCount, 1);
+    expect(find.text('再按一次退出光汇'), findsOneWidget);
+
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pumpAndSettle();
+  });
+
   testWidgets('responsive helpers classify desktop layout', (tester) async {
     tester.view
       ..physicalSize = const Size(1366, 900)
@@ -442,6 +476,7 @@ class _FakeHomeFeedNotifier extends HomeFeedNotifier {
 
   final List<PostDto> posts;
   String? lastSearchKeyword;
+  int refreshCallCount = 0;
 
   @override
   Future<HomeFeedState> build() async {
@@ -466,6 +501,21 @@ class _FakeHomeFeedNotifier extends HomeFeedNotifier {
         isLoadingMore: false,
         isRefreshing: false,
         keyword: lastSearchKeyword!,
+      ),
+    );
+  }
+
+  @override
+  Future<void> refresh() async {
+    refreshCallCount += 1;
+    state = AsyncData(
+      HomeFeedState(
+        posts: posts,
+        pageIndex: 1,
+        hasNextPage: false,
+        isLoadingMore: false,
+        isRefreshing: false,
+        keyword: state.asData?.value.keyword ?? '',
       ),
     );
   }
