@@ -28,12 +28,13 @@ import {
 } from "lucide-react";
 import type { UserDto } from "../../types";
 import { DTO_LIMITS, optionalMax, requiredMax } from "../../lib/dtoValidation";
+import { formatLocalDate } from "../../lib/dateTime";
 
 type ThirdPartyProvider = 'Ours' | 'Github' | 'Google' | 'Weixin';
 type VerificationChannel = 'email' | 'phone';
 
 export default function ProfilePage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const currentUser = useSelector((state: RootState) => state.auth.user);
@@ -589,7 +590,7 @@ export default function ProfilePage() {
                       <span className="text-sm font-medium">{t("profile.joined_at")}</span>
                     </div>
                     <span className="text-sm font-bold">
-                      {new Date(user.createdAt).toLocaleDateString()}
+                      {formatLocalDate(user.createdAt, i18n.resolvedLanguage)}
                     </span>
                   </div>
                 </div>

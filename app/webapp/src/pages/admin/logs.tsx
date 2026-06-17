@@ -4,23 +4,13 @@ import { useTranslation } from "react-i18next"
 import { adminService } from "../../services/adminService"
 import { extractUserMessage } from "../../services/errorCodes"
 import type { LogDistribution, LogEntry, LogStatistics, PaginatedResponse } from "../../types"
+import { formatLocalDateTime } from "../../lib/dateTime"
 
 const PAGE_SIZE = 20
 
-function formatTimestamp(value: string) {
-  return new Intl.DateTimeFormat(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  }).format(new Date(value))
-}
-
 const LEVEL_OPTIONS = ["Information", "Warning", "Error", "Fatal"]
 export default function AdminLogsPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [page, setPage] = useState(1)
   const [searchTerm, setSearchTerm] = useState("")
   const [levelFilter, setLevelFilter] = useState("")
@@ -228,7 +218,9 @@ export default function AdminLogsPage() {
               ) : logs && logs.data.length > 0 ? (
                 logs.data.map((log, index) => (
                   <tr key={`${log.timestamp}-${index}`} className="align-top transition-colors hover:bg-muted/30">
-                    <td className="px-6 py-4 text-muted-foreground">{formatTimestamp(log.timestamp)}</td>
+                    <td className="px-6 py-4 text-muted-foreground">
+                      {formatLocalDateTime(log.timestamp, i18n.resolvedLanguage)}
+                    </td>
                     <td className="px-6 py-4">
                       <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-bold">{log.level}</span>
                     </td>

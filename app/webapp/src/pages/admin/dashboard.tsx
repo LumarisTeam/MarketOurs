@@ -5,37 +5,10 @@ import { useTranslation } from "react-i18next"
 import { adminService } from "../../services/adminService"
 import { extractUserMessage } from "../../services/errorCodes"
 import type { AdminOverviewDto } from "../../types"
-
-const DATE_FORMATTER = new Intl.DateTimeFormat(undefined, {
-  month: "short",
-  day: "numeric",
-})
-
-const RELATIVE_TIME_FORMATTER = new Intl.RelativeTimeFormat(undefined, {
-  numeric: "auto",
-})
-
-function formatRelativeTime(timestamp: string) {
-  const target = new Date(timestamp).getTime()
-  const deltaSeconds = Math.round((target - Date.now()) / 1000)
-
-  const units: Array<[Intl.RelativeTimeFormatUnit, number]> = [
-    ["day", 86400],
-    ["hour", 3600],
-    ["minute", 60],
-  ]
-
-  for (const [unit, secondsPerUnit] of units) {
-    if (Math.abs(deltaSeconds) >= secondsPerUnit || unit === "minute") {
-      return RELATIVE_TIME_FORMATTER.format(Math.round(deltaSeconds / secondsPerUnit), unit)
-    }
-  }
-
-  return RELATIVE_TIME_FORMATTER.format(deltaSeconds, "second")
-}
+import { formatRelativeTime, formatShortDate, parseCalendarDate } from "../../lib/dateTime"
 
 export default function AdminDashboard() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [overview, setOverview] = useState<AdminOverviewDto | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -57,10 +30,13 @@ export default function AdminDashboard() {
     void fetchOverview()
   }, [t])
 
-  const chartData = overview?.postTrend.map((point) => ({
-    date: new Date(point.date),
-    value: point.posts,
-  })) ?? []
+  const chartData = overview?.postTrend.reduce<Array<{ date: Date; value: number }>>((acc, point) => {
+    const date = parseCalendarDate(point.date)
+    if (date) {
+      acc.push({ date, value: point.posts })
+    }
+    return acc
+  }, []) ?? []
 
   const stats = overview ? [
     { name: t("admin.dashboard.total_users"), value: overview.totalUsers.toLocaleString(), icon: Users },
@@ -139,9 +115,9 @@ export default function AdminDashboard() {
                         <p className="text-sm font-bold">{activity.title}</p>
                         <p className="text-sm text-muted-foreground">{activity.description}</p>
                         <p className="text-xs text-muted-foreground">
-                          {formatRelativeTime(activity.timestamp)}
+                          {formatRelativeTime(activity.timestamp, i18n.resolvedLanguage)}
                           {" · "}
-                          {DATE_FORMATTER.format(new Date(activity.timestamp))}
+                          {formatShortDate(activity.timestamp, i18n.resolvedLanguage)}
                         </p>
                       </div>
                     </div>

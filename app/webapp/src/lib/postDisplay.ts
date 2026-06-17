@@ -1,7 +1,6 @@
-import { formatDistanceToNow } from "date-fns"
-import { enUS, zhCN } from "date-fns/locale"
 import type { i18n } from "i18next"
 import type { PostDto } from "../types"
+import { formatEditedRelativeTime } from "./dateTime"
 
 export function formatPostRelativeDate(
   dateString: string,
@@ -9,24 +8,7 @@ export function formatPostRelativeDate(
   updatedAtString?: string,
   editedLabel?: string,
 ) {
-  try {
-    const date = new Date(dateString)
-    const display = formatDistanceToNow(date, {
-      addSuffix: true,
-      locale: i18nInstance.language === "zh" ? zhCN : enUS,
-    })
-
-    if (updatedAtString && editedLabel) {
-      const updatedDate = new Date(updatedAtString)
-      if (updatedDate.getTime() - date.getTime() > 5000) {
-        return `${display} (${editedLabel})`
-      }
-    }
-
-    return display
-  } catch {
-    return dateString
-  }
+  return formatEditedRelativeTime(dateString, i18nInstance.resolvedLanguage, updatedAtString, editedLabel)
 }
 
 export function getPostExcerpt(content: string, maxLength = 150) {

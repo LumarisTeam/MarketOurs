@@ -63,7 +63,7 @@ class PostDetailHero extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                formatYmdDate(post.updatedAt ?? post.createdAt),
+                                formatEditedRelativeDateTime(post.createdAt, post.updatedAt),
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: CupertinoDynamicColor.resolve(

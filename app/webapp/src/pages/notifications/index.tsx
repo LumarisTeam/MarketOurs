@@ -5,11 +5,10 @@ import { fetchNotifications, markReadLocal, markAllReadLocal } from "../../store
 import { notificationService } from "../../services/notificationService"
 import { NotificationType, type PushSettingsDto } from "../../types"
 import { Bell, MessageSquare, Reply, Flame, Check, Save, Loader2 } from "lucide-react"
-import { formatDistanceToNow } from "date-fns"
-import { zhCN, enUS } from "date-fns/locale"
 import { Link } from "react-router"
 import { cn } from "../../lib/utils"
 import { useTranslation } from "react-i18next"
+import { formatRelativeDateFromNow } from "../../lib/dateTime"
 
 export default function NotificationsPage() {
   const { t, i18n } = useTranslation()
@@ -167,10 +166,7 @@ export default function NotificationsPage() {
                         <div className="flex items-center justify-between mb-1">
                           <h3 className="font-semibold">{n.title}</h3>
                           <span className="text-xs text-muted-foreground">
-                            {formatDistanceToNow(new Date(n.createdAt), { 
-                              addSuffix: true, 
-                              locale: i18n.language === 'zh' ? zhCN : enUS 
-                            })}
+                            {formatRelativeDateFromNow(n.createdAt, i18n.resolvedLanguage)}
                           </span>
                         </div>
                         <p className="text-sm text-muted-foreground mb-3 line-clamp-2">

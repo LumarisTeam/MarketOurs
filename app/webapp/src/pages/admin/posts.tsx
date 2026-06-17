@@ -6,19 +6,12 @@ import { adminService } from "../../services/adminService"
 import { extractUserMessage } from "../../services/errorCodes"
 import type { PagedResult, PostDto, PostTagDto } from "../../types"
 import { PostTagBadge } from "../../components/post/PostTagBadge"
+import { formatLocalDate } from "../../lib/dateTime"
 
 const PAGE_SIZE = 10
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  }).format(new Date(value))
-}
-
 export default function AdminPostsPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [searchTerm, setSearchTerm] = useState("")
   const [page, setPage] = useState(1)
   const [posts, setPosts] = useState<PagedResult<PostDto> | null>(null)
@@ -212,7 +205,7 @@ export default function AdminPostsPage() {
                         )}
                       </td>
                       <td className="px-6 py-4 text-muted-foreground">
-                        {formatDate(post.createdAt)}
+                        {formatLocalDate(post.createdAt, i18n.resolvedLanguage)}
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">

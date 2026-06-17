@@ -1,5 +1,6 @@
 import java.util.Properties
 import java.io.FileInputStream
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("com.android.application")
@@ -28,9 +29,10 @@ val jpushChannel = providers.gradleProperty("JPUSH_CHANNEL")
     .orElse(localProperties.getProperty("JPUSH_CHANNEL") ?: "")
     .orElse(providers.environmentVariable("JPUSH_CHANNEL"))
     .orElse("developer-default")
+val androidApplicationId = "com.luckyfish.lumalis"
 
 android {
-    namespace = "com.luckyfish.lumalis"
+    namespace = androidApplicationId
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -39,11 +41,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
         isCoreLibraryDesugaringEnabled = true
     }
-
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
-    }
-
     signingConfigs {
         create("release") {
             keyAlias = keystoreProperties.getProperty("keyAlias")
@@ -55,14 +52,14 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.luckyfish.lumalis"
+        applicationId = androidApplicationId
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-        manifestPlaceholders["JPUSH_PKGNAME"] = applicationId
+        manifestPlaceholders["JPUSH_PKGNAME"] = androidApplicationId
         manifestPlaceholders["JPUSH_APPKEY"] = jpushAppKey.get()
         manifestPlaceholders["JPUSH_CHANNEL"] = jpushChannel.get()
     }
@@ -73,6 +70,12 @@ android {
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("release")
         }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_17)
     }
 }
 

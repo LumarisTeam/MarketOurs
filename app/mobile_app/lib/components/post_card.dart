@@ -6,6 +6,7 @@ import 'package:mobile_app/services/share_service.dart';
 import 'package:mobile_app/ui/app_feedback.dart';
 import 'package:mobile_app/ui/app_theme.dart';
 import 'package:mobile_app/ui/app_widgets.dart';
+import 'package:mobile_app/utils/date_formatters.dart';
 
 class PostCard extends StatelessWidget {
   const PostCard({super.key, required this.post});
@@ -64,7 +65,7 @@ class PostCard extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        _formatCreatedAt(post.createdAt),
+                        formatEditedRelativeDateTime(post.createdAt, post.updatedAt),
                         style: AppTextStyles.label(context),
                       ),
                     ],
@@ -174,17 +175,6 @@ class PostCard extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  String _formatCreatedAt(DateTime? dateTime) {
-    if (dateTime == null) return '刚刚';
-    final now = DateTime.now();
-    final diff = now.difference(dateTime);
-    if (diff.inMinutes < 1) return '刚刚';
-    if (diff.inHours < 1) return '${diff.inMinutes}分钟前';
-    if (diff.inDays < 1) return '${diff.inHours}小时前';
-    if (diff.inDays < 7) return '${diff.inDays}天前';
-    return '${dateTime.year}-${dateTime.month}-${dateTime.day}';
   }
 }
 

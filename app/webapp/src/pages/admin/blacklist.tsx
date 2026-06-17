@@ -4,19 +4,10 @@ import { useTranslation } from "react-i18next"
 import { adminService } from "../../services/adminService"
 import { extractUserMessage } from "../../services/errorCodes"
 import type { BlacklistStats } from "../../types"
-
-function formatTimestamp(value: string) {
-  return new Intl.DateTimeFormat(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(value))
-}
+import { formatLocalDateTime } from "../../lib/dateTime"
 
 export default function AdminBlacklistPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [stats, setStats] = useState<BlacklistStats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isWorking, setIsWorking] = useState(false)
@@ -150,7 +141,11 @@ export default function AdminBlacklistPage() {
         </div>
         <div className="rounded-3xl border border-border/50 bg-card p-5">
           <p className="text-sm text-muted-foreground">{t("admin.blacklist.last_refresh")}</p>
-          <p className="mt-2 text-sm font-medium">{stats?.lastRefreshTime ? formatTimestamp(stats.lastRefreshTime) : "-"}</p>
+          <p className="mt-2 text-sm font-medium">
+            {stats?.lastRefreshTime
+              ? formatLocalDateTime(stats.lastRefreshTime, i18n.resolvedLanguage, { includeSeconds: false })
+              : "-"}
+          </p>
         </div>
       </div>
 
@@ -250,7 +245,9 @@ export default function AdminBlacklistPage() {
               <p className="mt-1 text-sm">
                 {checkResult.isBlacklisted ? t("admin.blacklist.check_blocked") : t("admin.blacklist.check_allowed")}
               </p>
-              <p className="mt-2 text-xs opacity-80">{formatTimestamp(checkResult.checkTime)}</p>
+              <p className="mt-2 text-xs opacity-80">
+                {formatLocalDateTime(checkResult.checkTime, i18n.resolvedLanguage, { includeSeconds: false })}
+              </p>
             </div>
           ) : (
             <div className="rounded-2xl bg-muted/40 px-4 py-10 text-center text-sm text-muted-foreground">

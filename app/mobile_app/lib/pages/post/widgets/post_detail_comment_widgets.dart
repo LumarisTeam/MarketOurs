@@ -202,7 +202,7 @@ class _CommentCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    formatRelativeDateTime(comment.createdAt),
+                    formatEditedRelativeDateTime(comment.createdAt, comment.updatedAt),
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,

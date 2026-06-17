@@ -11,38 +11,15 @@ import type { RootState } from "../../stores"
 import { useTranslation } from "react-i18next"
 import { extractUserMessage } from "../../services/errorCodes"
 import type { i18n, TFunction } from "i18next"
-import { formatDistanceToNow } from "date-fns"
-import { zhCN, enUS } from "date-fns/locale"
 import { cn } from "../../lib/utils"
 import { sharePost } from "../../lib/postShare"
 import { DTO_LIMITS, requiredMax } from "../../lib/dtoValidation"
 import { PostTagBadge } from "../../components/post/PostTagBadge"
+import { formatEditedRelativeTime } from "../../lib/dateTime"
 
 const MAX_COMMENT_IMAGES = 3;
 
 const commentLengthError = `评论内容长度不能超过 ${DTO_LIMITS.commentContentMax} 位`;
-
-const formatDate = (dateString: string, i18nInstance: i18n, updatedAtString?: string, t?: TFunction) => {
-  try {
-    const date = new Date(dateString);
-    const display = formatDistanceToNow(date, { 
-      addSuffix: true, 
-      locale: i18nInstance.language === 'zh' ? zhCN : enUS 
-    });
-    
-    if (updatedAtString && t) {
-      const updatedDate = new Date(updatedAtString);
-      // If updated more than 5 seconds after creation
-      if (updatedDate.getTime() - date.getTime() > 5000) {
-        return `${display} (${t('post.edited')})`;
-      }
-    }
-    
-    return display;
-  } catch {
-    return dateString;
-  }
-}
 
 // 一条被展平的回复：comment 是回复本身，replyTo 是它直接回复的那条评论；
 // 当 replyTo 为 null 时表示它是直接回复顶层评论(不显示 @)，否则显示 @对方。
@@ -503,7 +480,9 @@ function CommentItem({
             <Link to={`/user/${comment.userId}`} className="font-bold text-sm transition-colors hover:text-primary">
               {displayName}
             </Link>
-            <p className="text-xs text-muted-foreground">{formatDate(comment.createdAt, i18n, comment.updatedAt, t)}</p>
+            <p className="text-xs text-muted-foreground">
+              {formatEditedRelativeTime(comment.createdAt, i18n.resolvedLanguage, comment.updatedAt, t("post.edited"))}
+            </p>
           </div>
           
           {isEditing ? (
@@ -1097,7 +1076,9 @@ export default function PostDetailPage() {
               <Link to={`/user/${post.userId}`} className="font-bold text-lg transition-colors hover:text-primary">
                 {displayName}
               </Link>
-              <p className="text-sm text-muted-foreground">{formatDate(post.createdAt, i18n, post.updatedAt, t)}</p>
+              <p className="text-sm text-muted-foreground">
+                {formatEditedRelativeTime(post.createdAt, i18n.resolvedLanguage, post.updatedAt, t("post.edited"))}
+              </p>
             </div>
             {(isMe || isAdmin) && !isEditingPost && (
               <div className="flex gap-2">

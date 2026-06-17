@@ -4,19 +4,12 @@ import { useTranslation } from "react-i18next"
 import { adminService } from "../../services/adminService"
 import { extractUserMessage } from "../../services/errorCodes"
 import type { PagedResult, UserDto } from "../../types"
+import { formatLocalDate } from "../../lib/dateTime"
 
 const PAGE_SIZE = 10
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  }).format(new Date(value))
-}
-
 export default function AdminUsersPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [searchTerm, setSearchTerm] = useState("")
   const [page, setPage] = useState(1)
   const [users, setUsers] = useState<PagedResult<UserDto> | null>(null)
@@ -166,7 +159,7 @@ export default function AdminUsersPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-muted-foreground">
-                        {formatDate(user.createdAt)}
+                        {formatLocalDate(user.createdAt, i18n.resolvedLanguage)}
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">

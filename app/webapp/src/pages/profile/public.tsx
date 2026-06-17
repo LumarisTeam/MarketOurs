@@ -9,12 +9,13 @@ import { followService } from "../../services/followService";
 import type { RootState } from "../../stores";
 import type { PagedResult, PostDto, PublicUserProfileDto } from "../../types";
 import { PostTagBadge } from "../../components/post/PostTagBadge";
+import { formatLocalDate } from "../../lib/dateTime";
 
 const RECENT_POST_FETCH_SIZE = 10;
 
 export default function PublicProfilePage() {
   const { id } = useParams();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const currentUser = useSelector((state: RootState) => state.auth.user);
 
   const [profile, setProfile] = useState<PublicUserProfileDto | null>(null);
@@ -334,7 +335,7 @@ export default function PublicProfilePage() {
                 <Calendar size={18} />
                 <span className="text-sm font-medium">{t("profile.joined_at")}</span>
               </div>
-              <p className="text-lg font-bold">{new Date(profile.createdAt).toLocaleDateString()}</p>
+              <p className="text-lg font-bold">{formatLocalDate(profile.createdAt, i18n.resolvedLanguage)}</p>
             </div>
 
             <div className="rounded-[2rem] border border-border/50 bg-muted/30 p-5">

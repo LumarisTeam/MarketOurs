@@ -5,19 +5,12 @@ import { Link } from "react-router"
 import { adminService } from "../../services/adminService"
 import { extractUserMessage } from "../../services/errorCodes"
 import type { CommentDto, PagedResult } from "../../types"
+import { formatLocalDate } from "../../lib/dateTime"
 
 const PAGE_SIZE = 10
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  }).format(new Date(value))
-}
-
 export default function AdminCommentsPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [searchTerm, setSearchTerm] = useState("")
   const [page, setPage] = useState(1)
   const [comments, setComments] = useState<PagedResult<CommentDto> | null>(null)
@@ -178,7 +171,7 @@ export default function AdminCommentsPage() {
                         )}
                       </td>
                       <td className="px-6 py-4 text-muted-foreground">
-                        {formatDate(comment.createdAt)}
+                        {formatLocalDate(comment.createdAt, i18n.resolvedLanguage)}
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">

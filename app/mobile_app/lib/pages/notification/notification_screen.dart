@@ -7,6 +7,7 @@ import '../../services/notification_service.dart';
 import '../../ui/app_responsive.dart';
 import '../../ui/app_theme.dart';
 import '../../ui/app_widgets.dart';
+import '../../utils/date_formatters.dart';
 import 'push_settings_screen.dart';
 
 class NotificationScreen extends StatefulWidget {
@@ -136,7 +137,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 notifications: _notifications,
                 iconForType: _getIcon,
                 iconColorForType: _getIconColor,
-                formatDate: _formatDate,
+                formatDate: formatNotificationDateTime,
                 onOpen: _openNotification,
               ),
             ),
@@ -228,19 +229,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
         ],
       ),
     );
-  }
-
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final diff = now.difference(date);
-    if (diff.inDays == 0) {
-      return '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-    } else if (diff.inDays == 1) {
-      return '昨天';
-    } else if (diff.inDays < 7) {
-      return '${diff.inDays}天前';
-    }
-    return '${date.year}/${date.month}/${date.day}';
   }
 }
 

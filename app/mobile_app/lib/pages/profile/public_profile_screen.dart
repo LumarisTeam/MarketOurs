@@ -14,6 +14,7 @@ import '../../services/user_service.dart';
 import '../../services/error_messages.dart';
 import '../../ui/app_responsive.dart';
 import '../../ui/app_widgets.dart';
+import '../../utils/date_formatters.dart';
 
 class PublicProfileScreen extends ConsumerStatefulWidget {
   const PublicProfileScreen({super.key, required this.userId});
@@ -404,7 +405,7 @@ class _ProfileHero extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            '加入时间 ${_formatDate(profile.createdAt)}',
+            '加入时间 ${formatYmdDate(profile.createdAt)}',
             style: const TextStyle(
               fontSize: 12,
               color: AppColors.mutedForeground,
@@ -413,13 +414,6 @@ class _ProfileHero extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  String _formatDate(DateTime? value) {
-    if (value == null) {
-      return '未知';
-    }
-    return '${value.year}-${value.month.toString().padLeft(2, '0')}-${value.day.toString().padLeft(2, '0')}';
   }
 }
 
