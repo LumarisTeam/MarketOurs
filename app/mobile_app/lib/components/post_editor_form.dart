@@ -1,9 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter/cupertino.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_app/utils/dto_validation.dart';
 
+import 'editable_image_wrap.dart';
 import '../models/post.dart';
 import '../ui/app_fields.dart';
 import '../ui/app_responsive.dart';
@@ -176,25 +175,14 @@ class PostEditorForm extends StatelessWidget {
               ),
             )
           else
-            Wrap(
+            EditableImageWrap(
+              existingImages: existingImages,
+              localImages: localImages,
+              onRemoveExisting: onRemoveExistingImage,
+              onRemoveLocal: onRemoveLocalImage,
+              tileSize: 90,
               spacing: 12,
               runSpacing: 12,
-              children: [
-                for (var i = 0; i < existingImages.length; i++)
-                  _PostEditorImageTile(
-                    image: Image.network(existingImages[i], fit: BoxFit.cover),
-                    onRemove: onRemoveExistingImage == null
-                        ? null
-                        : () => onRemoveExistingImage!(i),
-                  ),
-                for (var i = 0; i < localImages.length; i++)
-                  _PostEditorImageTile(
-                    image: Image.file(File(localImages[i].path), fit: BoxFit.cover),
-                    onRemove: onRemoveLocalImage == null
-                        ? null
-                        : () => onRemoveLocalImage!(i),
-                  ),
-              ],
             ),
         ],
       ),
@@ -253,40 +241,6 @@ class PostEditorForm extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _PostEditorImageTile extends StatelessWidget {
-  const _PostEditorImageTile({required this.image, this.onRemove});
-
-  final Widget image;
-  final VoidCallback? onRemove;
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(AppRadii.md),
-          child: SizedBox(width: 90, height: 90, child: image),
-        ),
-        if (onRemove != null)
-          Positioned(
-            right: -8,
-            top: -8,
-            child: CupertinoButton(
-              padding: EdgeInsets.zero,
-              onPressed: onRemove,
-              child: const Icon(
-                CupertinoIcons.xmark_circle_fill,
-                color: AppColors.destructive,
-                size: 24,
-              ),
-            ),
-          ),
-      ],
     );
   }
 }

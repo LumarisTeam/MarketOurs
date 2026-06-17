@@ -664,6 +664,39 @@ class AppEmptyState extends StatelessWidget {
   }
 }
 
+class AppRetryState extends StatelessWidget {
+  const AppRetryState({
+    super.key,
+    required this.title,
+    required this.description,
+    required this.onRetry,
+    this.icon = CupertinoIcons.exclamationmark_triangle,
+    this.padding = const EdgeInsets.all(16),
+  });
+
+  final String title;
+  final String description;
+  final Future<void> Function() onRetry;
+  final IconData icon;
+  final EdgeInsets padding;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: padding,
+      child: AppEmptyState(
+        icon: icon,
+        title: title,
+        description: description,
+        action: AppPrimaryButton(
+          onPressed: onRetry,
+          child: const Text('重新加载'),
+        ),
+      ),
+    );
+  }
+}
+
 Future<T?> showAppBottomSheet<T>({
   required BuildContext context,
   required WidgetBuilder builder,

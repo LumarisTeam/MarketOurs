@@ -1,17 +1,10 @@
-import 'dart:io';
-import 'dart:ui';
-
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
-import 'image_viewer_screen.dart';
-
+import '../../components/editable_image_wrap.dart';
 import '../../components/post_editor_form.dart';
-import '../../components/post_tag_pill.dart';
 import '../../components/post_tag_selector.dart';
 import '../../models/comment.dart';
 import '../../models/post.dart';
@@ -32,8 +25,11 @@ import '../../ui/app_responsive.dart';
 import '../../ui/app_theme.dart';
 import '../../ui/app_widgets.dart';
 import '../../utils/dto_validation.dart';
-
-const int _maxCommentImages = 3;
+import 'widgets/post_detail_action_bar.dart';
+import 'widgets/post_detail_comment_composer.dart';
+import 'widgets/post_detail_comment_widgets.dart';
+import 'widgets/post_detail_error_view.dart';
+import 'widgets/post_detail_hero.dart';
 
 class _CommentDraft {
   const _CommentDraft({
@@ -419,7 +415,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }
 
   Future<void> _pickCommentImages() async {
-    final remaining = _maxCommentImages - _commentImages.length;
+    final remaining = postDetailMaxCommentImages - _commentImages.length;
     if (remaining <= 0) return;
 
     final picked = await _imagePicker.pickMultiImage();
@@ -766,7 +762,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }) async {
     final controller = TextEditingController(text: initialValue);
     final existingImages = List<String>.from(
-      initialImages.take(_maxCommentImages),
+      initialImages.take(postDetailMaxCommentImages),
     );
     final selectedImages = <XFile>[];
     final result = await showAppBottomSheet<_CommentDraft>(
@@ -776,7 +772,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           builder: (context, setSheetState) {
             Future<void> pickImages() async {
               final remaining =
-                  _maxCommentImages -
+                  postDetailMaxCommentImages -
                   existingImages.length -
                   selectedImages.length;
               if (remaining <= 0) return;
@@ -814,7 +810,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  _CommentComposerImages(
+                  EditableImageWrap(
                     existingImages: existingImages,
                     localImages: selectedImages,
                     onRemoveExisting: (index) {
@@ -823,6 +819,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     onRemoveLocal: (index) {
                       setSheetState(() => selectedImages.removeAt(index));
                     },
+                    tileSize: 72,
                   ),
                   const SizedBox(height: 12),
                   Row(
@@ -831,14 +828,14 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         padding: EdgeInsets.zero,
                         onPressed:
                             existingImages.length + selectedImages.length >=
-                                _maxCommentImages
+                                postDetailMaxCommentImages
                             ? null
                             : pickImages,
                         child: const Icon(CupertinoIcons.photo),
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        '${existingImages.length + selectedImages.length} / $_maxCommentImages',
+                        '${existingImages.length + selectedImages.length} / $postDetailMaxCommentImages',
                         style: AppTextStyles.label(context),
                       ),
                       const Spacer(),
@@ -975,7 +972,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     PostDto post,
     bool isAuthenticated,
   ) {
-    return _ActionBar(
+    return PostDetailActionBar(
       likes: post.likes ?? 0,
       dislikes: post.dislikes ?? 0,
       watch: post.watch ?? 0,
@@ -1185,7 +1182,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         title: '详情',
         navigationBarStyle: AppNavigationBarStyle.compact,
         trailing: trailing,
-        child: _PostDetailErrorView(
+        child: PostDetailErrorView(
           message: _errorMessage ?? '详情加载失败',
           onRetry: _loadData,
         ),
@@ -1209,7 +1206,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 final content = Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _PostHero(
+                    PostDetailHero(
                       post: post,
                       isFollowingAuthor: _isFollowingAuthor,
                       isMe: isOwner,
@@ -1273,7 +1270,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       ..._comments.map(
                         (c) => Padding(
                           padding: const EdgeInsets.only(bottom: 12),
-                          child: _CommentThread(
+                          child: PostDetailCommentThread(
                             comment: c,
                             currentUserId: user?.id,
                             onAuthorTapForUser: (id) =>
@@ -1404,950 +1401,17 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }
 
   Widget _buildCommentComposer(BuildContext context) {
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: AppResponsive.readableMaxWidth(context, fallback: 820),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppRadii.xl),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-              decoration: BoxDecoration(
-                color: CupertinoDynamicColor.resolve(
-                  AppColors.background,
-                  context,
-                ).withValues(alpha: 0.8),
-                border: Border.all(
-                  color: CupertinoDynamicColor.resolve(
-                    AppColors.border,
-                    context,
-                  ).withValues(alpha: 0.3),
-                ),
-                borderRadius: BorderRadius.circular(AppRadii.xl),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _CommentComposerImages(
-                    localImages: _commentImages,
-                    onRemoveLocal: _removeCommentImage,
-                  ),
-                  if (_commentImages.isNotEmpty) const SizedBox(height: 10),
-                  if (_commentUploadProgress != null) ...[
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(AppRadii.sm),
-                      child: Container(
-                        height: 5,
-                        color: AppColors.secondary,
-                        alignment: Alignment.centerLeft,
-                        child: FractionallySizedBox(
-                          widthFactor: _commentUploadProgress!.clamp(0.0, 1.0),
-                          child: Container(height: 5, color: AppColors.primary),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                  ],
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      CupertinoButton(
-                        padding: EdgeInsets.zero,
-                        onPressed:
-                            _isWorking ||
-                                _commentImages.length >= _maxCommentImages
-                            ? null
-                            : _pickCommentImages,
-                        child: const Icon(CupertinoIcons.photo, size: 22),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Container(
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color: CupertinoDynamicColor.resolve(
-                              AppColors.secondary,
-                              context,
-                            ),
-                            borderRadius: BorderRadius.circular(AppRadii.pill),
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          alignment: Alignment.centerLeft,
-                          child: CupertinoTextField(
-                            controller: _commentController,
-                            placeholder: '写下你的评论...',
-                            placeholderStyle: AppTextStyles.muted(context),
-                            decoration: null,
-                            style: AppTextStyles.body(
-                              context,
-                            ).copyWith(fontSize: 15),
-                            cursorColor: AppColors.primary,
-                            inputFormatters: [
-                              LengthLimitingTextInputFormatter(
-                                DtoLimits.commentContentMax,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      CupertinoButton(
-                        padding: EdgeInsets.zero,
-                        onPressed: _isWorking ? null : _submitComment,
-                        child: Text(
-                          '发布',
-                          style: TextStyle(
-                            color: AppColors.primary.withValues(
-                              alpha: _isWorking ? 0.5 : 1.0,
-                            ),
-                            fontWeight: FontWeight.w700,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _PostHero extends StatelessWidget {
-  const _PostHero({
-    required this.post,
-    this.onAuthorTap,
-    this.isFollowingAuthor = false,
-    this.isMe = false,
-    this.onFollowToggle,
-  });
-
-  final PostDto post;
-  final VoidCallback? onAuthorTap;
-  final bool isFollowingAuthor;
-  final bool isMe;
-  final VoidCallback? onFollowToggle;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (post.author != null)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      if (post.userId != null && post.userId!.isNotEmpty) {
-                        context.push(buildPublicProfileLocation(post.userId!));
-                      }
-                    },
-                    child: Row(
-                      children: [
-                        AppAvatar(
-                          url: post.author?.avatar,
-                          name: post.author?.name,
-                          size: 40,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                post.author?.name ?? '匿名用户',
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                              Text(
-                                _formatDate(post.createdAt, post.updatedAt),
-                                style: AppTextStyles.label(context),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                AppSecondaryButton(
-                  onPressed: isMe ? onAuthorTap : onFollowToggle,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 6,
-                  ),
-                  child: Text(
-                    isMe
-                        ? '我的主页'
-                        : isFollowingAuthor
-                        ? '已关注'
-                        : '关注',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: isFollowingAuthor && !isMe
-                          ? AppColors.mutedForeground
-                          : null,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        Text(
-          post.title?.trim().isNotEmpty == true ? post.title!.trim() : '未命名帖子',
-          style: AppTextStyles.title(
-            context,
-          ).copyWith(fontSize: 22, height: 1.3),
-        ),
-        if (post.tag != null) ...[
-          const SizedBox(height: 12),
-          PostTagPill(tag: post.tag),
-        ],
-        const SizedBox(height: 16),
-        Text(
-          post.content?.trim().isNotEmpty == true
-              ? post.content!.trim()
-              : '这个帖子还没有填写描述。',
-          style: AppTextStyles.body(context).copyWith(
-            fontSize: 17,
-            height: 1.6,
-            color: CupertinoDynamicColor.resolve(
-              AppColors.foreground,
-              context,
-            ).withValues(alpha: 0.9),
-          ),
-        ),
-        if (post.images?.isNotEmpty == true) ...[
-          const SizedBox(height: 20),
-          CarouselSlider.builder(
-            itemCount: post.images?.length,
-            itemBuilder:
-                (BuildContext context, int itemIndex, int pageViewIndex) =>
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: GestureDetector(
-                        onTap: () {
-                          Navigator.of(context).push(
-                            CupertinoPageRoute(
-                              fullscreenDialog: true,
-                              builder: (_) => ImageViewerScreen(
-                                images: post.images!,
-                                initialIndex: itemIndex,
-                              ),
-                            ),
-                          );
-                        },
-                        child: Hero(
-                          tag: 'image_${post.images?[itemIndex]}',
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(AppRadii.lg),
-                            child: Image.network(
-                              post.images?[itemIndex] ?? '',
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                              gaplessPlayback: true,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Container(
-                                    height: 200,
-                                    width: double.infinity,
-                                    color: AppColors.muted,
-                                    child: const Icon(
-                                      CupertinoIcons.photo,
-                                      color: AppColors.mutedForeground,
-                                    ),
-                                  ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-            options: CarouselOptions(
-              aspectRatio: 16 / 9,
-              viewportFraction: 0.8,
-              initialPage: 0,
-              enableInfiniteScroll: false,
-              reverse: false,
-              enlargeCenterPage: true,
-              enlargeFactor: 0.3,
-              scrollDirection: Axis.horizontal,
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-
-  String _formatDate(DateTime? createdAt, DateTime? updatedAt) {
-    final date = updatedAt ?? createdAt;
-    if (date == null) return '刚刚';
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-  }
-}
-
-class _ActionBar extends StatelessWidget {
-  const _ActionBar({
-    required this.likes,
-    required this.dislikes,
-    required this.watch,
-    required this.isWorking,
-    required this.isLiked,
-    required this.isDisliked,
-    required this.onShare,
-    required this.onLike,
-    required this.onDislike,
-  });
-
-  final int likes;
-  final int dislikes;
-  final int watch;
-  final bool isWorking;
-  final bool isLiked;
-  final bool isDisliked;
-  final VoidCallback onShare;
-  final VoidCallback onLike;
-  final VoidCallback onDislike;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(
-            color: CupertinoDynamicColor.resolve(
-              AppColors.border,
-              context,
-            ).withValues(alpha: 0.3),
-          ),
-          bottom: BorderSide(
-            color: CupertinoDynamicColor.resolve(
-              AppColors.border,
-              context,
-            ).withValues(alpha: 0.3),
-          ),
-        ),
-      ),
-      child: Row(
-        children: [
-          _ActionChip(
-            icon: isLiked ? CupertinoIcons.heart_fill : CupertinoIcons.heart,
-            label: '$likes',
-            onTap: isWorking ? null : onLike,
-            color: const Color(0xFFFF5A5F),
-            active: isLiked,
-          ),
-          const SizedBox(width: 12),
-          _ActionChip(
-            icon: isDisliked
-                ? CupertinoIcons.hand_thumbsdown_fill
-                : CupertinoIcons.hand_thumbsdown,
-            label: '$dislikes',
-            onTap: isWorking ? null : onDislike,
-            color: CupertinoDynamicColor.resolve(
-              AppColors.mutedForeground,
-              context,
-            ),
-            active: isDisliked,
-          ),
-          const Spacer(),
-          Text('$watch 次浏览', style: AppTextStyles.label(context)),
-          const SizedBox(width: 12),
-          CupertinoButton(
-            padding: EdgeInsets.zero,
-            minimumSize: Size.zero,
-            onPressed: onShare,
-            child: const Icon(
-              CupertinoIcons.share,
-              size: 18,
-              color: AppColors.mutedForeground,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ActionChip extends StatelessWidget {
-  const _ActionChip({
-    required this.icon,
-    required this.label,
-    this.onTap,
-    required this.color,
-    this.active = false,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback? onTap;
-  final Color color;
-  final bool active;
-
-  @override
-  Widget build(BuildContext context) {
-    return CupertinoButton(
-      padding: EdgeInsets.zero,
-      onPressed: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: active ? color.withValues(alpha: 0.1) : AppColors.secondary,
-          borderRadius: BorderRadius.circular(AppRadii.pill),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 18,
-              color: active
-                  ? color
-                  : CupertinoDynamicColor.resolve(
-                      AppColors.mutedForeground,
-                      context,
-                    ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: active
-                    ? color
-                    : CupertinoDynamicColor.resolve(
-                        AppColors.foreground,
-                        context,
-                      ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// 一条被展平的回复:[comment] 是回复本身,[replyTo] 是它直接回复的那条评论。
-/// [replyTo] 为 null 表示它直接回复顶层评论(不显示 @);否则显示 @对方。
-class _FlatReply {
-  const _FlatReply({required this.comment, this.replyTo});
-
-  final CommentDto comment;
-  final CommentDto? replyTo;
-}
-
-/// 将一条顶层评论下的所有后代回复展平成单层列表(只保留两级:顶层评论 + 其下所有回复)。
-/// 直接回复顶层评论的 replyTo 记为 null;回复某条回复的则记录被回复者,用于渲染 @对方。
-/// 列表按创建时间从早到晚排序,读起来像一段对话。
-List<_FlatReply> _flattenReplies(CommentDto root) {
-  final out = <_FlatReply>[];
-
-  void walk(List<CommentDto>? nodes, CommentDto parent, bool parentIsRoot) {
-    if (nodes == null) return;
-    for (final child in nodes) {
-      out.add(
-        _FlatReply(comment: child, replyTo: parentIsRoot ? null : parent),
-      );
-      walk(child.repliedComments, child, false);
-    }
-  }
-
-  walk(root.repliedComments, root, true);
-  out.sort((a, b) {
-    final at = a.comment.createdAt;
-    final bt = b.comment.createdAt;
-    if (at == null || bt == null) return 0;
-    return at.compareTo(bt);
-  });
-  return out;
-}
-
-class _CommentThread extends StatelessWidget {
-  const _CommentThread({
-    required this.comment,
-    required this.currentUserId,
-    required this.onAuthorTapForUser,
-    required this.onReply,
-    required this.onEdit,
-    required this.onDelete,
-    required this.onLike,
-    required this.onDislike,
-    required this.onReplyChild,
-    required this.onEditChild,
-    required this.onDeleteChild,
-    required this.onLikeChild,
-    required this.onDislikeChild,
-    required this.likedComments,
-    required this.dislikedComments,
-  });
-
-  final CommentDto comment;
-  final String? currentUserId;
-  final ValueChanged<String> onAuthorTapForUser;
-  final VoidCallback onReply;
-  final VoidCallback? onEdit;
-  final VoidCallback? onDelete;
-  final VoidCallback onLike;
-  final VoidCallback onDislike;
-  final ValueChanged<CommentDto> onReplyChild;
-  final ValueChanged<CommentDto>? onEditChild;
-  final ValueChanged<CommentDto>? onDeleteChild;
-  final ValueChanged<CommentDto> onLikeChild;
-  final ValueChanged<CommentDto> onDislikeChild;
-  final Set<String> likedComments;
-  final Set<String> dislikedComments;
-
-  @override
-  Widget build(BuildContext context) {
-    // 展平为两级:顶层评论 + 其下所有回复(含原本的三级及更深),更深的回复用 @对方 标注。
-    final flatReplies = _flattenReplies(comment);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _CommentCard(
-          comment: comment,
-          onAuthorTap: comment.userId == null
-              ? null
-              : () => onAuthorTapForUser(comment.userId!),
-          onReply: onReply,
-          onEdit: onEdit,
-          onDelete: onDelete,
-          onLike: onLike,
-          onDislike: onDislike,
-          isLiked: likedComments.contains(comment.id),
-          isDisliked: dislikedComments.contains(comment.id),
-        ),
-        if (flatReplies.isNotEmpty) ...[
-          Container(
-            margin: const EdgeInsets.only(left: 44, top: 12),
-            padding: const EdgeInsets.only(left: 12),
-            decoration: BoxDecoration(
-              border: Border(
-                left: BorderSide(
-                  color: CupertinoDynamicColor.resolve(
-                    AppColors.border,
-                    context,
-                  ).withValues(alpha: 0.3),
-                  width: 2,
-                ),
-              ),
-            ),
-            child: Column(
-              children: [
-                for (final flat in flatReplies) ...[
-                  _CommentCard(
-                    comment: flat.comment,
-                    isReply: true,
-                    replyToName: flat.replyTo?.author?.name,
-                    onAuthorTap: flat.comment.userId == null
-                        ? null
-                        : () => onAuthorTapForUser(flat.comment.userId!),
-                    onReply: () => onReplyChild(flat.comment),
-                    onEdit: currentUserId == flat.comment.userId
-                        ? () => onEditChild?.call(flat.comment)
-                        : null,
-                    onDelete: currentUserId == flat.comment.userId
-                        ? () => onDeleteChild?.call(flat.comment)
-                        : null,
-                    onLike: () => onLikeChild(flat.comment),
-                    onDislike: () => onDislikeChild(flat.comment),
-                    isLiked: likedComments.contains(flat.comment.id),
-                    isDisliked: dislikedComments.contains(flat.comment.id),
-                  ),
-                  if (flat != flatReplies.last) const SizedBox(height: 16),
-                ],
-              ],
-            ),
-          ),
-        ],
-        const SizedBox(height: 16),
-        Container(
-          height: 1,
-          color: CupertinoDynamicColor.resolve(
-            AppColors.border,
-            context,
-          ).withValues(alpha: 0.3),
-        ),
-        const SizedBox(height: 16),
-      ],
-    );
-  }
-}
-
-class _CommentCard extends StatelessWidget {
-  const _CommentCard({
-    required this.comment,
-    this.onAuthorTap,
-    required this.onReply,
-    this.onEdit,
-    this.onDelete,
-    required this.onLike,
-    required this.onDislike,
-    this.isLiked = false,
-    this.isDisliked = false,
-    this.isReply = false,
-    this.replyToName,
-  });
-
-  final CommentDto comment;
-  final VoidCallback? onAuthorTap;
-  final VoidCallback onReply;
-  final VoidCallback? onEdit;
-  final VoidCallback? onDelete;
-  final VoidCallback onLike;
-  final VoidCallback onDislike;
-  final bool isLiked;
-  final bool isDisliked;
-  final bool isReply;
-  // 被回复者名称;仅楼中楼(回复某条回复)时有值,在内容前显示 @对方。
-  final String? replyToName;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            AppAvatar(
-              url: comment.author?.avatar,
-              name: comment.author?.name,
-              size: isReply ? 28 : 32,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    comment.author?.name ?? '匿名用户',
-                    style: TextStyle(
-                      fontSize: isReply ? 13 : 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    _formatDate(comment.createdAt),
-                    style: AppTextStyles.label(context).copyWith(fontSize: 11),
-                  ),
-                ],
-              ),
-            ),
-            _CommentActionIcon(
-              icon: isLiked ? CupertinoIcons.heart_fill : CupertinoIcons.heart,
-              label: '${comment.likes ?? 0}',
-              onTap: onLike,
-              active: isLiked,
-              activeColor: const Color(0xFFFF5A5F),
-            ),
-          ],
-        ),
-        Padding(
-          padding: EdgeInsets.only(left: isReply ? 38 : 42, top: 4),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text.rich(
-                TextSpan(
-                  children: [
-                    if (replyToName != null && replyToName!.isNotEmpty)
-                      TextSpan(
-                        text: '@$replyToName ',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    TextSpan(text: comment.content ?? ''),
-                  ],
-                ),
-                style: AppTextStyles.body(
-                  context,
-                ).copyWith(fontSize: 15, height: 1.5),
-              ),
-              _CommentImageGrid(images: comment.images ?? const []),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  _TextAction(label: '回复', onTap: onReply),
-                  if (onEdit != null) ...[
-                    const SizedBox(width: 16),
-                    _TextAction(label: '编辑', onTap: onEdit!),
-                  ],
-                  if (onDelete != null) ...[
-                    const SizedBox(width: 16),
-                    _TextAction(
-                      label: '删除',
-                      onTap: onDelete!,
-                      activeColor: AppColors.destructive,
-                      active: true,
-                    ),
-                  ],
-                  const Spacer(),
-                  _CommentActionIcon(
-                    icon: isDisliked
-                        ? CupertinoIcons.hand_thumbsdown_fill
-                        : CupertinoIcons.hand_thumbsdown,
-                    onTap: onDislike,
-                    active: isDisliked,
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  String _formatDate(DateTime? date) {
-    if (date == null) return '刚刚';
-    final diff = DateTime.now().difference(date);
-    if (diff.inMinutes < 1) return '刚刚';
-    if (diff.inHours < 1) return '${diff.inMinutes}分钟前';
-    if (diff.inDays < 1) return '${diff.inHours}小时前';
-    return '${date.year}-${date.month}-${date.day}';
-  }
-}
-
-class _CommentImageGrid extends StatelessWidget {
-  const _CommentImageGrid({required this.images});
-
-  final List<String> images;
-
-  @override
-  Widget build(BuildContext context) {
-    if (images.isEmpty) return const SizedBox.shrink();
-
-    return Padding(
-      padding: const EdgeInsets.only(top: 10),
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          for (var i = 0; i < images.length && i < _maxCommentImages; i++)
-            GestureDetector(
-              onTap: () {
-                Navigator.of(context).push(
-                  CupertinoPageRoute<void>(
-                    builder: (_) =>
-                        ImageViewerScreen(images: images, initialIndex: i),
-                  ),
-                );
-              },
-              child: Hero(
-                tag: 'image_${images[i]}',
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(AppRadii.md),
-                  child: Image.network(
-                    images[i],
-                    width: images.length == 1 ? 132 : 82,
-                    height: images.length == 1 ? 132 : 82,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      width: images.length == 1 ? 132 : 82,
-                      height: images.length == 1 ? 132 : 82,
-                      color: AppColors.secondary,
-                      alignment: Alignment.center,
-                      child: const Icon(CupertinoIcons.photo),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _CommentComposerImages extends StatelessWidget {
-  const _CommentComposerImages({
-    this.existingImages = const [],
-    this.localImages = const [],
-    this.onRemoveExisting,
-    this.onRemoveLocal,
-  });
-
-  final List<String> existingImages;
-  final List<XFile> localImages;
-  final ValueChanged<int>? onRemoveExisting;
-  final ValueChanged<int>? onRemoveLocal;
-
-  @override
-  Widget build(BuildContext context) {
-    if (existingImages.isEmpty && localImages.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: [
-        for (var i = 0; i < existingImages.length; i++)
-          _ComposerImageTile(
-            image: Image.network(existingImages[i], fit: BoxFit.cover),
-            onRemove: onRemoveExisting == null
-                ? null
-                : () => onRemoveExisting!(i),
-          ),
-        for (var i = 0; i < localImages.length; i++)
-          _ComposerImageTile(
-            image: Image.file(File(localImages[i].path), fit: BoxFit.cover),
-            onRemove: onRemoveLocal == null ? null : () => onRemoveLocal!(i),
-          ),
-      ],
-    );
-  }
-}
-
-class _ComposerImageTile extends StatelessWidget {
-  const _ComposerImageTile({required this.image, this.onRemove});
-
-  final Widget image;
-  final VoidCallback? onRemove;
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(AppRadii.md),
-          child: SizedBox(width: 72, height: 72, child: image),
-        ),
-        if (onRemove != null)
-          Positioned(
-            right: -8,
-            top: -8,
-            child: CupertinoButton(
-              padding: EdgeInsets.zero,
-              onPressed: onRemove,
-              child: const Icon(
-                CupertinoIcons.xmark_circle_fill,
-                color: AppColors.destructive,
-                size: 24,
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-class _CommentActionIcon extends StatelessWidget {
-  const _CommentActionIcon({
-    required this.icon,
-    this.label,
-    required this.onTap,
-    this.active = false,
-    this.activeColor,
-  });
-
-  final IconData icon;
-  final String? label;
-  final VoidCallback onTap;
-  final bool active;
-  final Color? activeColor;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = active
-        ? (activeColor ??
-              CupertinoDynamicColor.resolve(AppColors.primary, context))
-        : CupertinoDynamicColor.resolve(AppColors.mutedForeground, context);
-
-    return CupertinoButton(
-      padding: EdgeInsets.zero,
-      minimumSize: Size.zero,
-      onPressed: onTap,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: color),
-          if (label != null) ...[
-            const SizedBox(width: 4),
-            Text(
-              label!,
-              style: TextStyle(
-                fontSize: 12,
-                color: color,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _TextAction extends StatelessWidget {
-  const _TextAction({
-    required this.label,
-    required this.onTap,
-    this.active = false,
-    this.activeColor = AppColors.primary,
-  });
-
-  final String label;
-  final VoidCallback onTap;
-  final bool active;
-  final Color activeColor;
-
-  @override
-  Widget build(BuildContext context) {
-    final resolvedMuted = CupertinoDynamicColor.resolve(
-      AppColors.mutedForeground,
-      context,
-    );
-    final resolvedActive = CupertinoDynamicColor.resolve(activeColor, context);
-
-    return CupertinoButton(
-      padding: EdgeInsets.zero,
-      minimumSize: Size.zero,
-      onPressed: onTap,
-      child: Text(
-        label,
-        style: TextStyle(
-          color: active ? resolvedActive : resolvedMuted,
-          fontSize: 13,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    );
-  }
-}
-
-class _PostDetailErrorView extends StatelessWidget {
-  const _PostDetailErrorView({required this.message, required this.onRetry});
-
-  final String message;
-  final Future<void> Function() onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: AppEmptyState(
-        icon: CupertinoIcons.doc_text,
-        title: '详情加载失败',
-        description: message,
-        action: AppPrimaryButton(onPressed: onRetry, child: const Text('重新加载')),
-      ),
+    return PostDetailCommentComposer(
+      controller: _commentController,
+      localImages: _commentImages,
+      isWorking: _isWorking,
+      uploadProgress: _commentUploadProgress,
+      onPickImages:
+          _isWorking || _commentImages.length >= postDetailMaxCommentImages
+          ? null
+          : _pickCommentImages,
+      onRemoveLocal: _removeCommentImage,
+      onSubmit: _submitComment,
     );
   }
 }
