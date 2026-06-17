@@ -13,12 +13,11 @@ dependencies:
 
   cupertino_icons: ^1.0.8
   dio: ^5.7.0
-  firebase_core: ^4.1.1
-  firebase_messaging: ^16.0.1
   json_annotation: ^4.9.0
   shared_preferences: ^2.5.2
   flutter_local_notifications: ^21.0.0
   flutter_secure_storage: ^10.0.0
+  jpush_flutter: ^3.4.6
   permission_handler: ^12.0.1
   flutter_screenutil: ^5.9.3
   flutter_riverpod: ^3.3.1

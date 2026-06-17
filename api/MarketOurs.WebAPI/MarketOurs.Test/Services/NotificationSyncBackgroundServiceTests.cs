@@ -19,6 +19,7 @@ public class NotificationSyncBackgroundServiceTests
             user: new UserModel
             {
                 Id = "user_1",
+                PushProvider = PushProviderType.JPush,
                 PushToken = "token_1",
                 PushSettings = "{\"enableEmailNotifications\":false,\"enableHotListPush\":true,\"enableCommentReplyPush\":true}"
             });
@@ -35,12 +36,14 @@ public class NotificationSyncBackgroundServiceTests
         await fixture.RunUntilProcessedAsync();
 
         fixture.PushService.Verify(x => x.SendPushNotificationAsync(
-            "token_1",
-            "标题",
-            "内容",
-            It.Is<Dictionary<string, string>>(data =>
-                data["type"] == NotificationType.CommentReply.ToString() &&
-                data["targetId"] == "post_1")),
+            It.Is<PushSendRequest>(request =>
+                request.Provider == PushProviderType.JPush &&
+                request.PushToken == "token_1" &&
+                request.Title == "标题" &&
+                request.Body == "内容" &&
+                request.Data != null &&
+                request.Data["type"] == NotificationType.CommentReply.ToString() &&
+                request.Data["targetId"] == "post_1")),
             Times.Once);
     }
 
@@ -51,6 +54,7 @@ public class NotificationSyncBackgroundServiceTests
             user: new UserModel
             {
                 Id = "user_1",
+                PushProvider = PushProviderType.JPush,
                 PushToken = "token_1",
                 PushSettings = "{\"enableEmailNotifications\":false,\"enableHotListPush\":true,\"enableCommentReplyPush\":false}"
             });
@@ -67,10 +71,7 @@ public class NotificationSyncBackgroundServiceTests
         await fixture.RunUntilProcessedAsync();
 
         fixture.PushService.Verify(x => x.SendPushNotificationAsync(
-            It.IsAny<string>(),
-            It.IsAny<string>(),
-            It.IsAny<string>(),
-            It.IsAny<IDictionary<string, string>>()),
+            It.IsAny<PushSendRequest>()),
             Times.Never);
     }
 
@@ -81,6 +82,7 @@ public class NotificationSyncBackgroundServiceTests
             user: new UserModel
             {
                 Id = "user_1",
+                PushProvider = PushProviderType.JPush,
                 PushToken = "token_1",
                 PushSettings = "{\"enableEmailNotifications\":false,\"enableHotListPush\":false,\"enableCommentReplyPush\":false}"
             });
@@ -96,10 +98,11 @@ public class NotificationSyncBackgroundServiceTests
         await fixture.RunUntilProcessedAsync();
 
         fixture.PushService.Verify(x => x.SendPushNotificationAsync(
-            "token_1",
-            "系统标题",
-            "系统内容",
-            It.IsAny<IDictionary<string, string>>()),
+            It.Is<PushSendRequest>(request =>
+                request.Provider == PushProviderType.JPush &&
+                request.PushToken == "token_1" &&
+                request.Title == "系统标题" &&
+                request.Body == "系统内容")),
             Times.Once);
     }
 
@@ -109,17 +112,14 @@ public class NotificationSyncBackgroundServiceTests
         var user = new UserModel
         {
             Id = "user_1",
+            PushProvider = PushProviderType.JPush,
             PushToken = "token_1",
             PushSettings = "{\"enableEmailNotifications\":false,\"enableHotListPush\":true,\"enableCommentReplyPush\":true}"
         };
         var fixture = CreateFixture(user: user);
         fixture.PushService
-            .Setup(x => x.SendPushNotificationAsync(
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<IDictionary<string, string>>()))
-            .ThrowsAsync(new FirebasePushException("invalid token", true));
+            .Setup(x => x.SendPushNotificationAsync(It.IsAny<PushSendRequest>()))
+            .ThrowsAsync(new PushSendException("invalid token", true));
 
         fixture.Queue.Enqueue(new NotificationMessage
         {
@@ -134,6 +134,7 @@ public class NotificationSyncBackgroundServiceTests
 
         fixture.UserRepo.Verify(x => x.UpdateAsync(It.Is<UserModel>(u =>
             u.Id == "user_1" &&
+            u.PushProvider == null &&
             u.PushToken == string.Empty)), Times.Once);
     }
 

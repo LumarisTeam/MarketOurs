@@ -207,17 +207,17 @@ public class UserController(
     /// <summary>
     /// 更新当前登录用户的移动端推送 Token (用于移动端消息推送)
     /// </summary>
-    /// <param name="token">FCM 或其他平台的推送 Token</param>
+    /// <param name="request">推送 Provider 与 Token</param>
     /// <returns>操作结果描述</returns>
     [HttpPost("push-token")]
     [Authorize]
-    public async Task<ApiResponse> UpdatePushToken([FromBody] string token)
+    public async Task<ApiResponse> UpdatePushToken([FromBody] UpdatePushTokenRequest request)
     {
         var userId = this.GetRequiredUserId();
 
         logger.LogInformation("User updating their push token: {Id}", userId);
         
-        await userService.UpdatePushTokenAsync(userId, token);
+        await userService.UpdatePushTokenAsync(userId, request.Provider, request.Token);
         return ApiResponse.Success("更新成功");
     }
 

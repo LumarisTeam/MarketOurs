@@ -120,7 +120,7 @@ public interface IUserService
     /// <summary>
     /// 更新用户的推送 Token (用于移动端推送)
     /// </summary>
-    Task<bool> UpdatePushTokenAsync(string userId, string token);
+    Task<bool> UpdatePushTokenAsync(string userId, string? provider, string token);
 
     /// <summary>
     /// 修改密码
@@ -536,12 +536,12 @@ public class UserService(
     }
 
     /// <inheritdoc/>
-    public async Task<bool> UpdatePushTokenAsync(string userId, string token)
+    public async Task<bool> UpdatePushTokenAsync(string userId, string? provider, string token)
     {
-        var user = await userRepo.GetByIdAsync(userId);
-        if (user == null) throw new ResourceAccessException(ErrorCode.UserNotFound, "用户不存在");
-
-        user.PushToken = token;
+        var user = await userRepo.GetByIdAsync(userId) ?? throw new ResourceAccessException(ErrorCode.UserNotFound, "用户不存在");
+        var normalizedProvider = NormalizePushProvider(provider, token);
+        user.PushProvider = normalizedProvider;
+        user.PushToken = string.IsNullOrWhiteSpace(token) ? string.Empty : token.Trim();
         await userRepo.UpdateAsync(user);
         return true;
     }
@@ -618,10 +618,32 @@ public class UserService(
             IsEmailVerified = user.IsEmailVerified,
             IsPhoneVerified = user.IsPhoneVerified,
             PushSettings = user.PushSettings,
+            PushProvider = user.PushProvider,
             GithubId = user.GithubId,
             GoogleId = user.GoogleId,
             WeixinId = user.WeixinId,
             OursId = user.OursId
+        };
+    }
+
+    private static string? NormalizePushProvider(string? provider, string token)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return null;
+        }
+
+        if (string.IsNullOrWhiteSpace(provider))
+        {
+            throw new ValidationException(ErrorCode.ParameterFormatError, "推送 Provider 不能为空");
+        }
+
+        var normalized = provider.Trim().ToLowerInvariant();
+        return normalized switch
+        {
+            "jpush" => normalized,
+            "firebase" => normalized,
+            _ => throw new ValidationException(ErrorCode.ParameterFormatError, "不支持的推送 Provider")
         };
     }
 

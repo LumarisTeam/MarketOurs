@@ -17,6 +17,7 @@ class UserDto {
   final bool? isEmailVerified;
   final bool? isPhoneVerified;
   final String? pushSettings;
+  final String? pushProvider;
   final String? githubId;
   final String? googleId;
   final String? weixinId;
@@ -36,6 +37,7 @@ class UserDto {
     this.isEmailVerified,
     this.isPhoneVerified,
     this.pushSettings,
+    this.pushProvider,
     this.githubId,
     this.googleId,
     this.weixinId,

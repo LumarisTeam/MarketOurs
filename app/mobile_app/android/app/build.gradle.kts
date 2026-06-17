@@ -8,17 +8,26 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-if (file("google-services.json").exists()) {
-    apply(plugin = "com.google.gms.google-services")
-} else {
-    logger.warn("google-services.json not found. Firebase services are disabled for this build.")
-}
-
 val keystoreProperties = Properties()
 val keystorePropertiesFile = rootProject.file("key.properties")
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
+}
+
+val jpushAppKey = providers.gradleProperty("JPUSH_APPKEY")
+    .orElse(localProperties.getProperty("JPUSH_APPKEY") ?: "")
+    .orElse(providers.environmentVariable("JPUSH_APPKEY"))
+    .orElse("")
+val jpushChannel = providers.gradleProperty("JPUSH_CHANNEL")
+    .orElse(localProperties.getProperty("JPUSH_CHANNEL") ?: "")
+    .orElse(providers.environmentVariable("JPUSH_CHANNEL"))
+    .orElse("developer-default")
 
 android {
     namespace = "com.luckyfish.lumalis"
@@ -53,6 +62,9 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders["JPUSH_PKGNAME"] = applicationId
+        manifestPlaceholders["JPUSH_APPKEY"] = jpushAppKey.get()
+        manifestPlaceholders["JPUSH_CHANNEL"] = jpushChannel.get()
     }
 
     buildTypes {

@@ -2,25 +2,16 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
+import 'package:jpush_flutter/jpush_flutter.dart';
+import 'package:jpush_flutter/jpush_interface.dart';
 
-import '../firebase_options.dart';
 import '../models/api_response.dart';
 import '../router/app_router.dart';
 import 'api_service.dart';
 import 'app_logger.dart';
-
-@pragma('vm:entry-point')
-Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  AppLogger.info(
-    'PushNotificationService',
-    'Received background FCM message',
-    context: {'messageId': message.messageId, 'data': message.data},
-  );
-}
 
 @pragma('vm:entry-point')
 void notificationTapBackground(NotificationResponse response) {
@@ -36,21 +27,19 @@ class PushNotificationService {
 
   static final PushNotificationService instance = PushNotificationService._();
 
+  static const String provider = 'jpush';
   static const String channelId = 'marketours_notifications';
   static const String channelName = '光汇 通知';
   static const String channelDescription = '用于评论回复、热门动态与系统提醒';
   static const String _tokenEndpoint = '/User/push-token';
 
   final Dio _api = ApiService().dio;
-  final FirebaseMessaging _messaging = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
+  final JPushFlutterInterface _jpush = JPush.newJPush();
 
   bool _localNotificationsReady = false;
   bool _initialized = false;
-  StreamSubscription<RemoteMessage>? _foregroundMessageSubscription;
-  StreamSubscription<RemoteMessage>? _messageOpenedSubscription;
-  StreamSubscription<String>? _tokenRefreshSubscription;
   String? _registeredToken;
   GoRouter? _router;
 
@@ -68,73 +57,35 @@ class PushNotificationService {
       return;
     }
 
-    if (!DefaultFirebaseOptions.isConfigured) {
-      AppLogger.warn(
-        'PushNotificationService',
-        'Firebase options are not configured. Skipping push setup.',
-      );
-      return;
-    }
-
     if (_initialized) {
-      await _handleInitialMessage();
       return;
     }
 
     await _initializeLocalNotifications();
-    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-
-    final permission = await _messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-      announcement: false,
-      criticalAlert: false,
-      provisional: false,
-      carPlay: false,
-    );
-    AppLogger.info(
-      'PushNotificationService',
-      'Notification permission updated',
-      context: {'status': permission.authorizationStatus.name},
-    );
-
-    await _messaging.setForegroundNotificationPresentationOptions(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
-
-    _foregroundMessageSubscription ??= FirebaseMessaging.onMessage.listen(
-      _handleForegroundMessage,
-    );
-    _messageOpenedSubscription ??= FirebaseMessaging.onMessageOpenedApp.listen(
-      _handleMessageTap,
-    );
-
-    _tokenRefreshSubscription = _messaging.onTokenRefresh.listen((token) async {
-      await _registerToken(token);
-    });
-
-    final token = await _messaging.getToken();
-    if (token != null && token.isNotEmpty) {
-      await _registerToken(token);
-    }
-
+    await _initializeJPush();
     _initialized = true;
-    await _handleInitialMessage();
   }
 
   Future<void> syncCurrentToken() async {
-    if (!isSupported || !DefaultFirebaseOptions.isConfigured) return;
-    final token = await _messaging.getToken();
-    if (token != null && token.isNotEmpty) {
-      await _registerToken(token);
+    if (!isSupported) return;
+
+    try {
+      final registrationId = await _jpush.getRegistrationID();
+      if (registrationId.isNotEmpty) {
+        await _registerToken(registrationId);
+      }
+    } catch (error, stackTrace) {
+      AppLogger.error(
+        'PushNotificationService',
+        'Failed to sync current JPush registration id',
+        error: error,
+        stackTrace: stackTrace,
+      );
     }
   }
 
   Future<void> clearRegisteredToken() async {
-    if (!isSupported || !DefaultFirebaseOptions.isConfigured) return;
+    if (!isSupported) return;
 
     try {
       await _updateTokenOnBackend('');
@@ -153,13 +104,45 @@ class PushNotificationService {
     }
   }
 
-  Future<void> dispose() async {
-    await _foregroundMessageSubscription?.cancel();
-    await _messageOpenedSubscription?.cancel();
-    await _tokenRefreshSubscription?.cancel();
-    _foregroundMessageSubscription = null;
-    _messageOpenedSubscription = null;
-    _tokenRefreshSubscription = null;
+  Future<void> dispose() async {}
+
+  Future<void> _initializeJPush() async {
+    _jpush.addEventHandler(
+      onReceiveNotification: (message) async {
+        await _handleForegroundNotification(message);
+      },
+      onOpenNotification: (message) async {
+        _handleNotificationTap(message);
+      },
+    );
+
+    try {
+      _jpush.setup(
+        appKey: '',
+        channel: 'developer-default',
+        production: false,
+        debug: !kReleaseMode,
+      );
+      _jpush.applyPushAuthority(
+        const NotificationSettingsIOS(sound: true, alert: true, badge: true),
+      );
+      final registrationId = await _jpush.getRegistrationID();
+      if (registrationId.isNotEmpty) {
+        await _registerToken(registrationId);
+      } else {
+        AppLogger.warn(
+          'PushNotificationService',
+          'JPush registration id is empty. Push token sync skipped.',
+        );
+      }
+    } catch (error, stackTrace) {
+      AppLogger.error(
+        'PushNotificationService',
+        'JPush initialization failed. Push notifications are disabled.',
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
   }
 
   Future<void> _initializeLocalNotifications() async {
@@ -221,7 +204,10 @@ class PushNotificationService {
   }
 
   Future<void> _updateTokenOnBackend(String token) async {
-    final response = await _api.post(_tokenEndpoint, data: token);
+    final response = await _api.post(
+      _tokenEndpoint,
+      data: {'provider': token.isEmpty ? null : provider, 'token': token},
+    );
     final apiRes = ApiResponse<Object?>.fromJson(
       response.data as Map<String, dynamic>,
       (json) => json,
@@ -235,16 +221,10 @@ class PushNotificationService {
     }
   }
 
-  Future<void> _handleInitialMessage() async {
-    final initialMessage = await _messaging.getInitialMessage();
-    if (initialMessage != null) {
-      _handleMessageTap(initialMessage);
-    }
-  }
-
-  Future<void> _handleForegroundMessage(RemoteMessage message) async {
-    final title = message.notification?.title ?? '光汇通知';
-    final body = message.notification?.body ?? '';
+  Future<void> _handleForegroundNotification(Map<dynamic, dynamic> message) async {
+    final extras = _extractPayloadData(message);
+    final title = _extractString(message, ['title', 'cn_title']) ?? '光汇通知';
+    final body = _extractString(message, ['alert', 'message']) ?? '';
 
     final details = NotificationDetails(
       android: AndroidNotificationDetails(
@@ -259,11 +239,11 @@ class PushNotificationService {
     );
 
     await _localNotifications.show(
-      id: message.hashCode,
+      id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
       title: title,
       body: body,
       notificationDetails: details,
-      payload: jsonEncode(message.data),
+      payload: jsonEncode(extras),
     );
   }
 
@@ -271,8 +251,8 @@ class PushNotificationService {
     _handlePayloadNavigation(response.payload);
   }
 
-  void _handleMessageTap(RemoteMessage message) {
-    _navigateFromData(message.data);
+  void _handleNotificationTap(Map<dynamic, dynamic> message) {
+    _navigateFromData(_extractPayloadData(message));
   }
 
   void _handlePayloadNavigation(String? payload) {
@@ -306,5 +286,46 @@ class PushNotificationService {
     }
 
     _router?.go(AppRoutePaths.notifications);
+  }
+
+  Map<String, dynamic> _extractPayloadData(Map<dynamic, dynamic> message) {
+    final extras = message['extras'];
+    if (extras is Map) {
+      return Map<String, dynamic>.from(
+        extras.map((key, value) => MapEntry(key.toString(), value)),
+      );
+    }
+
+    final content = message['content'];
+    if (content is Map && content['n_extras'] is Map) {
+      return Map<String, dynamic>.from(
+        (content['n_extras'] as Map).map(
+          (key, value) => MapEntry(key.toString(), value),
+        ),
+      );
+    }
+
+    return <String, dynamic>{};
+  }
+
+  String? _extractString(Map<dynamic, dynamic> message, List<String> keys) {
+    for (final key in keys) {
+      final value = message[key];
+      if (value is String && value.isNotEmpty) {
+        return value;
+      }
+    }
+
+    final content = message['content'];
+    if (content is Map) {
+      for (final key in keys) {
+        final value = content[key];
+        if (value is String && value.isNotEmpty) {
+          return value;
+        }
+      }
+    }
+
+    return null;
   }
 }

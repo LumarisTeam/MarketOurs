@@ -82,7 +82,12 @@ GOOGLE_CLIENTSECRET=
 WEIXIN_CLIENTID=
 WEIXIN_CLIENTSECRET=
 
-# Firebase Cloud Messaging 服务端推送配置 (可选)
+# 极光推送服务端推送配置 (推荐)
+JPUSH_APP_KEY=
+JPUSH_MASTER_SECRET=
+JPUSH_CHANNEL=developer-default
+
+# Firebase Cloud Messaging 服务端推送配置 (可选，作为回滚 Provider)
 FIREBASE_SERVICE_ACCOUNT_PATH=/absolute/path/to/firebase-service-account.json
 FIREBASE_PROJECT_ID=
 ```
@@ -111,13 +116,14 @@ dotnet run
 
 ## 📲 Android 推送通知
 
-通知后台服务现在支持通过 Firebase Cloud Messaging 向 Android `MobileApp` 下发系统通知。
+通知后台服务现在支持通过可插拔 Push Provider 向 Android `MobileApp` 下发系统通知，默认推荐使用极光推送。
 
-- 当 `FIREBASE_SERVICE_ACCOUNT_PATH` 指向有效服务账号 JSON 时，后端会启用真实 FCM 推送。
-- 当该环境变量缺失或文件不存在时，系统会自动回退到 `MockPushService`，仅记录日志，不影响本地开发启动。
+- 当 `JPUSH_APP_KEY` 与 `JPUSH_MASTER_SECRET` 都存在时，后端会启用 JPush Provider。
+- 当 `FIREBASE_SERVICE_ACCOUNT_PATH` 指向有效服务账号 JSON 时，后端还会额外注册 Firebase Provider，便于回滚。
+- 当以上真实 Provider 都未配置时，系统会自动回退到 `MockPushProvider`，仅记录日志，不影响本地开发启动。
 - 推送载荷会包含：
-  - `notification.title`
-  - `notification.body`
+  - `title`
+  - `body`
   - `data.type`
   - `data.targetId`
 

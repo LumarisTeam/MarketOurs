@@ -61,7 +61,7 @@ public class NotificationSyncBackgroundService(
                         }
 
                         // 3. 发送移动端推送 (如果有 PushToken)
-                        if (!string.IsNullOrEmpty(user.PushToken))
+                        if (!string.IsNullOrEmpty(user.PushToken) && !string.IsNullOrEmpty(user.PushProvider))
                         {
                             bool shouldPush = message.Type switch
                             {
@@ -79,11 +79,19 @@ public class NotificationSyncBackgroundService(
                                 };
                                 try
                                 {
-                                    await pushService.SendPushNotificationAsync(user.PushToken, message.Title, message.Content, data);
+                                    await pushService.SendPushNotificationAsync(new PushSendRequest
+                                    {
+                                        Provider = user.PushProvider,
+                                        PushToken = user.PushToken,
+                                        Title = message.Title,
+                                        Body = message.Content,
+                                        Data = data
+                                    });
                                     logger.LogInformation("Sent mobile push notification to user {UserId}", message.UserId);
                                 }
-                                catch (FirebasePushException ex) when (ex.IsTokenInvalid)
+                                catch (PushSendException ex) when (ex.IsTokenInvalid)
                                 {
+                                    user.PushProvider = null;
                                     user.PushToken = string.Empty;
                                     await userRepo.UpdateAsync(user);
                                     logger.LogWarning(

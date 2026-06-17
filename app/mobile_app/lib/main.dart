@@ -1,18 +1,13 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'firebase_options.dart';
 import 'providers/theme_provider.dart';
 import 'router/app_router.dart';
-import 'services/app_logger.dart';
 import 'services/push_notification_service.dart';
 import 'ui/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await _initializeFirebaseIfConfigured();
   runApp(const ProviderScope(child: MarketOursApp()));
 }
 
@@ -60,35 +55,6 @@ class MarketOursApp extends ConsumerWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-Future<void> _initializeFirebaseIfConfigured() async {
-  if (kIsWeb || !DefaultFirebaseOptions.isConfigured) {
-    AppLogger.warn(
-      'Bootstrap',
-      'Firebase is not configured. Push notifications will stay disabled.',
-    );
-    return;
-  }
-
-  try {
-    final options = DefaultFirebaseOptions.currentPlatform;
-    if (options == null) {
-      AppLogger.warn(
-        'Bootstrap',
-        'Firebase options missing for current platform. Push disabled.',
-      );
-      return;
-    }
-    await Firebase.initializeApp(options: options);
-  } catch (error, stackTrace) {
-    AppLogger.error(
-      'Bootstrap',
-      'Firebase initialization failed. Push notifications are disabled.',
-      error: error,
-      stackTrace: stackTrace,
     );
   }
 }

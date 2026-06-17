@@ -138,7 +138,13 @@ public class UserModel : DataModel
     public string? PushSettings { get; set; }
 
     /// <summary>
-    /// 移动端推送 Token (如 FCM Token)
+    /// 当前推送 Token 所属 Provider (如 jpush / firebase)
+    /// </summary>
+    [MaxLength(32)]
+    public string? PushProvider { get; set; }
+
+    /// <summary>
+    /// 移动端推送 Token (如 JPush registrationId)
     /// </summary>
     [MaxLength(2048)]
     public string? PushToken { get; set; }
@@ -169,6 +175,7 @@ public class UserModel : DataModel
         IsEmailVerified = userModel.IsEmailVerified;
         IsPhoneVerified = userModel.IsPhoneVerified;
         PushSettings = userModel.PushSettings;
+        PushProvider = userModel.PushProvider;
         PushToken = userModel.PushToken;
         GithubId = userModel.GithubId;
         GoogleId = userModel.GoogleId;

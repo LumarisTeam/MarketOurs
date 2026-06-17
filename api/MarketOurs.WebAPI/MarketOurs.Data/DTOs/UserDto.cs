@@ -73,6 +73,11 @@ public class UserDto
     public string? PushSettings { get; set; }
 
     /// <summary>
+    /// 当前已注册的推送 Provider
+    /// </summary>
+    public string? PushProvider { get; set; }
+
+    /// <summary>
     /// 第三方绑定 ID
     /// </summary>
     public string? GithubId { get; set; }
@@ -216,6 +221,24 @@ public class UserUpdateDto
     public string? GoogleId { get; set; }
     public string? WeixinId { get; set; }
     public string? OursId { get; set; }
+}
+
+/// <summary>
+/// 更新用户推送 token 的请求对象
+/// </summary>
+public class UpdatePushTokenRequest
+{
+    /// <summary>
+    /// 推送 Provider 标识，如 jpush
+    /// </summary>
+    [MaxLength(32, ErrorMessage = "推送 Provider 长度不能超过32位")]
+    public string? Provider { get; set; }
+
+    /// <summary>
+    /// 设备推送 token / registrationId
+    /// </summary>
+    [MaxLength(2048, ErrorMessage = "推送 Token 长度不能超过2048位")]
+    public string Token { get; set; } = string.Empty;
 }
 
 /// <summary>

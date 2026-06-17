@@ -59,20 +59,37 @@ public static class ServiceCollectionExtensions
 
     private static void RegisterPushService(IServiceCollection services)
     {
+        services.AddHttpClient();
+
         var serviceAccountPath = Environment.GetEnvironmentVariable("FIREBASE_SERVICE_ACCOUNT_PATH", EnvironmentVariableTarget.Process);
         var projectId = Environment.GetEnvironmentVariable("FIREBASE_PROJECT_ID", EnvironmentVariableTarget.Process);
+        var jpushAppKey = Environment.GetEnvironmentVariable("JPUSH_APP_KEY", EnvironmentVariableTarget.Process);
+        var jpushMasterSecret = Environment.GetEnvironmentVariable("JPUSH_MASTER_SECRET", EnvironmentVariableTarget.Process);
+        var jpushChannel = Environment.GetEnvironmentVariable("JPUSH_CHANNEL", EnvironmentVariableTarget.Process);
+
+        services.AddSingleton<IPushService, PushService>();
+
+        if (!string.IsNullOrWhiteSpace(jpushAppKey) && !string.IsNullOrWhiteSpace(jpushMasterSecret))
+        {
+            services.AddSingleton<IPushProvider>(sp =>
+                new JPushProvider(
+                    sp.GetRequiredService<IHttpClientFactory>().CreateClient(nameof(JPushProvider)),
+                    sp.GetRequiredService<ILogger<JPushProvider>>(),
+                    jpushAppKey,
+                    jpushMasterSecret,
+                    jpushChannel));
+        }
 
         if (!string.IsNullOrWhiteSpace(serviceAccountPath) && File.Exists(serviceAccountPath))
         {
-            services.AddSingleton<IPushService>(sp =>
-                new FirebasePushService(
-                    sp.GetRequiredService<ILogger<FirebasePushService>>(),
+            services.AddSingleton<IPushProvider>(sp =>
+                new FirebasePushProvider(
+                    sp.GetRequiredService<ILogger<FirebasePushProvider>>(),
                     serviceAccountPath,
                     projectId));
-            return;
         }
 
-        services.AddScoped<IPushService, MockPushService>();
+        services.AddSingleton<IPushProvider, MockPushProvider>();
     }
 
     /// <summary>
