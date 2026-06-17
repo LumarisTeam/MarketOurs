@@ -81,6 +81,10 @@ GOOGLE_CLIENTID=
 GOOGLE_CLIENTSECRET=
 WEIXIN_CLIENTID=
 WEIXIN_CLIENTSECRET=
+
+# Firebase Cloud Messaging 服务端推送配置 (可选)
+FIREBASE_SERVICE_ACCOUNT_PATH=/absolute/path/to/firebase-service-account.json
+FIREBASE_PROJECT_ID=
 ```
 
 ### 运行应用
@@ -104,6 +108,18 @@ dotnet run
 - `BLOB_BASE_PATH`: Blob 内的目录前缀，默认 `uploads`。
 
 返回值将是完整的公网图片 URL，可直接存入帖子 `images` 字段。
+
+## 📲 Android 推送通知
+
+通知后台服务现在支持通过 Firebase Cloud Messaging 向 Android `MobileApp` 下发系统通知。
+
+- 当 `FIREBASE_SERVICE_ACCOUNT_PATH` 指向有效服务账号 JSON 时，后端会启用真实 FCM 推送。
+- 当该环境变量缺失或文件不存在时，系统会自动回退到 `MockPushService`，仅记录日志，不影响本地开发启动。
+- 推送载荷会包含：
+  - `notification.title`
+  - `notification.body`
+  - `data.type`
+  - `data.targetId`
 
 ## 📚 API 文档与监控
 

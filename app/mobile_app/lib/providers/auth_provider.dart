@@ -10,6 +10,7 @@ import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/auth_storage.dart';
 import '../services/error_messages.dart';
+import '../services/push_notification_service.dart';
 import '../services/user_service.dart';
 import 'post_feed_provider.dart';
 
@@ -178,6 +179,7 @@ class AuthController extends AsyncNotifier<AuthState> {
           ),
         ),
       );
+      await PushNotificationService.instance.syncCurrentToken();
       return true;
     } catch (error) {
       if (savedTokens) {
@@ -252,6 +254,7 @@ class AuthController extends AsyncNotifier<AuthState> {
           ),
         ),
       );
+      await PushNotificationService.instance.syncCurrentToken();
       return true;
     } catch (error) {
       if (savedTokens) {
@@ -354,6 +357,7 @@ class AuthController extends AsyncNotifier<AuthState> {
     state = AsyncData(current.copyWith(isSubmitting: true, clearError: true));
 
     try {
+      await PushNotificationService.instance.clearRegisteredToken();
       final deviceType =
           (!kIsWeb) &&
               (Platform.isLinux || Platform.isMacOS || Platform.isWindows)
@@ -523,6 +527,7 @@ class AuthController extends AsyncNotifier<AuthState> {
           ),
         ),
       );
+      await PushNotificationService.instance.syncCurrentToken();
       return true;
     } catch (error) {
       if (savedTokens) {

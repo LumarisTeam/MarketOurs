@@ -44,7 +44,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPostTagService, PostTagService>();
         services.AddScoped<ICommentService, CommentService>();
         services.AddScoped<INotificationService, NotificationService>();
-        services.AddScoped<IPushService, MockPushService>();
+        RegisterPushService(services);
         services.AddScoped<ITemplateService, FluidTemplateService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<ISmsService, UniSmsService>();
@@ -55,6 +55,24 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISensitiveWordService, SensitiveWordService>();
 
         services.AddScoped<IJwtService, JwtService>();
+    }
+
+    private static void RegisterPushService(IServiceCollection services)
+    {
+        var serviceAccountPath = Environment.GetEnvironmentVariable("FIREBASE_SERVICE_ACCOUNT_PATH", EnvironmentVariableTarget.Process);
+        var projectId = Environment.GetEnvironmentVariable("FIREBASE_PROJECT_ID", EnvironmentVariableTarget.Process);
+
+        if (!string.IsNullOrWhiteSpace(serviceAccountPath) && File.Exists(serviceAccountPath))
+        {
+            services.AddSingleton<IPushService>(sp =>
+                new FirebasePushService(
+                    sp.GetRequiredService<ILogger<FirebasePushService>>(),
+                    serviceAccountPath,
+                    projectId));
+            return;
+        }
+
+        services.AddScoped<IPushService, MockPushService>();
     }
 
     /// <summary>

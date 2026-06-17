@@ -77,8 +77,20 @@ public class NotificationSyncBackgroundService(
                                     ["type"] = message.Type.ToString(),
                                     ["targetId"] = message.TargetId ?? ""
                                 };
-                                await pushService.SendPushNotificationAsync(user.PushToken, message.Title, message.Content, data);
-                                logger.LogInformation("Sent mobile push notification to user {UserId}", message.UserId);
+                                try
+                                {
+                                    await pushService.SendPushNotificationAsync(user.PushToken, message.Title, message.Content, data);
+                                    logger.LogInformation("Sent mobile push notification to user {UserId}", message.UserId);
+                                }
+                                catch (FirebasePushException ex) when (ex.IsTokenInvalid)
+                                {
+                                    user.PushToken = string.Empty;
+                                    await userRepo.UpdateAsync(user);
+                                    logger.LogWarning(
+                                        ex,
+                                        "Cleared invalid push token for user {UserId}",
+                                        message.UserId);
+                                }
                             }
                         }
                     }
