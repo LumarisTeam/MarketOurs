@@ -152,19 +152,26 @@ class PostDetailHero extends StatelessWidget {
                     tag: 'image_${post.images?[itemIndex]}',
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(AppRadii.lg),
-                      child: Image.network(
-                        post.images?[itemIndex] ?? '',
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        gaplessPlayback: true,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          height: 200,
+                      child: ColoredBox(
+                        color: CupertinoDynamicColor.resolve(
+                          AppColors.secondary,
+                          context,
+                        ),
+                        child: Image.network(
+                          post.images?[itemIndex] ?? '',
                           width: double.infinity,
-                          color: AppColors.muted,
-                          child: const Icon(
-                            CupertinoIcons.photo,
-                            color: AppColors.mutedForeground,
-                          ),
+                          fit: BoxFit.cover,
+                          gaplessPlayback: true,
+                          errorBuilder:
+                              (context, error, stackTrace) => Container(
+                                height: 200,
+                                width: double.infinity,
+                                color: AppColors.muted,
+                                child: const Icon(
+                                  CupertinoIcons.photo,
+                                  color: AppColors.mutedForeground,
+                                ),
+                              ),
                         ),
                       ),
                     ),

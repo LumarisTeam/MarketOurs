@@ -320,17 +320,23 @@ class CommentImageGrid extends StatelessWidget {
                 tag: 'image_${images[i]}',
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(AppRadii.md),
-                  child: Image.network(
-                    images[i],
-                    width: previewSize,
-                    height: previewSize,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
+                  child: ColoredBox(
+                    color: CupertinoDynamicColor.resolve(
+                      AppColors.secondary,
+                      context,
+                    ),
+                    child: Image.network(
+                      images[i],
                       width: previewSize,
                       height: previewSize,
-                      color: AppColors.secondary,
-                      alignment: Alignment.center,
-                      child: const Icon(CupertinoIcons.photo),
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        width: previewSize,
+                        height: previewSize,
+                        color: AppColors.secondary,
+                        alignment: Alignment.center,
+                        child: const Icon(CupertinoIcons.photo),
+                      ),
                     ),
                   ),
                 ),
