@@ -40,6 +40,7 @@ class PushNotificationService {
 
   bool _localNotificationsReady = false;
   bool _initialized = false;
+  bool _isSyncingToken = false;
   String? _registeredToken;
   GoRouter? _router;
 
@@ -67,12 +68,18 @@ class PushNotificationService {
   }
 
   Future<void> syncCurrentToken() async {
-    if (!isSupported) return;
+    if (!isSupported || _isSyncingToken) return;
 
+    _isSyncingToken = true;
     try {
-      final registrationId = await _jpush.getRegistrationID();
-      if (registrationId.isNotEmpty) {
+      final registrationId = await _waitForRegistrationId();
+      if (registrationId != null && registrationId.isNotEmpty) {
         await _registerToken(registrationId);
+      } else {
+        AppLogger.warn(
+          'PushNotificationService',
+          'JPush registration id is still empty after retries',
+        );
       }
     } catch (error, stackTrace) {
       AppLogger.error(
@@ -81,6 +88,8 @@ class PushNotificationService {
         error: error,
         stackTrace: stackTrace,
       );
+    } finally {
+      _isSyncingToken = false;
     }
   }
 
@@ -114,6 +123,21 @@ class PushNotificationService {
       onOpenNotification: (message) async {
         _handleNotificationTap(message);
       },
+      onConnected: (message) async {
+        AppLogger.info(
+          'PushNotificationService',
+          'JPush connected',
+          context: {'message': AppLogger.stringifyValue(message)},
+        );
+        unawaited(syncCurrentToken());
+      },
+      onCommandResult: (message) async {
+        AppLogger.info(
+          'PushNotificationService',
+          'Received JPush command result',
+          context: {'message': AppLogger.stringifyValue(message)},
+        );
+      },
     );
 
     try {
@@ -126,15 +150,8 @@ class PushNotificationService {
       _jpush.applyPushAuthority(
         const NotificationSettingsIOS(sound: true, alert: true, badge: true),
       );
-      final registrationId = await _jpush.getRegistrationID();
-      if (registrationId.isNotEmpty) {
-        await _registerToken(registrationId);
-      } else {
-        AppLogger.warn(
-          'PushNotificationService',
-          'JPush registration id is empty. Push token sync skipped.',
-        );
-      }
+      _jpush.requestRequiredPermission();
+      await syncCurrentToken();
     } catch (error, stackTrace) {
       AppLogger.error(
         'PushNotificationService',
@@ -143,6 +160,34 @@ class PushNotificationService {
         stackTrace: stackTrace,
       );
     }
+  }
+
+  Future<String?> _waitForRegistrationId() async {
+    const delays = <Duration>[
+      Duration.zero,
+      Duration(seconds: 1),
+      Duration(seconds: 2),
+      Duration(seconds: 4),
+    ];
+
+    for (final delay in delays) {
+      if (delay > Duration.zero) {
+        await Future<void>.delayed(delay);
+      }
+
+      final registrationId = await _jpush.getRegistrationID();
+      final normalized = registrationId.trim();
+      if (normalized.isNotEmpty) {
+        AppLogger.info(
+          'PushNotificationService',
+          'Fetched JPush registration id',
+          context: {'registrationId': normalized},
+        );
+        return normalized;
+      }
+    }
+
+    return null;
   }
 
   Future<void> _initializeLocalNotifications() async {

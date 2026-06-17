@@ -21,6 +21,15 @@ if (localPropertiesFile.exists()) {
     localProperties.load(FileInputStream(localPropertiesFile))
 }
 
+val googleServicesFile = project.file("google-services.json")
+val enableFcm =
+    providers.gradleProperty("ENABLE_FCM")
+        .orElse(localProperties.getProperty("ENABLE_FCM") ?: "")
+        .orElse(providers.environmentVariable("ENABLE_FCM"))
+        .map { value -> value.equals("true", ignoreCase = true) }
+        .orElse(googleServicesFile.exists())
+        .get()
+
 val jpushAppKey = providers.gradleProperty("JPUSH_APPKEY")
     .orElse(localProperties.getProperty("JPUSH_APPKEY") ?: "")
     .orElse(providers.environmentVariable("JPUSH_APPKEY"))
@@ -62,6 +71,7 @@ android {
         manifestPlaceholders["JPUSH_PKGNAME"] = androidApplicationId
         manifestPlaceholders["JPUSH_APPKEY"] = jpushAppKey.get()
         manifestPlaceholders["JPUSH_CHANNEL"] = jpushChannel.get()
+        manifestPlaceholders["FCM_NOTIFICATION_ICON"] = "@drawable/ic_stat_marketours_notification"
     }
 
     buildTypes {
@@ -71,6 +81,12 @@ android {
             signingConfig = signingConfigs.getByName("release")
         }
     }
+}
+
+if (!enableFcm) {
+    logger.lifecycle(
+        "FCM channel is disabled for ${project.path}. Add android/app/google-services.json or set ENABLE_FCM=true to enable it.",
+    )
 }
 
 kotlin {
@@ -83,6 +99,14 @@ flutter {
     source = "../.."
 }
 
+if (enableFcm) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+    if (enableFcm) {
+        implementation("cn.jiguang.sdk.plugin:fcm:4.8.6")
+        implementation("com.google.firebase:firebase-messaging:24.1.2")
+    }
 }
