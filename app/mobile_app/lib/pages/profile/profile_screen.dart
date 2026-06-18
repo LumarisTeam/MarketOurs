@@ -150,6 +150,18 @@ class ProfileScreen extends ConsumerWidget {
                     const _ThemeModeSection(),
                     const SizedBox(height: 16),
                     _ProfileSection(
+                      title: AppLocalizations.of(context).settingsTitle,
+                      children: [
+                        _NavRow(
+                          icon: CupertinoIcons.globe,
+                          title: AppLocalizations.of(context).settingsLanguage,
+                          subtitle: AppLocalizations.of(context).themeHint,
+                          onTap: () => context.push(AppRoutePaths.language),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    _ProfileSection(
                       title: '关于',
                       children: [
                         _NavRow(
