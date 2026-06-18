@@ -14,6 +14,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 export function PostCard({ post, onDelete }: { post: PostDto; onDelete?: (id: string) => void }) {
   const navigate = useNavigate()
@@ -27,16 +37,14 @@ export function PostCard({ post, onDelete }: { post: PostDto; onDelete?: (id: st
   const displayName = isMe ? `${authorName} (${t("common.me", { defaultValue: "我" })})` : authorName
   const authorAvatar = post.author?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.userId}`
   const authorInitials = authorName.slice(0, 2).toUpperCase()
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
-  const handleDelete = async (e: React.MouseEvent) => {
-    e.stopPropagation()
-    if (window.confirm(t("post.confirm_delete"))) {
-      try {
-        await postService.deletePost(post.id)
-        onDelete?.(post.id)
-      } catch (err) {
-        console.error(err)
-      }
+  const handleDelete = async () => {
+    try {
+      await postService.deletePost(post.id)
+      onDelete?.(post.id)
+    } catch (err) {
+      console.error(err)
     }
   }
 
@@ -91,7 +99,7 @@ export function PostCard({ post, onDelete }: { post: PostDto; onDelete?: (id: st
           <Button
             variant="ghost"
             size="icon-sm"
-            onClick={handleDelete}
+            onClick={(e) => { e.stopPropagation(); setShowDeleteDialog(true) }}
             className="rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
             title={t("post.delete")}
           >
@@ -156,6 +164,21 @@ export function PostCard({ post, onDelete }: { post: PostDto; onDelete?: (id: st
           {shareFeedback}
         </p>
       ) : null}
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("post.delete")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("post.confirm_delete")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("post.cancel")}</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={handleDelete}>
+              {t("post.delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </article>
   )
 }

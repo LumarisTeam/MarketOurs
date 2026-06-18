@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
-import { AreaChart } from "../../components/ui/chart"
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid } from "recharts"
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "../../components/ui/chart"
 import { AlertCircle, Activity, FileText, MessageSquareWarning, Users } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { adminService } from "../../services/adminService"
@@ -96,7 +97,24 @@ export default function AdminDashboard() {
               </div>
 
               {chartData.length > 0 ? (
-                <AreaChart data={chartData} />
+                <ChartContainer
+                  config={{ value: { label: t("admin.dashboard.posts"), color: "hsl(var(--primary))" } }}
+                  className="h-[300px] w-full"
+                >
+                  <AreaChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis
+                      dataKey="date"
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                      tickFormatter={(d) => formatShortDate(d, i18n.resolvedLanguage)}
+                    />
+                    <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false} />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Area dataKey="value" fill="var(--color-value)" fillOpacity={0.15} stroke="var(--color-value)" strokeWidth={2} type="monotone" />
+                  </AreaChart>
+                </ChartContainer>
               ) : (
                 <div className="flex h-[300px] items-center justify-center rounded-3xl bg-muted/40 text-sm text-muted-foreground">
                   {t("admin.dashboard.no_activity")}

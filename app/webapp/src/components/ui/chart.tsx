@@ -1,3 +1,5 @@
+"use client"
+
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
 import type { TooltipValueType } from "recharts"
@@ -361,8 +363,6 @@ function getPayloadConfigFromPayload(
   return configLabelKey in config ? config[configLabelKey] : config[key]
 }
 
-const AreaChart = RechartsPrimitive.AreaChart
-
 export {
   ChartContainer,
   ChartTooltip,
@@ -370,5 +370,4 @@ export {
   ChartLegend,
   ChartLegendContent,
   ChartStyle,
-  AreaChart,
 }

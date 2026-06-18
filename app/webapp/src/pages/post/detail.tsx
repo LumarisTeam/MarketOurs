@@ -16,6 +16,16 @@ import { sharePost } from "@/lib/postShare"
 import { DTO_LIMITS, requiredMax } from "@/lib/dtoValidation"
 import { PostTagBadge } from "@/components/post/PostTagBadge"
 import { formatEditedRelativeTime } from "@/lib/dateTime"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 const MAX_COMMENT_IMAGES = 3;
 
 const commentLengthError = `评论内容长度不能超过 ${DTO_LIMITS.commentContentMax} 位`;
@@ -367,6 +377,7 @@ function CommentItem({
   const [replyUploadProgress, setReplyUploadProgress] = useState<number | null>(null);
   const [replySubmitting, setReplySubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const editPreviewRef = useRef<string[]>([]);
   const replyPreviewRef = useRef<string[]>([]);
 
@@ -409,13 +420,11 @@ function CommentItem({
   };
 
   const handleDelete = async () => {
-    if (window.confirm(t("post.confirm_delete"))) {
-      setIsDeleting(true);
-      try {
-        await onDelete(comment.id);
-      } finally {
-        setIsDeleting(false);
-      }
+    setIsDeleting(true);
+    try {
+      await onDelete(comment.id);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -595,8 +604,8 @@ function CommentItem({
                   {t("post.edit")}
                 </button>
               )}
-              <button 
-                onClick={handleDelete}
+              <button
+                onClick={() => setShowDeleteDialog(true)}
                 className="text-xs font-bold text-destructive/70 hover:text-destructive transition-colors"
               >
                 {t("post.delete")}
@@ -604,6 +613,21 @@ function CommentItem({
             </div>
           )}
         </div>
+
+        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t("post.delete")}</AlertDialogTitle>
+              <AlertDialogDescription>{t("post.confirm_delete")}</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t("post.cancel")}</AlertDialogCancel>
+              <AlertDialogAction variant="destructive" onClick={handleDelete}>
+                {t("post.delete")}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {isReplying && (
           <div className="mt-4 space-y-3 animate-in slide-in-from-top-2 duration-300">
@@ -711,6 +735,7 @@ export default function PostDetailPage() {
   const [likedComments, setLikedComments] = useState<Set<string>>(new Set())
   const [shareFeedback, setShareFeedback] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
+  const [showPostDeleteDialog, setShowPostDeleteDialog] = useState(false)
 
   // Editing state for post
   const [isEditingPost, setIsEditingPost] = useState(false)
@@ -832,7 +857,7 @@ export default function PostDetailPage() {
   }
 
   const handlePostDelete = async () => {
-    if (!id || !window.confirm(t("post.confirm_delete"))) return;
+    if (!id) return;
     setSubmitting(true);
     try {
       await postService.deletePost(id);
@@ -1089,8 +1114,8 @@ export default function PostDetailPage() {
                     {t("post.edit")}
                   </button>
                 )}
-                <button 
-                  onClick={handlePostDelete}
+                <button
+                  onClick={() => setShowPostDeleteDialog(true)}
                   className="px-4 py-1.5 rounded-full bg-muted hover:bg-destructive/10 hover:text-destructive transition-all text-sm font-bold"
                 >
                   {t("post.delete")}
@@ -1102,6 +1127,21 @@ export default function PostDetailPage() {
             </button>
           </div>
         </header>
+
+        <AlertDialog open={showPostDeleteDialog} onOpenChange={setShowPostDeleteDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t("post.delete")}</AlertDialogTitle>
+              <AlertDialogDescription>{t("post.confirm_delete")}</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t("post.cancel")}</AlertDialogCancel>
+              <AlertDialogAction variant="destructive" onClick={handlePostDelete}>
+                {t("post.delete")}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {post.images && post.images.length > 0 && (
           <PostImageCarousel key={post.id} images={post.images} imageLabel={`${t("nav.post")} image`} />
