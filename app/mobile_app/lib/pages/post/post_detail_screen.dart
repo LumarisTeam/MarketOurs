@@ -444,9 +444,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 
   void _reorderCommentImages(int oldIndex, int newIndex) {
     setState(() {
-      if (newIndex > oldIndex) newIndex--;
-      final entry = _commentImageEntries.removeAt(oldIndex);
-      _commentImageEntries.insert(newIndex, entry);
+      // Swap: the dragged item takes the drop target's position.
+      final entry = _commentImageEntries[oldIndex];
+      _commentImageEntries[oldIndex] = _commentImageEntries[newIndex];
+      _commentImageEntries[newIndex] = entry;
     });
   }
 
@@ -966,9 +967,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 reorderableEntries: imageEntries,
                 onReorderImages: (oldIndex, newIndex) {
                   setSheetState(() {
-                    if (newIndex > oldIndex) newIndex--;
-                    final entry = imageEntries.removeAt(oldIndex);
-                    imageEntries.insert(newIndex, entry);
+                    // Swap: the dragged item takes the drop target's position.
+                    final entry = imageEntries[oldIndex];
+                    imageEntries[oldIndex] = imageEntries[newIndex];
+                    imageEntries[newIndex] = entry;
                   });
                 },
                 onRemoveImageEntry: (id) {
