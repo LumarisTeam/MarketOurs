@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 
+import '../../../../l10n/app_localizations.dart';
 import '../../../models/comment.dart';
 import '../../../ui/app_theme.dart';
 import '../../../ui/app_widgets.dart';
@@ -202,7 +203,7 @@ class _CommentCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    formatRelativeDateTime(comment.createdAt),
+                    formatRelativeDateTime(comment.createdAt, AppLocalizations.of(context)),
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
