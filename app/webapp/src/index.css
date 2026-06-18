@@ -122,3 +122,20 @@
 .dark .glass-card {
   @apply bg-black/40 border-white/10;
 }
+
+/* Hot page — warm glass accent */
+.glass-warm {
+  @apply bg-gradient-to-br from-amber-50/70 via-white/60 to-white/50 backdrop-blur-xl border border-amber-100/30 shadow-md;
+}
+
+.dark .glass-warm {
+  @apply from-amber-950/20 via-neutral-950/60 to-neutral-950/40 border-amber-800/20;
+}
+
+.glass-card-warm {
+  @apply bg-white/60 backdrop-blur-xl border border-amber-100/20 shadow-sm;
+}
+
+.dark .glass-card-warm {
+  @apply bg-neutral-900/50 border-amber-800/10;
+}
