@@ -1,12 +1,16 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router";
 import { useTranslation } from "react-i18next";
-import { authService } from "../../services/authService";
-import { fileService } from "../../services/fileService";
-import { compressImage } from "../../services/imageCompression";
+import { authService } from "@/services/authService";
+import { fileService } from "@/services/fileService";
+import { compressImage } from "@/services/imageCompression";
 import { User, Mail, Lock, Loader2, ArrowRight, RefreshCw, Image, Camera } from "lucide-react";
-import { PasswordField } from "../../components/auth/PasswordField";
-import { DTO_LIMITS, passwordLength, requiredMax } from "../../lib/dtoValidation";
+import { PasswordField } from "@/components/auth/PasswordField";
+import { DTO_LIMITS, passwordLength, requiredMax } from "@/lib/dtoValidation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export default function RegisterPage() {
   const { t } = useTranslation();
@@ -51,7 +55,6 @@ export default function RegisterPage() {
     setShowAvatarOptions(false);
   };
 
-  // Generate a random avatar on mount
   useEffect(() => {
     generateRandomAvatar();
   }, []);
@@ -59,42 +62,29 @@ export default function RegisterPage() {
   const handleAvatarFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     setShowAvatarOptions(false);
     setError("");
-
     if (avatarPreview) URL.revokeObjectURL(avatarPreview);
     const previewUrl = URL.createObjectURL(file);
     setAvatarFile(file);
     setAvatarPreview(previewUrl);
     setAvatarUrl("");
-
     e.target.value = '';
   };
 
   const validateAccount = (value: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const phoneRegex = /^1[3-9]\d{9}$/;
-
     if (value.length > DTO_LIMITS.userAccountMax) {
       setAccountType('invalid');
       return false;
     }
-
-    if (emailRegex.test(value)) {
-      setAccountType('email');
-      return true;
-    } else if (phoneRegex.test(value)) {
-      setAccountType('phone');
-      return true;
-    } else {
-      setAccountType('invalid');
-      return false;
-    }
+    if (emailRegex.test(value)) { setAccountType('email'); return true; }
+    else if (phoneRegex.test(value)) { setAccountType('phone'); return true; }
+    else { setAccountType('invalid'); return false; }
   };
 
   const validatePassword = (value: string) => {
-    // At least 6 characters, one uppercase, one lowercase, one number
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
     const isValid = value.length <= DTO_LIMITS.userPasswordMax && passwordRegex.test(value);
     setIsPasswordValid(isValid);
@@ -117,53 +107,22 @@ export default function RegisterPage() {
     e.preventDefault();
     setIsLoading(true);
     setError("");
-
-    const nameError = requiredMax(
-      name,
-      DTO_LIMITS.userNameMax,
-      "用户名不能为空",
-      `用户名长度不能超过 ${DTO_LIMITS.userNameMax} 位`,
-    );
-    const accountError = requiredMax(
-      account,
-      DTO_LIMITS.userAccountMax,
-      "账号不能为空",
-      `账号长度不能超过 ${DTO_LIMITS.userAccountMax} 位`,
-    );
-    const passwordError = passwordLength(
-      password,
-      "密码不能为空",
-      `密码长度不能少于 ${DTO_LIMITS.userPasswordMin} 位`,
-      `密码长度不能超过 ${DTO_LIMITS.userPasswordMax} 位`,
-    );
+    const nameError = requiredMax(name, DTO_LIMITS.userNameMax, "用户名不能为空", `用户名长度不能超过 ${DTO_LIMITS.userNameMax} 位`);
+    const accountError = requiredMax(account, DTO_LIMITS.userAccountMax, "账号不能为空", `账号长度不能超过 ${DTO_LIMITS.userAccountMax} 位`);
+    const passwordError = passwordLength(password, "密码不能为空", `密码长度不能少于 ${DTO_LIMITS.userPasswordMin} 位`, `密码长度不能超过 ${DTO_LIMITS.userPasswordMax} 位`);
     if (nameError || accountError || passwordError || accountType === 'invalid' || !isPasswordValid) {
       setError(nameError || accountError || passwordError || t("auth.error_registration_failed"));
       setIsLoading(false);
       return;
     }
-
     try {
       let avatar = avatarUrl;
       if (avatarFile) {
-        // Compress avatar to WebP before upload
-        const compressed = await compressImage(avatarFile, {
-          quality: 0.85,
-          maxWidth: 512,
-          maxHeight: 512,
-        });
+        const compressed = await compressImage(avatarFile, { quality: 0.85, maxWidth: 512, maxHeight: 512 });
         const uploadResponse = await fileService.uploadAvatar(compressed);
-        if (uploadResponse.data) {
-          avatar = uploadResponse.data;
-        }
+        if (uploadResponse.data) avatar = uploadResponse.data;
       }
-
-      const response = await authService.register({
-        name,
-        account,
-        password,
-        avatar
-      });
-
+      const response = await authService.register({ name, account, password, avatar });
       if (response.data) {
         setRegToken(response.data);
         await authService.sendRegistrationCode(response.data);
@@ -194,12 +153,8 @@ export default function RegisterPage() {
     e.preventDefault();
     setIsLoading(true);
     setError("");
-
     try {
-      await authService.verifyRegistration({
-        registrationToken: regToken,
-        code: verificationCode
-      });
+      await authService.verifyRegistration({ registrationToken: regToken, code: verificationCode });
       navigate("/login");
     } catch (err: any) {
       setError(err.message || t("auth.error_registration_failed"));
@@ -209,138 +164,111 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto py-12 px-4">
-      <div className="glass-card rounded-[2.5rem] p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="mx-auto max-w-md py-8 sm:py-12 px-4">
+      <div className="glass-card rounded-3xl p-6 sm:p-8 space-y-7 animate-in fade-in zoom-in-95 duration-500">
+        {/* Header */}
         <div className="text-center space-y-2">
-          <div className="h-12 w-12 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20 mx-auto mb-4">
-            <span className="text-white font-bold text-2xl">M</span>
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary shadow-md shadow-primary/20">
+            <span className="text-xl font-bold text-primary-foreground">M</span>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
             {step === 1 ? t("auth.create_account") : t("auth.verification")}
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             {step === 1 ? t("auth.join_community") : t("auth.verification_instruction")}
           </p>
         </div>
 
         {error && (
-          <div className="p-4 rounded-2xl bg-destructive/10 text-destructive text-sm font-medium animate-in fade-in zoom-in duration-300">
+          <div className="rounded-2xl bg-destructive/10 p-4 text-sm font-medium text-destructive animate-in fade-in zoom-in-95 duration-300">
             {error}
           </div>
         )}
 
         {step === 1 ? (
-          <form onSubmit={handleRegister} className="space-y-6">
-            {/* Avatar Selection Area */}
-            <div className="flex flex-col items-center space-y-4">
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setShowAvatarOptions(!showAvatarOptions)}
-                  className="relative group cursor-pointer"
-                >
-                  <div className="h-24 w-24 rounded-full overflow-hidden border-4 border-primary/20 shadow-xl transition-transform hover:scale-105">
-                    <img
-                      src={avatarPreview || avatarUrl}
-                      alt="Avatar Preview"
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                  <div className="absolute -right-2 -bottom-2 p-2 bg-primary text-white rounded-full shadow-lg transition-all duration-500">
-                    <RefreshCw size={16} />
-                  </div>
-                </button>
-
-                {/* Avatar options popover */}
-                {showAvatarOptions && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-10"
-                      onClick={() => setShowAvatarOptions(false)}
-                    />
-                    <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 z-20 bg-card border border-border rounded-2xl shadow-xl p-2 min-w-[170px] animate-in fade-in zoom-in-95 duration-200">
-                      <button
-                        type="button"
-                        onClick={generateRandomAvatar}
-                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-muted text-sm font-semibold transition-colors"
-                      >
-                        <RefreshCw size={16} className="text-primary" />
-                        {t("auth.random_avatar") || "随机生成"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => galleryInputRef.current?.click()}
-                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-muted text-sm font-semibold transition-colors"
-                      >
-                        <Image size={16} className="text-primary" />
-                        {t("auth.pick_from_gallery") || "从相册选择"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => cameraInputRef.current?.click()}
-                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-muted text-sm font-semibold transition-colors"
-                      >
-                        <Camera size={16} className="text-primary" />
-                        {t("auth.take_photo") || "拍照"}
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
+          <form onSubmit={handleRegister} className="space-y-5">
+            {/* Avatar */}
+            <div className="flex flex-col items-center space-y-3">
+              <Popover open={showAvatarOptions} onOpenChange={setShowAvatarOptions}>
+                <PopoverTrigger
+                  render={
+                    <button type="button" className="group relative cursor-pointer">
+                      <Avatar className="h-24 w-24 rounded-full ring-4 ring-primary/20 shadow-xl transition-transform group-hover:scale-105">
+                        <AvatarImage src={avatarPreview || avatarUrl} />
+                        <AvatarFallback className="text-2xl bg-primary/10 text-primary">
+                          {name ? name.slice(0, 2).toUpperCase() : "?"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="absolute -right-1 -bottom-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white shadow-lg transition-all">
+                        <RefreshCw size={14} />
+                      </span>
+                    </button>
+                  }
+                />
+                <PopoverContent className="w-48 rounded-2xl p-1.5" align="center">
+                  <button
+                    type="button"
+                    onClick={generateRandomAvatar}
+                    className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium hover:bg-muted transition-colors"
+                  >
+                    <RefreshCw size={16} className="text-primary" />
+                    {t("auth.random_avatar") || "随机生成"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => galleryInputRef.current?.click()}
+                    className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium hover:bg-muted transition-colors"
+                  >
+                    <Image size={16} className="text-primary" />
+                    {t("auth.pick_from_gallery") || "从相册选择"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => cameraInputRef.current?.click()}
+                    className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium hover:bg-muted transition-colors"
+                  >
+                    <Camera size={16} className="text-primary" />
+                    {t("auth.take_photo") || "拍照"}
+                  </button>
+                </PopoverContent>
+              </Popover>
               <p className="text-xs text-muted-foreground font-medium">
-                {t("auth.click_to_change_avatar") || "点击头像更换，支持上传和拍照"}
+                {t("auth.click_to_change_avatar") || "点击头像更换"}
               </p>
-
-              {/* Hidden file inputs */}
-              <input
-                ref={galleryInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleAvatarFile}
-                className="hidden"
-              />
-              <input
-                ref={cameraInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                onChange={handleAvatarFile}
-                className="hidden"
-              />
+              <input ref={galleryInputRef} type="file" accept="image/*" onChange={handleAvatarFile} className="hidden" />
+              <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" onChange={handleAvatarFile} className="hidden" />
             </div>
 
             <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-semibold ml-1">{t("auth.display_name")}</label>
+              {/* Name */}
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium ml-1">{t("auth.display_name")}</label>
                 <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-                  <input
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" size={16} />
+                  <Input
                     type="text"
                     placeholder={t("auth.display_name_placeholder")}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     maxLength={DTO_LIMITS.userNameMax}
-                    className="w-full pl-12 pr-4 py-3 rounded-2xl bg-muted/50 border border-border/50 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                    className="h-11 rounded-2xl pl-10"
                     required
                   />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-semibold ml-1">{t("auth.account")}</label>
+              {/* Account */}
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium ml-1">{t("auth.account")}</label>
                 <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-                  <input
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" size={16} />
+                  <Input
                     type="text"
                     placeholder={t("auth.account_placeholder")}
                     value={account}
                     onChange={(e) => handleAccountChange(e.target.value)}
                     maxLength={DTO_LIMITS.userAccountMax}
-                    className={`w-full pl-12 pr-4 py-3 rounded-2xl bg-muted/50 border outline-none transition-all ${
-                      isAccountDirty && accountType === 'invalid'
-                        ? 'border-destructive focus:ring-destructive/20'
-                        : 'border-border/50 focus:border-primary focus:ring-primary/20'
-                    }`}
+                    className={`h-11 rounded-2xl pl-10 ${isAccountDirty && accountType === 'invalid' ? 'border-destructive focus-visible:ring-destructive/20' : ''}`}
                     required
                   />
                 </div>
@@ -349,19 +277,16 @@ export default function RegisterPage() {
                 )}
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-semibold ml-1">{t("auth.password")}</label>
+              {/* Password */}
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium ml-1">{t("auth.password")}</label>
                 <PasswordField
-                  icon={<Lock size={18} />}
+                  icon={<Lock size={16} />}
                   placeholder={t("auth.password_placeholder")}
                   value={password}
                   onChange={(e) => handlePasswordChange(e.target.value)}
                   maxLength={DTO_LIMITS.userPasswordMax}
-                  className={`w-full pl-12 pr-12 py-3 rounded-2xl bg-muted/50 border outline-none transition-all ${
-                    isPasswordDirty && !isPasswordValid
-                      ? 'border-destructive focus:ring-destructive/20'
-                      : 'border-border/50 focus:border-primary focus:ring-primary/20'
-                  }`}
+                  className={`h-11 rounded-2xl pl-10 ${isPasswordDirty && !isPasswordValid ? 'border-destructive focus-visible:ring-destructive/20' : ''}`}
                   required
                 />
                 {isPasswordDirty && !isPasswordValid && (
@@ -373,82 +298,69 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <button
+            <Button
               type="submit"
               disabled={isLoading || accountType === 'invalid' || !isPasswordValid}
-              className="w-full py-4 rounded-2xl bg-primary text-primary-foreground font-bold text-lg hover:opacity-90 transition-all shadow-xl shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              size="lg"
+              className="w-full rounded-2xl font-semibold shadow-md shadow-primary/20 gap-2"
             >
-              {isLoading ? (
-                <Loader2 className="animate-spin" size={20} />
-              ) : (
-                <>
-                  {t("auth.signup")} <ArrowRight size={20} />
-                </>
-              )}
-            </button>
+              {isLoading ? <Loader2 className="animate-spin" size={18} /> : <>{t("auth.signup")} <ArrowRight size={18} /></>}
+            </Button>
           </form>
         ) : (
-          <form onSubmit={handleVerify} className="space-y-6">
-            <div className="space-y-2 text-center">
-              <p className="text-sm font-medium">{t("auth.verification_code_sent_to")} <span className="text-primary">{account}</span></p>
+          /* Verification step */
+          <form onSubmit={handleVerify} className="space-y-5">
+            <p className="text-sm text-center font-medium">
+              {t("auth.verification_code_sent_to")}{" "}
+              <span className="text-primary">{account}</span>
+            </p>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium ml-1">{t("auth.verification_code")}</label>
+              <Input
+                type="text"
+                placeholder="------"
+                value={verificationCode}
+                onChange={(e) => setVerificationCode(e.target.value)}
+                className="h-12 rounded-2xl text-center text-2xl tracking-[0.5em] font-bold"
+                maxLength={6}
+                required
+              />
             </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold ml-1">{t("auth.verification_code")}</label>
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="------"
-                  value={verificationCode}
-                  onChange={(e) => setVerificationCode(e.target.value)}
-                  className="w-full px-4 py-3 rounded-2xl bg-muted/50 border border-border/50 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-center text-2xl tracking-[1em] font-bold"
-                  maxLength={6}
-                  required
-                />
-              </div>
-            </div>
-
             <div className="text-center">
-              <button
+              <Button
                 type="button"
+                variant="link"
                 onClick={handleResendCode}
                 disabled={isLoading || countdown > 0}
-                className="text-sm font-bold text-primary hover:underline disabled:opacity-50 disabled:no-underline"
               >
                 {countdown > 0
                   ? t("auth.resend_code_in", { count: countdown })
                   : t("auth.resend_code")}
-              </button>
+              </Button>
             </div>
-
-            <button
+            <Button
               type="submit"
               disabled={isLoading || verificationCode.length < 4}
-              className="w-full py-4 rounded-2xl bg-primary text-primary-foreground font-bold text-lg hover:opacity-90 transition-all shadow-xl shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-50"
+              size="lg"
+              className="w-full rounded-2xl font-semibold shadow-md shadow-primary/20 gap-2"
             >
-              {isLoading ? (
-                <Loader2 className="animate-spin" size={20} />
-              ) : (
-                <>
-                  {t("auth.verify_and_complete")} <ArrowRight size={20} />
-                </>
-              )}
-            </button>
-
-            <button
+              {isLoading ? <Loader2 className="animate-spin" size={18} /> : <>{t("auth.verify_and_complete")} <ArrowRight size={18} /></>}
+            </Button>
+            <Button
               type="button"
+              variant="ghost"
               onClick={() => setStep(1)}
-              className="w-full py-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+              className="w-full rounded-xl"
             >
               {t("auth.back_to_registration")}
-            </button>
+            </Button>
           </form>
         )}
 
         <div className="text-center">
           <p className="text-sm text-muted-foreground">
             {t("auth.already_have_account")}{" "}
-            <Link to="/login" className="font-bold text-primary hover:underline">{t("auth.signin")}</Link>
+            <Link to="/login" className="font-semibold text-primary hover:underline">{t("auth.signin")}</Link>
           </p>
         </div>
       </div>

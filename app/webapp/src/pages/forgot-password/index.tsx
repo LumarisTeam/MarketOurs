@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router";
 import { useTranslation } from "react-i18next";
-import { authService } from "../../services/authService";
+import { authService } from "@/services/authService";
 import { Mail, Lock, Loader2, ArrowRight, Key, CheckCircle2, AlertCircle } from "lucide-react";
-import { PasswordField } from "../../components/auth/PasswordField";
+import { PasswordField } from "@/components/auth/PasswordField";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export default function ForgotPasswordPage() {
   const { t } = useTranslation();
@@ -116,13 +118,13 @@ export default function ForgotPasswordPage() {
                 <div className="space-y-2">
                   <label className="text-sm font-semibold ml-1">{t("auth.account")}</label>
                   <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-                    <input
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" size={16} />
+                    <Input
                       type="text"
                       placeholder={t("auth.account_placeholder")}
                       value={account}
                       onChange={(e) => setAccount(e.target.value)}
-                      className="w-full pl-12 pr-4 py-3 rounded-2xl bg-muted/50 border border-border/50 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                      className="h-11 rounded-2xl pl-10"
                       required
                     />
                   </div>
@@ -132,13 +134,13 @@ export default function ForgotPasswordPage() {
                   <div className="space-y-2">
                     <label className="text-sm font-semibold ml-1">{t("auth.verification_code")}</label>
                     <div className="relative">
-                      <Key className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-                      <input
+                      <Key className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" size={16} />
+                      <Input
                         type="text"
                         placeholder={t("auth.verification_code_placeholder")}
                         value={code}
                         onChange={(e) => setCode(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 rounded-2xl bg-muted/50 border border-border/50 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                        className="h-11 rounded-2xl pl-10"
                         required
                       />
                       {countdown > 0 && (
@@ -174,19 +176,20 @@ export default function ForgotPasswordPage() {
               )}
             </div>
 
-            <button
+            <Button
               type="submit"
               disabled={isLoading || (step === 1 && !isAccountValid()) || (step === 2 && !isPasswordValid)}
-              className="w-full py-4 rounded-2xl bg-primary text-primary-foreground font-bold text-lg hover:opacity-90 transition-all shadow-xl shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-50"
+              size="lg"
+              className="w-full rounded-2xl font-semibold shadow-md shadow-primary/20 gap-2"
             >
               {isLoading ? (
-                <Loader2 className="animate-spin" size={20} />
+                <Loader2 className="animate-spin" size={18} />
               ) : (
                 <>
-                  {step === 1 ? t("auth.send_code") : t("auth.reset_password_btn")} <ArrowRight size={20} />
+                  {step === 1 ? t("auth.send_code") : t("auth.reset_password_btn")} <ArrowRight size={18} />
                 </>
               )}
-            </button>
+            </Button>
             
             {step === 2 && countdown === 0 && (
               <button

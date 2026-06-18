@@ -361,6 +361,8 @@ function getPayloadConfigFromPayload(
   return configLabelKey in config ? config[configLabelKey] : config[key]
 }
 
+const AreaChart = RechartsPrimitive.AreaChart
+
 export {
   ChartContainer,
   ChartTooltip,
@@ -368,4 +370,5 @@ export {
   ChartLegend,
   ChartLegendContent,
   ChartStyle,
+  AreaChart,
 }

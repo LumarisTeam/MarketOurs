@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react"
 import { useSelector, useDispatch } from "react-redux"
-import type { RootState, AppDispatch } from "../../stores"
-import { fetchNotifications, markReadLocal, markAllReadLocal } from "../../stores/notificationSlice"
-import { notificationService } from "../../services/notificationService"
-import { NotificationType, type PushSettingsDto } from "../../types"
+import type { RootState, AppDispatch } from "@/stores"
+import { fetchNotifications, markReadLocal, markAllReadLocal } from "@/stores/notificationSlice"
+import { notificationService } from "@/services/notificationService"
+import { NotificationType, type PushSettingsDto } from "@/types"
 import { Bell, MessageSquare, Reply, Flame, Check, Save, Loader2 } from "lucide-react"
 import { Link } from "react-router"
-import { cn } from "../../lib/utils"
+import { cn } from "@/lib/utils"
 import { useTranslation } from "react-i18next"
-import { formatRelativeDateFromNow } from "../../lib/dateTime"
+import { formatRelativeDateFromNow } from "@/lib/dateTime"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
+import { Switch } from "@/components/ui/switch"
 
 export default function NotificationsPage() {
   const { t, i18n } = useTranslation()
@@ -99,34 +102,26 @@ export default function NotificationsPage() {
           {t("notifications.title")}
         </h1>
         <div className="flex items-center gap-2">
-          <div className="bg-muted p-1 rounded-full flex">
-            <button
-              onClick={() => setActiveTab("list")}
-              className={cn(
-                "px-4 py-1.5 rounded-full text-sm font-medium transition-all",
-                activeTab === "list" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {t("notifications.list_tab")}
-            </button>
-            <button
-              onClick={() => setActiveTab("settings")}
-              className={cn(
-                "px-4 py-1.5 rounded-full text-sm font-medium transition-all",
-                activeTab === "settings" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {t("notifications.settings_tab")}
-            </button>
-          </div>
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "list" | "settings")}>
+            <TabsList className="rounded-full">
+              <TabsTrigger value="list" className="rounded-full text-sm">
+                {t("notifications.list_tab")}
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="rounded-full text-sm">
+                {t("notifications.settings_tab")}
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
           {activeTab === "list" && notifications.length > 0 && (
-            <button
+            <Button
+              variant="ghost"
+              size="icon-sm"
               onClick={handleMarkAllAsRead}
-              className="p-2 text-muted-foreground hover:text-primary transition-colors bg-muted/50 rounded-full"
+              className="rounded-full text-muted-foreground hover:text-foreground"
               title={t("notifications.mark_all_read")}
             >
               <Check size={18} />
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -209,18 +204,10 @@ export default function NotificationsPage() {
                 <h3 className="text-lg font-bold">{t("notifications.email_notifications")}</h3>
                 <p className="text-sm text-muted-foreground">{t("notifications.email_notifications_desc")}</p>
               </div>
-              <button
-                onClick={() => setSettings({ ...settings, enableEmailNotifications: !settings.enableEmailNotifications })}
-                className={cn(
-                  "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-                  settings.enableEmailNotifications ? "bg-primary" : "bg-muted"
-                )}
-              >
-                <span className={cn(
-                  "inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm",
-                  settings.enableEmailNotifications ? "translate-x-6" : "translate-x-1"
-                )} />
-              </button>
+              <Switch
+                checked={settings.enableEmailNotifications}
+                onCheckedChange={(checked) => setSettings({ ...settings, enableEmailNotifications: checked })}
+              />
             </div>
 
             <div className="flex items-center justify-between">
@@ -228,18 +215,10 @@ export default function NotificationsPage() {
                 <h3 className="text-lg font-bold">{t("notifications.comment_push")}</h3>
                 <p className="text-sm text-muted-foreground">{t("notifications.comment_push_desc")}</p>
               </div>
-              <button
-                onClick={() => setSettings({ ...settings, enableCommentReplyPush: !settings.enableCommentReplyPush })}
-                className={cn(
-                  "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-                  settings.enableCommentReplyPush ? "bg-primary" : "bg-muted"
-                )}
-              >
-                <span className={cn(
-                  "inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm",
-                  settings.enableCommentReplyPush ? "translate-x-6" : "translate-x-1"
-                )} />
-              </button>
+              <Switch
+                checked={settings.enableCommentReplyPush}
+                onCheckedChange={(checked) => setSettings({ ...settings, enableCommentReplyPush: checked })}
+              />
             </div>
 
             <div className="flex items-center justify-between">
@@ -247,29 +226,22 @@ export default function NotificationsPage() {
                 <h3 className="text-lg font-bold">{t("notifications.hotlist_push")}</h3>
                 <p className="text-sm text-muted-foreground">{t("notifications.hotlist_push_desc")}</p>
               </div>
-              <button
-                onClick={() => setSettings({ ...settings, enableHotListPush: !settings.enableHotListPush })}
-                className={cn(
-                  "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-                  settings.enableHotListPush ? "bg-primary" : "bg-muted"
-                )}
-              >
-                <span className={cn(
-                  "inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm",
-                  settings.enableHotListPush ? "translate-x-6" : "translate-x-1"
-                )} />
-              </button>
+              <Switch
+                checked={settings.enableHotListPush}
+                onCheckedChange={(checked) => setSettings({ ...settings, enableHotListPush: checked })}
+              />
             </div>
           </div>
 
-          <button
+          <Button
             onClick={handleUpdateSettings}
             disabled={saving || settingsLoading}
-            className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-4 rounded-2xl font-bold hover:opacity-90 disabled:opacity-50 transition-all shadow-lg shadow-primary/20"
+            size="lg"
+            className="w-full rounded-2xl font-semibold shadow-md shadow-primary/20 gap-2"
           >
             {saving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
             {saving ? t("notifications.saving") : t("notifications.save_settings")}
-          </button>
+          </Button>
         </div>
       )}
 

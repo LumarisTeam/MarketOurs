@@ -2,15 +2,18 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { type RootState } from '../../stores';
-import { postService } from '../../services/postService';
-import { fileService } from '../../services/fileService';
-import { compressImages } from '../../services/imageCompression';
-import { extractUserMessage } from '../../services/errorCodes';
+import { type RootState } from '@/stores';
+import { postService } from '@/services/postService';
+import { fileService } from '@/services/fileService';
+import { compressImages } from '@/services/imageCompression';
+import { extractUserMessage } from '@/services/errorCodes';
 import { ImagePlus, X, Loader2, Send } from 'lucide-react';
-import { DTO_LIMITS, requiredMax } from '../../lib/dtoValidation';
-import type { PostTagDto } from '../../types';
-import { PostTagBadge } from '../../components/post/PostTagBadge';
+import { DTO_LIMITS, requiredMax } from '@/lib/dtoValidation';
+import type { PostTagDto } from '@/types';
+import { PostTagBadge } from '@/components/post/PostTagBadge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 
 export default function CreatePostPage() {
   const navigate = useNavigate();
@@ -135,14 +138,14 @@ export default function CreatePostPage() {
             <label htmlFor="title" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
               {t('post.title_label')}
             </label>
-            <input
+            <Input
               id="title"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder={t('post.title_placeholder')}
               maxLength={DTO_LIMITS.postTitleMax}
-              className="flex h-12 w-full rounded-2xl border border-input bg-background/50 px-4 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary transition-all disabled:cursor-not-allowed disabled:opacity-50"
+              className="h-12 rounded-2xl"
               required
             />
           </div>
@@ -151,13 +154,13 @@ export default function CreatePostPage() {
             <label htmlFor="content" className="text-sm font-medium leading-none">
               {t('post.content_label')}
             </label>
-            <textarea
+            <Textarea
               id="content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder={t('post.content_placeholder')}
               maxLength={DTO_LIMITS.postContentMax}
-              className="flex min-h-[200px] w-full rounded-2xl border border-input bg-background/50 px-4 py-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary transition-all disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+              className="min-h-[200px] rounded-2xl resize-none"
               required
             />
           </div>
@@ -235,18 +238,20 @@ export default function CreatePostPage() {
           )}
 
           <div className="flex gap-4 pt-4">
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={() => navigate(-1)}
-              className="flex-1 h-12 rounded-2xl border border-input bg-background hover:bg-muted font-medium transition-colors"
               disabled={isSubmitting}
+              className="flex-1 h-12 rounded-2xl"
             >
               {t('post.cancel')}
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={isSubmitting}
-              className="flex-[2] h-12 rounded-2xl bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              size="lg"
+              className="flex-[2] h-12 rounded-2xl font-semibold shadow-md shadow-primary/20 gap-2"
             >
               {isSubmitting ? (
                 <>
@@ -259,7 +264,7 @@ export default function CreatePostPage() {
                   <span>{t('post.submit')}</span>
                 </>
               )}
-            </button>
+            </Button>
           </div>
         </form>
       </div>
