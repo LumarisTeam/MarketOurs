@@ -131,6 +131,7 @@
     "share_failed": "分享失败，请稍后重试",
     "close_image_viewer": "关闭图片预览",
     "remove_image": "移除图片",
+    "drag_to_reorder": "拖动以重新排序图片",
     "previous_image": "上一张图片",
     "next_image": "下一张图片"
   },

@@ -36,27 +36,32 @@ class _CommentDraft {
     required this.content,
     this.existingImages = const [],
     this.newImages = const [],
+    this.reorderedEntries,
   });
 
   final String content;
   final List<String> existingImages;
   final List<XFile> newImages;
+
+  /// When non-null, preserves the merged order from the reorderable UI.
+  final List<EditableImageEntry>? reorderedEntries;
 }
 
 class _PostDraft {
   const _PostDraft({
     required this.title,
     required this.content,
-    this.existingImages = const [],
-    this.newImages = const [],
     this.tag,
+    this.reorderedEntries,
   });
 
   final String title;
   final String content;
-  final List<String> existingImages;
-  final List<XFile> newImages;
   final PostTagDto? tag;
+
+  /// Preserves the merged order from the reorderable UI.
+  /// Contains both existing and new images in the user's desired order.
+  final List<EditableImageEntry>? reorderedEntries;
 }
 
 class PostDetailScreen extends ConsumerStatefulWidget {
@@ -81,7 +86,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   bool _isLoading = true;
   bool _isCommentsLoading = false;
   bool _isWorking = false;
-  final List<XFile> _commentImages = [];
+  final List<EditableImageEntry> _commentImageEntries = [];
+  int _commentImageIdCounter = 0;
   double? _commentUploadProgress;
   String? _errorMessage;
   String _commentSort = 'recent';
@@ -249,7 +255,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     }
 
     final content = _commentController.text.trim();
-    if (content.isEmpty && _commentImages.isEmpty) return;
+    if (content.isEmpty && _commentImageEntries.isEmpty) return;
     if (content.length > DtoLimits.commentContentMax) {
       await AppFeedback.showError(
         context,
@@ -261,7 +267,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     setState(() => _isWorking = true);
     try {
       final uploadedImages = await _uploadCommentImages(
-        _commentImages,
+        _commentImageEntries.map((e) => e.localFile!).toList(),
         onProgress: (fraction) {
           if (mounted) setState(() => _commentUploadProgress = fraction);
         },
@@ -281,7 +287,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         _insertCommentLocally(newComment);
         _commentController.clear();
         setState(() {
-          _commentImages.clear();
+          _commentImageEntries.clear();
           _commentUploadProgress = null;
         });
         if (mounted) await AppFeedback.showSuccess(context, message: '评论已发布');
@@ -415,19 +421,33 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }
 
   Future<void> _pickCommentImages() async {
-    final remaining = postDetailMaxCommentImages - _commentImages.length;
+    final remaining = postDetailMaxCommentImages - _commentImageEntries.length;
     if (remaining <= 0) return;
 
     final picked = await _imagePicker.pickMultiImage();
     if (picked.isEmpty) return;
 
     setState(() {
-      _commentImages.addAll(picked.take(remaining));
+      for (final file in picked.take(remaining)) {
+        _commentImageEntries.add(EditableImageEntry(
+          id: ValueKey('cmt-${_commentImageIdCounter++}'),
+          displayUrl: file.path,
+          localFile: file,
+        ));
+      }
     });
   }
 
-  void _removeCommentImage(int index) {
-    setState(() => _commentImages.removeAt(index));
+  void _removeCommentImageEntry(String id) {
+    setState(() => _commentImageEntries.removeWhere((e) => e.id.toString() == id));
+  }
+
+  void _reorderCommentImages(int oldIndex, int newIndex) {
+    setState(() {
+      if (newIndex > oldIndex) newIndex--;
+      final entry = _commentImageEntries.removeAt(oldIndex);
+      _commentImageEntries.insert(newIndex, entry);
+    });
   }
 
   Future<List<String>> _uploadCommentImages(
@@ -704,8 +724,17 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 
     setState(() => _isWorking = true);
     try {
-      final uploadResult = await _uploadPostImages(draft.newImages);
-      final nextImages = [...draft.existingImages, ...uploadResult.images];
+      final entries = draft.reorderedEntries!;
+      final newFiles = entries
+          .where((e) => !e.isExisting)
+          .map((e) => e.localFile!)
+          .toList();
+      final existingUrls = entries
+          .where((e) => e.isExisting)
+          .map((e) => e.remoteUrl!)
+          .toList();
+      final uploadResult = await _uploadPostImages(newFiles);
+      final nextImages = [...existingUrls, ...uploadResult.images];
       final result = await ref
           .read(postServiceProvider)
           .updatePost(
@@ -872,8 +901,16 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }) async {
     final titleController = TextEditingController(text: title);
     final contentController = TextEditingController(text: content);
-    final existingImages = List<String>.from(initialImages);
-    final selectedImages = <XFile>[];
+    final imageEntries = <EditableImageEntry>[
+      for (final url in initialImages)
+        EditableImageEntry(
+          id: ValueKey(url),
+          displayUrl: url,
+          isExisting: true,
+          remoteUrl: url,
+        ),
+    ];
+    int imageIdCounter = imageEntries.length;
     PostTagDto? selectedTag = initialTag;
 
     final result = await showAppBottomSheet<_PostDraft>(
@@ -886,7 +923,14 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               if (picked.isEmpty) return;
 
               setSheetState(() {
-                selectedImages.addAll(picked);
+                for (final file in picked) {
+                  imageEntries.add(EditableImageEntry(
+                    id: ValueKey('new-$imageIdCounter'),
+                    displayUrl: file.path,
+                    localFile: file,
+                  ));
+                  imageIdCounter++;
+                }
               });
             }
 
@@ -915,23 +959,29 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 titleController: titleController,
                 contentController: contentController,
                 selectedTag: selectedTag,
-                existingImages: existingImages,
-                localImages: selectedImages,
+                existingImages: const [],
+                localImages: const [],
                 onPickTag: availableTags.isEmpty ? null : selectTag,
                 onPickImages: pickImages,
-                onRemoveExistingImage: (index) {
-                  setSheetState(() => existingImages.removeAt(index));
+                reorderableEntries: imageEntries,
+                onReorderImages: (oldIndex, newIndex) {
+                  setSheetState(() {
+                    if (newIndex > oldIndex) newIndex--;
+                    final entry = imageEntries.removeAt(oldIndex);
+                    imageEntries.insert(newIndex, entry);
+                  });
                 },
-                onRemoveLocalImage: (index) {
-                  setSheetState(() => selectedImages.removeAt(index));
+                onRemoveImageEntry: (id) {
+                  setSheetState(() {
+                    imageEntries.removeWhere((e) => e.id.toString() == id);
+                  });
                 },
                 onSubmit: () {
                   Navigator.of(context).pop(
                     _PostDraft(
                       title: titleController.text.trim(),
                       content: contentController.text.trim(),
-                      existingImages: List<String>.from(existingImages),
-                      newImages: List<XFile>.from(selectedImages),
+                      reorderedEntries: List<EditableImageEntry>.from(imageEntries),
                       tag: selectedTag,
                     ),
                   );
@@ -1403,15 +1453,18 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   Widget _buildCommentComposer(BuildContext context) {
     return PostDetailCommentComposer(
       controller: _commentController,
-      localImages: _commentImages,
+      localImages: const [],
       isWorking: _isWorking,
       uploadProgress: _commentUploadProgress,
       onPickImages:
-          _isWorking || _commentImages.length >= postDetailMaxCommentImages
+          _isWorking || _commentImageEntries.length >= postDetailMaxCommentImages
           ? null
           : _pickCommentImages,
-      onRemoveLocal: _removeCommentImage,
+      onRemoveLocal: (_) {}, // unused in reorderable mode
       onSubmit: _submitComment,
+      reorderableEntries: _commentImageEntries,
+      onReorderImages: _isWorking ? null : _reorderCommentImages,
+      onRemoveImageEntry: _isWorking ? null : _removeCommentImageEntry,
     );
   }
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
@@ -8,13 +8,15 @@ import { fileService } from '@/services/fileService';
 import { compressImages } from '@/services/imageCompression';
 import { extractUserMessage } from '@/services/errorCodes';
 import { toast } from '@/lib/toast';
-import { ImagePlus, X, Loader2, Send } from 'lucide-react';
+import { ImagePlus, Loader2, Send } from 'lucide-react';
 import { DTO_LIMITS, requiredMax } from '@/lib/dtoValidation';
 import type { PostTagDto } from '@/types';
 import { PostTagBadge } from '@/components/post/PostTagBadge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import SortableImageGrid, { type ImageItem } from '@/components/ui/sortable-image-grid';
+import { arrayMove } from '@dnd-kit/sortable';
 
 export default function CreatePostPage() {
   const navigate = useNavigate();
@@ -27,6 +29,7 @@ export default function CreatePostPage() {
   const [tags, setTags] = useState<PostTagDto[]>([]);
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [imageIds, setImageIds] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -55,17 +58,35 @@ export default function CreatePostPage() {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
       setImages((prev) => [...prev, ...newFiles]);
-      
-      const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
-      setImagePreviews((prev) => [...prev, ...newPreviews]);
+      setImagePreviews((prev) => [...prev, ...newFiles.map((file) => URL.createObjectURL(file))]);
+      setImageIds((prev) => [...prev, ...newFiles.map(() => crypto.randomUUID())]);
     }
   };
 
-  const removeImage = (index: number) => {
-    setImages((prev) => prev.filter((_, i) => i !== index));
+  const handleRemoveImage = useCallback((itemId: string) => {
+    const index = imageIds.indexOf(itemId);
+    if (index === -1) return;
     URL.revokeObjectURL(imagePreviews[index]);
+    setImages((prev) => prev.filter((_, i) => i !== index));
     setImagePreviews((prev) => prev.filter((_, i) => i !== index));
-  };
+    setImageIds((prev) => prev.filter((_, i) => i !== index));
+  }, [imageIds, imagePreviews]);
+
+  const handleReorderImages = useCallback((fromIndex: number, toIndex: number) => {
+    setImages((prev) => arrayMove(prev, fromIndex, toIndex));
+    setImagePreviews((prev) => arrayMove(prev, fromIndex, toIndex));
+    setImageIds((prev) => arrayMove(prev, fromIndex, toIndex));
+  }, []);
+
+  const imageItems: ImageItem[] = useMemo(() =>
+    imageIds.map((id, i) => ({
+      id,
+      type: 'new' as const,
+      url: imagePreviews[i] ?? '',
+      file: images[i],
+    })),
+    [imageIds, imagePreviews, images]
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -191,31 +212,23 @@ export default function CreatePostPage() {
 
           <div className="space-y-3">
             <label className="text-sm font-medium leading-none">{t('post.add_images')}</label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              {imagePreviews.map((preview, index) => (
-                <div key={index} className="relative aspect-square rounded-2xl overflow-hidden border border-border group">
-                  <img src={preview} alt="" className="w-full h-full object-cover" />
-                  <button
-                    type="button"
-                    onClick={() => removeImage(index)}
-                    className="absolute top-2 right-2 p-1.5 rounded-full bg-background/80 text-foreground opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive hover:text-destructive-foreground"
-                  >
-                    <X size={14} />
-                  </button>
-                </div>
-              ))}
-              <label className="flex flex-col items-center justify-center aspect-square rounded-2xl border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer">
-                <ImagePlus size={24} className="text-muted-foreground mb-2" />
-                <span className="text-xs text-muted-foreground">{t('post.upload_image')}</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handleImageChange}
-                  className="hidden"
-                />
-              </label>
-            </div>
+            <SortableImageGrid
+              items={imageItems}
+              onReorder={handleReorderImages}
+              onRemove={handleRemoveImage}
+              disabled={isSubmitting}
+            />
+            <label className="flex flex-col items-center justify-center aspect-square max-w-[120px] rounded-2xl border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer">
+              <ImagePlus size={24} className="text-muted-foreground mb-2" />
+              <span className="text-xs text-muted-foreground">{t('post.upload_image')}</span>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleImageChange}
+                className="hidden"
+              />
+            </label>
           </div>
 
           {uploadProgress !== null && (

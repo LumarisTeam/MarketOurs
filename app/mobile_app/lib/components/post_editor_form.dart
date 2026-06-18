@@ -33,6 +33,10 @@ class PostEditorForm extends StatelessWidget {
     this.uploadProgress,
     this.tagEmptyText = '无标签',
     this.isSubmitting = false,
+    // Reorderable mode
+    this.reorderableEntries,
+    this.onReorderImages,
+    this.onRemoveImageEntry,
   });
 
   final PostEditorLayout layout;
@@ -53,6 +57,11 @@ class PostEditorForm extends StatelessWidget {
   final double? uploadProgress;
   final String tagEmptyText;
   final bool isSubmitting;
+
+  // Reorderable mode
+  final List<EditableImageEntry>? reorderableEntries;
+  final void Function(int oldIndex, int newIndex)? onReorderImages;
+  final ValueChanged<String>? onRemoveImageEntry;
 
   @override
   Widget build(BuildContext context) {
@@ -135,7 +144,10 @@ class PostEditorForm extends StatelessWidget {
   }
 
   Widget _buildImageCard(BuildContext context) {
-    final hasImages = existingImages.isNotEmpty || localImages.isNotEmpty;
+    final useReorderable = reorderableEntries != null;
+    final hasImages = useReorderable
+        ? reorderableEntries!.isNotEmpty
+        : (existingImages.isNotEmpty || localImages.isNotEmpty);
 
     return AppTappableCard(
       padding: const EdgeInsets.all(20),
@@ -173,6 +185,15 @@ class PostEditorForm extends StatelessWidget {
                 '还没选择图片',
                 style: TextStyle(color: AppColors.mutedForeground),
               ),
+            )
+          else if (useReorderable)
+            EditableImageWrap(
+              reorderable: true,
+              entries: reorderableEntries,
+              onReorder: onReorderImages,
+              onRemoveEntry: onRemoveImageEntry,
+              tileSize: 90,
+              spacing: 12,
             )
           else
             EditableImageWrap(

@@ -1,6 +1,6 @@
 import { Link, useParams, useNavigate } from "react-router"
 import { Heart, Share2, ArrowLeft, MoreHorizontal, Send, Loader2, ChevronLeft, ChevronRight, X, ImagePlus } from "lucide-react"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import { postService } from "@/services/postService"
 import { commentService } from "@/services/commentService"
 import { fileService } from "@/services/fileService"
@@ -16,6 +16,8 @@ import { sharePost } from "@/lib/postShare"
 import { DTO_LIMITS, requiredMax } from "@/lib/dtoValidation"
 import { PostTagBadge } from "@/components/post/PostTagBadge"
 import { formatEditedRelativeTime } from "@/lib/dateTime"
+import SortableImageGrid, { type ImageItem } from "@/components/ui/sortable-image-grid"
+import { arrayMove } from "@dnd-kit/sortable"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -112,64 +114,6 @@ function CommentImageGrid({ images, imageLabel }: { images: string[]; imageLabel
         </div>
       )}
     </>
-  );
-}
-
-function ImagePreviewStrip({
-  previews,
-  onRemove,
-}: {
-  previews: string[];
-  onRemove: (index: number) => void;
-}) {
-  const { t } = useTranslation();
-  if (previews.length === 0) return null;
-
-  return (
-    <div className="flex flex-wrap gap-2">
-      {previews.map((preview, index) => (
-        <div key={`${preview}-${index}`} className="relative size-20 overflow-hidden rounded-xl border border-border bg-muted">
-          <img src={preview} alt="" className="h-full w-full object-cover" />
-          <button
-            type="button"
-            onClick={() => onRemove(index)}
-            className="absolute right-1 top-1 grid size-6 place-items-center rounded-full bg-background/85 text-foreground shadow-sm transition-colors hover:bg-destructive hover:text-destructive-foreground"
-            aria-label={t("post.remove_image")}
-          >
-            <X size={12} />
-          </button>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function ExistingImageEditor({
-  images,
-  onRemove,
-}: {
-  images: string[];
-  onRemove: (index: number) => void;
-}) {
-  const { t } = useTranslation();
-  if (images.length === 0) return null;
-
-  return (
-    <div className="flex flex-wrap gap-2">
-      {images.map((image, index) => (
-        <div key={`${image}-${index}`} className="relative size-20 overflow-hidden rounded-xl border border-border bg-muted">
-          <img src={image} alt="" className="h-full w-full object-cover" />
-          <button
-            type="button"
-            onClick={() => onRemove(index)}
-            className="absolute right-1 top-1 grid size-6 place-items-center rounded-full bg-background/85 text-foreground shadow-sm transition-colors hover:bg-destructive hover:text-destructive-foreground"
-            aria-label={t("post.remove_image")}
-          >
-            <X size={12} />
-          </button>
-        </div>
-      ))}
-    </div>
   );
 }
 
@@ -370,23 +314,23 @@ function CommentItem({
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
   const [editExistingImages, setEditExistingImages] = useState<string[]>(comment.images || []);
-  const [editImageFiles, setEditImageFiles] = useState<File[]>([]);
-  const [editImagePreviews, setEditImagePreviews] = useState<string[]>([]);
+  const [editImageItems, setEditImageItems] = useState<ImageItem[]>([]);
   const [editUploadProgress, setEditUploadProgress] = useState<number | null>(null);
   const [isReplying, setIsReplying] = useState(false);
   const [replyContent, setReplyContent] = useState("");
   const [replyImageFiles, setReplyImageFiles] = useState<File[]>([]);
   const [replyImagePreviews, setReplyImagePreviews] = useState<string[]>([]);
+  const [replyImageIds, setReplyImageIds] = useState<string[]>([]);
   const [replyUploadProgress, setReplyUploadProgress] = useState<number | null>(null);
   const [replySubmitting, setReplySubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const editPreviewRef = useRef<string[]>([]);
+  const editPreviewRef = useRef<ImageItem[]>([]);
   const replyPreviewRef = useRef<string[]>([]);
 
   useEffect(() => {
-    editPreviewRef.current = editImagePreviews;
-  }, [editImagePreviews]);
+    editPreviewRef.current = editImageItems;
+  }, [editImageItems]);
 
   useEffect(() => {
     replyPreviewRef.current = replyImagePreviews;
@@ -394,10 +338,26 @@ function CommentItem({
 
   useEffect(() => {
     return () => {
-      editPreviewRef.current.forEach((preview) => URL.revokeObjectURL(preview));
+      editPreviewRef.current.forEach((item) => {
+        if (item.type === 'new') URL.revokeObjectURL(item.url);
+      });
       replyPreviewRef.current.forEach((preview) => URL.revokeObjectURL(preview));
     };
   }, []);
+
+  // Initialize editImageItems when entering edit mode
+  useEffect(() => {
+    if (isEditing) {
+      setEditImageItems(
+        editExistingImages.map((url) => ({
+          id: url,
+          type: 'existing' as const,
+          url,
+          originalUrl: url,
+        }))
+      );
+    }
+  }, [isEditing]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const isMe = user && comment.userId.toLowerCase() === user.id.toLowerCase();
   const isAdmin = user && user.role === 'Admin';
@@ -407,15 +367,24 @@ function CommentItem({
   const authorAvatar = comment.author?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${comment.userId}`;
 
   const handleSave = async () => {
-    if (!editContent.trim() && editExistingImages.length === 0 && editImageFiles.length === 0) return;
+    const existingUrls = editImageItems.filter((i) => i.type === 'existing').map((i) => i.originalUrl!);
+    const newFiles = editImageItems.filter((i) => i.type === 'new').map((i) => i.file!);
+    if (!editContent.trim() && existingUrls.length === 0 && newFiles.length === 0) return;
     if (editContent.trim().length > DTO_LIMITS.commentContentMax) return;
     try {
-      setEditUploadProgress(editImageFiles.length > 0 ? 0 : null);
-      const uploadedImages = await uploadCommentImageFiles(editImageFiles, setEditUploadProgress);
-      await onUpdate(comment.id, editContent, [...editExistingImages, ...uploadedImages]);
-      editImagePreviews.forEach((preview) => URL.revokeObjectURL(preview));
-      setEditImageFiles([]);
-      setEditImagePreviews([]);
+      setEditUploadProgress(newFiles.length > 0 ? 0 : null);
+      const uploadedUrls = await uploadCommentImageFiles(newFiles, setEditUploadProgress);
+      // Build final images preserving merged order
+      let uploadedIdx = 0;
+      const allImages = editImageItems.map((item) => {
+        if (item.type === 'existing') return item.originalUrl!;
+        return uploadedUrls[uploadedIdx++] ?? '';
+      });
+      await onUpdate(comment.id, editContent, allImages);
+      editImageItems.forEach((item) => {
+        if (item.type === 'new') URL.revokeObjectURL(item.url);
+      });
+      setEditImageItems([]);
       setIsEditing(false);
     } finally {
       setEditUploadProgress(null);
@@ -443,6 +412,7 @@ function CommentItem({
       replyImagePreviews.forEach((preview) => URL.revokeObjectURL(preview));
       setReplyImageFiles([]);
       setReplyImagePreviews([]);
+      setReplyImageIds([]);
       setIsReplying(false);
     } finally {
       setReplySubmitting(false);
@@ -452,11 +422,17 @@ function CommentItem({
 
   const addEditImages = (files: FileList | null) => {
     if (!files) return;
-    const remaining = MAX_COMMENT_IMAGES - editExistingImages.length - editImageFiles.length;
+    const totalCount = editImageItems.length;
+    const remaining = MAX_COMMENT_IMAGES - totalCount;
     const nextFiles = Array.from(files).slice(0, Math.max(0, remaining));
     if (nextFiles.length === 0) return;
-    setEditImageFiles((prev) => [...prev, ...nextFiles]);
-    setEditImagePreviews((prev) => [...prev, ...nextFiles.map((file) => URL.createObjectURL(file))]);
+    const nextItems: ImageItem[] = nextFiles.map((file) => ({
+      id: crypto.randomUUID(),
+      type: 'new' as const,
+      url: URL.createObjectURL(file),
+      file,
+    }));
+    setEditImageItems((prev) => [...prev, ...nextItems]);
   };
 
   const addReplyImages = (files: FileList | null) => {
@@ -466,19 +442,47 @@ function CommentItem({
     if (nextFiles.length === 0) return;
     setReplyImageFiles((prev) => [...prev, ...nextFiles]);
     setReplyImagePreviews((prev) => [...prev, ...nextFiles.map((file) => URL.createObjectURL(file))]);
+    setReplyImageIds((prev) => [...prev, ...nextFiles.map(() => crypto.randomUUID())]);
   };
 
-  const removeEditFile = (index: number) => {
-    URL.revokeObjectURL(editImagePreviews[index]);
-    setEditImageFiles((prev) => prev.filter((_, i) => i !== index));
-    setEditImagePreviews((prev) => prev.filter((_, i) => i !== index));
-  };
+  const handleEditImageRemove = useCallback((itemId: string) => {
+    setEditImageItems((prev) => {
+      const item = prev.find((i) => i.id === itemId);
+      if (item?.type === 'new') {
+        URL.revokeObjectURL(item.url);
+      }
+      return prev.filter((i) => i.id !== itemId);
+    });
+  }, []);
 
-  const removeReplyFile = (index: number) => {
+  const handleEditImageReorder = useCallback((fromIndex: number, toIndex: number) => {
+    setEditImageItems((prev) => arrayMove(prev, fromIndex, toIndex));
+  }, []);
+
+  const removeReplyFile = useCallback((itemId: string) => {
+    const index = replyImageIds.indexOf(itemId);
+    if (index === -1) return;
     URL.revokeObjectURL(replyImagePreviews[index]);
     setReplyImageFiles((prev) => prev.filter((_, i) => i !== index));
     setReplyImagePreviews((prev) => prev.filter((_, i) => i !== index));
-  };
+    setReplyImageIds((prev) => prev.filter((_, i) => i !== index));
+  }, [replyImageIds, replyImagePreviews]);
+
+  const handleReplyImageReorder = useCallback((fromIndex: number, toIndex: number) => {
+    setReplyImageFiles((prev) => arrayMove(prev, fromIndex, toIndex));
+    setReplyImagePreviews((prev) => arrayMove(prev, fromIndex, toIndex));
+    setReplyImageIds((prev) => arrayMove(prev, fromIndex, toIndex));
+  }, []);
+
+  const replyImageItems: ImageItem[] = useMemo(() =>
+    replyImageIds.map((id, i) => ({
+      id,
+      type: 'new' as const,
+      url: replyImagePreviews[i] ?? '',
+      file: replyImageFiles[i],
+    })),
+    [replyImageIds, replyImagePreviews, replyImageFiles]
+  );
 
   return (
     <div className={cn("flex gap-4 group transition-opacity", isDeleting && "opacity-50 pointer-events-none")}>
@@ -505,22 +509,23 @@ function CommentItem({
                 className="w-full min-h-[100px] bg-transparent border border-border/50 rounded-xl p-3 outline-none focus:border-primary transition-colors resize-none text-sm"
               />
               <div className="space-y-3">
-                <ExistingImageEditor
-                  images={editExistingImages}
-                  onRemove={(index) => setEditExistingImages((prev) => prev.filter((_, i) => i !== index))}
+                <SortableImageGrid
+                  items={editImageItems}
+                  onReorder={handleEditImageReorder}
+                  onRemove={handleEditImageRemove}
+                  disabled={editUploadProgress !== null}
                 />
-                <ImagePreviewStrip previews={editImagePreviews} onRemove={removeEditFile} />
                 <div className="flex items-center gap-3">
                   <label className={cn(
                     "grid size-9 place-items-center rounded-xl border border-border bg-muted transition-colors",
-                    editExistingImages.length + editImageFiles.length < MAX_COMMENT_IMAGES ? "cursor-pointer hover:border-primary hover:text-primary" : "opacity-40"
+                    editImageItems.length < MAX_COMMENT_IMAGES ? "cursor-pointer hover:border-primary hover:text-primary" : "opacity-40"
                   )}>
                     <ImagePlus size={16} />
                     <input
                       type="file"
                       accept="image/*"
                       multiple
-                      disabled={editExistingImages.length + editImageFiles.length >= MAX_COMMENT_IMAGES}
+                      disabled={editImageItems.length >= MAX_COMMENT_IMAGES}
                       onChange={(event) => {
                         addEditImages(event.target.files);
                         event.target.value = "";
@@ -528,7 +533,7 @@ function CommentItem({
                       className="hidden"
                     />
                   </label>
-                  <span className="text-xs text-muted-foreground">{editExistingImages.length + editImageFiles.length} / {MAX_COMMENT_IMAGES}</span>
+                  <span className="text-xs text-muted-foreground">{editImageItems.length} / {MAX_COMMENT_IMAGES}</span>
                 </div>
                 {editUploadProgress !== null && (
                   <div className="h-1.5 overflow-hidden rounded-full bg-secondary">
@@ -539,7 +544,7 @@ function CommentItem({
               <div className="flex gap-2">
                 <button
                   onClick={handleSave}
-                  disabled={!editContent.trim() && editExistingImages.length === 0 && editImageFiles.length === 0}
+                  disabled={!editContent.trim() && editImageItems.length === 0}
                   className="text-xs font-bold px-3 py-1.5 rounded-lg bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
                 >
                   {t("post.save")}
@@ -549,9 +554,10 @@ function CommentItem({
                     setIsEditing(false);
                     setEditContent(comment.content);
                     setEditExistingImages(comment.images || []);
-                    editImagePreviews.forEach((preview) => URL.revokeObjectURL(preview));
-                    setEditImageFiles([]);
-                    setEditImagePreviews([]);
+                    editImageItems.forEach((item) => {
+                      if (item.type === 'new') URL.revokeObjectURL(item.url);
+                    });
+                    setEditImageItems([]);
                   }}
                   className="text-xs font-bold px-3 py-1.5 rounded-lg bg-muted hover:bg-border transition-colors"
                 >
@@ -642,7 +648,12 @@ function CommentItem({
               className="w-full min-h-[80px] bg-muted/30 border border-border/50 rounded-2xl p-3 outline-none focus:border-primary transition-all text-sm resize-none"
               autoFocus
             />
-            <ImagePreviewStrip previews={replyImagePreviews} onRemove={removeReplyFile} />
+            <SortableImageGrid
+              items={replyImageItems}
+              onReorder={handleReplyImageReorder}
+              onRemove={removeReplyFile}
+              disabled={replySubmitting}
+            />
             <div className="flex items-center gap-3">
               <label className={cn(
                 "grid size-9 place-items-center rounded-xl border border-border bg-muted transition-colors",
@@ -683,6 +694,7 @@ function CommentItem({
                   replyImagePreviews.forEach((preview) => URL.revokeObjectURL(preview));
                   setReplyImageFiles([]);
                   setReplyImagePreviews([]);
+                  setReplyImageIds([]);
                 }}
                 className="text-xs font-bold px-4 py-2 rounded-xl bg-muted hover:bg-border transition-all"
               >
@@ -728,6 +740,7 @@ export default function PostDetailPage() {
   const [commentContent, setCommentContent] = useState("")
   const [commentImageFiles, setCommentImageFiles] = useState<File[]>([])
   const [commentImagePreviews, setCommentImagePreviews] = useState<string[]>([])
+  const [commentImageIds, setCommentImageIds] = useState<string[]>([])
   const [commentUploadProgress, setCommentUploadProgress] = useState<number | null>(null)
   const commentPreviewRef = useRef<string[]>([])
   const [loading, setLoading] = useState(true)
@@ -744,11 +757,9 @@ export default function PostDetailPage() {
   const [isEditingPost, setIsEditingPost] = useState(false)
   const [editTitle, setEditTitle] = useState("")
   const [editContent, setEditContent] = useState("")
-  const [editExistingImages, setEditExistingImages] = useState<string[]>([])
-  const [editImageFiles, setEditImageFiles] = useState<File[]>([])
-  const [editImagePreviews, setEditImagePreviews] = useState<string[]>([])
+  const [editImageItems, setEditImageItems] = useState<ImageItem[]>([])
   const [editUploadProgress, setEditUploadProgress] = useState<number | null>(null)
-  const editPostPreviewRef = useRef<string[]>([])
+  const editPostPreviewRef = useRef<ImageItem[]>([])
 
   useEffect(() => {
     if (!id) return;
@@ -761,7 +772,12 @@ export default function PostDetailPage() {
         setPostLiked(postRes.data.isLiked ?? false)
         setEditTitle(postRes.data.title)
         setEditContent(postRes.data.content)
-        setEditExistingImages(postRes.data.images || [])
+        setEditImageItems((postRes.data.images || []).map((url) => ({
+          id: url,
+          type: 'existing' as const,
+          url,
+          originalUrl: url,
+        })))
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') return;
       console.error(err)
@@ -809,13 +825,15 @@ export default function PostDetailPage() {
   }, [commentImagePreviews]);
 
   useEffect(() => {
-    editPostPreviewRef.current = editImagePreviews;
-  }, [editImagePreviews]);
+    editPostPreviewRef.current = editImageItems;
+  }, [editImageItems]);
 
   useEffect(() => {
     return () => {
       commentPreviewRef.current.forEach((preview) => URL.revokeObjectURL(preview));
-      editPostPreviewRef.current.forEach((preview) => URL.revokeObjectURL(preview));
+      editPostPreviewRef.current.forEach((item) => {
+        if (item.type === 'new') URL.revokeObjectURL(item.url);
+      });
     };
   }, []);
 
@@ -826,26 +844,58 @@ export default function PostDetailPage() {
     if (nextFiles.length === 0) return;
     setCommentImageFiles((prev) => [...prev, ...nextFiles]);
     setCommentImagePreviews((prev) => [...prev, ...nextFiles.map((file) => URL.createObjectURL(file))]);
+    setCommentImageIds((prev) => [...prev, ...nextFiles.map(() => crypto.randomUUID())]);
   };
 
-  const removeCommentImage = (index: number) => {
+  const handleCommentImageRemove = useCallback((itemId: string) => {
+    const index = commentImageIds.indexOf(itemId);
+    if (index === -1) return;
     URL.revokeObjectURL(commentImagePreviews[index]);
     setCommentImageFiles((prev) => prev.filter((_, i) => i !== index));
     setCommentImagePreviews((prev) => prev.filter((_, i) => i !== index));
-  };
+    setCommentImageIds((prev) => prev.filter((_, i) => i !== index));
+  }, [commentImageIds, commentImagePreviews]);
+
+  const handleCommentImageReorder = useCallback((fromIndex: number, toIndex: number) => {
+    setCommentImageFiles((prev) => arrayMove(prev, fromIndex, toIndex));
+    setCommentImagePreviews((prev) => arrayMove(prev, fromIndex, toIndex));
+    setCommentImageIds((prev) => arrayMove(prev, fromIndex, toIndex));
+  }, []);
+
+  const commentImageItems: ImageItem[] = useMemo(() =>
+    commentImageIds.map((id, i) => ({
+      id,
+      type: 'new' as const,
+      url: commentImagePreviews[i] ?? '',
+      file: commentImageFiles[i],
+    })),
+    [commentImageIds, commentImagePreviews, commentImageFiles]
+  );
 
   const addEditPostImages = (files: FileList | null) => {
     if (!files) return;
-    const nextFiles = Array.from(files);
-    setEditImageFiles((prev) => [...prev, ...nextFiles]);
-    setEditImagePreviews((prev) => [...prev, ...nextFiles.map((file) => URL.createObjectURL(file))]);
+    const nextItems: ImageItem[] = Array.from(files).map((file) => ({
+      id: crypto.randomUUID(),
+      type: 'new' as const,
+      url: URL.createObjectURL(file),
+      file,
+    }));
+    setEditImageItems((prev) => [...prev, ...nextItems]);
   };
 
-  const removeEditPostImage = (index: number) => {
-    URL.revokeObjectURL(editImagePreviews[index]);
-    setEditImageFiles((prev) => prev.filter((_, i) => i !== index));
-    setEditImagePreviews((prev) => prev.filter((_, i) => i !== index));
-  };
+  const handleEditImageRemove = useCallback((itemId: string) => {
+    setEditImageItems((prev) => {
+      const item = prev.find((i) => i.id === itemId);
+      if (item?.type === 'new') {
+        URL.revokeObjectURL(item.url);
+      }
+      return prev.filter((i) => i.id !== itemId);
+    });
+  }, []);
+
+  const handleEditImageReorder = useCallback((fromIndex: number, toIndex: number) => {
+    setEditImageItems((prev) => arrayMove(prev, fromIndex, toIndex));
+  }, []);
 
   const handlePostUpdate = async () => {
     if (!id) return;
@@ -870,12 +920,14 @@ export default function PostDetailPage() {
       let uploadKey: string | undefined;
       let uploadedUrls: string[] = [];
 
-      if (editImageFiles.length > 0) {
+      const newFiles = editImageItems.filter((i) => i.type === 'new').map((i) => i.file!);
+
+      if (newFiles.length > 0) {
         const keyResponse = await fileService.getUploadKey();
         uploadKey = keyResponse.data?.key;
 
         setEditUploadProgress(0);
-        const compressed = await compressImages(editImageFiles, {
+        const compressed = await compressImages(newFiles, {
           quality: 0.75,
           maxWidth: 1920,
           maxHeight: 1920,
@@ -883,7 +935,12 @@ export default function PostDetailPage() {
         uploadedUrls = (await fileService.uploadStream(compressed, uploadKey, setEditUploadProgress)).data ?? [];
       }
 
-      const allImages = [...editExistingImages, ...uploadedUrls];
+      // Build final images list preserving the merged order
+      let uploadedIdx = 0;
+      const allImages = editImageItems.map((item) => {
+        if (item.type === 'existing') return item.originalUrl!;
+        return uploadedUrls[uploadedIdx++] ?? '';
+      });
 
       const res = await postService.updatePost(id, {
         title: editTitle,
@@ -894,9 +951,11 @@ export default function PostDetailPage() {
       if (res.data) {
         setPost(res.data);
         setIsEditingPost(false);
-        editImagePreviews.forEach((preview) => URL.revokeObjectURL(preview));
-        setEditImageFiles([]);
-        setEditImagePreviews([]);
+        // Clean up new image previews
+        editImageItems.forEach((item) => {
+          if (item.type === 'new') URL.revokeObjectURL(item.url);
+        });
+        setEditImageItems([]);
       }
     } catch (err) {
       console.error(err);
@@ -1093,6 +1152,7 @@ export default function PostDetailPage() {
         commentImagePreviews.forEach((preview) => URL.revokeObjectURL(preview));
         setCommentImageFiles([]);
         setCommentImagePreviews([]);
+        setCommentImageIds([]);
       }
     } catch (err) {
       console.error(err)
@@ -1163,10 +1223,12 @@ export default function PostDetailPage() {
                       setIsEditingPost(true);
                       setEditTitle(post.title);
                       setEditContent(post.content);
-                      setEditExistingImages(post.images || []);
-                      editImagePreviews.forEach((preview) => URL.revokeObjectURL(preview));
-                      setEditImageFiles([]);
-                      setEditImagePreviews([]);
+                      setEditImageItems((post.images || []).map((url) => ({
+                        id: url,
+                        type: 'existing' as const,
+                        url,
+                        originalUrl: url,
+                      })));
                     }}
                     className="px-4 py-1.5 rounded-full bg-muted hover:bg-primary/10 hover:text-primary transition-all text-sm font-bold"
                   >
@@ -1225,11 +1287,12 @@ export default function PostDetailPage() {
 
         {isEditingPost && (
           <div className="space-y-4 mt-6">
-            <ExistingImageEditor
-              images={editExistingImages}
-              onRemove={(index) => setEditExistingImages((prev) => prev.filter((_, i) => i !== index))}
+            <SortableImageGrid
+              items={editImageItems}
+              onReorder={handleEditImageReorder}
+              onRemove={handleEditImageRemove}
+              disabled={submitting}
             />
-            <ImagePreviewStrip previews={editImagePreviews} onRemove={removeEditPostImage} />
             <div className="flex items-center gap-3">
               <label className="grid size-10 place-items-center rounded-2xl border border-border bg-background/70 cursor-pointer hover:border-primary hover:text-primary transition-colors">
                 <ImagePlus size={18} />
@@ -1245,7 +1308,7 @@ export default function PostDetailPage() {
                 />
               </label>
               <span className="text-xs text-muted-foreground">
-                {editExistingImages.length + editImageFiles.length} image{(editExistingImages.length + editImageFiles.length) !== 1 ? "s" : ""}
+                {editImageItems.length} image{editImageItems.length !== 1 ? "s" : ""}
               </span>
             </div>
             {editUploadProgress !== null && (
@@ -1268,12 +1331,15 @@ export default function PostDetailPage() {
             <button
               onClick={() => {
                 setIsEditingPost(false);
-                setEditTitle(post.title);
-                setEditContent(post.content);
-                setEditExistingImages(post.images || []);
-                editImagePreviews.forEach((preview) => URL.revokeObjectURL(preview));
-                setEditImageFiles([]);
-                setEditImagePreviews([]);
+                if (post) {
+                  setEditTitle(post.title);
+                  setEditContent(post.content);
+                }
+                // Clean up new image previews
+                editImageItems.forEach((item) => {
+                  if (item.type === 'new') URL.revokeObjectURL(item.url);
+                });
+                setEditImageItems([]);
               }}
               className="flex-1 py-3 rounded-2xl bg-muted font-bold hover:bg-border transition-all"
             >
@@ -1350,7 +1416,12 @@ export default function PostDetailPage() {
               maxLength={DTO_LIMITS.commentContentMax}
               className="min-h-[76px] w-full resize-none bg-transparent border-none outline-none px-2 py-2 text-sm"
             />
-            <ImagePreviewStrip previews={commentImagePreviews} onRemove={removeCommentImage} />
+            <SortableImageGrid
+              items={commentImageItems}
+              onReorder={handleCommentImageReorder}
+              onRemove={handleCommentImageRemove}
+              disabled={submitting}
+            />
             {commentUploadProgress !== null && (
               <div className="h-1.5 overflow-hidden rounded-full bg-secondary">
                 <div className="h-full bg-primary transition-all" style={{ width: `${commentUploadProgress * 100}%` }} />

@@ -18,6 +18,10 @@ class PostDetailCommentComposer extends StatelessWidget {
     required this.onPickImages,
     required this.onRemoveLocal,
     required this.onSubmit,
+    // Reorderable mode
+    this.reorderableEntries,
+    this.onReorderImages,
+    this.onRemoveImageEntry,
   });
 
   final TextEditingController controller;
@@ -28,8 +32,18 @@ class PostDetailCommentComposer extends StatelessWidget {
   final ValueChanged<int> onRemoveLocal;
   final VoidCallback onSubmit;
 
+  // Reorderable mode
+  final List<EditableImageEntry>? reorderableEntries;
+  final void Function(int oldIndex, int newIndex)? onReorderImages;
+  final ValueChanged<String>? onRemoveImageEntry;
+
   @override
   Widget build(BuildContext context) {
+    final useReorderable = reorderableEntries != null;
+    final hasImages = useReorderable
+        ? reorderableEntries!.isNotEmpty
+        : localImages.isNotEmpty;
+
     return Align(
       alignment: Alignment.bottomCenter,
       child: ConstrainedBox(
@@ -58,12 +72,21 @@ class PostDetailCommentComposer extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  EditableImageWrap(
-                    localImages: localImages.cast(),
-                    onRemoveLocal: onRemoveLocal,
-                    tileSize: 72,
-                  ),
-                  if (localImages.isNotEmpty) const SizedBox(height: 10),
+                  if (useReorderable)
+                    EditableImageWrap(
+                      reorderable: true,
+                      entries: reorderableEntries,
+                      onReorder: onReorderImages,
+                      onRemoveEntry: onRemoveImageEntry,
+                      tileSize: 72,
+                    )
+                  else
+                    EditableImageWrap(
+                      localImages: localImages.cast(),
+                      onRemoveLocal: onRemoveLocal,
+                      tileSize: 72,
+                    ),
+                  if (hasImages) const SizedBox(height: 10),
                   if (uploadProgress != null) ...[
                     ClipRRect(
                       borderRadius: BorderRadius.circular(AppRadii.sm),

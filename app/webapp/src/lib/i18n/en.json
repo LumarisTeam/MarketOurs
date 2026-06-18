@@ -131,6 +131,7 @@
     "share_failed": "Share failed, please try again",
     "close_image_viewer": "Close image viewer",
     "remove_image": "Remove image",
+    "drag_to_reorder": "Drag to reorder images",
     "previous_image": "Previous image",
     "next_image": "Next image"
   },

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../components/editable_image_wrap.dart';
 import '../../components/post_editor_form.dart';
 import '../../components/post_tag_selector.dart';
 import '../../models/post.dart';
@@ -28,7 +29,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   final _contentController = TextEditingController();
   final _imagePicker = ImagePicker();
   final _fileService = FileService();
-  final List<XFile> _images = [];
+  final List<EditableImageEntry> _imageEntries = [];
+  int _imageIdCounter = 0;
   List<PostTagDto> _tags = const [];
   PostTagDto? _selectedTag;
   bool _isSubmitting = false;
@@ -52,12 +54,27 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     if (picked.isEmpty) return;
 
     setState(() {
-      _images.addAll(picked);
+      for (final file in picked) {
+        _imageEntries.add(EditableImageEntry(
+          id: ValueKey('new-${_imageIdCounter++}'),
+          displayUrl: file.path,
+          localFile: file,
+        ));
+      }
     });
   }
 
-  Future<void> _removeImage(int index) async {
-    setState(() => _images.removeAt(index));
+  void _removeImageEntry(String id) {
+    setState(() => _imageEntries.removeWhere((e) => e.id.toString() == id));
+  }
+
+  void _reorderImages(int oldIndex, int newIndex) {
+    setState(() {
+      // Swap: the dragged item takes the drop target's position.
+      final entry = _imageEntries[oldIndex];
+      _imageEntries[oldIndex] = _imageEntries[newIndex];
+      _imageEntries[newIndex] = entry;
+    });
   }
 
   Future<void> _loadTags() async {
@@ -101,13 +118,13 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       // Fetch upload key and compress images in parallel — they are independent.
       // This saves one network round-trip worth of latency.
       String? uploadKey;
-      if (_images.isNotEmpty) {
+      if (_imageEntries.isNotEmpty) {
         final results = await Future.wait([
           _fileService.getUploadKey().then(
             (r) => (r.data?['key'] as String?) ?? '',
           ),
           ImageCompressionService.compressAll(
-            _images,
+            _imageEntries.map((e) => e.localFile!).toList(),
             quality: ImageCompressionService.postImageQuality,
             maxWidth: ImageCompressionService.postMaxWidth,
             maxHeight: ImageCompressionService.postMaxHeight,
@@ -196,10 +213,12 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                 contentController: _contentController,
                 selectedTag: _selectedTag,
                 existingImages: const [],
-                localImages: _images,
+                localImages: const [],
                 onPickTag: _isSubmitting ? null : _selectTag,
                 onPickImages: _isSubmitting ? null : _pickImages,
-                onRemoveLocalImage: _isSubmitting ? null : _removeImage,
+                reorderableEntries: _imageEntries,
+                onReorderImages: _isSubmitting ? null : _reorderImages,
+                onRemoveImageEntry: _isSubmitting ? null : _removeImageEntry,
                 onSubmit: _isSubmitting ? null : _submit,
                 submitLabel: _isSubmitting ? '发布中...' : '立即发布',
                 uploadProgress: _uploadProgress,
