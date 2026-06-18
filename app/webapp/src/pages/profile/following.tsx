@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Link, useSearchParams } from "react-router";
 import { useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
 import { UserMinus, Ban, Loader2, Users, ArrowLeft, AlertCircle } from "lucide-react";
 import { followService } from "../../services/followService";
 import { extractUserMessage } from "../../services/errorCodes";
@@ -10,6 +11,7 @@ import type { UserSimpleDto } from "../../types";
 type Tab = "following" | "blocked";
 
 export default function FollowingPage() {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const initialTab = searchParams.get("tab") === "blocked" ? "blocked" : "following";
   const [activeTab, setActiveTab] = useState<Tab>(initialTab);
@@ -35,7 +37,7 @@ export default function FollowingPage() {
       }
     } catch (err) {
       console.error("Failed to load list", err);
-      setError(extractUserMessage(err, "加载失败"));
+      setError(extractUserMessage(err, t("following.load_error")));
     } finally {
       setLoading(false);
     }
@@ -60,7 +62,7 @@ export default function FollowingPage() {
       setFollowingList((prev) => prev.filter((u) => u.id !== userId));
     } catch (err) {
       console.error("Failed to unfollow", err);
-      setError(extractUserMessage(err, "操作失败"));
+      setError(extractUserMessage(err, t("following.action_error")));
     } finally {
       setActionLoading(null);
     }
@@ -73,7 +75,7 @@ export default function FollowingPage() {
       setBlockedList((prev) => prev.filter((u) => u.id !== userId));
     } catch (err) {
       console.error("Failed to unblock", err);
-      setError(extractUserMessage(err, "操作失败"));
+      setError(extractUserMessage(err, t("following.action_error")));
     } finally {
       setActionLoading(null);
     }
@@ -82,7 +84,7 @@ export default function FollowingPage() {
   if (!currentUser) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <p className="text-muted-foreground">请先登录</p>
+        <p className="text-muted-foreground">{t("following.login_required")}</p>
       </div>
     );
   }
@@ -98,7 +100,7 @@ export default function FollowingPage() {
         >
           <ArrowLeft size={20} />
         </Link>
-        <h1 className="text-2xl font-bold tracking-tight">社交管理</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t("following.title")}</h1>
       </div>
 
       <div className="flex gap-2 rounded-2xl bg-muted/50 p-1.5">
@@ -111,7 +113,7 @@ export default function FollowingPage() {
           }`}
         >
           <Users size={16} className="mr-2 inline-block" />
-          我的关注
+          {t("following.my_following")}
         </button>
         <button
           onClick={() => setActiveTab("blocked")}
@@ -122,7 +124,7 @@ export default function FollowingPage() {
           }`}
         >
           <Ban size={16} className="mr-2 inline-block" />
-          屏蔽列表
+          {t("following.blocked_list")}
         </button>
       </div>
 
@@ -138,13 +140,13 @@ export default function FollowingPage() {
             onClick={loadData}
             className="mt-4 rounded-xl bg-muted px-4 py-2 text-sm font-semibold hover:bg-border transition-colors"
           >
-            重新加载
+            {t("following.retry")}
           </button>
         </div>
       ) : list.length === 0 ? (
         <div className="rounded-[2rem] border border-dashed border-border bg-card px-6 py-16 text-center">
           <p className="text-muted-foreground">
-            {activeTab === "following" ? "还没有关注任何人" : "没有屏蔽任何人"}
+            {activeTab === "following" ? t("following.empty_following") : t("following.empty_blocked")}
           </p>
         </div>
       ) : (
@@ -163,7 +165,7 @@ export default function FollowingPage() {
               </Link>
 
               <Link to={`/user/${user.id}`} className="min-w-0 flex-1">
-                <p className="truncate font-semibold">{user.name || "未设置昵称"}</p>
+                <p className="truncate font-semibold">{user.name || t("following.no_name")}</p>
               </Link>
 
               <button
@@ -182,12 +184,12 @@ export default function FollowingPage() {
                 {activeTab === "following" ? (
                   <>
                     <UserMinus size={14} />
-                    取消关注
+                    {t("following.unfollow")}
                   </>
                 ) : (
                   <>
                     <Ban size={14} />
-                    取消屏蔽
+                    {t("following.unblock")}
                   </>
                 )}
               </button>

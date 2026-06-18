@@ -59,13 +59,13 @@ export function PostCard({ post, onDelete }: { post: PostDto; onDelete?: (id: st
     try {
       const outcome = await sharePost(post)
       if (outcome === "shared") {
-        setShareFeedback("已打开分享面板")
+        setShareFeedback(t("post.share_panel_opened"))
       } else if (outcome === "copied") {
-        setShareFeedback("链接已复制")
+        setShareFeedback(t("post.share_link_copied"))
       }
     } catch (error) {
       console.error(error)
-      setShareFeedback(extractUserMessage(error, "分享失败，请稍后重试"))
+      setShareFeedback(extractUserMessage(error, t("post.share_failed")))
     } finally {
       window.setTimeout(() => setShareFeedback(null), 2500)
     }

@@ -108,9 +108,9 @@ export default function RegisterPage() {
     e.preventDefault();
     setIsLoading(true);
     setError("");
-    const nameError = requiredMax(name, DTO_LIMITS.userNameMax, "用户名不能为空", `用户名长度不能超过 ${DTO_LIMITS.userNameMax} 位`);
-    const accountError = requiredMax(account, DTO_LIMITS.userAccountMax, "账号不能为空", `账号长度不能超过 ${DTO_LIMITS.userAccountMax} 位`);
-    const passwordError = passwordLength(password, "密码不能为空", `密码长度不能少于 ${DTO_LIMITS.userPasswordMin} 位`, `密码长度不能超过 ${DTO_LIMITS.userPasswordMax} 位`);
+    const nameError = requiredMax(name, DTO_LIMITS.userNameMax, t("validation.user_name_required"), t("validation.user_name_too_long", { max: DTO_LIMITS.userNameMax }));
+    const accountError = requiredMax(account, DTO_LIMITS.userAccountMax, t("validation.account_required"), t("validation.account_too_long", { max: DTO_LIMITS.userAccountMax }));
+    const passwordError = passwordLength(password, t("validation.password_required"), t("validation.password_too_short", { min: DTO_LIMITS.userPasswordMin }), t("validation.password_too_long", { max: DTO_LIMITS.userPasswordMax }));
     if (nameError || accountError || passwordError || accountType === 'invalid' || !isPasswordValid) {
       setError(nameError || accountError || passwordError || t("auth.error_registration_failed"));
       setIsLoading(false);

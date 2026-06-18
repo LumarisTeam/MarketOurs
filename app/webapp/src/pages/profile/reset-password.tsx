@@ -41,9 +41,9 @@ export default function ResetPasswordPage() {
     }
     const passwordError = passwordLength(
       newPassword,
-      "新密码不能为空",
-      `新密码长度不能少于 ${DTO_LIMITS.userPasswordMin} 位`,
-      `新密码长度不能超过 ${DTO_LIMITS.userPasswordMax} 位`,
+      t("validation.new_password_required"),
+      t("validation.new_password_too_short", { min: DTO_LIMITS.userPasswordMin }),
+      t("validation.new_password_too_long", { max: DTO_LIMITS.userPasswordMax }),
     );
     if (passwordError) {
       setError(passwordError);

@@ -2,12 +2,14 @@ import { Bell } from "lucide-react"
 import { useSelector, useDispatch } from "react-redux"
 import { Link } from "react-router"
 import { useEffect } from "react"
+import { useTranslation } from "react-i18next"
 import type { RootState, AppDispatch } from "@/stores"
 import { fetchUnreadCount } from "@/stores/notificationSlice"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
 export function NotificationBell() {
+  const { t } = useTranslation()
   const { unreadCount } = useSelector((state: RootState) => state.notification)
   const { isAuthenticated } = useSelector((state: RootState) => state.auth)
   const dispatch = useDispatch<AppDispatch>()
@@ -32,7 +34,7 @@ export function NotificationBell() {
       variant="ghost"
       size="icon"
       className="relative rounded-xl text-muted-foreground hover:text-foreground"
-      aria-label="Notifications"
+      aria-label={t("nav.notifications")}
       render={
         <Link to="/notifications" className="relative inline-flex items-center justify-center">
           <Bell size={18} />

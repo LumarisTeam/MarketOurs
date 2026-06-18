@@ -1,5 +1,6 @@
 import { useId, useState } from "react";
 import type { InputHTMLAttributes, ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { Eye, EyeOff } from "lucide-react";
 
 type PasswordFieldProps = Omit<
@@ -18,6 +19,7 @@ export function PasswordField({
   wrapperClassName,
   ...props
 }: PasswordFieldProps) {
+  const { t } = useTranslation();
   const [isVisible, setIsVisible] = useState(false);
   const inputId = useId();
 
@@ -36,7 +38,7 @@ export function PasswordField({
       />
       <button
         type="button"
-        aria-label={isVisible ? "隐藏密码" : "显示密码"}
+        aria-label={isVisible ? t("auth.hide_password") : t("auth.show_password")}
         aria-controls={props.id ?? inputId}
         aria-pressed={isVisible}
         onClick={() => setIsVisible((visible) => !visible)}

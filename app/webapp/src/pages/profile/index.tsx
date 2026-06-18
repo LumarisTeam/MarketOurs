@@ -104,9 +104,9 @@ export default function ProfilePage() {
   };
 
   const handleUpdate = async () => {
-    const nameError = optionalMax(name, DTO_LIMITS.userNameMax, `用户名长度不能超过 ${DTO_LIMITS.userNameMax} 位`);
-    const infoError = optionalMax(info, DTO_LIMITS.userInfoMax, `个人简介长度不能超过 ${DTO_LIMITS.userInfoMax} 位`);
-    const avatarError = optionalMax(avatar, DTO_LIMITS.userAvatarMax, `头像地址长度不能超过 ${DTO_LIMITS.userAvatarMax} 位`);
+    const nameError = optionalMax(name, DTO_LIMITS.userNameMax, t("validation.user_name_too_long", { max: DTO_LIMITS.userNameMax }));
+    const infoError = optionalMax(info, DTO_LIMITS.userInfoMax, t("validation.user_info_too_long", { max: DTO_LIMITS.userInfoMax }));
+    const avatarError = optionalMax(avatar, DTO_LIMITS.userAvatarMax, t("validation.user_avatar_too_long", { max: DTO_LIMITS.userAvatarMax }));
     if (nameError || infoError || avatarError) {
       setMessage({ type: 'error', text: nameError || infoError || avatarError || t("common.error") });
       return;
@@ -167,7 +167,7 @@ export default function ProfilePage() {
         setAvatar(response.data);
       }
     } catch (err: any) {
-      setMessage({ type: 'error', text: err.message || '头像上传失败' });
+      setMessage({ type: 'error', text: err.message || t("validation.avatar_upload_failed") });
     } finally {
       setIsUploadingAvatar(false);
       URL.revokeObjectURL(previewUrl);
@@ -178,8 +178,8 @@ export default function ProfilePage() {
   const handleSendCode = async () => {
     if (!newValue) return;
     const valueError = showVerifyModal === 'email'
-      ? requiredMax(newValue, DTO_LIMITS.userEmailMax, "邮箱不能为空", `邮箱长度不能超过 ${DTO_LIMITS.userEmailMax} 位`)
-      : requiredMax(newValue, DTO_LIMITS.userPhoneMax, "手机号不能为空", `手机号长度不能超过 ${DTO_LIMITS.userPhoneMax} 位`);
+      ? requiredMax(newValue, DTO_LIMITS.userEmailMax, t("validation.email_required"), t("validation.email_too_long", { max: DTO_LIMITS.userEmailMax }))
+      : requiredMax(newValue, DTO_LIMITS.userPhoneMax, t("validation.phone_required"), t("validation.phone_too_long", { max: DTO_LIMITS.userPhoneMax }));
     if (valueError) {
       setMessage({ type: 'error', text: valueError });
       return;
@@ -524,7 +524,7 @@ export default function ProfilePage() {
                 <div className="flex items-center justify-between border-t border-border/50 pt-4">
                   <div className="flex items-center gap-3 text-muted-foreground">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                    <span className="text-sm font-medium">关注与屏蔽</span>
+                    <span className="text-sm font-medium">{t("profile.follow_block")}</span>
                   </div>
                   <Link
                     to="/following"

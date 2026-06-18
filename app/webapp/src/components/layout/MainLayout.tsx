@@ -29,7 +29,7 @@ export function MainLayout({ children }: MainLayoutProps) {
               <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10">
                 <span className="text-[10px] font-bold text-primary">L</span>
               </div>
-              <span className="text-sm font-medium text-foreground">光汇</span>
+              <span className="text-sm font-medium text-foreground">{t("common.site_name")}</span>
               <Separator orientation="vertical" className="h-3 mx-1" />
               <p className="text-xs text-muted-foreground">
                 &copy; {year} MarketOurs

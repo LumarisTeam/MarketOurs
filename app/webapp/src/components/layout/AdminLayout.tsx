@@ -6,7 +6,6 @@ import { logout } from "@/stores/authSlice"
 import type { RootState } from "@/stores"
 import { useTranslation } from "react-i18next"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
 import { PageTransition } from "./PageTransition"
 import { AdminSidebar } from "./AdminSidebar"
@@ -57,7 +56,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             size="icon"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             className="rounded-xl text-muted-foreground hover:text-foreground"
-            aria-label="Toggle theme"
+            aria-label={t("nav.toggle_theme")}
           >
             {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
           </Button>

@@ -1,10 +1,10 @@
 {
   "common": {
+    "site_name": "Lumalis",
     "search_placeholder": "Search posts...",
     "search": "Search",
     "no_more_posts": "No more posts to load.",
     "no_posts_found": "No posts found.",
-    "profile_coming_soon": "Profile Page Coming Soon",
     "user": "User",
     "loading": "Loading...",
     "error": "Error",
@@ -20,7 +20,10 @@
     "profile": "Profile",
     "post": "Post",
     "logout": "Logout",
-    "toggle_language": "Switch to Chinese"
+    "toggle_language": "Switch to Chinese",
+    "toggle_theme": "Toggle theme",
+    "notifications": "Notifications",
+    "toggle_sidebar": "Toggle Sidebar"
   },
   "legal": {
     "terms": "Terms of Service",
@@ -38,6 +41,8 @@
     "account_placeholder": "Email or Phone",
     "password": "Password",
     "password_placeholder": "••••••••",
+    "show_password": "Show password",
+    "hide_password": "Hide password",
     "display_name": "Display Name",
     "display_name_placeholder": "Your Name",
     "signin": "Sign In",
@@ -75,7 +80,12 @@
     "verification_code_sent_to": "Verification code sent to",
     "resend_code_in": "Resend in {{count}}s",
     "verify_and_complete": "Verify & Complete",
-    "back_to_registration": "Back to Registration"
+    "back_to_registration": "Back to Registration",
+    "error_failed_to_send_code": "Failed to send verification code. Please try again.",
+    "random_avatar": "Random Avatar",
+    "pick_from_gallery": "Pick from Gallery",
+    "take_photo": "Take Photo",
+    "click_to_change_avatar": "Click avatar to change"
   },
   "post": {
     "not_found": "Post not found",
@@ -114,7 +124,15 @@
     "sort_by": "Sort by",
     "created": "Post created successfully!",
     "delete_error": "Failed to delete post",
-    "tag_load_failed": "Failed to load tags"
+    "tag_load_failed": "Failed to load tags",
+    "share_fallback_title": "A post on Lumalis",
+    "share_panel_opened": "Share panel opened",
+    "share_link_copied": "Link copied",
+    "share_failed": "Share failed, please try again",
+    "close_image_viewer": "Close image viewer",
+    "remove_image": "Remove image",
+    "previous_image": "Previous image",
+    "next_image": "Next image"
   },
   "tag": {
     "title": "Tag: {{name}}",
@@ -171,7 +189,53 @@
     "unbind_success": "{{provider}} has been unbound",
     "unbind_need_contact": "Bind an email or phone before unbinding",
     "follow_error": "Failed to update follow status",
-    "block_error": "Failed to update block status"
+    "block_error": "Failed to update block status",
+    "follow_block": "Follow & Block",
+    "follow": "Follow",
+    "following": "Following",
+    "unfollow": "Unfollow",
+    "followers": "Followers",
+    "block": "Block",
+    "blocked": "Blocked",
+    "unblock": "Unblock"
+  },
+  "following": {
+    "title": "Social Management",
+    "my_following": "My Following",
+    "blocked_list": "Blocked Users",
+    "load_error": "Failed to load data",
+    "action_error": "Operation failed",
+    "login_required": "Please log in first",
+    "retry": "Try Again",
+    "empty_following": "Not following anyone yet",
+    "empty_blocked": "No blocked users",
+    "no_name": "No Name Set",
+    "unfollow": "Unfollow",
+    "unblock": "Unblock"
+  },
+  "validation": {
+    "user_name_required": "Username cannot be empty",
+    "user_name_too_long": "Username cannot exceed {{max}} characters",
+    "user_info_too_long": "Bio cannot exceed {{max}} characters",
+    "user_avatar_too_long": "Avatar URL cannot exceed {{max}} characters",
+    "avatar_upload_failed": "Avatar upload failed",
+    "email_required": "Email cannot be empty",
+    "email_too_long": "Email cannot exceed {{max}} characters",
+    "phone_required": "Phone cannot be empty",
+    "phone_too_long": "Phone cannot exceed {{max}} characters",
+    "account_required": "Account cannot be empty",
+    "account_too_long": "Account cannot exceed {{max}} characters",
+    "password_required": "Password cannot be empty",
+    "password_too_short": "Password must be at least {{min}} characters",
+    "password_too_long": "Password cannot exceed {{max}} characters",
+    "new_password_required": "New password cannot be empty",
+    "new_password_too_short": "New password must be at least {{min}} characters",
+    "new_password_too_long": "New password cannot exceed {{max}} characters",
+    "post_title_required": "Title cannot be empty",
+    "post_title_too_long": "Title cannot exceed {{max}} characters",
+    "post_content_required": "Content cannot be empty",
+    "post_content_too_long": "Content cannot exceed {{max}} characters",
+    "comment_too_long": "Comment cannot exceed {{max}} characters"
   },
   "notifications": {
     "title": "Notifications",

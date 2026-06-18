@@ -1,4 +1,5 @@
 import type { PostDto } from "../types";
+import i18n from "./i18n";
 
 type ShareOutcome = "shared" | "copied" | "cancelled";
 
@@ -15,7 +16,7 @@ export function buildPostShareUrl(postId: string, origin = window.location.origi
 }
 
 export function buildPostSharePayload(post: PostDto, origin = window.location.origin): SharePayload {
-  const title = post.title.trim() || "来自光汇的帖子";
+  const title = post.title.trim() || i18n.t("post.share_fallback_title");
   const excerpt = buildPostShareExcerpt(post.content);
   const url = buildPostShareUrl(post.id, origin);
 

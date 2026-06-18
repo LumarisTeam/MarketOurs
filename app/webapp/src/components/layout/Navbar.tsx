@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils"
 import { useTheme } from "@/components/theme-provider"
 import {
   Sun, Moon, MessageSquare, User, Menu, LogIn, LogOut,
-  PlusSquare, Languages, Flame, ChevronDown, Settings
+  PlusSquare, Languages, Flame, ChevronDown
 } from "lucide-react"
 import { useState } from "react"
 import { useSelector, useDispatch } from "react-redux"
@@ -80,7 +80,7 @@ export function Navbar() {
                 <span className="text-sm font-bold text-primary-foreground">L</span>
               </div>
               <span className="hidden font-semibold text-foreground sm:inline-block text-base tracking-tight">
-                光汇
+                {t("common.site_name")}
               </span>
             </Link>
 
@@ -137,7 +137,7 @@ export function Navbar() {
               variant="ghost"
               size="icon"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              aria-label="Toggle theme"
+              aria-label={t("nav.toggle_theme")}
               className="text-muted-foreground hover:text-foreground rounded-xl"
             >
               {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
@@ -212,7 +212,7 @@ export function Navbar() {
                     <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary shadow-sm">
                       <span className="text-sm font-bold text-primary-foreground">L</span>
                     </div>
-                    光汇
+                    {t("common.site_name")}
                   </SheetTitle>
                 </SheetHeader>
                 <nav className="flex flex-col gap-1">

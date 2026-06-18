@@ -297,7 +297,7 @@ export default function PublicProfilePage() {
                   }`}
                 >
                   {isFollowing ? <UserMinus size={18} /> : <UserPlus size={18} />}
-                  {isFollowing ? "已关注" : "关注"}
+                  {isFollowing ? t("profile.following") : t("profile.follow")}
                 </button>
                 <button
                   onClick={handleToggleBlock}
@@ -309,7 +309,7 @@ export default function PublicProfilePage() {
                   }`}
                 >
                   <Ban size={18} />
-                  {isBlocked ? "已屏蔽" : "屏蔽"}
+                  {isBlocked ? t("profile.blocked") : t("profile.block")}
                 </button>
               </div>
             )}
@@ -319,7 +319,7 @@ export default function PublicProfilePage() {
             <div className="rounded-[2rem] border border-border/50 bg-muted/30 p-5">
               <div className="mb-3 flex items-center gap-3 text-muted-foreground">
                 <UserPlus size={18} />
-                <span className="text-sm font-medium">粉丝</span>
+                <span className="text-sm font-medium">{t("profile.followers")}</span>
               </div>
               <p className="text-lg font-bold">{followerCount}</p>
             </div>
@@ -327,7 +327,7 @@ export default function PublicProfilePage() {
             <div className="rounded-[2rem] border border-border/50 bg-muted/30 p-5">
               <div className="mb-3 flex items-center gap-3 text-muted-foreground">
                 <UserPlus size={18} />
-                <span className="text-sm font-medium">关注</span>
+                <span className="text-sm font-medium">{t("profile.follow")}</span>
               </div>
               <p className="text-lg font-bold">{followingCount}</p>
             </div>

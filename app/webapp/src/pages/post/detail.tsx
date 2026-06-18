@@ -28,7 +28,6 @@ import {
 } from "@/components/ui/alert-dialog"
 const MAX_COMMENT_IMAGES = 3;
 
-const commentLengthError = `评论内容长度不能超过 ${DTO_LIMITS.commentContentMax} 位`;
 
 // 一条被展平的回复：comment 是回复本身，replyTo 是它直接回复的那条评论；
 // 当 replyTo 为 null 时表示它是直接回复顶层评论(不显示 @)，否则显示 @对方。
@@ -70,6 +69,7 @@ async function uploadCommentImageFiles(
 }
 
 function CommentImageGrid({ images, imageLabel }: { images: string[]; imageLabel: string }) {
+  const { t } = useTranslation();
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
   if (images.length === 0) return null;
 
@@ -99,7 +99,7 @@ function CommentImageGrid({ images, imageLabel }: { images: string[]; imageLabel
             type="button"
             onClick={() => setViewerIndex(null)}
             className="absolute right-4 top-4 grid size-11 place-items-center rounded-full bg-muted text-foreground transition-colors hover:bg-border"
-            aria-label="Close image viewer"
+            aria-label={t("post.close_image_viewer")}
           >
             <X size={22} />
           </button>
@@ -122,6 +122,7 @@ function ImagePreviewStrip({
   previews: string[];
   onRemove: (index: number) => void;
 }) {
+  const { t } = useTranslation();
   if (previews.length === 0) return null;
 
   return (
@@ -133,7 +134,7 @@ function ImagePreviewStrip({
             type="button"
             onClick={() => onRemove(index)}
             className="absolute right-1 top-1 grid size-6 place-items-center rounded-full bg-background/85 text-foreground shadow-sm transition-colors hover:bg-destructive hover:text-destructive-foreground"
-            aria-label="Remove image"
+            aria-label={t("post.remove_image")}
           >
             <X size={12} />
           </button>
@@ -150,6 +151,7 @@ function ExistingImageEditor({
   images: string[];
   onRemove: (index: number) => void;
 }) {
+  const { t } = useTranslation();
   if (images.length === 0) return null;
 
   return (
@@ -161,7 +163,7 @@ function ExistingImageEditor({
             type="button"
             onClick={() => onRemove(index)}
             className="absolute right-1 top-1 grid size-6 place-items-center rounded-full bg-background/85 text-foreground shadow-sm transition-colors hover:bg-destructive hover:text-destructive-foreground"
-            aria-label="Remove image"
+            aria-label={t("post.remove_image")}
           >
             <X size={12} />
           </button>
@@ -172,6 +174,7 @@ function ExistingImageEditor({
 }
 
 function PostImageCarousel({ images, imageLabel }: { images: string[]; imageLabel: string }) {
+  const { t } = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
   const hasMultipleImages = images.length > 1;
@@ -242,7 +245,7 @@ function PostImageCarousel({ images, imageLabel }: { images: string[]; imageLabe
                 onClick={goToPrevious}
                 disabled={safeCurrentIndex === 0}
                 className="absolute left-3 top-1/2 grid size-10 -translate-y-1/2 place-items-center rounded-full bg-background/85 text-foreground shadow-lg backdrop-blur transition-all hover:bg-background disabled:pointer-events-none disabled:opacity-35"
-                aria-label="Previous image"
+                aria-label={t("post.previous_image")}
               >
                 <ChevronLeft size={20} />
               </button>
@@ -251,7 +254,7 @@ function PostImageCarousel({ images, imageLabel }: { images: string[]; imageLabe
                 onClick={goToNext}
                 disabled={safeCurrentIndex === images.length - 1}
                 className="absolute right-3 top-1/2 grid size-10 -translate-y-1/2 place-items-center rounded-full bg-background/85 text-foreground shadow-lg backdrop-blur transition-all hover:bg-background disabled:pointer-events-none disabled:opacity-35"
-                aria-label="Next image"
+                aria-label={t("post.next_image")}
               >
                 <ChevronRight size={20} />
               </button>
@@ -288,7 +291,7 @@ function PostImageCarousel({ images, imageLabel }: { images: string[]; imageLabe
             type="button"
             onClick={() => setViewerIndex(null)}
             className="absolute right-4 top-4 grid size-11 place-items-center rounded-full bg-muted text-foreground transition-colors hover:bg-border"
-            aria-label="Close image viewer"
+            aria-label={t("post.close_image_viewer")}
           >
             <X size={22} />
           </button>
@@ -301,7 +304,7 @@ function PostImageCarousel({ images, imageLabel }: { images: string[]; imageLabe
               }}
               disabled={viewerIndex === 0}
               className="absolute left-4 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-full bg-muted text-foreground transition-colors hover:bg-border disabled:opacity-35"
-              aria-label="Previous image"
+              aria-label={t("post.previous_image")}
             >
               <ChevronLeft size={24} />
             </button>
@@ -322,7 +325,7 @@ function PostImageCarousel({ images, imageLabel }: { images: string[]; imageLabe
                 }}
                 disabled={viewerIndex === images.length - 1}
                 className="absolute right-4 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-full bg-muted text-foreground transition-colors hover:bg-border disabled:opacity-35"
-                aria-label="Next image"
+                aria-label={t("post.next_image")}
               >
                 <ChevronRight size={24} />
               </button>
@@ -849,14 +852,14 @@ export default function PostDetailPage() {
     const titleError = requiredMax(
       editTitle,
       DTO_LIMITS.postTitleMax,
-      "标题不能为空",
-      `标题长度不能超过 ${DTO_LIMITS.postTitleMax} 位`,
+      t("validation.post_title_required"),
+      t("validation.post_title_too_long", { max: DTO_LIMITS.postTitleMax }),
     );
     const contentError = requiredMax(
       editContent,
       DTO_LIMITS.postContentMax,
-      "内容不能为空",
-      `内容长度不能超过 ${DTO_LIMITS.postContentMax} 位`,
+      t("validation.post_content_required"),
+      t("validation.post_content_too_long", { max: DTO_LIMITS.postContentMax }),
     );
     if (titleError || contentError) {
       setActionError(titleError || contentError);
@@ -924,13 +927,13 @@ export default function PostDetailPage() {
     try {
       const outcome = await sharePost(post);
       if (outcome === "shared") {
-        setShareFeedback("已打开分享面板");
+        setShareFeedback(t("post.share_panel_opened"));
       } else if (outcome === "copied") {
-        setShareFeedback("链接已复制");
+        setShareFeedback(t("post.share_link_copied"));
       }
     } catch (error) {
       console.error(error);
-      setShareFeedback(extractUserMessage(error, "分享失败，请稍后重试"));
+      setShareFeedback(extractUserMessage(error, t("post.share_failed")));
     } finally {
       window.setTimeout(() => setShareFeedback(null), 2500);
     }
@@ -999,7 +1002,7 @@ export default function PostDetailPage() {
 
   const handleCommentUpdate = async (commentId: string, content: string, images: string[]) => {
     if (content.trim().length > DTO_LIMITS.commentContentMax) {
-      setActionError(commentLengthError);
+      setActionError(t("validation.comment_too_long", { max: DTO_LIMITS.commentContentMax }));
       return;
     }
     try {
@@ -1028,7 +1031,7 @@ export default function PostDetailPage() {
   const handleCommentReply = async (parentId: string, content: string, images: string[]) => {
     if (!id || !user) return;
     if (content.trim().length > DTO_LIMITS.commentContentMax) {
-      setActionError(commentLengthError);
+      setActionError(t("validation.comment_too_long", { max: DTO_LIMITS.commentContentMax }));
       return;
     }
     try {
@@ -1071,7 +1074,7 @@ export default function PostDetailPage() {
   const handleCommentSubmit = async () => {
     if ((!commentContent.trim() && commentImageFiles.length === 0) || !user || !id) return;
     if (commentContent.trim().length > DTO_LIMITS.commentContentMax) {
-      setActionError(commentLengthError);
+      setActionError(t("validation.comment_too_long", { max: DTO_LIMITS.commentContentMax }));
       return;
     }
     setSubmitting(true)

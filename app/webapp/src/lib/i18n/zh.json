@@ -1,10 +1,10 @@
 {
   "common": {
+    "site_name": "光汇",
     "search_placeholder": "搜索文章...",
     "search": "搜索",
     "no_more_posts": "没有更多文章了。",
     "no_posts_found": "未找到相关文章。",
-    "profile_coming_soon": "个人主页即将推出",
     "user": "用户",
     "loading": "加载中...",
     "error": "错误",
@@ -20,7 +20,10 @@
     "profile": "个人中心",
     "post": "发布",
     "logout": "退出登录",
-    "toggle_language": "切换为英文"
+    "toggle_language": "切换为英文",
+    "toggle_theme": "切换主题",
+    "notifications": "通知",
+    "toggle_sidebar": "切换侧边栏"
   },
   "legal": {
     "terms": "用户协议",
@@ -38,6 +41,8 @@
     "account_placeholder": "邮箱或手机号",
     "password": "密码",
     "password_placeholder": "••••••••",
+    "show_password": "显示密码",
+    "hide_password": "隐藏密码",
     "display_name": "显示名称",
     "display_name_placeholder": "您的昵称",
     "signin": "登录",
@@ -75,7 +80,12 @@
     "verification_code_sent_to": "验证码已发送至",
     "resend_code_in": "{{count}}秒后重新获取",
     "verify_and_complete": "验证并完成",
-    "back_to_registration": "返回注册"
+    "back_to_registration": "返回注册",
+    "error_failed_to_send_code": "验证码发送失败，请稍后重试。",
+    "random_avatar": "随机生成",
+    "pick_from_gallery": "从相册选择",
+    "take_photo": "拍照",
+    "click_to_change_avatar": "点击头像更换"
   },
   "post": {
     "not_found": "文章未找到",
@@ -114,7 +124,15 @@
     "sort_by": "排序方式",
     "created": "发布成功！",
     "delete_error": "删除失败",
-    "tag_load_failed": "标签加载失败"
+    "tag_load_failed": "标签加载失败",
+    "share_fallback_title": "来自光汇的帖子",
+    "share_panel_opened": "已打开分享面板",
+    "share_link_copied": "链接已复制",
+    "share_failed": "分享失败，请稍后重试",
+    "close_image_viewer": "关闭图片预览",
+    "remove_image": "移除图片",
+    "previous_image": "上一张图片",
+    "next_image": "下一张图片"
   },
   "tag": {
     "title": "标签：{{name}}",
@@ -171,7 +189,53 @@
     "unbind_success": "{{provider}} 已解绑",
     "unbind_need_contact": "请先绑定邮箱或手机号后再解绑",
     "follow_error": "关注操作失败",
-    "block_error": "屏蔽操作失败"
+    "block_error": "屏蔽操作失败",
+    "follow_block": "关注与屏蔽",
+    "follow": "关注",
+    "following": "已关注",
+    "unfollow": "取消关注",
+    "followers": "粉丝",
+    "block": "屏蔽",
+    "blocked": "已屏蔽",
+    "unblock": "取消屏蔽"
+  },
+  "following": {
+    "title": "社交管理",
+    "my_following": "我的关注",
+    "blocked_list": "屏蔽列表",
+    "load_error": "加载失败",
+    "action_error": "操作失败",
+    "login_required": "请先登录",
+    "retry": "重新加载",
+    "empty_following": "还没有关注任何人",
+    "empty_blocked": "没有屏蔽任何人",
+    "no_name": "未设置昵称",
+    "unfollow": "取消关注",
+    "unblock": "取消屏蔽"
+  },
+  "validation": {
+    "user_name_required": "用户名不能为空",
+    "user_name_too_long": "用户名长度不能超过 {{max}} 位",
+    "user_info_too_long": "个人简介长度不能超过 {{max}} 位",
+    "user_avatar_too_long": "头像地址长度不能超过 {{max}} 位",
+    "avatar_upload_failed": "头像上传失败",
+    "email_required": "邮箱不能为空",
+    "email_too_long": "邮箱长度不能超过 {{max}} 位",
+    "phone_required": "手机号不能为空",
+    "phone_too_long": "手机号长度不能超过 {{max}} 位",
+    "account_required": "账号不能为空",
+    "account_too_long": "账号长度不能超过 {{max}} 位",
+    "password_required": "密码不能为空",
+    "password_too_short": "密码长度不能少于 {{min}} 位",
+    "password_too_long": "密码长度不能超过 {{max}} 位",
+    "new_password_required": "新密码不能为空",
+    "new_password_too_short": "新密码长度不能少于 {{min}} 位",
+    "new_password_too_long": "新密码长度不能超过 {{max}} 位",
+    "post_title_required": "标题不能为空",
+    "post_title_too_long": "标题长度不能超过 {{max}} 位",
+    "post_content_required": "内容不能为空",
+    "post_content_too_long": "内容长度不能超过 {{max}} 位",
+    "comment_too_long": "评论内容长度不能超过 {{max}} 位"
   },
   "notifications": {
     "title": "通知中心",
