@@ -27,8 +27,8 @@ buildscript {
         }
 
     repositories {
-        google()
         mavenCentral()
+        google()
         maven(url = "https://developer.huawei.com/repo/")
     }
     if (enableFcm) {
@@ -45,8 +45,8 @@ buildscript {
 
 allprojects {
     repositories {
-        google()
         mavenCentral()
+        google()
         maven(url = "https://developer.huawei.com/repo/")
     }
 }

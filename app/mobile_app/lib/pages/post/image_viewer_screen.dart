@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/services.dart';
 import 'package:gal/gal.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
@@ -26,18 +25,44 @@ class ImageViewerScreen extends StatefulWidget {
 
 class _ImageViewerScreenState extends State<ImageViewerScreen> {
   final Dio _dio = Dio();
+  final Map<String, Size> _imageSizes = {};
+  final Map<String, ImageStream> _imageStreams = {};
+  final Map<String, ImageStreamListener> _imageStreamListeners = {};
+  final Set<String> _resolvingImages = {};
   late int _currentIndex;
   late PageController _pageController;
+  late List<PhotoViewController> _photoControllers;
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
     _pageController = PageController(initialPage: widget.initialIndex);
+    _photoControllers = List.generate(
+      widget.images.length,
+      (_) => PhotoViewController(),
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    for (final imageUrl in widget.images) {
+      _resolveImageSize(imageUrl);
+    }
   }
 
   @override
   void dispose() {
+    for (final controller in _photoControllers) {
+      controller.dispose();
+    }
+    for (final entry in _imageStreams.entries) {
+      final listener = _imageStreamListeners[entry.key];
+      if (listener != null) {
+        entry.value.removeListener(listener);
+      }
+    }
     _pageController.dispose();
     super.dispose();
   }
@@ -52,6 +77,94 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
     return widget.images[_currentIndex];
   }
 
+  void _resolveImageSize(String imageUrl) {
+    if (_imageSizes.containsKey(imageUrl) ||
+        _resolvingImages.contains(imageUrl)) {
+      return;
+    }
+
+    _resolvingImages.add(imageUrl);
+    final stream = NetworkImage(
+      imageUrl,
+    ).resolve(createLocalImageConfiguration(context));
+
+    late final ImageStreamListener listener;
+    listener = ImageStreamListener(
+      (imageInfo, synchronousCall) {
+        final size = Size(
+          imageInfo.image.width.toDouble(),
+          imageInfo.image.height.toDouble(),
+        );
+        _imageStreams.remove(imageUrl)?.removeListener(listener);
+        _imageStreamListeners.remove(imageUrl);
+        _resolvingImages.remove(imageUrl);
+
+        if (!mounted) {
+          return;
+        }
+
+        if (synchronousCall) {
+          _imageSizes[imageUrl] = size;
+          return;
+        }
+
+        setState(() {
+          _imageSizes[imageUrl] = size;
+        });
+      },
+      onError: (_, stackTrace) {
+        _imageStreams.remove(imageUrl)?.removeListener(listener);
+        _imageStreamListeners.remove(imageUrl);
+        _resolvingImages.remove(imageUrl);
+      },
+    );
+
+    _imageStreams[imageUrl] = stream;
+    _imageStreamListeners[imageUrl] = listener;
+    stream.addListener(listener);
+  }
+
+  void _handleBackdropTap(TapUpDetails details) {
+    if (_didTapImageBackdrop(details.localPosition)) {
+      Navigator.of(context).pop();
+    }
+  }
+
+  bool _didTapImageBackdrop(Offset tapPosition) {
+    final imageUrl = _currentImageUrl;
+    if (imageUrl == null) {
+      return false;
+    }
+
+    final imageSize = _imageSizes[imageUrl];
+    if (imageSize == null || _photoControllers.isEmpty) {
+      return false;
+    }
+
+    final viewportSize = MediaQuery.sizeOf(context);
+    final controllerValue = _photoControllers[_currentIndex].value;
+    final scale =
+        controllerValue.scale ?? _containedScale(viewportSize, imageSize);
+    final displayedSize = Size(
+      imageSize.width * scale,
+      imageSize.height * scale,
+    );
+    final displayedRect = Rect.fromCenter(
+      center: viewportSize.center(Offset.zero) + controllerValue.position,
+      width: displayedSize.width,
+      height: displayedSize.height,
+    );
+
+    return !displayedRect.contains(tapPosition);
+  }
+
+  double _containedScale(Size viewportSize, Size imageSize) {
+    return (viewportSize.width / imageSize.width).clamp(0, double.infinity) <
+            (viewportSize.height / imageSize.height).clamp(0, double.infinity)
+        ? viewportSize.width / imageSize.width
+        : viewportSize.height / imageSize.height;
+  }
+
   Future<void> _showImageActionSheet() async {
     final imageUrl = _currentImageUrl;
     if (imageUrl == null) {
@@ -64,13 +177,6 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
         title: const Text('图片操作'),
         message: Text('当前图片：${_currentIndex + 1} / ${widget.images.length}'),
         actions: [
-          CupertinoActionSheetAction(
-            onPressed: () async {
-              Navigator.of(sheetContext).pop();
-              await _copyCurrentImageUrl(imageUrl);
-            },
-            child: const Text('复制链接'),
-          ),
           CupertinoActionSheetAction(
             onPressed: () async {
               Navigator.of(sheetContext).pop();
@@ -92,14 +198,6 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
         ),
       ),
     );
-  }
-
-  Future<void> _copyCurrentImageUrl(String imageUrl) async {
-    await Clipboard.setData(ClipboardData(text: imageUrl));
-    if (!mounted) {
-      return;
-    }
-    await AppFeedback.showSuccess(context, message: '图片链接已复制');
   }
 
   Future<void> _saveCurrentImage(String imageUrl) async {
@@ -269,6 +367,8 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
               final isGif = url.toLowerCase().contains('.gif');
               if (isGif) {
                 return PhotoViewGalleryPageOptions.customChild(
+                  controller: _photoControllers[index],
+                  childSize: _imageSizes[url],
                   child: Center(
                     child: Image.network(
                       url,
@@ -287,6 +387,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                 );
               }
               return PhotoViewGalleryPageOptions(
+                controller: _photoControllers[index],
                 imageProvider: NetworkImage(url),
                 minScale: PhotoViewComputedScale.contained,
                 maxScale: PhotoViewComputedScale.covered * 3,
@@ -306,6 +407,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
           Positioned.fill(
             child: GestureDetector(
               behavior: HitTestBehavior.translucent,
+              onTapUp: _handleBackdropTap,
               onLongPress: _showImageActionSheet,
             ),
           ),

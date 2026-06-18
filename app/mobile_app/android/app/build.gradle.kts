@@ -214,7 +214,7 @@ if (enableHuawei) {
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
     if (enableFcm) {
-        implementation("cn.jiguang.sdk.plugin:fcm:4.8.6")
+        implementation("cn.jiguang.sdk.plugin:fcm:6.0.1")
         implementation("com.google.firebase:firebase-messaging:24.1.2")
     }
     if (enableHuawei) {
