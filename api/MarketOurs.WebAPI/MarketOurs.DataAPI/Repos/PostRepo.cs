@@ -255,7 +255,7 @@ public class PostRepo(IDbContextFactory<MarketContext> factory) : IPostRepo
                         SELECT *
                         FROM posts
                         WHERE "IsReview"
-                          AND ({tagId} IS NULL OR "TagId" = {tagId})
+                          AND ({tagId}::text IS NULL OR "TagId" = {tagId})
                           AND ("Title" @@@ {keyword} OR "Content" @@@ {keyword})
                         ORDER BY pdb.score("Id") DESC, "CreatedAt" DESC
                         LIMIT {pageSize} OFFSET {offset}
@@ -303,7 +303,7 @@ public class PostRepo(IDbContextFactory<MarketContext> factory) : IPostRepo
                         SELECT *
                         FROM posts
                         WHERE "IsReview"
-                          AND ({tagId} IS NULL OR "TagId" = {tagId})
+                          AND ({tagId}::text IS NULL OR "TagId" = {tagId})
                           AND ("Title" @@@ {keyword} OR "Content" @@@ {keyword})
                         """)
                     .AsNoTracking()
