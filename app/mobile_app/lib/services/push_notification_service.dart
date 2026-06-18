@@ -118,7 +118,7 @@ class PushNotificationService {
   Future<void> _initializeJPush() async {
     _jpush.addEventHandler(
       onReceiveNotification: (message) async {
-        await _handleForegroundNotification(message);
+        // await _handleForegroundNotification(message);
       },
       onOpenNotification: (message) async {
         _handleNotificationTap(message);

@@ -45,18 +45,18 @@ export default function HotPage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-8 pb-20">
-      <section className="overflow-hidden rounded-[2rem] border border-orange-200/70 bg-[radial-gradient(circle_at_top_left,_rgba(251,146,60,0.32),_transparent_45%),linear-gradient(135deg,_rgba(255,247,237,1),_rgba(255,255,255,1))] p-8 shadow-lg shadow-orange-100/60">
+      <section className="overflow-hidden rounded-[2rem] border border-orange-200/70 bg-[radial-gradient(circle_at_top_left,_rgba(251,146,60,0.32),_transparent_45%),linear-gradient(135deg,_rgba(255,247,237,1),_rgba(255,255,255,1))] p-8 shadow-lg shadow-orange-100/60 dark:border-orange-800/30 dark:bg-[radial-gradient(circle_at_top_left,_rgba(251,146,60,0.12),_transparent_45%),linear-gradient(135deg,_rgba(30,25,22,1),_rgba(0,0,0,1))] dark:shadow-orange-950/30">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div className="space-y-4">
-            <span className="inline-flex items-center gap-2 rounded-full bg-white/85 px-4 py-2 text-sm font-semibold text-orange-600 shadow-sm">
+            <span className="inline-flex items-center gap-2 rounded-full bg-card/85 px-4 py-2 text-sm font-semibold text-orange-600 shadow-sm dark:text-orange-400">
               <Flame size={16} />
               {t("hot.badge")}
             </span>
             <div className="space-y-2">
-              <h1 className="text-4xl font-black tracking-tight text-slate-900">
+              <h1 className="text-4xl font-black tracking-tight text-foreground">
                 {t("hot.title")}
               </h1>
-              <p className="max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
+              <p className="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
                 {t("hot.subtitle")}
               </p>
             </div>
@@ -66,7 +66,7 @@ export default function HotPage() {
             type="button"
             onClick={() => void loadHotPosts(true)}
             disabled={refreshing}
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-foreground px-5 py-3 text-sm font-semibold text-background transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {refreshing ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
             {refreshing ? t("hot.refreshing") : t("hot.refresh")}
@@ -84,7 +84,7 @@ export default function HotPage() {
       ) : error ? (
         <div className="rounded-[2rem] border border-destructive/20 bg-destructive/5 p-8 text-center">
           <div className="mx-auto flex max-w-md flex-col items-center gap-4">
-            <div className="rounded-full bg-white p-3 text-destructive shadow-sm">
+            <div className="rounded-full bg-card p-3 text-destructive shadow-sm">
               <AlertCircle size={24} />
             </div>
             <div className="space-y-2">
@@ -122,8 +122,8 @@ export default function HotPage() {
                 className={cn(
                   "group cursor-pointer overflow-hidden rounded-[2rem] border transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl",
                   isTopThree
-                    ? "border-orange-200/80 bg-[linear-gradient(135deg,_rgba(255,247,237,0.95),_rgba(255,255,255,1))] shadow-orange-100/70"
-                    : "border-border/60 bg-card hover:border-orange-200/80"
+                    ? "border-orange-200/80 bg-[linear-gradient(135deg,_rgba(255,247,237,0.95),_rgba(255,255,255,1))] shadow-orange-100/70 dark:border-orange-800/40 dark:bg-[linear-gradient(135deg,_rgba(35,28,22,0.98),_rgba(28,28,30,1))] dark:shadow-orange-950/30"
+                    : "border-border/60 bg-card hover:border-orange-200/80 dark:hover:border-orange-800/40"
                 )}
               >
                 <div className="grid gap-0 md:grid-cols-[minmax(0,1fr)_220px]">
@@ -134,14 +134,14 @@ export default function HotPage() {
                           className={cn(
                             "flex h-14 w-14 items-center justify-center rounded-2xl text-lg font-black tracking-[0.2em]",
                             isTopThree
-                              ? "bg-orange-500 text-white shadow-lg shadow-orange-200"
-                              : "bg-slate-100 text-slate-600"
+                              ? "bg-orange-500 text-white shadow-lg shadow-orange-200 dark:shadow-orange-900/40"
+                              : "bg-muted text-muted-foreground"
                           )}
                         >
                           {isTopThree ? hotRanks[index] : String(index + 1).padStart(2, "0")}
                         </div>
                         <div className="space-y-1">
-                          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-orange-500">
+                          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-orange-500 dark:text-orange-400">
                             {t("hot.rank_label", { rank: index + 1 })}
                           </p>
                           <p className="text-sm text-muted-foreground">
@@ -149,34 +149,34 @@ export default function HotPage() {
                           </p>
                         </div>
                       </div>
-                      <div className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-orange-600 shadow-sm">
+                      <div className="rounded-full bg-card/80 px-3 py-1 text-xs font-semibold text-orange-600 shadow-sm dark:text-orange-400">
                         {t("hot.heat_label")}
                       </div>
                     </div>
 
                     <div className="space-y-3">
                       <PostTagBadge tag={post.tag} />
-                      <h2 className="text-2xl font-black tracking-tight text-slate-900 transition-colors group-hover:text-orange-600">
+                      <h2 className="text-2xl font-black tracking-tight text-foreground transition-colors group-hover:text-orange-600 dark:group-hover:text-orange-400">
                         {post.title}
                       </h2>
-                      <p className="line-clamp-3 whitespace-pre-wrap text-sm leading-6 text-slate-600 sm:text-base">
+                      <p className="line-clamp-3 whitespace-pre-wrap text-sm leading-6 text-muted-foreground sm:text-base">
                         {getPostExcerpt(post.content, 180)}
                       </p>
                     </div>
 
                     <div className="mt-6 flex flex-wrap items-center gap-3 text-sm">
-                      <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-slate-700 shadow-sm">
+                      <div className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-2 text-foreground shadow-sm">
                         <Heart size={16} className="text-rose-500" />
                         <span className="font-semibold">{post.likes}</span>
                       </div>
-                      <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-slate-700 shadow-sm">
+                      <div className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-2 text-foreground shadow-sm">
                         <Eye size={16} className="text-sky-500" />
                         <span className="font-semibold">{post.watch}</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="relative min-h-48 bg-slate-100">
+                  <div className="relative min-h-48 bg-muted">
                     {coverImage ? (
                       <img
                         src={coverImage}

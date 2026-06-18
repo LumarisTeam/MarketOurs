@@ -82,7 +82,7 @@ export default function NotificationsPage() {
       case NotificationType.HotList:
         return <Flame size={18} className="text-orange-500" />
       default:
-        return <Bell size={18} className="text-gray-500" />
+        return <Bell size={18} className="text-muted-foreground" />
     }
   }
 
@@ -159,7 +159,7 @@ export default function NotificationsPage() {
                     )}
                   >
                     <div className="flex items-start gap-4">
-                      <div className="mt-1 p-2 bg-white dark:bg-zinc-800 rounded-xl shadow-sm">
+                      <div className="mt-1 p-2 bg-card rounded-xl shadow-sm">
                         {getIcon(n.type)}
                       </div>
                       <div className="flex-1">
