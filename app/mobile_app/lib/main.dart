@@ -1,6 +1,9 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'l10n/app_localizations.dart';
+import 'providers/locale_provider.dart';
 import 'providers/theme_provider.dart';
 import 'router/app_router.dart';
 import 'ui/app_theme.dart';
@@ -16,11 +19,20 @@ class MarketOursApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
     final themeMode = ref.watch(themeModeNotifierProvider);
+    final appLocale = ref.watch(localeNotifierProvider);
 
     return CupertinoApp.router(
-      title: '光汇',
+      title: 'LightHub',
       debugShowCheckedModeBanner: false,
       routerConfig: router,
+      locale: appLocale,
+      supportedLocales: supportedLocales,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       builder: (context, child) {
         final forcedBrightness = themeMode.forcedBrightness;
         if (forcedBrightness != null) {
