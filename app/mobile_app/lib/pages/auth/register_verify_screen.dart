@@ -176,7 +176,7 @@ class _RegisterVerifyScreenState extends ConsumerState<RegisterVerifyScreen> {
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return '请输入验证码';
+                  return AppLocalizations.of(context).validatorCodeRequired;
                 }
                 if (value.trim().length < 4) {
                   return '验证码至少4位';

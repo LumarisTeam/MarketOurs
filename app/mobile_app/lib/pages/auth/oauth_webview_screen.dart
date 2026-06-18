@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -124,7 +126,7 @@ class _OAuthWebViewScreenState extends ConsumerState<OAuthWebViewScreen> {
     final message = uri.queryParameters['message'];
     final isBindSuccess =
         message != null &&
-        (message.contains('绑定成功') || message.contains('Binding successful'));
+        (message.contains(AppLocalizations.of(context).commentBindingSuccess) || message.contains('Binding successful'));
     if (isBindSuccess) {
       _handleBindSuccess();
       return;
@@ -134,7 +136,7 @@ class _OAuthWebViewScreenState extends ConsumerState<OAuthWebViewScreen> {
     final refreshToken = uri.queryParameters['refreshToken'];
 
     if (accessToken == null || refreshToken == null) {
-      _fail('登录失败，缺少令牌');
+      _fail(AppLocalizations.of(context).oauthWebViewLoginFailed);
       return;
     }
 
@@ -145,7 +147,7 @@ class _OAuthWebViewScreenState extends ConsumerState<OAuthWebViewScreen> {
     try {
       await ref.read(authControllerProvider.notifier).refreshProfile();
       if (!mounted) return;
-      await AppFeedback.showSuccess(context, message: '绑定成功');
+      await AppFeedback.showSuccess(context, message: AppLocalizations.of(context).commentBindingSuccess);
       if (!mounted) return;
       context.pop();
     } catch (_) {
@@ -166,17 +168,17 @@ class _OAuthWebViewScreenState extends ConsumerState<OAuthWebViewScreen> {
       if (!mounted) return;
 
       if (success) {
-        await AppFeedback.showSuccess(context, message: '登录成功');
+        await AppFeedback.showSuccess(context, message: AppLocalizations.of(context).authLoginSuccess);
         if (!mounted) return;
         context.go(AppRoutePaths.home);
       } else {
         final authState = ref.read(authControllerProvider).asData?.value;
         final errorMessage = authState?.errorMessage;
-        _fail(errorMessage ?? '登录失败，请稍后重试');
+        _fail(errorMessage ?? AppLocalizations.of(context).authLoginFailed);
       }
     } catch (_) {
       if (!mounted) return;
-      _fail('登录失败，请稍后重试');
+      _fail(AppLocalizations.of(context).authLoginFailed);
     }
   }
 
@@ -228,12 +230,12 @@ class _OAuthWebViewScreenState extends ConsumerState<OAuthWebViewScreen> {
               const SizedBox(height: 28),
               AppPrimaryButton(
                 onPressed: _isLaunching ? null : _startOAuth,
-                child: Text(_isLaunching ? '正在打开' : '重新打开'),
+                child: Text(_isLaunching ? AppLocalizations.of(context).oauthWebViewOpening : AppLocalizations.of(context).oauthWebViewReopen),
               ),
               const SizedBox(height: 12),
               CupertinoButton(
                 onPressed: () => context.pop(),
-                child: const Text('取消'),
+                child: Text(AppLocalizations.of(context).cancel),
               ),
             ],
           ),

@@ -175,7 +175,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           avatar = url;
         } else {
           if (!mounted) return;
-          await AppFeedback.showError(context, message: '头像上传失败');
+          await AppFeedback.showError(context, message: AppLocalizations.of(context).errorAvatarUploadFailed);
           return;
         }
       }
@@ -217,7 +217,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         context,
         message: (errorMessage != null && errorMessage.isNotEmpty)
             ? errorMessage
-            : '注册失败，请稍后重试',
+            : AppLocalizations.of(context).authRegisterFailed,
       );
     } finally {
       // Clean up temp compressed avatar file
@@ -327,7 +327,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             const SizedBox(height: 20),
 
             // Name
-            Text('显示名称', style: AppTextStyles.label(context)),
+            Text(AppLocalizations.of(context).displayName, style: AppTextStyles.label(context)),
             const SizedBox(height: 8),
             AppTextField(
               controller: _nameController,
@@ -340,7 +340,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return '请输入显示名称';
+                  return AppLocalizations.of(context).validatorNameRequired;
                 }
                 if (value.trim().length > DtoLimits.userNameMax) {
                   return '用户名长度不能超过 ${DtoLimits.userNameMax} 位';
@@ -365,7 +365,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return '请输入账号';
+                  return AppLocalizations.of(context).validatorAccountRequired;
                 }
                 if (value.trim().length > DtoLimits.userAccountMax) {
                   return '账号长度不能超过 ${DtoLimits.userAccountMax} 位';
@@ -403,7 +403,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               maxLength: DtoLimits.userPasswordMax,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return '请输入密码';
+                  return AppLocalizations.of(context).validatorPasswordRequired;
                 }
                 if (_isPasswordDirty && !_isPasswordValid) {
                   return '密码需至少6位，包含大写字母、小写字母和数字';

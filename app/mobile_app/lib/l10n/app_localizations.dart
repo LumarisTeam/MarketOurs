@@ -708,6 +708,90 @@ abstract class AppLocalizations {
   /// **'更新当前账号密码'**
   String get profileChangePasswordDesc;
 
+  /// No description provided for @profileFollowBlock.
+  ///
+  /// In zh, this message translates to:
+  /// **'关注与屏蔽'**
+  String get profileFollowBlock;
+
+  /// No description provided for @profileFollowBlockDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'管理关注的用户和屏蔽列表'**
+  String get profileFollowBlockDesc;
+
+  /// No description provided for @profileAbout.
+  ///
+  /// In zh, this message translates to:
+  /// **'关于'**
+  String get profileAbout;
+
+  /// No description provided for @profileTerms.
+  ///
+  /// In zh, this message translates to:
+  /// **'用户协议'**
+  String get profileTerms;
+
+  /// No description provided for @profileTermsDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看平台使用条款'**
+  String get profileTermsDesc;
+
+  /// No description provided for @profilePrivacy.
+  ///
+  /// In zh, this message translates to:
+  /// **'隐私条款'**
+  String get profilePrivacy;
+
+  /// No description provided for @profilePrivacyDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'了解我们如何保护你的信息'**
+  String get profilePrivacyDesc;
+
+  /// No description provided for @profileDisplaySettings.
+  ///
+  /// In zh, this message translates to:
+  /// **'显示设置'**
+  String get profileDisplaySettings;
+
+  /// No description provided for @profileManageSocialDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'管理 Github、Google 等平台关联'**
+  String get profileManageSocialDesc;
+
+  /// No description provided for @profileNavTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'我的'**
+  String get profileNavTitle;
+
+  /// No description provided for @profilePublicProfile.
+  ///
+  /// In zh, this message translates to:
+  /// **'用户主页'**
+  String get profilePublicProfile;
+
+  /// No description provided for @profileUnknownDate.
+  ///
+  /// In zh, this message translates to:
+  /// **'未知'**
+  String get profileUnknownDate;
+
+  /// No description provided for @profileEmailVerifySuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'邮箱验证成功'**
+  String get profileEmailVerifySuccess;
+
+  /// No description provided for @profileSubmitting.
+  ///
+  /// In zh, this message translates to:
+  /// **'提交中...'**
+  String get profileSubmitting;
+
   /// No description provided for @profileLogoutDesc.
   ///
   /// In zh, this message translates to:
@@ -1559,6 +1643,168 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'한국어'**
   String get language_ko;
+
+  /// No description provided for @validatorAccountRequired.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入账号'**
+  String get validatorAccountRequired;
+
+  /// No description provided for @validatorPasswordRequired.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入密码'**
+  String get validatorPasswordRequired;
+
+  /// No description provided for @validatorCodeRequired.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入验证码'**
+  String get validatorCodeRequired;
+
+  /// No description provided for @validatorNameRequired.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入显示名称'**
+  String get validatorNameRequired;
+
+  /// No description provided for @validatorNameTooLong.
+  ///
+  /// In zh, this message translates to:
+  /// **'用户名长度不能超过 {max} 位'**
+  String validatorNameTooLong(int max);
+
+  /// No description provided for @validatorConfirmPasswordMismatch.
+  ///
+  /// In zh, this message translates to:
+  /// **'两次输入的密码不一致'**
+  String get validatorConfirmPasswordMismatch;
+
+  /// No description provided for @validatorPasswordWeak.
+  ///
+  /// In zh, this message translates to:
+  /// **'至少6位，含大写、小写字母和数字'**
+  String get validatorPasswordWeak;
+
+  /// No description provided for @validatorEmailInvalid.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入有效的邮箱地址'**
+  String get validatorEmailInvalid;
+
+  /// No description provided for @oauthWebViewCantReceive.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法接收登录回调，请重试'**
+  String get oauthWebViewCantReceive;
+
+  /// No description provided for @oauthWebViewCantOpenBrowser.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法打开系统浏览器，请检查系统设置'**
+  String get oauthWebViewCantOpenBrowser;
+
+  /// No description provided for @oauthWebViewCantInitiate.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法发起第三方认证，请稍后重试'**
+  String get oauthWebViewCantInitiate;
+
+  /// No description provided for @oauthWebViewLoginFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'登录失败，缺少令牌'**
+  String get oauthWebViewLoginFailed;
+
+  /// No description provided for @oauthWebViewOpenBrowser.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在打开系统浏览器'**
+  String get oauthWebViewOpenBrowser;
+
+  /// No description provided for @oauthWebViewAuthorizeInBrowser.
+  ///
+  /// In zh, this message translates to:
+  /// **'请在浏览器中完成授权'**
+  String get oauthWebViewAuthorizeInBrowser;
+
+  /// No description provided for @oauthWebViewAutoReturn.
+  ///
+  /// In zh, this message translates to:
+  /// **'完成后会自动回到光汇'**
+  String get oauthWebViewAutoReturn;
+
+  /// No description provided for @oauthWebViewOpening.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在打开'**
+  String get oauthWebViewOpening;
+
+  /// No description provided for @oauthWebViewReopen.
+  ///
+  /// In zh, this message translates to:
+  /// **'重新打开'**
+  String get oauthWebViewReopen;
+
+  /// No description provided for @oauthBindProvider.
+  ///
+  /// In zh, this message translates to:
+  /// **'绑定 {provider}'**
+  String oauthBindProvider(String provider);
+
+  /// No description provided for @oauthLoginProvider.
+  ///
+  /// In zh, this message translates to:
+  /// **'{provider} 登录'**
+  String oauthLoginProvider(String provider);
+
+  /// No description provided for @verifyCodeSentContinue.
+  ///
+  /// In zh, this message translates to:
+  /// **'验证码已发送，请继续重置密码'**
+  String get verifyCodeSentContinue;
+
+  /// No description provided for @loginFailedCheckAccount.
+  ///
+  /// In zh, this message translates to:
+  /// **'登录失败，请检查账号和密码'**
+  String get loginFailedCheckAccount;
+
+  /// No description provided for @loginFailedCheckCode.
+  ///
+  /// In zh, this message translates to:
+  /// **'登录失败，请检查验证码'**
+  String get loginFailedCheckCode;
+
+  /// No description provided for @displayName.
+  ///
+  /// In zh, this message translates to:
+  /// **'显示名称'**
+  String get displayName;
+
+  /// No description provided for @uploadingImages.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在上传图片'**
+  String get uploadingImages;
+
+  /// No description provided for @postWatchCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 次浏览'**
+  String postWatchCount(int count);
+
+  /// No description provided for @commentBindingSuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'绑定成功'**
+  String get commentBindingSuccess;
+
+  /// No description provided for @commentBindingSuccessRefreshFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'绑定成功，但刷新资料失败，请稍后下拉刷新'**
+  String get commentBindingSuccessRefreshFailed;
 }
 
 class _AppLocalizationsDelegate

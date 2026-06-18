@@ -46,7 +46,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _sendCode() async {
     final account = _accountController.text.trim();
     if (account.isEmpty) {
-      await AppFeedback.showError(context, message: '请输入账号');
+      await AppFeedback.showError(context, message: AppLocalizations.of(context).validatorAccountRequired);
       return;
     }
 
@@ -123,7 +123,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final authState = ref.read(authControllerProvider).asData?.value;
     final errorMessage = authState?.errorMessage;
     if (success) {
-      await AppFeedback.showSuccess(context, message: '登录成功');
+      await AppFeedback.showSuccess(context, message: AppLocalizations.of(context).authLoginSuccess);
       if (!mounted) {
         return;
       }
@@ -132,8 +132,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
 
     final fallbackMessage = _loginMode == _LoginMode.password
-        ? '登录失败，请检查账号和密码'
-        : '登录失败，请检查验证码';
+        ? AppLocalizations.of(context).loginFailedCheckAccount
+        : AppLocalizations.of(context).loginFailedCheckCode;
     await AppFeedback.showError(
       context,
       message: (errorMessage != null && errorMessage.isNotEmpty)
@@ -191,7 +191,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   : TextInputAction.done,
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return '请输入账号';
+                  return AppLocalizations.of(context).validatorAccountRequired;
                 }
                 return null;
               },
@@ -222,11 +222,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               const SizedBox(height: 8),
               PasswordFormField(
                 controller: _passwordController,
-                placeholder: '请输入密码',
+                placeholder: AppLocalizations.of(context).validatorPasswordRequired,
                 onFieldSubmitted: (_) => isSubmitting ? null : _submit(),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return '请输入密码';
+                    return AppLocalizations.of(context).validatorPasswordRequired;
                   }
                   return null;
                 },
@@ -249,7 +249,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
-                          return '请输入验证码';
+                          return AppLocalizations.of(context).validatorCodeRequired;
                         }
                         return null;
                       },

@@ -232,23 +232,23 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
     final isMe = authState?.user?.id == widget.userId;
 
     if (_isLoading) {
-      return const AppPageScaffold(
+      return AppPageScaffold(
         navigationBarStyle: AppNavigationBarStyle.compact,
-        title: '用户主页',
-        child: Center(child: CupertinoActivityIndicator()),
+        title: AppLocalizations.of(context).profilePublicProfile,
+        child: const Center(child: CupertinoActivityIndicator()),
       );
     }
 
     if (_errorMessage != null || _profile == null) {
       return AppPageScaffold(
         navigationBarStyle: AppNavigationBarStyle.compact,
-        title: '用户主页',
+        title: AppLocalizations.of(context).profilePublicProfile,
         child: _ErrorState(message: _errorMessage ?? '用户不存在', onRetry: _load),
       );
     }
 
     return AppPageScaffold(
-      title: '用户主页',
+      title: AppLocalizations.of(context).profilePublicProfile,
       navigationBarStyle: AppNavigationBarStyle.compact,
       scrollController: _scrollController,
       slivers: [
@@ -405,7 +405,7 @@ class _ProfileHero extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            '${AppLocalizations.of(context).profileJoinDate} ${_formatDate(profile.createdAt)}',
+            '${AppLocalizations.of(context).profileJoinDate} ${_formatDate(profile.createdAt, AppLocalizations.of(context))}',
             style: TextStyle(
               fontSize: 12,
               color: CupertinoDynamicColor.resolve(AppColors.mutedForeground, context),
@@ -416,9 +416,9 @@ class _ProfileHero extends StatelessWidget {
     );
   }
 
-  String _formatDate(DateTime? value) {
+  static String _formatDate(DateTime? value, AppLocalizations l10n) {
     if (value == null) {
-      return '未知';
+      return l10n.profileUnknownDate;
     }
     return '${value.year}-${value.month.toString().padLeft(2, '0')}-${value.day.toString().padLeft(2, '0')}';
   }

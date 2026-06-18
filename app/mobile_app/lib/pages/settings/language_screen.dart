@@ -17,7 +17,6 @@ class LanguageScreen extends ConsumerWidget {
 
     return AppPageScaffold(
       title: l10n.settingsLanguage,
-      navigationBarStyle: AppNavigationBarStyle.compact,
       maxContentWidth: AppResponsive.readableMaxWidth(context, fallback: 720),
       child: ListView(
         children: [

@@ -312,6 +312,49 @@ class AppLocalizationsFr extends AppLocalizations {
   String get profileChangePasswordDesc => 'Update account password';
 
   @override
+  String get profileFollowBlock => 'Follow & Block';
+
+  @override
+  String get profileFollowBlockDesc => 'Manage followed users and block list';
+
+  @override
+  String get profileAbout => 'About';
+
+  @override
+  String get profileTerms => 'Terms of Service';
+
+  @override
+  String get profileTermsDesc => 'View platform usage terms';
+
+  @override
+  String get profilePrivacy => 'Privacy Policy';
+
+  @override
+  String get profilePrivacyDesc => 'Learn how we protect your information';
+
+  @override
+  String get profileDisplaySettings => 'Display Settings';
+
+  @override
+  String get profileManageSocialDesc =>
+      'Manage Github, Google and other platform connections';
+
+  @override
+  String get profileNavTitle => 'Me';
+
+  @override
+  String get profilePublicProfile => 'User Profile';
+
+  @override
+  String get profileUnknownDate => 'Unknown';
+
+  @override
+  String get profileEmailVerifySuccess => 'Email verified';
+
+  @override
+  String get profileSubmitting => 'Submitting...';
+
+  @override
   String get profileLogoutDesc => 'Clear current session';
 
   @override
@@ -758,4 +801,101 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get language_ko => '한국어';
+
+  @override
+  String get validatorAccountRequired => 'Please enter your account';
+
+  @override
+  String get validatorPasswordRequired => 'Please enter your password';
+
+  @override
+  String get validatorCodeRequired => 'Please enter verification code';
+
+  @override
+  String get validatorNameRequired => 'Please enter a display name';
+
+  @override
+  String validatorNameTooLong(int max) {
+    return 'Name cannot exceed $max characters';
+  }
+
+  @override
+  String get validatorConfirmPasswordMismatch => 'Passwords don\'t match';
+
+  @override
+  String get validatorPasswordWeak =>
+      'At least 6 chars with uppercase, lowercase & digit';
+
+  @override
+  String get validatorEmailInvalid => 'Please enter a valid email address';
+
+  @override
+  String get oauthWebViewCantReceive =>
+      'Cannot receive login callback, please retry';
+
+  @override
+  String get oauthWebViewCantOpenBrowser =>
+      'Cannot open system browser, check settings';
+
+  @override
+  String get oauthWebViewCantInitiate =>
+      'Cannot initiate third-party auth, try later';
+
+  @override
+  String get oauthWebViewLoginFailed => 'Login failed, missing token';
+
+  @override
+  String get oauthWebViewOpenBrowser => 'Opening system browser';
+
+  @override
+  String get oauthWebViewAuthorizeInBrowser =>
+      'Complete authorization in browser';
+
+  @override
+  String get oauthWebViewAutoReturn =>
+      'Will return to LightHub after completion';
+
+  @override
+  String get oauthWebViewOpening => 'Opening';
+
+  @override
+  String get oauthWebViewReopen => 'Reopen';
+
+  @override
+  String oauthBindProvider(String provider) {
+    return 'Link $provider';
+  }
+
+  @override
+  String oauthLoginProvider(String provider) {
+    return '$provider Login';
+  }
+
+  @override
+  String get verifyCodeSentContinue => 'Code sent, continue resetting password';
+
+  @override
+  String get loginFailedCheckAccount =>
+      'Login failed, check account and password';
+
+  @override
+  String get loginFailedCheckCode => 'Login failed, check verification code';
+
+  @override
+  String get displayName => 'Display Name';
+
+  @override
+  String get uploadingImages => 'Uploading images';
+
+  @override
+  String postWatchCount(int count) {
+    return '$count views';
+  }
+
+  @override
+  String get commentBindingSuccess => 'Linked successfully';
+
+  @override
+  String get commentBindingSuccessRefreshFailed =>
+      'Linked, but profile refresh failed';
 }

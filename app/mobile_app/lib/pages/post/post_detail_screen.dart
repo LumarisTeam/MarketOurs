@@ -855,7 +855,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         newImages: List<XFile>.from(selectedImages),
                       ),
                     ),
-                    child: const Text('保存'),
+                    child: Text(AppLocalizations.of(context).save),
                   ),
                 ],
               ),
@@ -1166,7 +1166,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   ],
                   cancelButton: CupertinoActionSheetAction(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('取消'),
+                    child: Text(AppLocalizations.of(context).cancel),
                   ),
                 ),
               );

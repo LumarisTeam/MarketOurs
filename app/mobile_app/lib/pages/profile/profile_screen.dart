@@ -122,7 +122,7 @@ class ProfileScreen extends ConsumerWidget {
                             verifyCode: (code) => ref
                                 .read(authControllerProvider.notifier)
                                 .verifyEmailCode(code: code),
-                            successMessage: '邮箱验证成功',
+                            successMessage: AppLocalizations.of(context).profileEmailVerifySuccess,
                           ),
                         ),
                       ],
@@ -133,14 +133,14 @@ class ProfileScreen extends ConsumerWidget {
                       children: [
                         _NavRow(
                           icon: CupertinoIcons.person_2,
-                          title: '关注与屏蔽',
-                          subtitle: '管理关注的用户和屏蔽列表',
+                          title: AppLocalizations.of(context).profileFollowBlock,
+                          subtitle: AppLocalizations.of(context).profileFollowBlockDesc,
                           onTap: () => context.push(AppRoutePaths.following),
                         ),
                         _NavRow(
                           icon: CupertinoIcons.link,
                           title: AppLocalizations.of(context).profileBindings,
-                          subtitle: '管理 Github、Google 等平台关联',
+                          subtitle: AppLocalizations.of(context).profileManageSocialDesc,
                           onTap: () =>
                               context.push(AppRoutePaths.bindings),
                         ),
@@ -162,18 +162,18 @@ class ProfileScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 16),
                     _ProfileSection(
-                      title: '关于',
+                      title: AppLocalizations.of(context).profileAbout,
                       children: [
                         _NavRow(
                           icon: CupertinoIcons.doc_text,
-                          title: '用户协议',
-                          subtitle: '查看平台使用条款',
+                          title: AppLocalizations.of(context).profileTerms,
+                          subtitle: AppLocalizations.of(context).profileTermsDesc,
                           onTap: () => context.push(AppRoutePaths.terms),
                         ),
                         _NavRow(
                           icon: CupertinoIcons.shield_lefthalf_fill,
-                          title: '隐私条款',
-                          subtitle: '了解我们如何保护你的信息',
+                          title: AppLocalizations.of(context).profilePrivacy,
+                          subtitle: AppLocalizations.of(context).profilePrivacyDesc,
                           onTap: () => context.push(AppRoutePaths.privacy),
                         ),
                       ],
@@ -466,7 +466,7 @@ class _ThemeModeSection extends ConsumerWidget {
     final themeMode = ref.watch(themeModeNotifierProvider);
 
     return _ProfileSection(
-      title: '显示设置',
+      title: AppLocalizations.of(context).profileDisplaySettings,
       children: [
         AppListTile(
           onTap: () => _showThemeModeSheet(context, ref, themeMode),

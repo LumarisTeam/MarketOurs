@@ -129,7 +129,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
               placeholder: '确认新密码',
               validator: (value) {
                 if (value != _passwordController.text) {
-                  return '两次输入的密码不一致';
+                  return AppLocalizations.of(context).validatorConfirmPasswordMismatch;
                 }
                 return null;
               },

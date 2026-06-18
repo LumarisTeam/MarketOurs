@@ -309,6 +309,48 @@ class AppLocalizationsZh extends AppLocalizations {
   String get profileChangePasswordDesc => '更新当前账号密码';
 
   @override
+  String get profileFollowBlock => '关注与屏蔽';
+
+  @override
+  String get profileFollowBlockDesc => '管理关注的用户和屏蔽列表';
+
+  @override
+  String get profileAbout => '关于';
+
+  @override
+  String get profileTerms => '用户协议';
+
+  @override
+  String get profileTermsDesc => '查看平台使用条款';
+
+  @override
+  String get profilePrivacy => '隐私条款';
+
+  @override
+  String get profilePrivacyDesc => '了解我们如何保护你的信息';
+
+  @override
+  String get profileDisplaySettings => '显示设置';
+
+  @override
+  String get profileManageSocialDesc => '管理 Github、Google 等平台关联';
+
+  @override
+  String get profileNavTitle => '我的';
+
+  @override
+  String get profilePublicProfile => '用户主页';
+
+  @override
+  String get profileUnknownDate => '未知';
+
+  @override
+  String get profileEmailVerifySuccess => '邮箱验证成功';
+
+  @override
+  String get profileSubmitting => '提交中...';
+
+  @override
   String get profileLogoutDesc => '清除当前会话';
 
   @override
@@ -749,4 +791,93 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get language_ko => '한국어';
+
+  @override
+  String get validatorAccountRequired => '请输入账号';
+
+  @override
+  String get validatorPasswordRequired => '请输入密码';
+
+  @override
+  String get validatorCodeRequired => '请输入验证码';
+
+  @override
+  String get validatorNameRequired => '请输入显示名称';
+
+  @override
+  String validatorNameTooLong(int max) {
+    return '用户名长度不能超过 $max 位';
+  }
+
+  @override
+  String get validatorConfirmPasswordMismatch => '两次输入的密码不一致';
+
+  @override
+  String get validatorPasswordWeak => '至少6位，含大写、小写字母和数字';
+
+  @override
+  String get validatorEmailInvalid => '请输入有效的邮箱地址';
+
+  @override
+  String get oauthWebViewCantReceive => '无法接收登录回调，请重试';
+
+  @override
+  String get oauthWebViewCantOpenBrowser => '无法打开系统浏览器，请检查系统设置';
+
+  @override
+  String get oauthWebViewCantInitiate => '无法发起第三方认证，请稍后重试';
+
+  @override
+  String get oauthWebViewLoginFailed => '登录失败，缺少令牌';
+
+  @override
+  String get oauthWebViewOpenBrowser => '正在打开系统浏览器';
+
+  @override
+  String get oauthWebViewAuthorizeInBrowser => '请在浏览器中完成授权';
+
+  @override
+  String get oauthWebViewAutoReturn => '完成后会自动回到光汇';
+
+  @override
+  String get oauthWebViewOpening => '正在打开';
+
+  @override
+  String get oauthWebViewReopen => '重新打开';
+
+  @override
+  String oauthBindProvider(String provider) {
+    return '绑定 $provider';
+  }
+
+  @override
+  String oauthLoginProvider(String provider) {
+    return '$provider 登录';
+  }
+
+  @override
+  String get verifyCodeSentContinue => '验证码已发送，请继续重置密码';
+
+  @override
+  String get loginFailedCheckAccount => '登录失败，请检查账号和密码';
+
+  @override
+  String get loginFailedCheckCode => '登录失败，请检查验证码';
+
+  @override
+  String get displayName => '显示名称';
+
+  @override
+  String get uploadingImages => '正在上传图片';
+
+  @override
+  String postWatchCount(int count) {
+    return '$count 次浏览';
+  }
+
+  @override
+  String get commentBindingSuccess => '绑定成功';
+
+  @override
+  String get commentBindingSuccessRefreshFailed => '绑定成功，但刷新资料失败，请稍后下拉刷新';
 }

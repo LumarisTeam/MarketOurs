@@ -42,7 +42,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         return;
       }
 
-      await AppFeedback.showSuccess(context, message: '验证码已发送，请继续重置密码');
+      await AppFeedback.showSuccess(context, message: AppLocalizations.of(context).verifyCodeSentContinue);
       if (!mounted) {
         return;
       }
@@ -60,7 +60,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         context,
         message: (errorMessage != null && errorMessage.isNotEmpty)
             ? errorMessage
-            : '发送验证码失败，请稍后重试',
+            : AppLocalizations.of(context).authSendCodeFailed,
       );
     }
   }
@@ -93,7 +93,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               placeholder: '账号 / 邮箱 / 手机号',
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return '请输入账号';
+                  return AppLocalizations.of(context).validatorAccountRequired;
                 }
                 return null;
               },
