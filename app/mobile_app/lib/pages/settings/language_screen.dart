@@ -15,25 +15,26 @@ class LanguageScreen extends ConsumerWidget {
     final currentLocale = ref.watch(localeNotifierProvider);
     final l10n = AppLocalizations.of(context);
 
-    return AppPageScaffold(
-      title: l10n.settingsLanguage,
-      maxContentWidth: AppResponsive.readableMaxWidth(context, fallback: 720),
-      child: ListView(
-        children: [
-          const SizedBox(height: 8),
-          _LanguageOption(
-            label: l10n.followSystem,
-            selected: currentLocale == null,
-            onTap: () => _selectLocale(ref, null),
-          ),
-          const SizedBox(height: 8),
-          for (final locale in supportedLocales)
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        middle: Text(l10n.settingsLanguage),
+      ),
+      child: SafeArea(
+        child: ListView(
+          children: [
             _LanguageOption(
-              label: _localeLabel(locale, l10n),
-              selected: currentLocale == locale,
-              onTap: () => _selectLocale(ref, locale),
+              label: l10n.followSystem,
+              selected: currentLocale == null,
+              onTap: () => _selectLocale(ref, null),
             ),
-        ],
+            for (final locale in supportedLocales)
+              _LanguageOption(
+                label: _localeLabel(locale, l10n),
+                selected: currentLocale == locale,
+                onTap: () => _selectLocale(ref, locale),
+              ),
+          ],
+        ),
       ),
     );
   }

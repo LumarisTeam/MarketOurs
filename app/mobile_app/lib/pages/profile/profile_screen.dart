@@ -479,11 +479,15 @@ class _ThemeModeSection extends ConsumerWidget {
             ),
             child: Icon(themeMode.icon, color: AppColors.primary, size: 18),
           ),
-          title: const Text(
+          title: Text(
             '主题模式',
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: AppColors.primary,
+            ),
           ),
-          subtitle: Text(themeMode.label, style: const TextStyle(fontSize: 13)),
+          subtitle: const Text(''),
           trailing: const Icon(
             CupertinoIcons.chevron_right,
             size: 14,
@@ -494,15 +498,24 @@ class _ThemeModeSection extends ConsumerWidget {
     );
   }
 
+  String _themeModeLabel(AppThemeMode mode, AppLocalizations l10n) {
+    return switch (mode) {
+      AppThemeMode.system => l10n.themeSystem,
+      AppThemeMode.light => l10n.themeLight,
+      AppThemeMode.dark => l10n.themeDark,
+    };
+  }
+
   void _showThemeModeSheet(
     BuildContext context,
     WidgetRef ref,
     AppThemeMode currentMode,
   ) {
+    final l10n = AppLocalizations.of(context);
     showCupertinoModalPopup<void>(
       context: context,
       builder: (sheetContext) => CupertinoActionSheet(
-        title: const Text('主题模式'),
+        title: Text(AppLocalizations.of(context).appearanceModeTitle),
         actions: [
           for (final mode in AppThemeMode.values)
             CupertinoActionSheetAction(
@@ -513,6 +526,7 @@ class _ThemeModeSection extends ConsumerWidget {
               },
               child: _ThemeModeActionLabel(
                 mode: mode,
+                label: _themeModeLabel(mode, l10n),
                 isSelected: mode == currentMode,
               ),
             ),
@@ -530,10 +544,12 @@ class _ThemeModeSection extends ConsumerWidget {
 class _ThemeModeActionLabel extends StatelessWidget {
   const _ThemeModeActionLabel({
     required this.mode,
+    required this.label,
     required this.isSelected,
   });
 
   final AppThemeMode mode;
+  final String label;
   final bool isSelected;
 
   @override
@@ -547,7 +563,7 @@ class _ThemeModeActionLabel extends StatelessWidget {
       children: [
         Icon(mode.icon, size: 18, color: color),
         const SizedBox(width: 8),
-        Text(mode.label, style: TextStyle(color: color)),
+        Text(label, style: TextStyle(color: color)),
         const SizedBox(width: 8),
         Opacity(
           opacity: isSelected ? 1 : 0,
