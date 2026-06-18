@@ -5,6 +5,17 @@ import { adminService } from "../../services/adminService"
 import { extractUserMessage } from "../../services/errorCodes"
 import type { PostTagDto } from "../../types"
 import { PostTagBadge } from "../../components/post/PostTagBadge"
+import { Button } from "../../components/ui/button"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../../components/ui/alert-dialog"
 
 export default function AdminTagsPage() {
   const { t } = useTranslation()
@@ -14,6 +25,7 @@ export default function AdminTagsPage() {
   const [activeId, setActiveId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
+  const [confirmToggle, setConfirmToggle] = useState<PostTagDto | null>(null)
 
   const loadTags = async () => {
     const response = await adminService.getPostTags()
@@ -74,6 +86,15 @@ export default function AdminTagsPage() {
     }
   }
 
+  const handleConfirmToggle = async () => {
+    if (!confirmToggle) return
+
+    const tag = confirmToggle
+    setConfirmToggle(null)
+
+    await handleUpdate(tag, { isActive: !tag.isActive })
+  }
+
   return (
     <div className="space-y-8">
       <header>
@@ -101,14 +122,13 @@ export default function AdminTagsPage() {
             className="h-11 rounded-xl border border-border/50 bg-muted/40 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/20"
             maxLength={32}
           />
-          <button
+          <Button
             type="submit"
             disabled={activeId === "new" || !name.trim()}
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-primary px-5 text-sm font-bold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Plus size={16} />
             {t("admin.tags.create")}
-          </button>
+          </Button>
         </div>
       </form>
 
@@ -141,15 +161,16 @@ export default function AdminTagsPage() {
                     <Tag size={14} />
                     {tag.isActive ? t("admin.tags.active") : t("admin.tags.inactive")}
                   </span>
-                  <button
-                    type="button"
+                  <Button
+                    variant="outline"
+                    size="sm"
                     disabled={isBusy}
-                    onClick={() => void handleUpdate(tag, { isActive: !tag.isActive })}
-                    className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-border/50 px-4 text-sm font-semibold transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+                    onClick={() => setConfirmToggle(tag)}
+                    className="inline-flex h-10 items-center justify-center gap-2"
                   >
                     {tag.isActive ? <ToggleRight size={17} /> : <ToggleLeft size={17} />}
                     {tag.isActive ? t("admin.tags.deactivate") : t("admin.tags.activate")}
-                  </button>
+                  </Button>
                 </div>
               )
             })}
@@ -161,6 +182,28 @@ export default function AdminTagsPage() {
         <Save size={16} />
         {t("admin.tags.blur_hint")}
       </p>
+
+      <AlertDialog open={confirmToggle !== null} onOpenChange={(open) => { if (!open) setConfirmToggle(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("admin.common.confirm_toggle_title")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmToggle?.isActive
+                ? t("admin.common.confirm_deactivate_description", { item: confirmToggle?.name })
+                : t("admin.common.confirm_activate_description", { item: confirmToggle?.name })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("admin.common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              variant={confirmToggle?.isActive ? "destructive" : "default"}
+              onClick={() => void handleConfirmToggle()}
+            >
+              {t("admin.common.confirm")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

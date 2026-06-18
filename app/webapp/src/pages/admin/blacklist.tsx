@@ -5,6 +5,17 @@ import { adminService } from "../../services/adminService"
 import { extractUserMessage } from "../../services/errorCodes"
 import type { BlacklistStats } from "../../types"
 import { formatLocalDateTime } from "../../lib/dateTime"
+import { Button } from "../../components/ui/button"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../../components/ui/alert-dialog"
 
 export default function AdminBlacklistPage() {
   const { t, i18n } = useTranslation()
@@ -17,6 +28,7 @@ export default function AdminBlacklistPage() {
   const [reasonInput, setReasonInput] = useState("")
   const [checkIp, setCheckIp] = useState("")
   const [checkResult, setCheckResult] = useState<{ ip: string; isBlacklisted: boolean; checkTime: string } | null>(null)
+  const [confirmAction, setConfirmAction] = useState<"add" | "remove" | "clear_cache" | null>(null)
 
   const loadStats = async () => {
     const response = await adminService.getBlacklistStats()
@@ -60,6 +72,8 @@ export default function AdminBlacklistPage() {
       return
     }
 
+    setConfirmAction(null)
+
     await runAction(
       () => adminService.addIpToBlacklist({ ip: ipInput.trim(), reason: reasonInput.trim() || null }),
       t("admin.blacklist.added"),
@@ -74,6 +88,8 @@ export default function AdminBlacklistPage() {
       return
     }
 
+    setConfirmAction(null)
+
     await runAction(
       () => adminService.removeIpFromBlacklist({ ip: ipInput.trim(), reason: reasonInput.trim() || null }),
       t("admin.blacklist.removed"),
@@ -87,6 +103,7 @@ export default function AdminBlacklistPage() {
   }
 
   const handleCleanCache = async () => {
+    setConfirmAction(null)
     await runAction(() => adminService.cleanCache(), t("admin.blacklist.cache_cleared"))
   }
 
@@ -106,6 +123,51 @@ export default function AdminBlacklistPage() {
     } finally {
       setIsWorking(false)
     }
+  }
+
+  const getConfirmDialogContent = () => {
+    switch (confirmAction) {
+      case "add":
+        return {
+          title: t("admin.common.confirm_add_blacklist_title"),
+          description: t("admin.common.confirm_add_blacklist_description", { ip: ipInput.trim() }),
+          variant: "destructive" as const,
+        }
+      case "remove":
+        return {
+          title: t("admin.common.confirm_remove_blacklist_title"),
+          description: t("admin.common.confirm_remove_blacklist_description", { ip: ipInput.trim() }),
+          variant: "default" as const,
+        }
+      case "clear_cache":
+        return {
+          title: t("admin.common.confirm_clear_cache_title"),
+          description: t("admin.common.confirm_clear_cache_description"),
+          variant: "destructive" as const,
+        }
+      default:
+        return null
+    }
+  }
+
+  const confirmContent = getConfirmDialogContent()
+
+  const handleConfirm = async () => {
+    if (confirmAction === "add") {
+      await handleAdd()
+    } else if (confirmAction === "remove") {
+      await handleRemove()
+    } else if (confirmAction === "clear_cache") {
+      await handleCleanCache()
+    }
+  }
+
+  const openConfirm = (action: "add" | "remove" | "clear_cache") => {
+    if ((action === "add" || action === "remove") && !ipInput.trim()) {
+      setError(t("admin.blacklist.validation_ip"))
+      return
+    }
+    setConfirmAction(action)
   }
 
   return (
@@ -176,42 +238,42 @@ export default function AdminBlacklistPage() {
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <button
-              type="button"
+            <Button
+              variant="destructive"
+              size="sm"
               disabled={isWorking}
-              onClick={() => void handleAdd()}
-              className="inline-flex items-center gap-2 rounded-2xl bg-destructive px-4 py-2 font-medium text-destructive-foreground disabled:cursor-not-allowed disabled:opacity-50"
+              onClick={() => openConfirm("add")}
             >
               <Ban size={16} />
               {t("admin.blacklist.add_action")}
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               disabled={isWorking}
-              onClick={() => void handleRemove()}
-              className="inline-flex items-center gap-2 rounded-2xl border border-border/50 px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
+              onClick={() => openConfirm("remove")}
             >
               <Trash2 size={16} />
               {t("admin.blacklist.remove_action")}
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               disabled={isWorking}
               onClick={() => void handleRefresh()}
-              className="inline-flex items-center gap-2 rounded-2xl border border-border/50 px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <RefreshCw size={16} />
               {t("admin.blacklist.refresh_action")}
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               disabled={isWorking}
-              onClick={() => void handleCleanCache()}
-              className="inline-flex items-center gap-2 rounded-2xl border border-border/50 px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
+              onClick={() => openConfirm("clear_cache")}
             >
               <ShieldCheck size={16} />
               {t("admin.blacklist.clean_cache_action")}
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -229,14 +291,12 @@ export default function AdminBlacklistPage() {
                 className="w-full rounded-2xl border border-border/50 bg-muted/50 py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
             </div>
-            <button
-              type="button"
+            <Button
               disabled={isWorking}
               onClick={() => void handleCheck()}
-              className="rounded-2xl bg-primary px-4 py-3 font-medium text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
             >
               {t("admin.blacklist.check_action")}
-            </button>
+            </Button>
           </div>
 
           {checkResult ? (
@@ -256,6 +316,24 @@ export default function AdminBlacklistPage() {
           )}
         </div>
       </div>
+
+      <AlertDialog open={confirmAction !== null} onOpenChange={(open) => { if (!open) setConfirmAction(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{confirmContent?.title}</AlertDialogTitle>
+            <AlertDialogDescription>{confirmContent?.description}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("admin.common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              variant={confirmContent?.variant}
+              onClick={() => void handleConfirm()}
+            >
+              {t("admin.common.confirm")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

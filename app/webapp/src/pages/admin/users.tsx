@@ -5,6 +5,17 @@ import { adminService } from "../../services/adminService"
 import { extractUserMessage } from "../../services/errorCodes"
 import type { PagedResult, UserDto } from "../../types"
 import { formatLocalDate } from "../../lib/dateTime"
+import { Button } from "../../components/ui/button"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../../components/ui/alert-dialog"
 
 const PAGE_SIZE = 10
 
@@ -17,6 +28,7 @@ export default function AdminUsersPage() {
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const [activeUserId, setActiveUserId] = useState<string | null>(null)
+  const [confirmAction, setConfirmAction] = useState<{ type: "delete" | "toggle"; user: UserDto } | null>(null)
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -49,14 +61,27 @@ export default function AdminUsersPage() {
     setPage(nextPage)
   }
 
-  const handleToggleStatus = async (user: UserDto) => {
+  const handleConfirm = async () => {
+    if (!confirmAction) return
+
+    const { type, user } = confirmAction
+    setConfirmAction(null)
+
     try {
       setActiveUserId(user.id)
       setMessage(null)
       setError(null)
-      await adminService.updateUserStatus(user.id, { isActive: !user.isActive })
-      await refreshCurrentPage()
-      setMessage(user.isActive ? t("admin.users.status_disabled") : t("admin.users.status_enabled"))
+
+      if (type === "delete") {
+        await adminService.deleteUser(user.id)
+        const shouldStepBack = users && users.items.length === 1 && page > 1
+        await refreshCurrentPage(shouldStepBack ? page - 1 : page)
+        setMessage(t("admin.users.deleted"))
+      } else {
+        await adminService.updateUserStatus(user.id, { isActive: !user.isActive })
+        await refreshCurrentPage()
+        setMessage(user.isActive ? t("admin.users.status_disabled") : t("admin.users.status_enabled"))
+      }
     } catch (err) {
       setError(extractUserMessage(err, t("admin.common.action_error")))
     } finally {
@@ -64,22 +89,32 @@ export default function AdminUsersPage() {
     }
   }
 
-  const handleDelete = async (user: UserDto) => {
-    try {
-      setActiveUserId(user.id)
-      setMessage(null)
-      setError(null)
-      await adminService.deleteUser(user.id)
+  const getConfirmDialogContent = () => {
+    if (!confirmAction) return null
+    const { type, user } = confirmAction
 
-      const shouldStepBack = users && users.items.length === 1 && page > 1
-      await refreshCurrentPage(shouldStepBack ? page - 1 : page)
-      setMessage(t("admin.users.deleted"))
-    } catch (err) {
-      setError(extractUserMessage(err, t("admin.common.action_error")))
-    } finally {
-      setActiveUserId(null)
+    if (type === "delete") {
+      return {
+        title: t("admin.common.confirm_delete_title"),
+        description: t("admin.common.confirm_delete_description", { item: user.name }),
+        variant: "destructive" as const,
+      }
+    } else if (user.isActive) {
+      return {
+        title: t("admin.common.confirm_ban_title"),
+        description: t("admin.common.confirm_ban_description"),
+        variant: "destructive" as const,
+      }
+    } else {
+      return {
+        title: t("admin.common.confirm_unban_title"),
+        description: t("admin.common.confirm_unban_description"),
+        variant: "default" as const,
+      }
     }
   }
+
+  const confirmContent = getConfirmDialogContent()
 
   return (
     <div className="space-y-8">
@@ -163,24 +198,24 @@ export default function AdminUsersPage() {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <button
-                            type="button"
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             disabled={isBusy}
-                            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
                             title={user.isActive ? t("admin.users.action_ban") : t("admin.users.action_unban")}
-                            onClick={() => void handleToggleStatus(user)}
+                            onClick={() => setConfirmAction({ type: "toggle", user })}
                           >
                             {user.isActive ? <ShieldAlert size={18} /> : <ShieldCheck size={18} />}
-                          </button>
-                          <button
-                            type="button"
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             disabled={isBusy}
-                            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-50"
                             title={t("admin.users.action_delete")}
-                            onClick={() => void handleDelete(user)}
+                            onClick={() => setConfirmAction({ type: "delete", user })}
                           >
-                            <Trash2 size={18} />
-                          </button>
+                            <Trash2 size={18} className="text-destructive" />
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -202,25 +237,43 @@ export default function AdminUsersPage() {
             {users ? t("admin.common.total_count", { count: users.totalCount }) : ""}
           </span>
           <div className="flex items-center gap-2">
-            <button
-              type="button"
+            <Button
+              variant="outline"
+              size="sm"
               disabled={!users?.hasPreviousPage || isLoading}
-              className="rounded-xl border border-border/50 px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
               onClick={() => setPage((current) => Math.max(1, current - 1))}
             >
               {t("admin.common.previous")}
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               disabled={!users?.hasNextPage || isLoading}
-              className="rounded-xl border border-border/50 px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
               onClick={() => setPage((current) => current + 1)}
             >
               {t("admin.common.next")}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
+
+      <AlertDialog open={confirmAction !== null} onOpenChange={(open) => { if (!open) setConfirmAction(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{confirmContent?.title}</AlertDialogTitle>
+            <AlertDialogDescription>{confirmContent?.description}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("admin.common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              variant={confirmContent?.variant}
+              onClick={() => void handleConfirm()}
+            >
+              {t("admin.common.confirm")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

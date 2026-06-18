@@ -5,8 +5,18 @@ import { Link } from "react-router"
 import { adminService } from "../../services/adminService"
 import { extractUserMessage } from "../../services/errorCodes"
 import type { PagedResult, PostDto, PostTagDto } from "../../types"
-import { PostTagBadge } from "../../components/post/PostTagBadge"
 import { formatLocalDate } from "../../lib/dateTime"
+import { Button } from "../../components/ui/button"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../../components/ui/alert-dialog"
 
 const PAGE_SIZE = 10
 
@@ -20,6 +30,7 @@ export default function AdminPostsPage() {
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const [activePostId, setActivePostId] = useState<string | null>(null)
+  const [confirmAction, setConfirmAction] = useState<{ type: "delete" | "review"; post: PostDto } | null>(null)
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -71,16 +82,27 @@ export default function AdminPostsPage() {
     }
   }
 
-  const handleDelete = async (post: PostDto) => {
+  const handleConfirm = async () => {
+    if (!confirmAction) return
+
+    const { type, post } = confirmAction
+    setConfirmAction(null)
+
     try {
       setActivePostId(post.id)
       setMessage(null)
       setError(null)
-      await adminService.deletePost(post.id)
 
-      const shouldStepBack = posts && posts.items.length === 1 && page > 1
-      await refreshCurrentPage(shouldStepBack ? page - 1 : page)
-      setMessage(t("admin.posts.deleted"))
+      if (type === "delete") {
+        await adminService.deletePost(post.id)
+        const shouldStepBack = posts && posts.items.length === 1 && page > 1
+        await refreshCurrentPage(shouldStepBack ? page - 1 : page)
+        setMessage(t("admin.posts.deleted"))
+      } else {
+        await adminService.updatePostReview(post.id, { isReview: !post.isReview })
+        await refreshCurrentPage()
+        setMessage(t(post.isReview ? "admin.posts.review_reverted" : "admin.posts.review_approved"))
+      }
     } catch (err) {
       setError(extractUserMessage(err, t("admin.common.action_error")))
     } finally {
@@ -88,21 +110,31 @@ export default function AdminPostsPage() {
     }
   }
 
-  const handleToggleReview = async (post: PostDto) => {
-    try {
-      setActivePostId(post.id)
-      setMessage(null)
-      setError(null)
-      await adminService.updatePostReview(post.id, { isReview: !post.isReview })
-
-      await refreshCurrentPage()
-      setMessage(t(post.isReview ? "admin.posts.review_reverted" : "admin.posts.review_approved"))
-    } catch (err) {
-      setError(extractUserMessage(err, t("admin.common.action_error")))
-    } finally {
-      setActivePostId(null)
+  const getConfirmDialogContent = () => {
+    if (!confirmAction) return null
+    const { type, post } = confirmAction
+    if (type === "delete") {
+      return {
+        title: t("admin.common.confirm_delete_title"),
+        description: t("admin.common.confirm_delete_description", { item: post.title }),
+        variant: "destructive" as const,
+      }
+    } else if (post.isReview) {
+      return {
+        title: t("admin.common.confirm_unapprove_title"),
+        description: t("admin.common.confirm_unapprove_description", { item: post.title }),
+        variant: "default" as const,
+      }
+    } else {
+      return {
+        title: t("admin.common.confirm_approve_title"),
+        description: t("admin.common.confirm_approve_description", { item: post.title }),
+        variant: "default" as const,
+      }
     }
   }
+
+  const confirmContent = getConfirmDialogContent()
 
   return (
     <div className="space-y-8">
@@ -208,35 +240,31 @@ export default function AdminPostsPage() {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <button
-                            type="button"
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             disabled={isBusy}
-                            className={`rounded-lg p-2 transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-                              post.isReview
-                                ? "text-muted-foreground hover:bg-amber-500/10 hover:text-amber-500"
-                                : "text-muted-foreground hover:bg-emerald-500/10 hover:text-emerald-500"
-                            }`}
                             title={post.isReview ? t("admin.posts.action_unapprove") : t("admin.posts.action_approve")}
-                            onClick={() => void handleToggleReview(post)}
+                            onClick={() => setConfirmAction({ type: "review", post })}
                           >
                             {post.isReview ? <XCircle size={18} /> : <CheckCircle size={18} />}
-                          </button>
+                          </Button>
                           <Link
                             to={`/post/${post.id}`}
-                            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                            className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                             title={t("admin.posts.action_view")}
                           >
                             <Eye size={18} />
                           </Link>
-                          <button
-                            type="button"
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             disabled={isBusy}
-                            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-50"
                             title={t("admin.posts.action_delete")}
-                            onClick={() => void handleDelete(post)}
+                            onClick={() => setConfirmAction({ type: "delete", post })}
                           >
-                            <Trash2 size={18} />
-                          </button>
+                            <Trash2 size={18} className="text-destructive" />
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -258,25 +286,43 @@ export default function AdminPostsPage() {
             {posts ? t("admin.common.total_count", { count: posts.totalCount }) : ""}
           </span>
           <div className="flex items-center gap-2">
-            <button
-              type="button"
+            <Button
+              variant="outline"
+              size="sm"
               disabled={!posts?.hasPreviousPage || isLoading}
-              className="rounded-xl border border-border/50 px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
               onClick={() => setPage((current) => Math.max(1, current - 1))}
             >
               {t("admin.common.previous")}
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               disabled={!posts?.hasNextPage || isLoading}
-              className="rounded-xl border border-border/50 px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
               onClick={() => setPage((current) => current + 1)}
             >
               {t("admin.common.next")}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
+
+      <AlertDialog open={confirmAction !== null} onOpenChange={(open) => { if (!open) setConfirmAction(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{confirmContent?.title}</AlertDialogTitle>
+            <AlertDialogDescription>{confirmContent?.description}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("admin.common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              variant={confirmContent?.variant}
+              onClick={() => void handleConfirm()}
+            >
+              {t("admin.common.confirm")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

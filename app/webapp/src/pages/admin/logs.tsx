@@ -5,6 +5,17 @@ import { adminService } from "../../services/adminService"
 import { extractUserMessage } from "../../services/errorCodes"
 import type { LogDistribution, LogEntry, LogStatistics, PaginatedResponse } from "../../types"
 import { formatLocalDateTime } from "../../lib/dateTime"
+import { Button } from "../../components/ui/button"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../../components/ui/alert-dialog"
 
 const PAGE_SIZE = 20
 
@@ -22,6 +33,7 @@ export default function AdminLogsPage() {
   const [isCleaning, setIsCleaning] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
+  const [showCleanupConfirm, setShowCleanupConfirm] = useState(false)
 
   const levelSummary = useMemo(() => {
     const counts = statistics?.levelCounts ?? {}
@@ -56,6 +68,8 @@ export default function AdminLogsPage() {
   }, [levelFilter, page, searchTerm, t, timeRange])
 
   const handleCleanup = async () => {
+    setShowCleanupConfirm(false)
+
     try {
       setIsCleaning(true)
       setError(null)
@@ -130,29 +144,29 @@ export default function AdminLogsPage() {
             <option value="30">{t("admin.logs.last_30_days")}</option>
           </select>
 
-          <button
-            type="button"
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => {
               setSearchTerm("")
               setLevelFilter("")
               setTimeRange("today")
               setPage(1)
             }}
-            className="inline-flex items-center gap-2 rounded-xl border border-border/50 px-4 py-2"
           >
             <RotateCcw size={16} />
             {t("admin.logs.reset_filters")}
-          </button>
+          </Button>
 
-          <button
-            type="button"
+          <Button
+            variant="destructive"
+            size="sm"
             disabled={isCleaning}
-            onClick={() => void handleCleanup()}
-            className="inline-flex items-center gap-2 rounded-xl bg-destructive px-4 py-2 font-medium text-destructive-foreground disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={() => setShowCleanupConfirm(true)}
           >
             <Trash2 size={16} />
             {isCleaning ? t("admin.logs.cleaning") : t("admin.logs.cleanup")}
-          </button>
+          </Button>
         </div>
       </header>
 
@@ -244,25 +258,40 @@ export default function AdminLogsPage() {
             {logs ? t("admin.common.total_count", { count: logs.totalCount }) : ""}
           </span>
           <div className="flex items-center gap-2">
-            <button
-              type="button"
+            <Button
+              variant="outline"
+              size="sm"
               disabled={!logs || page <= 1 || isLoading}
               onClick={() => setPage((current) => Math.max(1, current - 1))}
-              className="rounded-xl border border-border/50 px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {t("admin.common.previous")}
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               disabled={!logs || page >= logs.totalPages || isLoading}
               onClick={() => setPage((current) => current + 1)}
-              className="rounded-xl border border-border/50 px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {t("admin.common.next")}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
+
+      <AlertDialog open={showCleanupConfirm} onOpenChange={(open) => { if (!open) setShowCleanupConfirm(false) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("admin.common.confirm_cleanup_title")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("admin.common.confirm_cleanup_description")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("admin.common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={() => void handleCleanup()}>
+              {t("admin.common.confirm")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

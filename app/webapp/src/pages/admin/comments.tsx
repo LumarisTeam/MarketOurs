@@ -6,6 +6,17 @@ import { adminService } from "../../services/adminService"
 import { extractUserMessage } from "../../services/errorCodes"
 import type { CommentDto, PagedResult } from "../../types"
 import { formatLocalDate } from "../../lib/dateTime"
+import { Button } from "../../components/ui/button"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../../components/ui/alert-dialog"
 
 const PAGE_SIZE = 10
 
@@ -18,6 +29,7 @@ export default function AdminCommentsPage() {
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const [activeCommentId, setActiveCommentId] = useState<string | null>(null)
+  const [confirmAction, setConfirmAction] = useState<{ type: "delete" | "review"; comment: CommentDto } | null>(null)
 
   useEffect(() => {
     const fetchComments = async () => {
@@ -50,16 +62,27 @@ export default function AdminCommentsPage() {
     setPage(nextPage)
   }
 
-  const handleDelete = async (comment: CommentDto) => {
+  const handleConfirm = async () => {
+    if (!confirmAction) return
+
+    const { type, comment } = confirmAction
+    setConfirmAction(null)
+
     try {
       setActiveCommentId(comment.id)
       setMessage(null)
       setError(null)
-      await adminService.deleteComment(comment.id)
 
-      const shouldStepBack = comments && comments.items.length === 1 && page > 1
-      await refreshCurrentPage(shouldStepBack ? page - 1 : page)
-      setMessage(t("admin.comments.deleted"))
+      if (type === "delete") {
+        await adminService.deleteComment(comment.id)
+        const shouldStepBack = comments && comments.items.length === 1 && page > 1
+        await refreshCurrentPage(shouldStepBack ? page - 1 : page)
+        setMessage(t("admin.comments.deleted"))
+      } else {
+        await adminService.updateCommentReview(comment.id, { isReview: !comment.isReview })
+        await refreshCurrentPage()
+        setMessage(t(comment.isReview ? "admin.comments.review_reverted" : "admin.comments.review_approved"))
+      }
     } catch (err) {
       setError(extractUserMessage(err, t("admin.common.action_error")))
     } finally {
@@ -67,21 +90,32 @@ export default function AdminCommentsPage() {
     }
   }
 
-  const handleToggleReview = async (comment: CommentDto) => {
-    try {
-      setActiveCommentId(comment.id)
-      setMessage(null)
-      setError(null)
-      await adminService.updateCommentReview(comment.id, { isReview: !comment.isReview })
+  const getConfirmDialogContent = () => {
+    if (!confirmAction) return null
+    const { type, comment } = confirmAction
 
-      await refreshCurrentPage()
-      setMessage(t(comment.isReview ? "admin.comments.review_reverted" : "admin.comments.review_approved"))
-    } catch (err) {
-      setError(extractUserMessage(err, t("admin.common.action_error")))
-    } finally {
-      setActiveCommentId(null)
+    if (type === "delete") {
+      return {
+        title: t("admin.common.confirm_delete_title"),
+        description: t("admin.common.confirm_delete_description", { item: t("admin.comments.table_content") }),
+        variant: "destructive" as const,
+      }
+    } else if (comment.isReview) {
+      return {
+        title: t("admin.common.confirm_unapprove_title"),
+        description: t("admin.common.confirm_unapprove_description", { item: t("admin.comments.table_content") }),
+        variant: "default" as const,
+      }
+    } else {
+      return {
+        title: t("admin.common.confirm_approve_title"),
+        description: t("admin.common.confirm_approve_description", { item: t("admin.comments.table_content") }),
+        variant: "default" as const,
+      }
     }
   }
+
+  const confirmContent = getConfirmDialogContent()
 
   return (
     <div className="space-y-8">
@@ -175,19 +209,15 @@ export default function AdminCommentsPage() {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <button
-                            type="button"
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             disabled={isBusy}
-                            className={`rounded-lg p-2 transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-                              comment.isReview
-                                ? "text-muted-foreground hover:bg-amber-500/10 hover:text-amber-500"
-                                : "text-muted-foreground hover:bg-emerald-500/10 hover:text-emerald-500"
-                            }`}
                             title={comment.isReview ? t("admin.comments.action_unapprove") : t("admin.comments.action_approve")}
-                            onClick={() => void handleToggleReview(comment)}
+                            onClick={() => setConfirmAction({ type: "review", comment })}
                           >
                             {comment.isReview ? <XCircle size={18} /> : <CheckCircle size={18} />}
-                          </button>
+                          </Button>
                           <Link
                             to={`/post/${comment.postId}`}
                             className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
@@ -195,15 +225,15 @@ export default function AdminCommentsPage() {
                           >
                             <Eye size={18} />
                           </Link>
-                          <button
-                            type="button"
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             disabled={isBusy}
-                            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-50"
                             title={t("admin.comments.action_delete")}
-                            onClick={() => void handleDelete(comment)}
+                            onClick={() => setConfirmAction({ type: "delete", comment })}
                           >
-                            <Trash2 size={18} />
-                          </button>
+                            <Trash2 size={18} className="text-destructive" />
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -227,25 +257,43 @@ export default function AdminCommentsPage() {
             {comments.totalCount} / {comments.totalPages}
           </p>
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              className="rounded-xl border border-border px-4 py-2 text-sm transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+            <Button
+              variant="outline"
+              size="sm"
               disabled={!comments.hasPreviousPage}
               onClick={() => setPage((current) => Math.max(1, current - 1))}
             >
-              Prev
-            </button>
-            <button
-              type="button"
-              className="rounded-xl border border-border px-4 py-2 text-sm transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+              {t("admin.common.previous")}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               disabled={!comments.hasNextPage}
               onClick={() => setPage((current) => current + 1)}
             >
-              Next
-            </button>
+              {t("admin.common.next")}
+            </Button>
           </div>
         </div>
       )}
+
+      <AlertDialog open={confirmAction !== null} onOpenChange={(open) => { if (!open) setConfirmAction(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{confirmContent?.title}</AlertDialogTitle>
+            <AlertDialogDescription>{confirmContent?.description}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("admin.common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              variant={confirmContent?.variant}
+              onClick={() => void handleConfirm()}
+            >
+              {t("admin.common.confirm")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
