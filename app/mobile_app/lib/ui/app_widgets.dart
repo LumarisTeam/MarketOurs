@@ -691,7 +691,7 @@ class AppRetryState extends StatelessWidget {
         description: description,
         action: AppPrimaryButton(
           onPressed: onRetry,
-          child: Text(AppLocalizations.of(context)!.reload),
+          child: Text(AppLocalizations.of(context).reload),
         ),
       ),
     );

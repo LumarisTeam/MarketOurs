@@ -30,7 +30,7 @@ class HotScreen extends ConsumerWidget {
           ),
           slivers: [
             CupertinoSliverNavigationBar(
-              largeTitle: Text(AppLocalizations.of(context)!.tabHot),
+              largeTitle: Text(AppLocalizations.of(context).tabHot),
               backgroundColor: CupertinoDynamicColor.resolve(
                 AppColors.background,
                 context,

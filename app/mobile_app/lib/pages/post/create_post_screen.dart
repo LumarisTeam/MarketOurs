@@ -148,14 +148,14 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       final post = response.data;
       if (post == null)
         throw Exception(
-          response.message ?? AppLocalizations.of(context)!.postCreateFailed,
+          response.message ?? AppLocalizations.of(context).postCreateFailed,
         );
 
       if (!mounted) return;
 
       await AppFeedback.showSuccess(
         context,
-        message: AppLocalizations.of(context)!.postCreated,
+        message: AppLocalizations.of(context).postCreated,
       );
       if (!mounted) return;
       context.pushReplacement(buildPostDetailLocation(post.id));
@@ -181,14 +181,14 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        middle: Text(AppLocalizations.of(context)!.postCreate),
+        middle: Text(AppLocalizations.of(context).postCreate),
         trailing: CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: _isSubmitting ? null : _submit,
           child: Text(
             _isSubmitting
-                ? AppLocalizations.of(context)!.postCreatePublishing
-                : AppLocalizations.of(context)!.postCreatePublish,
+                ? AppLocalizations.of(context).postCreatePublishing
+                : AppLocalizations.of(context).postCreatePublish,
             style: const TextStyle(fontWeight: FontWeight.w700),
           ),
         ),
@@ -206,24 +206,24 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                 selectedTag: _selectedTag,
                 existingImages: const [],
                 localImages: _images,
-                tagEmptyText: AppLocalizations.of(context)!.postCreateNoTag,
+                tagEmptyText: AppLocalizations.of(context).postCreateNoTag,
                 onPickTag: _isSubmitting ? null : _selectTag,
                 onPickImages: _isSubmitting ? null : _pickImages,
                 onRemoveLocalImage: _isSubmitting ? null : _removeImage,
                 onSubmit: _isSubmitting ? null : _submit,
                 submitLabel: _isSubmitting
-                    ? AppLocalizations.of(context)!.postCreatePublishing
-                    : AppLocalizations.of(context)!.postCreatePublish,
+                    ? AppLocalizations.of(context).postCreatePublishing
+                    : AppLocalizations.of(context).postCreatePublish,
                 uploadProgress: _uploadProgress,
                 titleValidator: (v) => requiredMaxValidator(
                   v,
-                  emptyMessage: AppLocalizations.of(context)!.postCreateTitleEmpty,
+                  emptyMessage: AppLocalizations.of(context).postCreateTitleEmpty,
                   max: DtoLimits.postTitleMax,
                   maxMessage: '标题长度不能超过 ${DtoLimits.postTitleMax} 位',
                 ),
                 contentValidator: (v) => requiredMaxValidator(
                   v,
-                  emptyMessage: AppLocalizations.of(context)!.postCreateContentEmpty,
+                  emptyMessage: AppLocalizations.of(context).postCreateContentEmpty,
                   max: DtoLimits.postContentMax,
                   maxMessage: '内容长度不能超过 ${DtoLimits.postContentMax} 位',
                 ),

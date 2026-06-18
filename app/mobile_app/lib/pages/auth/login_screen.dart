@@ -148,14 +148,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final isSubmitting = authState?.isSubmitting ?? false;
 
     return AuthScaffold(
-      title: AppLocalizations.of(context)!.authLogin,
+      title: AppLocalizations.of(context).authLogin,
       footer: Center(
         child: CupertinoButton(
           onPressed: isSubmitting
               ? null
               : () => context.go(AppRoutePaths.register),
           child: Text(
-            AppLocalizations.of(context)!.authNoAccount,
+            AppLocalizations.of(context).authNoAccount,
             style: TextStyle(fontWeight: FontWeight.w700),
           ),
         ),
@@ -171,12 +171,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 if (value != null) setState(() => _loginMode = value);
               },
               children: {
-                _LoginMode.password: Text(AppLocalizations.of(context)!.authPasswordLogin),
-                _LoginMode.otp: Text(AppLocalizations.of(context)!.authCodeLogin),
+                _LoginMode.password: Text(AppLocalizations.of(context).authPasswordLogin),
+                _LoginMode.otp: Text(AppLocalizations.of(context).authCodeLogin),
               },
             ),
             const SizedBox(height: 24),
-            Text(AppLocalizations.of(context)!.authAccount, style: AppTextStyles.label(context)),
+            Text(AppLocalizations.of(context).authAccount, style: AppTextStyles.label(context)),
             const SizedBox(height: 8),
             AppTextField(
               controller: _accountController,
@@ -201,7 +201,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(AppLocalizations.of(context)!.authPassword, style: AppTextStyles.label(context)),
+                  Text(AppLocalizations.of(context).authPassword, style: AppTextStyles.label(context)),
                   CupertinoButton(
                     padding: EdgeInsets.zero,
                     minimumSize: Size.zero,
@@ -209,7 +209,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ? null
                         : () => context.go(AppRoutePaths.forgotPassword),
                     child: Text(
-                      AppLocalizations.of(context)!.authForgotPasswordPrompt,
+                      AppLocalizations.of(context).authForgotPasswordPrompt,
                       style: TextStyle(
                         color: AppColors.primary,
                         fontWeight: FontWeight.w700,
@@ -232,7 +232,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 },
               ),
             ] else ...[
-              Text(AppLocalizations.of(context)!.authVerificationCode, style: AppTextStyles.label(context)),
+              Text(AppLocalizations.of(context).authVerificationCode, style: AppTextStyles.label(context)),
               const SizedBox(height: 8),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -266,10 +266,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
                         _isSendingCode
-                            ? AppLocalizations.of(context)!.profileSaving
+                            ? AppLocalizations.of(context).profileSaving
                             : _countdown > 0
                             ? '${_countdown}s'
-                            : AppLocalizations.of(context)!.authSendCode,
+                            : AppLocalizations.of(context).authSendCode,
                         style: const TextStyle(fontSize: 14),
                       ),
                     ),
@@ -280,7 +280,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             const SizedBox(height: 28),
             AppPrimaryButton(
               onPressed: isSubmitting ? null : _submit,
-              child: Text(isSubmitting ? AppLocalizations.of(context)!.profileSaving : AppLocalizations.of(context)!.authLogin),
+              child: Text(isSubmitting ? AppLocalizations.of(context).profileSaving : AppLocalizations.of(context).authLogin),
             ),
             const SizedBox(height: 32),
             Row(
@@ -297,7 +297,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
-                    AppLocalizations.of(context)!.oauthOtherMethods,
+                    AppLocalizations.of(context).oauthOtherMethods,
                     style: AppTextStyles.label(
                       context,
                     ).copyWith(fontSize: 11, letterSpacing: 1.2),

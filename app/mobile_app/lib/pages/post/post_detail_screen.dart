@@ -126,7 +126,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       final response = await postFuture;
       final post = response.data;
       if (post == null) {
-        throw Exception(AppLocalizations.of(context)!.postNotFound);
+        throw Exception(AppLocalizations.of(context).postNotFound);
       }
 
       if (!mounted) return;
@@ -288,7 +288,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         if (mounted)
           await AppFeedback.showSuccess(
             context,
-            message: AppLocalizations.of(context)!.postCommentSent,
+            message: AppLocalizations.of(context).postCommentSent,
           );
       }
     } catch (error) {
@@ -750,7 +750,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         await ref.read(postServiceProvider).deletePost(post.id);
         if (mounted) context.pop();
       },
-      successMessage: AppLocalizations.of(context)!.postDeleted,
+      successMessage: AppLocalizations.of(context).postDeleted,
       reloadAll: false,
     );
   }
@@ -941,10 +941,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     ),
                   );
                 },
-                submitLabel: AppLocalizations.of(context)!.notificationSaveSettings,
+                submitLabel: AppLocalizations.of(context).notificationSaveSettings,
                 tagEmptyText: availableTags.isEmpty
-                    ? AppLocalizations.of(context)!.postCreateNoTag
-                    : AppLocalizations.of(context)!.postCreateNoTag,
+                    ? AppLocalizations.of(context).postCreateNoTag
+                    : AppLocalizations.of(context).postCreateNoTag,
               ),
             );
           },
@@ -960,7 +960,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   String? _validatePostDraft(String title, String content) {
     final titleError = requiredMaxValidator(
       title,
-      emptyMessage: AppLocalizations.of(context)!.postCreateTitleEmpty,
+      emptyMessage: AppLocalizations.of(context).postCreateTitleEmpty,
       max: DtoLimits.postTitleMax,
       maxMessage: '标题长度不能超过 ${DtoLimits.postTitleMax} 位',
     );
@@ -968,7 +968,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 
     return requiredMaxValidator(
       content,
-      emptyMessage: AppLocalizations.of(context)!.postCreateContentEmpty,
+      emptyMessage: AppLocalizations.of(context).postCreateContentEmpty,
       max: DtoLimits.postContentMax,
       maxMessage: '内容长度不能超过 ${DtoLimits.postContentMax} 位',
     );
@@ -1177,7 +1177,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 
     if (_isLoading) {
       return AppPageScaffold(
-        title: AppLocalizations.of(context)!.postDetail,
+        title: AppLocalizations.of(context).postDetail,
         navigationBarStyle: AppNavigationBarStyle.compact,
         trailing: trailing,
         child: const Center(child: CupertinoActivityIndicator(radius: 14)),
@@ -1186,7 +1186,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 
     if (_errorMessage != null || post == null) {
       return AppPageScaffold(
-        title: AppLocalizations.of(context)!.postDetail,
+        title: AppLocalizations.of(context).postDetail,
         navigationBarStyle: AppNavigationBarStyle.compact,
         trailing: trailing,
         child: PostDetailErrorView(
@@ -1197,7 +1197,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     }
 
     return AppPageScaffold(
-      title: AppLocalizations.of(context)!.postDetail,
+      title: AppLocalizations.of(context).postDetail,
       navigationBarStyle: AppNavigationBarStyle.compact,
       trailing: trailing,
       bottomBar: _buildCommentComposer(context),
@@ -1244,14 +1244,14 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             'recent': Padding(
                               padding: EdgeInsets.symmetric(horizontal: 10),
                               child: Text(
-                                AppLocalizations.of(context)!.postCommentSortNewest,
+                                AppLocalizations.of(context).postCommentSortNewest,
                                 style: TextStyle(fontSize: 13),
                               ),
                             ),
                             'hot': Padding(
                               padding: EdgeInsets.symmetric(horizontal: 10),
                               child: Text(
-                                AppLocalizations.of(context)!.postCommentSortHot,
+                                AppLocalizations.of(context).postCommentSortHot,
                                 style: TextStyle(fontSize: 13),
                               ),
                             ),
@@ -1276,7 +1276,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     if (_comments.isEmpty && !_isCommentsLoading)
                       AppEmptyState(
                         icon: CupertinoIcons.chat_bubble,
-                        title: AppLocalizations.of(context)!.postNoComments,
+                        title: AppLocalizations.of(context).postNoComments,
                         description: '分享你的见解，成为第一个评论的人。',
                       )
                     else

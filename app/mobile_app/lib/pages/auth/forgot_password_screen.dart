@@ -71,14 +71,14 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     final isSubmitting = authState?.isSubmitting ?? false;
 
     return AuthScaffold(
-      title: AppLocalizations.of(context)!.authForgotPassword,
+      title: AppLocalizations.of(context).authForgotPassword,
       footer: Center(
         child: CupertinoButton(
           onPressed: isSubmitting
               ? null
               : () => context.go(AppRoutePaths.login),
           child: Text(
-            AppLocalizations.of(context)!.authAlreadyHaveAccount,
+            AppLocalizations.of(context).authAlreadyHaveAccount,
             style: TextStyle(fontWeight: FontWeight.w700),
           ),
         ),
@@ -101,7 +101,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             const SizedBox(height: 24),
             AppPrimaryButton(
               onPressed: isSubmitting ? null : _submit,
-              child: Text(isSubmitting ? AppLocalizations.of(context)!.profileSaving : AppLocalizations.of(context)!.authSendCode),
+              child: Text(isSubmitting ? AppLocalizations.of(context).profileSaving : AppLocalizations.of(context).authSendCode),
             ),
           ],
         ),

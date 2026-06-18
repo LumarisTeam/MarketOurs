@@ -35,7 +35,7 @@ class ProfileScreen extends ConsumerWidget {
         child: CustomScrollView(
           slivers: [
             CupertinoSliverNavigationBar(
-              largeTitle: Text(AppLocalizations.of(context)!.tabProfile),
+              largeTitle: Text(AppLocalizations.of(context).tabProfile),
               border: null,
             ),
             SliverFillRemaining(
@@ -46,11 +46,11 @@ class ProfileScreen extends ConsumerWidget {
                     children: [
                       AppEmptyState(
                         icon: CupertinoIcons.person,
-                        title: AppLocalizations.of(context)!.profileNotLoggedIn,
-                        description: AppLocalizations.of(context)!.profileNotLoggedInDesc,
+                        title: AppLocalizations.of(context).profileNotLoggedIn,
+                        description: AppLocalizations.of(context).profileNotLoggedInDesc,
                         action: AppPrimaryButton(
                           onPressed: () => context.go(AppRoutePaths.login),
-                          child: Text(AppLocalizations.of(context)!.profileGoLogin),
+                          child: Text(AppLocalizations.of(context).profileGoLogin),
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -73,7 +73,7 @@ class ProfileScreen extends ConsumerWidget {
         ),
         slivers: [
           CupertinoSliverNavigationBar(
-            largeTitle: Text(AppLocalizations.of(context)!.tabProfile),
+            largeTitle: Text(AppLocalizations.of(context).tabProfile),
             backgroundColor: CupertinoDynamicColor.resolve(
               AppColors.background,
               context,
@@ -98,19 +98,19 @@ class ProfileScreen extends ConsumerWidget {
                 primary: Column(
                   children: [
                     _ProfileSection(
-                      title: AppLocalizations.of(context)!.profileInfo,
+                      title: AppLocalizations.of(context).profileInfo,
                       children: [
-                        _InfoRow(label: AppLocalizations.of(context)!.profileNickname, value: _fallback(user.name, '未设置')),
+                        _InfoRow(label: AppLocalizations.of(context).profileNickname, value: _fallback(user.name, '未设置')),
                         _InfoRow(
-                          label: AppLocalizations.of(context)!.profileBio,
-                          value: _fallback(user.info, AppLocalizations.of(context)!.profileNoBio),
+                          label: AppLocalizations.of(context).profileBio,
+                          value: _fallback(user.info, AppLocalizations.of(context).profileNoBio),
                         ),
                         _InfoRow(
-                          label: AppLocalizations.of(context)!.profileEmail,
-                          value: _fallback(user.email, AppLocalizations.of(context)!.profileNoEmail),
+                          label: AppLocalizations.of(context).profileEmail,
+                          value: _fallback(user.email, AppLocalizations.of(context).profileNoEmail),
                         ),
                         _VerificationRow(
-                          label: AppLocalizations.of(context)!.profileVerifyEmailTitle,
+                          label: AppLocalizations.of(context).profileVerifyEmailTitle,
                           isVerified: user.isEmailVerified ?? false,
                           isBusy: isSubmitting,
                           onVerify: () => _startVerification(
@@ -129,7 +129,7 @@ class ProfileScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 16),
                     _ProfileSection(
-                      title: AppLocalizations.of(context)!.profileSocial,
+                      title: AppLocalizations.of(context).profileSocial,
                       children: [
                         _NavRow(
                           icon: CupertinoIcons.person_2,
@@ -139,7 +139,7 @@ class ProfileScreen extends ConsumerWidget {
                         ),
                         _NavRow(
                           icon: CupertinoIcons.link,
-                          title: AppLocalizations.of(context)!.profileBindings,
+                          title: AppLocalizations.of(context).profileBindings,
                           subtitle: '管理 Github、Google 等平台关联',
                           onTap: () =>
                               context.push(AppRoutePaths.bindings),
@@ -180,12 +180,12 @@ class ProfileScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 16),
                     _ProfileSection(
-                      title: AppLocalizations.of(context)!.profileSecurity,
+                      title: AppLocalizations.of(context).profileSecurity,
                       children: [
                         _NavRow(
                           icon: CupertinoIcons.lock_rotation,
-                          title: AppLocalizations.of(context)!.profileChangePasswordTitle,
-                          subtitle: AppLocalizations.of(context)!.profileChangePasswordDesc,
+                          title: AppLocalizations.of(context).profileChangePasswordTitle,
+                          subtitle: AppLocalizations.of(context).profileChangePasswordDesc,
                           onTap: () => context.push(AppRoutePaths.changePassword),
                         ),
                         _NavRow(
@@ -239,7 +239,7 @@ class ProfileScreen extends ConsumerWidget {
     try {
       await sendCode();
       if (!context.mounted) return;
-      await AppFeedback.showSuccess(context, message: AppLocalizations.of(context)!.authSendCodeSuccess);
+      await AppFeedback.showSuccess(context, message: AppLocalizations.of(context).authSendCodeSuccess);
     } catch (_) {
       final errorMessage = ref
           .read(authControllerProvider)
@@ -272,11 +272,11 @@ class ProfileScreen extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(AppLocalizations.of(context)!.profileEnterCode, style: AppTextStyles.sectionTitle(context)),
+              Text(AppLocalizations.of(context).profileEnterCode, style: AppTextStyles.sectionTitle(context)),
               const SizedBox(height: 16),
               AppTextField(
                 controller: codeController,
-                placeholder: AppLocalizations.of(context)!.profileEnterCodeHint,
+                placeholder: AppLocalizations.of(context).profileEnterCodeHint,
               ),
               const SizedBox(height: 20),
               Row(
@@ -284,14 +284,14 @@ class ProfileScreen extends ConsumerWidget {
                   Expanded(
                     child: AppSecondaryButton(
                       onPressed: () => Navigator.of(dialogContext).pop(false),
-                      child: Text(AppLocalizations.of(context)!.cancel),
+                      child: Text(AppLocalizations.of(context).cancel),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: AppPrimaryButton(
                       onPressed: () => Navigator.of(dialogContext).pop(true),
-                      child: Text(AppLocalizations.of(context)!.profileConfirmVerify),
+                      child: Text(AppLocalizations.of(context).profileConfirmVerify),
                     ),
                   ),
                 ],
@@ -361,14 +361,14 @@ class _ProfileHero extends StatelessWidget {
                 Text(
                   user.name?.trim().isNotEmpty == true
                       ? user.name!.trim()
-                      : AppLocalizations.of(context)!.profileNoNickname,
+                      : AppLocalizations.of(context).profileNoNickname,
                   style: AppTextStyles.sectionTitle(context),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   user.info?.trim().isNotEmpty == true
                       ? user.info!.trim()
-                      : AppLocalizations.of(context)!.profileOwnerLowkey,
+                      : AppLocalizations.of(context).profileOwnerLowkey,
                   style: AppTextStyles.muted(context),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -520,7 +520,7 @@ class _ThemeModeSection extends ConsumerWidget {
         cancelButton: CupertinoActionSheetAction(
           isDefaultAction: true,
           onPressed: () => Navigator.of(sheetContext).pop(),
-          child: Text(AppLocalizations.of(context)!.cancel),
+          child: Text(AppLocalizations.of(context).cancel),
         ),
       ),
     );
@@ -602,7 +602,7 @@ class _VerificationRow extends StatelessWidget {
         label,
         style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
       ),
-      subtitle: Text(isVerified ? AppLocalizations.of(context)!.profileEmailVerified : AppLocalizations.of(context)!.profileEmailNotVerified),
+      subtitle: Text(isVerified ? AppLocalizations.of(context).profileEmailVerified : AppLocalizations.of(context).profileEmailNotVerified),
       trailing: isVerified
           ? const Icon(
               CupertinoIcons.check_mark_circled_solid,
@@ -614,7 +614,7 @@ class _VerificationRow extends StatelessWidget {
               minimumSize: Size.zero,
               onPressed: isBusy ? null : onVerify,
               child: Text(
-                AppLocalizations.of(context)!.profileVerifyEmail,
+                AppLocalizations.of(context).profileVerifyEmail,
                 style: TextStyle(
                   color: AppColors.primary,
                   fontSize: 14,
@@ -731,7 +731,7 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
         cancelButton: CupertinoActionSheetAction(
           isDefaultAction: true,
           onPressed: () => Navigator.pop(ctx),
-          child: Text(AppLocalizations.of(context)!.cancel),
+          child: Text(AppLocalizations.of(context).cancel),
         ),
       ),
     );
@@ -762,12 +762,12 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
             avatar = url;
           } else {
             if (!mounted) return;
-            await AppFeedback.showError(context, message: AppLocalizations.of(context)!.errorAvatarUploadFailed);
+            await AppFeedback.showError(context, message: AppLocalizations.of(context).errorAvatarUploadFailed);
             return;
           }
         } catch (_) {
           if (!mounted) return;
-          await AppFeedback.showError(context, message: AppLocalizations.of(context)!.errorAvatarUploadFailed);
+          await AppFeedback.showError(context, message: AppLocalizations.of(context).errorAvatarUploadFailed);
           return;
         }
       }
@@ -784,7 +784,7 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
             ),
           );
       if (!mounted) return;
-      await AppFeedback.showSuccess(context, message: AppLocalizations.of(context)!.profileUpdated);
+      await AppFeedback.showSuccess(context, message: AppLocalizations.of(context).profileUpdated);
       if (!mounted) return;
       Navigator.of(context).pop();
     } catch (_) {
@@ -798,7 +798,7 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
           context,
           message: errorMessage?.isNotEmpty == true
               ? errorMessage!
-              : AppLocalizations.of(context)!.profileUpdateFailed,
+              : AppLocalizations.of(context).profileUpdateFailed,
         );
       }
     } finally {
@@ -827,7 +827,7 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
         child: ListView(
           shrinkWrap: true,
           children: [
-            Text(AppLocalizations.of(context)!.profileEditProfile, style: AppTextStyles.sectionTitle(context)),
+            Text(AppLocalizations.of(context).profileEditProfile, style: AppTextStyles.sectionTitle(context)),
             const SizedBox(height: 20),
 
             // Avatar picker
@@ -866,7 +866,7 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
             const SizedBox(height: 8),
             Center(
               child: Text(
-                AppLocalizations.of(context)!.profileClickToChangeAvatar,
+                AppLocalizations.of(context).profileClickToChangeAvatar,
                 style: AppTextStyles.label(context).copyWith(fontSize: 11),
               ),
             ),
@@ -874,7 +874,7 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
 
             AppTextField(
               controller: _nameController,
-              placeholder: AppLocalizations.of(context)!.profileNickname,
+              placeholder: AppLocalizations.of(context).profileNickname,
               maxLength: DtoLimits.userNameMax,
               validator: (v) => optionalMaxValidator(
                 v,
@@ -897,7 +897,7 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
             const SizedBox(height: 24),
             AppPrimaryButton(
               onPressed: isSubmitting ? null : _submit,
-              child: Text(isSubmitting ? AppLocalizations.of(context)!.profileSaving : AppLocalizations.of(context)!.profileSaveChanges),
+              child: Text(isSubmitting ? AppLocalizations.of(context).profileSaving : AppLocalizations.of(context).profileSaveChanges),
             ),
           ],
         ),

@@ -63,7 +63,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
         context,
         message: (errorMessage != null && errorMessage.isNotEmpty)
             ? errorMessage
-            : AppLocalizations.of(context)!.authChangePasswordFailed,
+            : AppLocalizations.of(context).authChangePasswordFailed,
       );
     }
   }
@@ -74,7 +74,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
     final isSubmitting = authState?.isSubmitting ?? false;
 
     return AppPageScaffold(
-      title: AppLocalizations.of(context)!.profileChangePasswordTitle,
+      title: AppLocalizations.of(context).profileChangePasswordTitle,
       navigationBarStyle: AppNavigationBarStyle.compact,
       maxContentWidth: AppResponsive.readableMaxWidth(context, fallback: 560),
       child: Form(

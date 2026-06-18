@@ -219,7 +219,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            AppLocalizations.of(context)!.notificationEmpty,
+            AppLocalizations.of(context).notificationEmpty,
             style: const TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w600,

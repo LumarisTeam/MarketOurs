@@ -59,12 +59,12 @@ class _PushSettingsScreenState extends State<PushSettingsScreen> {
       if (success) {
         await AppFeedback.showSuccess(
           context,
-          message: AppLocalizations.of(context)!.notificationSaved,
+          message: AppLocalizations.of(context).notificationSaved,
         );
       } else {
         await AppFeedback.showError(
           context,
-          message: AppLocalizations.of(context)!.notificationSaveFailed,
+          message: AppLocalizations.of(context).notificationSaveFailed,
         );
       }
     }
@@ -73,7 +73,7 @@ class _PushSettingsScreenState extends State<PushSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return AppPageScaffold(
-      title: AppLocalizations.of(context)!.notificationPushSettings,
+      title: AppLocalizations.of(context).notificationPushSettings,
       navigationBarStyle: AppNavigationBarStyle.compact,
       maxContentWidth: AppResponsive.readableMaxWidth(context, fallback: 720),
       child: _isLoading
@@ -81,16 +81,16 @@ class _PushSettingsScreenState extends State<PushSettingsScreen> {
           : Column(
               children: [
                 _buildSwitchTile(
-                  title: AppLocalizations.of(context)!.notificationEmail,
-                  subtitle: AppLocalizations.of(context)!.notificationEmailDesc,
+                  title: AppLocalizations.of(context).notificationEmail,
+                  subtitle: AppLocalizations.of(context).notificationEmailDesc,
                   value: _emailEnabled,
                   onChanged: (val) => setState(() => _emailEnabled = val),
                   icon: CupertinoIcons.mail,
                 ),
                 const SizedBox(height: 12),
                 _buildSwitchTile(
-                  title: AppLocalizations.of(context)!.notificationCommentPush,
-                  subtitle: AppLocalizations.of(context)!.notificationCommentPushDesc,
+                  title: AppLocalizations.of(context).notificationCommentPush,
+                  subtitle: AppLocalizations.of(context).notificationCommentPushDesc,
                   value: _commentReplyEnabled,
                   onChanged: (val) =>
                       setState(() => _commentReplyEnabled = val),
@@ -98,8 +98,8 @@ class _PushSettingsScreenState extends State<PushSettingsScreen> {
                 ),
                 const SizedBox(height: 12),
                 _buildSwitchTile(
-                  title: AppLocalizations.of(context)!.notificationHotListPush,
-                  subtitle: AppLocalizations.of(context)!.notificationHotListPushDesc,
+                  title: AppLocalizations.of(context).notificationHotListPush,
+                  subtitle: AppLocalizations.of(context).notificationHotListPushDesc,
                   value: _hotListEnabled,
                   onChanged: (val) => setState(() => _hotListEnabled = val),
                   icon: CupertinoIcons.flame,
@@ -109,8 +109,8 @@ class _PushSettingsScreenState extends State<PushSettingsScreen> {
                   onPressed: _isSaving ? null : _saveSettings,
                   child: Text(
                     _isSaving
-                        ? AppLocalizations.of(context)!.profileSaving
-                        : AppLocalizations.of(context)!.notificationSaveSettings,
+                        ? AppLocalizations.of(context).profileSaving
+                        : AppLocalizations.of(context).notificationSaveSettings,
                   ),
                 ),
               ],

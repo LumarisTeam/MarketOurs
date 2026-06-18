@@ -117,34 +117,34 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     showCupertinoModalPopup<void>(
       context: context,
       builder: (ctx) => CupertinoActionSheet(
-        title: Text(AppLocalizations.of(context)!.authSelectAvatar),
+        title: Text(AppLocalizations.of(context).authSelectAvatar),
         actions: [
           CupertinoActionSheetAction(
             onPressed: () {
               Navigator.pop(ctx);
               _generateRandomAvatar();
             },
-            child: Text(AppLocalizations.of(context)!.authRandomAvatar),
+            child: Text(AppLocalizations.of(context).authRandomAvatar),
           ),
           CupertinoActionSheetAction(
             onPressed: () {
               Navigator.pop(ctx);
               _pickFromGallery();
             },
-            child: Text(AppLocalizations.of(context)!.authPickFromGallery),
+            child: Text(AppLocalizations.of(context).authPickFromGallery),
           ),
           CupertinoActionSheetAction(
             onPressed: () {
               Navigator.pop(ctx);
               _takePhoto();
             },
-            child: Text(AppLocalizations.of(context)!.authTakePhoto),
+            child: Text(AppLocalizations.of(context).authTakePhoto),
           ),
         ],
         cancelButton: CupertinoActionSheetAction(
           isDefaultAction: true,
           onPressed: () => Navigator.pop(ctx),
-          child: Text(AppLocalizations.of(context)!.cancel),
+          child: Text(AppLocalizations.of(context).cancel),
         ),
       ),
     );
@@ -237,14 +237,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         (_isPasswordDirty && !_isPasswordValid);
 
     return AuthScaffold(
-      title: AppLocalizations.of(context)!.authRegister,
+      title: AppLocalizations.of(context).authRegister,
       footer: Center(
         child: CupertinoButton(
           onPressed: isSubmitting
               ? null
               : () => context.go(AppRoutePaths.login),
           child: Text(
-            AppLocalizations.of(context)!.authAlreadyHaveAccount,
+            AppLocalizations.of(context).authAlreadyHaveAccount,
             style: TextStyle(fontWeight: FontWeight.w700),
           ),
         ),
@@ -320,7 +320,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             const SizedBox(height: 4),
             Center(
               child: Text(
-                AppLocalizations.of(context)!.profileClickToChangeAvatar,
+                AppLocalizations.of(context).profileClickToChangeAvatar,
                 style: AppTextStyles.label(context).copyWith(fontSize: 11),
               ),
             ),
@@ -351,7 +351,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             const SizedBox(height: 20),
 
             // Account
-            Text(AppLocalizations.of(context)!.authAccount, style: AppTextStyles.label(context)),
+            Text(AppLocalizations.of(context).authAccount, style: AppTextStyles.label(context)),
             const SizedBox(height: 8),
             AppTextField(
               controller: _accountController,
@@ -395,7 +395,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             const SizedBox(height: 20),
 
             // Password
-            Text(AppLocalizations.of(context)!.authPassword, style: AppTextStyles.label(context)),
+            Text(AppLocalizations.of(context).authPassword, style: AppTextStyles.label(context)),
             const SizedBox(height: 8),
             PasswordFormField(
               controller: _passwordController,
@@ -444,7 +444,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
             AppPrimaryButton(
               onPressed: submitDisabled ? null : _submit,
-              child: Text(isSubmitting ? AppLocalizations.of(context)!.profileSaving : AppLocalizations.of(context)!.authRegister),
+              child: Text(isSubmitting ? AppLocalizations.of(context).profileSaving : AppLocalizations.of(context).authRegister),
             ),
           ],
         ),

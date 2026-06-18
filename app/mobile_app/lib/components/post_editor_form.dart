@@ -118,14 +118,14 @@ class PostEditorForm extends StatelessWidget {
         children: [
           AppTextField(
             controller: titleController,
-            placeholder: AppLocalizations.of(context)!.postCreateTitle,
+            placeholder: AppLocalizations.of(context).postCreateTitle,
             maxLength: DtoLimits.postTitleMax,
             validator: titleValidator,
           ),
           const SizedBox(height: 16),
           AppTextField(
             controller: contentController,
-            placeholder: AppLocalizations.of(context)!.postCreateContent,
+            placeholder: AppLocalizations.of(context).postCreateContent,
             maxLines: contentMaxLines,
             maxLength: DtoLimits.postContentMax,
             validator: contentValidator,
@@ -148,7 +148,7 @@ class PostEditorForm extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                AppLocalizations.of(context)!.postCreateImages,
+                AppLocalizations.of(context).postCreateImages,
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
@@ -158,7 +158,7 @@ class PostEditorForm extends StatelessWidget {
                 padding: EdgeInsets.zero,
                 onPressed: onPickImages,
                 child: Text(
-                  AppLocalizations.of(context)!.postCreateAddImages,
+                  AppLocalizations.of(context).postCreateAddImages,
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -180,7 +180,7 @@ class PostEditorForm extends StatelessWidget {
                 borderRadius: BorderRadius.circular(AppRadii.md),
               ),
               child: Text(
-                AppLocalizations.of(context)!.postCreateNoImages,
+                AppLocalizations.of(context).postCreateNoImages,
                 style: TextStyle(
                   color: CupertinoDynamicColor.resolve(
                     AppColors.mutedForeground,
@@ -226,7 +226,7 @@ class PostEditorForm extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                AppLocalizations.of(context)!.postUploading,
+                AppLocalizations.of(context).postUploading,
                 style: const TextStyle(
                   fontSize: 14,
                   color: AppColors.mutedForeground,

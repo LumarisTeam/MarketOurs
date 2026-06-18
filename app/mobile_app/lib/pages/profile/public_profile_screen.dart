@@ -284,7 +284,7 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
                     const SizedBox(height: 12),
                     AppSecondaryButton(
                       onPressed: () => context.go(AppRoutePaths.profile),
-                      child: Text(AppLocalizations.of(context)!.profileManageMyProfile),
+                      child: Text(AppLocalizations.of(context).profileManageMyProfile),
                     ),
                   ],
                 ],
@@ -319,7 +319,7 @@ class _RecentPostsSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          AppLocalizations.of(context)!.profileRecentPosts,
+          AppLocalizations.of(context).profileRecentPosts,
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w800,
@@ -328,12 +328,12 @@ class _RecentPostsSection extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          AppLocalizations.of(context)!.profileRecentPostsSubtitle,
+          AppLocalizations.of(context).profileRecentPostsSubtitle,
           style: TextStyle(color: CupertinoColors.systemGrey),
         ),
         const SizedBox(height: 16),
         if (posts.isEmpty)
-          AppSectionCard(child: Text(AppLocalizations.of(context)!.profileNoPublicPosts))
+          AppSectionCard(child: Text(AppLocalizations.of(context).profileNoPublicPosts))
         else
           ...posts.map(
             (post) => Padding(
@@ -351,7 +351,7 @@ class _RecentPostsSection extends StatelessWidget {
             padding: const EdgeInsets.only(top: 4, bottom: 12),
             child: Center(
               child: Text(
-                AppLocalizations.of(context)!.profileReachedEnd,
+                AppLocalizations.of(context).profileReachedEnd,
                 style: TextStyle(color: CupertinoColors.systemGrey),
               ),
             ),
@@ -379,7 +379,7 @@ class _ProfileHero extends StatelessWidget {
           Text(
             profile.name?.trim().isNotEmpty == true
                 ? profile.name!.trim()
-                : AppLocalizations.of(context)!.profileNoNickname,
+                : AppLocalizations.of(context).profileNoNickname,
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w800,
@@ -390,13 +390,13 @@ class _ProfileHero extends StatelessWidget {
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: [if (isMe) _MetaChip(label: AppLocalizations.of(context)!.profileThisIsYou)],
+            children: [if (isMe) _MetaChip(label: AppLocalizations.of(context).profileThisIsYou)],
           ),
           const SizedBox(height: 14),
           Text(
             profile.info?.trim().isNotEmpty == true
                 ? profile.info!.trim()
-                : AppLocalizations.of(context)!.profileOwnerLowkey,
+                : AppLocalizations.of(context).profileOwnerLowkey,
             style: TextStyle(
               fontSize: 15,
               height: 1.5,
@@ -405,7 +405,7 @@ class _ProfileHero extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            '${AppLocalizations.of(context)!.profileJoinDate} ${_formatDate(profile.createdAt)}',
+            '${AppLocalizations.of(context).profileJoinDate} ${_formatDate(profile.createdAt)}',
             style: TextStyle(
               fontSize: 12,
               color: CupertinoDynamicColor.resolve(AppColors.mutedForeground, context),
@@ -475,7 +475,7 @@ class _FollowStats extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  AppLocalizations.of(context)!.profileFollowers,
+                  AppLocalizations.of(context).profileFollowers,
                   style: TextStyle(
                     fontSize: 13,
                     color: CupertinoDynamicColor.resolve(AppColors.mutedForeground, context),
@@ -501,7 +501,7 @@ class _FollowStats extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  AppLocalizations.of(context)!.profileFollowing,
+                  AppLocalizations.of(context).profileFollowing,
                   style: TextStyle(
                     fontSize: 13,
                     color: CupertinoDynamicColor.resolve(AppColors.mutedForeground, context),
@@ -557,7 +557,7 @@ class _FollowBlockButtons extends StatelessWidget {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  isFollowing ? AppLocalizations.of(context)!.profileUnfollow : AppLocalizations.of(context)!.profileFollowing,
+                  isFollowing ? AppLocalizations.of(context).profileUnfollow : AppLocalizations.of(context).profileFollowing,
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -592,7 +592,7 @@ class _FollowBlockButtons extends StatelessWidget {
               ),
               const SizedBox(width: 6),
               Text(
-                isBlocked ? AppLocalizations.of(context)!.profileUnblock : AppLocalizations.of(context)!.profileBlock,
+                isBlocked ? AppLocalizations.of(context).profileUnblock : AppLocalizations.of(context).profileBlock,
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,

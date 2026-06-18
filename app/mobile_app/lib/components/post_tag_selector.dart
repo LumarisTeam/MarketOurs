@@ -31,7 +31,7 @@ Future<PostTagDto?> showPostTagPicker(
       ],
       cancelButton: CupertinoActionSheetAction(
         onPressed: () => Navigator.of(ctx).pop(selectedTag),
-        child: Text(AppLocalizations.of(context)!.cancel),
+        child: Text(AppLocalizations.of(context).cancel),
       ),
     ),
   );

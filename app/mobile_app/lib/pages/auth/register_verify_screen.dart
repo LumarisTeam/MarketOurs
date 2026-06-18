@@ -135,7 +135,7 @@ class _RegisterVerifyScreenState extends ConsumerState<RegisterVerifyScreen> {
     final isSubmitting = authState?.isSubmitting ?? false;
 
     return AuthScaffold(
-      title: AppLocalizations.of(context)!.authRegisterVerifyTitle,
+      title: AppLocalizations.of(context).authRegisterVerifyTitle,
       footer: Center(
         child: CupertinoButton(
           onPressed: isSubmitting
@@ -192,7 +192,7 @@ class _RegisterVerifyScreenState extends ConsumerState<RegisterVerifyScreen> {
                 onPressed: isSubmitting || _countdown > 0 ? null : _resendCode,
                 padding: EdgeInsets.zero,
                 child: Text(
-                  _countdown > 0 ? '${_countdown}s 后重新发送' : AppLocalizations.of(context)!.authResendCode,
+                  _countdown > 0 ? '${_countdown}s 后重新发送' : AppLocalizations.of(context).authResendCode,
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
@@ -207,7 +207,7 @@ class _RegisterVerifyScreenState extends ConsumerState<RegisterVerifyScreen> {
 
             AppPrimaryButton(
               onPressed: isSubmitting || !_isCodeValid ? null : _submit,
-              child: Text(isSubmitting ? AppLocalizations.of(context)!.profileSaving : AppLocalizations.of(context)!.submit),
+              child: Text(isSubmitting ? AppLocalizations.of(context).profileSaving : AppLocalizations.of(context).submit),
             ),
           ],
         ),
