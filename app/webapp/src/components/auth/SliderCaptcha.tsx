@@ -8,6 +8,7 @@ interface CaptchaChallenge {
   puzzleImage: string;
   puzzleWidth: number;
   puzzleHeight: number;
+  puzzleY: number;
 }
 
 interface SliderCaptchaProps {
@@ -15,17 +16,21 @@ interface SliderCaptchaProps {
   onCancel: () => void;
 }
 
+const DISPLAY_WIDTH = 280;
+
 export function SliderCaptcha({ onVerify, onCancel }: SliderCaptchaProps) {
   const [challenge, setChallenge] = useState<CaptchaChallenge | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [sliderValue, setSliderValue] = useState(0);
+  const [canvasHeight, setCanvasHeight] = useState(60);
   const [verifying, setVerifying] = useState(false);
   const [success, setSuccess] = useState(false);
   const trackRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const scaleRef = useRef(1);
   const dragRef = useRef(false);
-  const trackWidth = 280;
+  const trackWidth = DISPLAY_WIDTH;
 
   const fetchChallenge = useCallback(async () => {
     setLoading(true);
@@ -49,30 +54,32 @@ export function SliderCaptcha({ onVerify, onCancel }: SliderCaptchaProps) {
     fetchChallenge();
   }, [fetchChallenge]);
 
-  const drawImages = (ch: CaptchaChallenge, offset: number) => {
+  const drawImages = (ch: CaptchaChallenge, offsetPx: number) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    canvas.width = ch.puzzleWidth * 2;
-    canvas.height = Math.max(60, ch.puzzleHeight + 4);
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
     const bgImg = new Image();
     bgImg.onload = () => {
-      ctx.drawImage(bgImg, 0, 0, bgImg.width, bgImg.height, 0, 0, canvas.width, canvas.height);
-      
+      const scale = DISPLAY_WIDTH / bgImg.naturalWidth;
+      scaleRef.current = scale;
+      const displayH = Math.round(bgImg.naturalHeight * scale);
+
+      canvas.width = DISPLAY_WIDTH;
+      canvas.height = displayH;
+      setCanvasHeight(displayH);
+
+      ctx.clearRect(0, 0, DISPLAY_WIDTH, displayH);
+      ctx.drawImage(bgImg, 0, 0, DISPLAY_WIDTH, displayH);
+
       const puzzleImg = new Image();
       puzzleImg.onload = () => {
-        ctx.drawImage(
-          puzzleImg,
-          offset * (canvas.width / bgImg.width),
-          0,
-          puzzleImg.width,
-          puzzleImg.height
-        );
+        const pw = Math.round(ch.puzzleWidth * scale);
+        const ph = Math.round(ch.puzzleHeight * scale);
+        const px = offsetPx;
+        const py = Math.round(ch.puzzleY * scale);
+        ctx.drawImage(puzzleImg, px, py, pw, ph);
       };
       puzzleImg.src = `data:image/png;base64,${ch.puzzleImage}`;
     };
@@ -98,7 +105,7 @@ export function SliderCaptcha({ onVerify, onCancel }: SliderCaptchaProps) {
   const handlePointerUp = async () => {
     if (!dragRef.current || verifying || success) return;
     dragRef.current = false;
-    if (!challenge || sliderValue < 5) {
+    if (!challenge || sliderValue < 2) {
       setSliderValue(0);
       if (challenge) drawImages(challenge, 0);
       return;
@@ -108,7 +115,7 @@ export function SliderCaptcha({ onVerify, onCancel }: SliderCaptchaProps) {
     try {
       const res = await apiClient.post<string>("/Auth/verify-captcha", {
         token: challenge.token,
-        x: Math.round(sliderValue),
+        x: Math.round(sliderValue / scaleRef.current),
       });
       if (res.data) {
         setSuccess(true);
@@ -123,12 +130,14 @@ export function SliderCaptcha({ onVerify, onCancel }: SliderCaptchaProps) {
     }
   };
 
-  const progress = ((sliderValue / trackWidth) * 100).toFixed(0);
+  const progress = sliderValue / trackWidth;
+  const knobLeft = Math.min(sliderValue, trackWidth - 48);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onCancel}>
       <div
-        className="glass-card rounded-3xl p-6 w-[340px] space-y-5 animate-in fade-in zoom-in-95 duration-300"
+        className="glass-card rounded-3xl p-6 space-y-5 animate-in fade-in zoom-in-95 duration-300"
+        style={{ width: DISPLAY_WIDTH + 48 }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="text-center space-y-1">
@@ -143,15 +152,15 @@ export function SliderCaptcha({ onVerify, onCancel }: SliderCaptchaProps) {
         )}
 
         {loading ? (
-          <div className="flex items-center justify-center py-8">
+          <div className="flex items-center justify-center py-10">
             <Loader2 className="animate-spin text-muted-foreground" size={28} />
           </div>
         ) : challenge ? (
           <>
             <canvas
               ref={canvasRef}
-              className="w-full rounded-xl border border-border/50"
-              style={{ height: Math.max(60, challenge.puzzleHeight + 4) }}
+              className="w-full rounded-xl border border-border/50 block"
+              style={{ height: canvasHeight }}
             />
 
             <div className="space-y-3">
@@ -161,14 +170,11 @@ export function SliderCaptcha({ onVerify, onCancel }: SliderCaptchaProps) {
               >
                 <div
                   className="absolute inset-y-0 left-0 bg-primary/20 rounded-2xl transition-all duration-75"
-                  style={{ width: `${progress}%` }}
+                  style={{ width: `${(progress * 100).toFixed(0)}%` }}
                 />
                 <div
-                  className="absolute top-0 rounded-2xl h-12 w-12 bg-primary flex items-center justify-center cursor-grab active:cursor-grabbing shadow-md transition-transform duration-75"
-                  style={{
-                    left: `${Math.min(sliderValue, trackWidth - 44)}px`,
-                    transform: success ? "scale(1.05)" : "none",
-                  }}
+                  className="absolute top-0 rounded-2xl h-12 w-12 bg-primary flex items-center justify-center cursor-grab active:cursor-grabbing shadow-md"
+                  style={{ left: `${knobLeft}px` }}
                   onPointerDown={handlePointerDown}
                   onPointerMove={handlePointerMove}
                   onPointerUp={handlePointerUp}

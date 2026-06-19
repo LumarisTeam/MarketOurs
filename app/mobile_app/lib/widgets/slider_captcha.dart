@@ -8,6 +8,10 @@ import 'package:flutter/cupertino.dart';
 import '../services/auth_service.dart';
 import '../ui/app_theme.dart';
 
+const _kDisplayWidth = 280.0;
+const _kBgOriginalWidth = 300.0;
+const _kBgOriginalHeight = 160.0;
+
 class SliderCaptcha extends StatefulWidget {
   const SliderCaptcha({
     super.key,
@@ -72,16 +76,17 @@ class _SliderCaptchaState extends State<SliderCaptcha> {
 
   Future<void> _verify() async {
     if (_challenge == null || _verifying || _success) return;
-    if (_sliderValue < 5) {
+    if (_sliderValue < 2) {
       setState(() => _sliderValue = 0);
       return;
     }
 
     setState(() => _verifying = true);
     try {
+      final scale = _kDisplayWidth / _kBgOriginalWidth;
       final token = await _authService.verifyCaptcha(
         token: _challenge!.token,
-        x: _sliderValue.round(),
+        x: (_sliderValue / scale).round(),
       );
       if (mounted) {
         setState(() => _success = true);
@@ -340,20 +345,23 @@ class _CaptchaCanvas extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scale = _kDisplayWidth / _kBgOriginalWidth;
+    final displayHeight = (_kBgOriginalHeight * scale).roundToDouble();
+
     return SizedBox(
-      width: challenge.puzzleWidth * 2,
-      height: challenge.puzzleHeight + 4 > 60
-          ? challenge.puzzleHeight + 4
-          : 60,
+      width: _kDisplayWidth,
+      height: displayHeight,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: CustomPaint(
           painter: _CaptchaPainter(
             bgBytes: base64Decode(challenge.backgroundImage),
             puzzleBytes: base64Decode(challenge.puzzleImage),
-            puzzleWidth: challenge.puzzleWidth,
-            puzzleHeight: challenge.puzzleHeight,
+            puzzleWidth: challenge.puzzleWidth.toDouble(),
+            puzzleHeight: challenge.puzzleHeight.toDouble(),
+            puzzleY: challenge.puzzleY.toDouble(),
             offset: offset,
+            scale: scale,
           ),
         ),
       ),
@@ -364,33 +372,38 @@ class _CaptchaCanvas extends StatelessWidget {
 class _CaptchaPainter extends CustomPainter {
   final Uint8List bgBytes;
   final Uint8List puzzleBytes;
-  final int puzzleWidth;
-  final int puzzleHeight;
+  final double puzzleWidth;
+  final double puzzleHeight;
+  final double puzzleY;
   final double offset;
+  final double scale;
 
   _CaptchaPainter({
     required this.bgBytes,
     required this.puzzleBytes,
     required this.puzzleWidth,
     required this.puzzleHeight,
+    required this.puzzleY,
     required this.offset,
+    required this.scale,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    _drawImage(canvas, bgBytes, const Rect.fromLTWH(0, 0, 300, 160),
+    _drawImage(canvas, bgBytes,
+        Rect.fromLTWH(0, 0, _kBgOriginalWidth, _kBgOriginalHeight),
         Rect.fromLTWH(0, 0, size.width, size.height));
 
-    final scaleX = size.width / 300;
-    final puzzleScaledWidth = puzzleWidth * scaleX;
-    final puzzleScaledHeight = puzzleHeight * scaleX;
-    final puzzleX = offset * scaleX;
+    final pw = puzzleWidth * scale;
+    final ph = puzzleHeight * scale;
+    final px = offset;
+    final py = puzzleY * scale;
 
     _drawImage(
       canvas,
       puzzleBytes,
-      Rect.fromLTWH(0, 0, puzzleWidth.toDouble(), puzzleHeight.toDouble()),
-      Rect.fromLTWH(puzzleX, 0, puzzleScaledWidth, puzzleScaledHeight),
+      Rect.fromLTWH(0, 0, puzzleWidth, puzzleHeight),
+      Rect.fromLTWH(px, py, pw, ph),
     );
   }
 

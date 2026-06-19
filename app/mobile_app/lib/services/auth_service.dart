@@ -248,6 +248,7 @@ class CaptchaChallenge {
   final String puzzleImage;
   final int puzzleWidth;
   final int puzzleHeight;
+  final int puzzleY;
 
   CaptchaChallenge({
     required this.token,
@@ -255,6 +256,7 @@ class CaptchaChallenge {
     required this.puzzleImage,
     required this.puzzleWidth,
     required this.puzzleHeight,
+    required this.puzzleY,
   });
 
   factory CaptchaChallenge.fromJson(Map<String, dynamic> json) {
@@ -264,6 +266,7 @@ class CaptchaChallenge {
       puzzleImage: json['puzzleImage'] as String,
       puzzleWidth: json['puzzleWidth'] as int,
       puzzleHeight: json['puzzleHeight'] as int,
+      puzzleY: json['puzzleY'] as int,
     );
   }
 }
