@@ -17,10 +17,28 @@ namespace MarketOurs.WebAPI.Controllers;
 [Authorize]
 public class NotificationController(INotificationService notificationService) : ControllerBase
 {
-    private static readonly Dictionary<string, Dictionary<string, string>> HotListTranslations = new()
+    /// <summary>
+    /// Notification title translations. Key = Chinese title, Value = localized titles per language.
+    /// </summary>
+    private static readonly Dictionary<string, Dictionary<string, string>> TitleMap = new()
     {
-        ["title"] = new() { ["en"] = "🔥 Today's Hot List", ["ja"] = "🔥 今日のランキング", ["ko"] = "🔥 오늘의 인기", ["ru"] = "🔥 Горячее сегодня", ["fr"] = "🔥 Top du jour", ["de"] = "🔥 Heute top" },
-        ["header"] = new() { ["en"] = "See what everyone is talking about:", ["ja"] = "みんなが話題にしていること：", ["ko"] = "모두가 이야기하는 주제:", ["ru"] = "Смотрите, что все обсуждают:", ["fr"] = "Voyez ce dont tout le monde parle :", ["de"] = "Schau, worüber alle reden:" },
+        ["🔥 今日校园热榜"] = new() { ["en"] = "🔥 Today's Hot List", ["ja"] = "🔥 今日のランキング", ["ko"] = "🔥 오늘의 인기", ["ru"] = "🔥 Горячее сегодня", ["fr"] = "🔥 Top du jour", ["de"] = "🔥 Heute top" },
+        ["审核信息"] = new() { ["en"] = "Review Result", ["ja"] = "審査結果", ["ko"] = "검토 결과", ["ru"] = "Результат проверки", ["fr"] = "Résultat de l'examen", ["de"] = "Prüfergebnis" },
+        ["你的贴子收到了新评论"] = new() { ["en"] = "New comment on your post", ["ja"] = "投稿に新しいコメント", ["ko"] = "게시물에 새 댓글", ["ru"] = "Новый комментарий к посту", ["fr"] = "Nouveau commentaire sur votre publication", ["de"] = "Neuer Kommentar zu deinem Beitrag" },
+        ["你的评论收到了回复"] = new() { ["en"] = "Reply to your comment", ["ja"] = "コメントに返信がありました", ["ko"] = "댓글에 답글", ["ru"] = "Ответ на ваш комментарий", ["fr"] = "Réponse à votre commentaire", ["de"] = "Antwort auf deinen Kommentar" },
+        ["系统通知"] = new() { ["en"] = "System Notice", ["ja"] = "システム通知", ["ko"] = "시스템 알림", ["ru"] = "Системное уведомление", ["fr"] = "Notification système", ["de"] = "Systemmeldung" },
+    };
+
+    /// <summary>
+    /// Content phrase translations (common notification body text).
+    /// </summary>
+    private static readonly Dictionary<string, Dictionary<string, string>> ContentMap = new()
+    {
+        ["来看看大家都在聊什么："] = new() { ["en"] = "See what everyone is talking about:", ["ja"] = "みんなが話題にしていること：", ["ko"] = "모두가 이야기하는 주제:", ["ru"] = "Смотрите, что все обсуждают:", ["fr"] = "Voyez ce dont tout le monde parle :", ["de"] = "Schau, worüber alle reden:" },
+        ["帖子审核通过"] = new() { ["en"] = "Post approved", ["ja"] = "投稿が承認されました", ["ko"] = "게시물 승인됨", ["ru"] = "Пост одобрен", ["fr"] = "Publication approuvée", ["de"] = "Beitrag genehmigt" },
+        ["帖子审核未通过"] = new() { ["en"] = "Post rejected", ["ja"] = "投稿が却下されました", ["ko"] = "게시물 거부됨", ["ru"] = "Пост отклонён", ["fr"] = "Publication rejetée", ["de"] = "Beitrag abgelehnt" },
+        ["评论审核通过"] = new() { ["en"] = "Comment approved", ["ja"] = "コメントが承認されました", ["ko"] = "댓글 승인됨", ["ru"] = "Комментарий одобрен", ["fr"] = "Commentaire approuvé", ["de"] = "Kommentar genehmigt" },
+        ["评论审核未通过"] = new() { ["en"] = "Comment rejected", ["ja"] = "コメントが却下されました", ["ko"] = "댓글 거부됨", ["ru"] = "Комментарий отклонён", ["fr"] = "Commentaire rejeté", ["de"] = "Kommentar abgelehnt" },
     };
 
     private string GetLanguageCode()
@@ -31,6 +49,17 @@ public class NotificationController(INotificationService notificationService) : 
         return code is "en" or "ja" or "ko" or "ru" or "fr" or "de" ? code : "zh";
     }
 
+    private string LocalizeTitle(string chineseTitle, string lang)
+    {
+        if (lang == "zh") return chineseTitle;
+        if (TitleMap.TryGetValue(chineseTitle, out var translations) &&
+            translations.TryGetValue(lang, out var localized))
+            return localized;
+        return chineseTitle;
+    }
+
+    private static readonly string[] LangCodes = { "en", "ja", "ko", "ru", "fr", "de" };
+
     private void LocalizeNotifications(List<NotificationDto> notifications)
     {
         var lang = GetLanguageCode();
@@ -38,23 +67,50 @@ public class NotificationController(INotificationService notificationService) : 
 
         foreach (var n in notifications)
         {
-            if (n.Type != NotificationType.HotList) continue;
+            n.Title = LocalizeTitle(n.Title, lang);
 
-            var key = HotListTranslations["title"].TryGetValue(lang, out var t) ? t : "🔥 Today's Hot List";
-            var headerReplacement = HotListTranslations["header"].TryGetValue(lang, out var h) ? h : "See what everyone is talking about:";
-
-            n.Title = key;
-
-            try
+            // Translate notification content body
+            if (n.Type == NotificationType.HotList)
             {
-                var json = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(n.Content);
-                if (json != null && json.TryGetValue("header", out var _))
+                LocalizeHotListContent(n, lang);
+            }
+            else
+            {
+                LocalizePlainContent(n, lang);
+            }
+        }
+    }
+
+    private static void LocalizeHotListContent(NotificationDto n, string lang)
+    {
+        try
+        {
+            var json = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(n.Content);
+            if (json == null) return;
+            if (json.TryGetValue("header", out var headerEl))
+            {
+                var header = headerEl.GetString() ?? "";
+                if (ContentMap.TryGetValue("来看看大家都在聊什么：", out var trans) &&
+                    trans.TryGetValue(lang, out var localized) && header.Contains("来看看大家都在聊什么："))
                 {
-                    json["header"] = JsonSerializer.SerializeToElement(headerReplacement);
+                    json["header"] = JsonSerializer.SerializeToElement(localized);
                     n.Content = JsonSerializer.Serialize(json);
                 }
             }
-            catch { /* keep original content */ }
+        }
+        catch { }
+    }
+
+    private static void LocalizePlainContent(NotificationDto n, string lang)
+    {
+        if (n.Content == null) return;
+        // Replace known Chinese content strings with translations
+        foreach (var kv in ContentMap)
+        {
+            if (n.Content.Contains(kv.Key) && kv.Value.TryGetValue(lang, out var localized))
+            {
+                n.Content = n.Content.Replace(kv.Key, localized);
+            }
         }
     }
 
