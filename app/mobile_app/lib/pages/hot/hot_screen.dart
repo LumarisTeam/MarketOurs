@@ -144,7 +144,7 @@ class _HotPostCard extends StatelessWidget {
     final isTop3 = rank <= 3;
     final rankColor = isTop3 ? AppColors.hot : AppColors.mutedForeground;
     final day = post.createdAt != null ? DateTime.now().difference(post.createdAt!).inDays + 1 : 0;
-    final hot = (((post.watch ?? 0) + (post.likes ?? 0) * 3 - (post.dislikes ?? 0) *2) / pow(day + 2, 1.3)).toInt();
+    final hot = (((post.watch ?? 0) + (post.likes ?? 0) * 3 - (post.dislikes ?? 0) *2) / pow(day + 2, 1.3) * 10).toInt();
 
     return AppTappableCard(
       padding: EdgeInsets.zero,
