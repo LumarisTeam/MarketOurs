@@ -310,5 +310,9 @@
   "editPostAction": "Edit",
   "deletePostAction": "Delete",
   "share": "Partager",
-  "myProfile": "My Profile"
+  "myProfile": "My Profile",
+  "postDeleteTitle": "Supprimer",
+  "postEditTitle": "Modifier",
+  "postSelectTag": "Choisir tag",
+  "postTagAdminPreset": "Tags prédéfinis"
 }

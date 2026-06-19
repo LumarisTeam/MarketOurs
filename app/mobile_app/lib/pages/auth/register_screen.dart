@@ -343,7 +343,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   return AppLocalizations.of(context).validatorNameRequired;
                 }
                 if (value.trim().length > DtoLimits.userNameMax) {
-                  return '用户名长度不能超过 ${DtoLimits.userNameMax} 位';
+                  return AppLocalizations.of(context).validatorNameTooLong(DtoLimits.userNameMax);
                 }
                 return null;
               },
@@ -368,7 +368,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   return AppLocalizations.of(context).validatorAccountRequired;
                 }
                 if (value.trim().length > DtoLimits.userAccountMax) {
-                  return '账号长度不能超过 ${DtoLimits.userAccountMax} 位';
+                  return AppLocalizations.of(context).validatorAccountTooLong(DtoLimits.userAccountMax);
                 }
                 if (_isAccountDirty && !_isAccountValid) {
                   return AppLocalizations.of(context).validatorEmailOrPhoneRequired;
@@ -406,7 +406,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   return AppLocalizations.of(context).validatorPasswordRequired;
                 }
                 if (_isPasswordDirty && !_isPasswordValid) {
-                  return '密码需至少6位，包含大写字母、小写字母和数字';
+                  return AppLocalizations.of(context).authPasswordRequirement;
                 }
                 return null;
               },
@@ -422,7 +422,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '密码需至少6位，包含大写字母、小写字母和数字',
+                      AppLocalizations.of(context).authPasswordRequirement,
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -431,7 +431,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '至少6位，包含大小写字母和数字',
+                      AppLocalizations.of(context).authPasswordRequirement,
                       style: TextStyle(
                         fontSize: 10,
                         color: AppColors.mutedForeground,

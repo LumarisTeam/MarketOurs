@@ -310,5 +310,9 @@
   "editPostAction": "Edit",
   "deletePostAction": "Delete",
   "share": "Поделиться",
-  "myProfile": "My Profile"
+  "myProfile": "My Profile",
+  "postDeleteTitle": "Удалить пост",
+  "postEditTitle": "Редактировать",
+  "postSelectTag": "Выбрать тег",
+  "postTagAdminPreset": "Теги заданы администратором"
 }

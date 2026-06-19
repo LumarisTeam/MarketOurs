@@ -310,5 +310,9 @@
   "editPostAction": "Edit",
   "deletePostAction": "Delete",
   "share": "공유",
-  "myProfile": "My Profile"
+  "myProfile": "My Profile",
+  "postDeleteTitle": "게시물 삭제",
+  "postEditTitle": "게시물 편집",
+  "postSelectTag": "태그 선택",
+  "postTagAdminPreset": "관리자가 설정한 태그"
 }

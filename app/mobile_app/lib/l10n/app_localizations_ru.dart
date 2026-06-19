@@ -12,7 +12,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get appTitle => 'ЛайтХаб';
 
   @override
-  String get appSlogan => 'Campus Market';
+  String get appSlogan => 'Кампусный маркет';
 
   @override
   String get followSystem => 'Как в системе';
@@ -27,10 +27,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get confirm => 'Подтвердить';
 
   @override
-  String get retry => 'Retry';
+  String get retry => 'Повторить';
 
   @override
-  String get reload => 'Reload';
+  String get reload => 'Обновить';
 
   @override
   String get save => 'Сохранить';
@@ -39,31 +39,31 @@ class AppLocalizationsRu extends AppLocalizations {
   String get delete => 'Удалить';
 
   @override
-  String get edit => 'Редактировать';
+  String get edit => 'Править';
 
   @override
   String get search => 'Поиск';
 
   @override
-  String get submit => 'Submit';
+  String get submit => 'Отправить';
 
   @override
-  String get back => 'Back';
+  String get back => 'Назад';
 
   @override
-  String get close => 'Close';
+  String get close => 'Закрыть';
 
   @override
-  String get done => 'Done';
+  String get done => 'Готово';
 
   @override
-  String get next => 'Next';
+  String get next => 'Далее';
 
   @override
-  String get yes => 'Yes';
+  String get yes => 'Да';
 
   @override
-  String get no => 'No';
+  String get no => 'Нет';
 
   @override
   String get themeLight => 'Светлая';
@@ -78,10 +78,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get themeMode => 'Тема';
 
   @override
-  String get themeHint => 'Tap to change display mode';
+  String get themeHint => 'Нажмите для смены темы';
 
   @override
-  String get appearanceModeTitle => 'Choose Appearance';
+  String get appearanceModeTitle => 'Выбор темы';
 
   @override
   String get tabHome => 'Главная';
@@ -108,13 +108,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get authResetPassword => 'Сброс пароля';
 
   @override
-  String get authChangePassword => 'Change Password';
+  String get authChangePassword => 'Сменить пароль';
 
   @override
   String get authLogout => 'Выйти';
 
   @override
-  String get authLogoutDesc => 'Clear current session';
+  String get authLogoutDesc => 'Завершить сеанс';
 
   @override
   String get authAccount => 'Аккаунт';
@@ -129,32 +129,32 @@ class AppLocalizationsRu extends AppLocalizations {
   String get authSendCode => 'Отправить код';
 
   @override
-  String get authAccountPlaceholder => 'Email or phone number';
+  String get authAccountPlaceholder => 'Email или телефон';
 
   @override
-  String get authPasswordPlaceholder => 'Enter password';
+  String get authPasswordPlaceholder => 'Введите пароль';
 
   @override
-  String get authCodePlaceholder => '6-digit code';
+  String get authCodePlaceholder => '6-значный код';
 
   @override
-  String get authNamePlaceholder => 'Choose a display name';
+  String get authNamePlaceholder => 'Введите имя';
 
   @override
-  String get authAccountHint => 'Email or phone number';
+  String get authAccountHint => 'Email или телефон';
 
   @override
-  String get authNewPassword => 'New Password';
+  String get authNewPassword => 'Новый пароль';
 
   @override
-  String get authOldPassword => 'Current Password';
+  String get authOldPassword => 'Текущий пароль';
 
   @override
-  String get authConfirmPassword => 'Confirm Password';
+  String get authConfirmPassword => 'Подтвердите пароль';
 
   @override
   String get authPasswordRequirement =>
-      'At least 6 chars with uppercase, lowercase & digit';
+      'Минимум 6 символов с заглавными, строчными и цифрами';
 
   @override
   String get authCodeLogin => 'Вход по коду';
@@ -163,65 +163,64 @@ class AppLocalizationsRu extends AppLocalizations {
   String get authPasswordLogin => 'Вход по паролю';
 
   @override
-  String get authAlreadyHaveAccount => 'Already have an account? Log in';
+  String get authAlreadyHaveAccount => 'Уже есть аккаунт?';
 
   @override
-  String get authNoAccount => 'Don\'t have an account? Sign up';
+  String get authNoAccount => 'Нет аккаунта?';
 
   @override
-  String get authForgotPasswordPrompt => 'Forgot password?';
+  String get authForgotPasswordPrompt => 'Забыли пароль?';
 
   @override
-  String get authSendCodeSuccess => 'Verification code sent';
+  String get authSendCodeSuccess => 'Код отправлен';
 
   @override
-  String get authSendCodeFailed => 'Failed to send code, try again later';
+  String get authSendCodeFailed => 'Не удалось отправить код';
 
   @override
-  String get authLoginSuccess => 'Login successful';
+  String get authLoginSuccess => 'Вход выполнен';
 
   @override
-  String get authLoginFailed => 'Login failed, try again later';
+  String get authLoginFailed => 'Ошибка входа';
 
   @override
-  String get authRegisterSuccess => 'Registration successful';
+  String get authRegisterSuccess => 'Регистрация успешна';
 
   @override
-  String get authRegisterFailed => 'Registration failed, try again later';
+  String get authRegisterFailed => 'Ошибка регистрации';
 
   @override
-  String get authResetFailed => 'Password reset failed, try again later';
+  String get authResetFailed => 'Ошибка сброса пароля';
 
   @override
-  String get authChangePasswordFailed =>
-      'Password change failed, try again later';
+  String get authChangePasswordFailed => 'Ошибка смены пароля';
 
   @override
-  String get authVerifyFailed => 'Verification failed, try again later';
+  String get authVerifyFailed => 'Ошибка проверки';
 
   @override
-  String get authUsernameOrPasswordWrong => 'Incorrect username or password';
+  String get authUsernameOrPasswordWrong => 'Неверное имя или пароль';
 
   @override
-  String get authRegisterVerifyTitle => 'Verify Registration';
+  String get authRegisterVerifyTitle => 'Подтверждение регистрации';
 
   @override
-  String get authRegisterVerifyHint => 'Enter the code sent to your account';
+  String get authRegisterVerifyHint => 'Введите код из письма';
 
   @override
-  String get authSelectAvatar => 'Select Avatar';
+  String get authSelectAvatar => 'Выбрать аватар';
 
   @override
-  String get authRandomAvatar => 'Random Generate';
+  String get authRandomAvatar => 'Случайный';
 
   @override
-  String get authPickFromGallery => 'From Gallery';
+  String get authPickFromGallery => 'Из галереи';
 
   @override
-  String get authTakePhoto => 'Take Photo';
+  String get authTakePhoto => 'Сделать фото';
 
   @override
-  String get authResendCode => 'Resend Code';
+  String get authResendCode => 'Отправить повторно';
 
   @override
   String get profileInfo => 'Информация';
@@ -230,132 +229,130 @@ class AppLocalizationsRu extends AppLocalizations {
   String get profileSecurity => 'Безопасность';
 
   @override
-  String get profileSocial => 'Social';
+  String get profileSocial => 'Социальное';
 
   @override
-  String get profileBindings => 'Third-party Bindings';
+  String get profileBindings => 'Привязки';
 
   @override
-  String get profileNickname => 'Nickname';
+  String get profileNickname => 'Ник';
 
   @override
-  String get profileBio => 'Bio';
+  String get profileBio => 'О себе';
 
   @override
   String get profileEmail => 'Email';
 
   @override
-  String get profilePhone => 'Phone';
+  String get profilePhone => 'Телефон';
 
   @override
-  String get profileEmailVerified => 'Verified';
+  String get profileEmailVerified => 'Подтверждено';
 
   @override
-  String get profileEmailNotVerified => 'Not verified';
+  String get profileEmailNotVerified => 'Не подтверждено';
 
   @override
-  String get profileVerifyEmail => 'Verify';
+  String get profileVerifyEmail => 'Подтвердить';
 
   @override
-  String get profileVerifyEmailTitle => 'Email Verification';
+  String get profileVerifyEmailTitle => 'Подтверждение email';
 
   @override
-  String get profileEnterCode => 'Enter verification code';
+  String get profileEnterCode => 'Введите код';
 
   @override
-  String get profileEnterCodeHint => 'Enter the code you received';
+  String get profileEnterCodeHint => 'Введите полученный код';
 
   @override
-  String get profileConfirmVerify => 'Confirm';
+  String get profileConfirmVerify => 'Подтвердить';
 
   @override
-  String get profileNotLoggedIn => 'Not logged in';
+  String get profileNotLoggedIn => 'Не выполнен вход';
 
   @override
-  String get profileNotLoggedInDesc =>
-      'Log in to view your profile and manage settings.';
+  String get profileNotLoggedInDesc => 'Войдите для просмотра профиля.';
 
   @override
-  String get profileGoLogin => 'Log in';
+  String get profileGoLogin => 'Войти';
 
   @override
   String get profileEditProfile => 'Редактировать';
 
   @override
-  String get profileSaveChanges => 'Save Changes';
+  String get profileSaveChanges => 'Сохранить';
 
   @override
-  String get profileSaving => 'Saving...';
+  String get profileSaving => 'Сохранение...';
 
   @override
-  String get profileUpdated => 'Profile updated';
+  String get profileUpdated => 'Профиль обновлён';
 
   @override
-  String get profileUpdateFailed => 'Save failed, try again later';
+  String get profileUpdateFailed => 'Ошибка сохранения';
 
   @override
-  String get profileNoNickname => 'No nickname set';
+  String get profileNoNickname => 'Ник не задан';
 
   @override
-  String get profileNoBio => 'No bio yet';
+  String get profileNoBio => 'Нет описания';
 
   @override
-  String get profileNoEmail => 'Not bound';
+  String get profileNoEmail => 'Не привязан';
 
   @override
-  String get profileClickToChangeAvatar => 'Tap to change avatar';
+  String get profileClickToChangeAvatar => 'Нажмите для смены аватара';
 
   @override
-  String get profileChangePasswordTitle => 'Change Password';
+  String get profileChangePasswordTitle => 'Сменить пароль';
 
   @override
-  String get profileChangePasswordDesc => 'Update account password';
+  String get profileChangePasswordDesc => 'Обновить пароль';
 
   @override
-  String get profileFollowBlock => 'Follow & Block';
+  String get profileFollowBlock => 'Подписки и блокировка';
 
   @override
-  String get profileFollowBlockDesc => 'Manage followed users and block list';
+  String get profileFollowBlockDesc => 'Управление подписками';
 
   @override
-  String get profileAbout => 'About';
+  String get profileAbout => 'О приложении';
 
   @override
-  String get profileTerms => 'Terms of Service';
+  String get profileTerms => 'Условия использования';
 
   @override
-  String get profileTermsDesc => 'View platform usage terms';
+  String get profileTermsDesc => 'Ознакомиться с правилами';
 
   @override
-  String get profilePrivacy => 'Privacy Policy';
+  String get profilePrivacy => 'Политика конфиденциальности';
 
   @override
-  String get profilePrivacyDesc => 'Learn how we protect your information';
+  String get profilePrivacyDesc => 'Как мы защищаем ваши данные';
 
   @override
-  String get profileDisplaySettings => 'Display Settings';
+  String get profileDisplaySettings => 'Настройки отображения';
 
   @override
-  String get profileManageSocialDesc =>
-      'Manage Github, Google and other platform connections';
+  String get profileManageSocialDesc => 'Управление привязками';
 
   @override
-  String get profileNavTitle => 'Me';
+  String get profileNavTitle => 'Профиль';
 
   @override
-  String get profilePublicProfile => 'User Profile';
+  String get profilePublicProfile => 'Профиль';
 
   @override
-  String get profileUnknownDate => 'Unknown';
+  String get profileUnknownDate => 'Неизвестно';
 
   @override
-  String get profileEmailVerifySuccess => 'Email verified';
+  String get profileEmailVerifySuccess => 'Email подтверждён';
 
   @override
-  String get profileSubmitting => 'Submitting...';
+  String get profileSubmitting => 'Отправка...';
 
   @override
-  String get profileLogoutDesc => 'Clear current session';
+  String get profileLogoutDesc => 'Завершить сеанс';
 
   @override
   String get profileFollowers => 'Подписчики';
@@ -370,54 +367,53 @@ class AppLocalizationsRu extends AppLocalizations {
   String get profileUnfollow => 'В подписках';
 
   @override
-  String get profileBlock => 'Block';
+  String get profileBlock => 'Заблокировать';
 
   @override
-  String get profileUnblock => 'Blocked';
+  String get profileUnblock => 'Заблокирован';
 
   @override
-  String get profileThisIsYou => 'This is you';
+  String get profileThisIsYou => 'Это вы';
 
   @override
-  String get profileManageMyProfile => 'Manage My Profile';
+  String get profileManageMyProfile => 'Управление профилем';
 
   @override
-  String get profileJoinDate => 'Joined';
+  String get profileJoinDate => 'Дата регистрации';
 
   @override
-  String get profileOwnerLowkey =>
-      'This person is low-key and hasn\'t written a bio yet.';
+  String get profileOwnerLowkey => 'Пользователь ещё не написал о себе.';
 
   @override
-  String get profileRecentPosts => 'Recent Posts';
+  String get profileRecentPosts => 'Недавние посты';
 
   @override
   String get profileRecentPostsSubtitle =>
-      'See what this student has shared on LightHub.';
+      'Посмотрите, чем поделился этот студент.';
 
   @override
-  String get profileNoPublicPosts => 'No public posts yet';
+  String get profileNoPublicPosts => 'Нет публичных постов';
 
   @override
-  String get profileNoFollows => 'Not following anyone';
+  String get profileNoFollows => 'Нет подписок';
 
   @override
-  String get profileReachedEnd => 'You\'ve reached the end';
+  String get profileReachedEnd => 'Вы достигли конца';
 
   @override
   String get postCreate => 'Публикация';
 
   @override
-  String get postCreatePublishing => 'Publishing...';
+  String get postCreatePublishing => 'Публикация...';
 
   @override
   String get postCreatePublish => 'Опубликовать';
 
   @override
-  String get postCreateTitle => 'Post title';
+  String get postCreateTitle => 'Заголовок';
 
   @override
-  String get postCreateTitleEmpty => 'Please enter a title';
+  String get postCreateTitleEmpty => 'Введите заголовок';
 
   @override
   String postCreateTitleTooLong(int max) {
@@ -428,7 +424,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get postCreateContent => 'Что происходит?';
 
   @override
-  String get postCreateContentEmpty => 'Please enter some content';
+  String get postCreateContentEmpty => 'Введите текст';
 
   @override
   String postCreateContentTooLong(int max) {
@@ -436,64 +432,64 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get postCreateImages => 'Images';
+  String get postCreateImages => 'Изображения';
 
   @override
-  String get postCreateAddImages => 'Add Images';
+  String get postCreateAddImages => 'Добавить фото';
 
   @override
-  String get postCreateNoImages => 'No images selected';
+  String get postCreateNoImages => 'Нет изображений';
 
   @override
-  String get postCreateTag => 'Tag';
+  String get postCreateTag => 'Тег';
 
   @override
-  String get postCreateNoTag => 'No tag';
+  String get postCreateNoTag => 'Без тега';
 
   @override
-  String get postCreated => 'Post published';
+  String get postCreated => 'Опубликовано';
 
   @override
-  String get postCreateFailed => 'Failed to create post';
+  String get postCreateFailed => 'Ошибка публикации';
 
   @override
-  String get postUploading => 'Uploading...';
+  String get postUploading => 'Загрузка...';
 
   @override
-  String get postImagesUploadFailed => 'Image upload failed';
+  String get postImagesUploadFailed => 'Ошибка загрузки';
 
   @override
-  String get postDetail => 'Details';
+  String get postDetail => 'Детали';
 
   @override
-  String get postDetailTitle => 'Post Details';
+  String get postDetailTitle => 'Детали поста';
 
   @override
-  String get postNotFound => 'Post not found';
+  String get postNotFound => 'Пост не найден';
 
   @override
-  String get postDeleted => 'Post deleted';
+  String get postDeleted => 'Пост удалён';
 
   @override
-  String get postDeleteConfirm => 'Delete this post?';
+  String get postDeleteConfirm => 'Удалить этот пост?';
 
   @override
-  String get postEdit => 'Edit Post';
+  String get postEdit => 'Редактировать';
 
   @override
-  String get postNoComments => 'No comments yet';
+  String get postNoComments => 'Нет комментариев';
 
   @override
   String get postWriteComment => 'Написать комментарий...';
 
   @override
-  String get postCommentSent => 'Comment posted';
+  String get postCommentSent => 'Комментарий отправлен';
 
   @override
-  String get postCommentFailed => 'Failed to send comment';
+  String get postCommentFailed => 'Ошибка отправки';
 
   @override
-  String get postShareTitle => 'Post from LightHub';
+  String get postShareTitle => 'Пост из LightHub';
 
   @override
   String postShareText(String name, String title) {
@@ -501,52 +497,52 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get postCommentSortNewest => 'Newest';
+  String get postCommentSortNewest => 'Новые';
 
   @override
-  String get postCommentSortOldest => 'Oldest';
+  String get postCommentSortOldest => 'Старые';
 
   @override
-  String get postCommentSortHot => 'Hottest';
+  String get postCommentSortHot => 'Популярные';
 
   @override
-  String get postLoadMore => 'Load more';
+  String get postLoadMore => 'Загрузить ещё';
 
   @override
-  String get postLoading => 'Loading...';
+  String get postLoading => 'Загрузка...';
 
   @override
-  String get postUserNotFound => 'User not found';
+  String get postUserNotFound => 'Пользователь не найден';
 
   @override
-  String get postPleaseLogin => 'Please log in first';
+  String get postPleaseLogin => 'Войдите в систему';
 
   @override
-  String get postImageSaveSuccess => 'Image saved to gallery';
+  String get postImageSaveSuccess => 'Изображение сохранено';
 
   @override
-  String get postImageSaveFailed => 'Image save failed';
+  String get postImageSaveFailed => 'Ошибка сохранения';
 
   @override
-  String get postTagTitle => 'Tags';
+  String get postTagTitle => 'Теги';
 
   @override
-  String get postTagEmpty => 'No posts under this tag yet';
+  String get postTagEmpty => 'Нет постов с этим тегом';
 
   @override
-  String get homeSearchPlaceholder => 'Search posts, topics or users';
+  String get homeSearchPlaceholder => 'Поиск постов, тем, пользователей';
 
   @override
-  String get homeEmpty => 'No posts yet';
+  String get homeEmpty => 'Нет постов';
 
   @override
-  String get homeHotEmpty => 'No trending posts';
+  String get homeHotEmpty => 'Нет популярных постов';
 
   @override
   String get notificationTitle => 'Уведомления';
 
   @override
-  String get notificationEmpty => 'No notifications yet';
+  String get notificationEmpty => 'Нет уведомлений';
 
   @override
   String get notificationPushSettings => 'Push-уведомления';
@@ -555,37 +551,34 @@ class AppLocalizationsRu extends AppLocalizations {
   String get notificationEmail => 'Email-уведомления';
 
   @override
-  String get notificationEmailDesc =>
-      'Receive email for replies and system notices';
+  String get notificationEmailDesc => 'Получать уведомления по email';
 
   @override
-  String get notificationCommentPush => 'Comment Replies';
+  String get notificationCommentPush => 'Ответы на комментарии';
 
   @override
-  String get notificationCommentPushDesc =>
-      'Push when someone replies to your post or comment';
+  String get notificationCommentPushDesc => 'Пуш при ответах';
 
   @override
-  String get notificationHotListPush => 'Daily Hot List';
+  String get notificationHotListPush => 'Ежедневный топ';
 
   @override
-  String get notificationHotListPushDesc =>
-      'Receive the hottest posts every morning';
+  String get notificationHotListPushDesc => 'Получать топ постов каждое утро';
 
   @override
-  String get notificationSaving => 'Saving...';
+  String get notificationSaving => 'Сохранение...';
 
   @override
-  String get notificationSaveSettings => 'Save Settings';
+  String get notificationSaveSettings => 'Сохранить';
 
   @override
   String get notificationSaved => 'Сохранено';
 
   @override
-  String get notificationSaveFailed => 'Save failed';
+  String get notificationSaveFailed => 'Ошибка сохранения';
 
   @override
-  String get hotRank => 'Trending';
+  String get hotRank => 'Популярное';
 
   @override
   String hotWatch(int count) {
@@ -599,13 +592,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get dislikePost => 'Не нравится';
 
   @override
-  String get verified => 'Verified';
+  String get verified => 'Подтверждено';
 
   @override
-  String get unverified => 'Unverified';
+  String get unverified => 'Не подтверждено';
 
   @override
-  String get dateJustNow => 'just now';
+  String get dateJustNow => 'только что';
 
   @override
   String dateMinutesAgo(int minutes) {
@@ -623,7 +616,7 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get dateYesterday => 'yesterday';
+  String get dateYesterday => 'вчера';
 
   @override
   String get privacyPolicy => 'Privacy Policy';
@@ -638,7 +631,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get settingsLanguage => 'Язык';
 
   @override
-  String get settingsLanguageTitle => 'Language Settings';
+  String get settingsLanguageTitle => 'Настройки языка';
 
   @override
   String successUploadImages(int count) {
@@ -900,16 +893,16 @@ class AppLocalizationsRu extends AppLocalizations {
       'Linked, but profile refresh failed';
 
   @override
-  String get postEditTitle => '编辑帖子';
+  String get postEditTitle => 'Редактировать';
 
   @override
-  String get postDeleteTitle => '删除帖子';
+  String get postDeleteTitle => 'Удалить пост';
 
   @override
-  String get postSelectTag => '选择标签';
+  String get postSelectTag => 'Выбрать тег';
 
   @override
-  String get postTagAdminPreset => '标签由管理员预设，可不选择。';
+  String get postTagAdminPreset => 'Теги заданы администратором';
 
   @override
   String get passwordResetSuccess => 'Password reset, please log in again';

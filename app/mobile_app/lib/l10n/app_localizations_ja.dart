@@ -12,7 +12,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get appTitle => 'ライトハブ';
 
   @override
-  String get appSlogan => 'Campus Market';
+  String get appSlogan => 'キャンパスマーケット';
 
   @override
   String get followSystem => 'システムに従う';
@@ -27,10 +27,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get confirm => '確認';
 
   @override
-  String get retry => 'Retry';
+  String get retry => '再試行';
 
   @override
-  String get reload => 'Reload';
+  String get reload => '再読み込み';
 
   @override
   String get save => '保存';
@@ -45,25 +45,25 @@ class AppLocalizationsJa extends AppLocalizations {
   String get search => '検索';
 
   @override
-  String get submit => 'Submit';
+  String get submit => '送信';
 
   @override
-  String get back => 'Back';
+  String get back => '戻る';
 
   @override
-  String get close => 'Close';
+  String get close => '閉じる';
 
   @override
-  String get done => 'Done';
+  String get done => '完了';
 
   @override
-  String get next => 'Next';
+  String get next => '次へ';
 
   @override
-  String get yes => 'Yes';
+  String get yes => 'はい';
 
   @override
-  String get no => 'No';
+  String get no => 'いいえ';
 
   @override
   String get themeLight => 'ライト';
@@ -75,13 +75,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get themeSystem => 'システムに従う';
 
   @override
-  String get themeMode => '外観';
+  String get themeMode => '外観モード';
 
   @override
-  String get themeHint => 'Tap to change display mode';
+  String get themeHint => 'タップして表示モードを変更';
 
   @override
-  String get appearanceModeTitle => 'Choose Appearance';
+  String get appearanceModeTitle => '外観モードを選択';
 
   @override
   String get tabHome => 'ホーム';
@@ -108,13 +108,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get authResetPassword => 'パスワードリセット';
 
   @override
-  String get authChangePassword => 'Change Password';
+  String get authChangePassword => 'パスワード変更';
 
   @override
   String get authLogout => 'ログアウト';
 
   @override
-  String get authLogoutDesc => 'Clear current session';
+  String get authLogoutDesc => '現在のセッションをクリア';
 
   @override
   String get authAccount => 'アカウント';
@@ -129,32 +129,31 @@ class AppLocalizationsJa extends AppLocalizations {
   String get authSendCode => 'コード送信';
 
   @override
-  String get authAccountPlaceholder => 'Email or phone number';
+  String get authAccountPlaceholder => 'メールまたは電話番号';
 
   @override
-  String get authPasswordPlaceholder => 'Enter password';
+  String get authPasswordPlaceholder => 'パスワードを入力';
 
   @override
-  String get authCodePlaceholder => '6-digit code';
+  String get authCodePlaceholder => '6桁のコード';
 
   @override
-  String get authNamePlaceholder => 'Choose a display name';
+  String get authNamePlaceholder => '表示名を入力';
 
   @override
-  String get authAccountHint => 'Email or phone number';
+  String get authAccountHint => 'メールまたは電話番号';
 
   @override
-  String get authNewPassword => 'New Password';
+  String get authNewPassword => '新しいパスワード';
 
   @override
-  String get authOldPassword => 'Current Password';
+  String get authOldPassword => '現在のパスワード';
 
   @override
-  String get authConfirmPassword => 'Confirm Password';
+  String get authConfirmPassword => 'パスワード確認';
 
   @override
-  String get authPasswordRequirement =>
-      'At least 6 chars with uppercase, lowercase & digit';
+  String get authPasswordRequirement => '6文字以上、大文字・小文字・数字を含む';
 
   @override
   String get authCodeLogin => 'コードログイン';
@@ -166,62 +165,61 @@ class AppLocalizationsJa extends AppLocalizations {
   String get authAlreadyHaveAccount => 'アカウントをお持ちの方';
 
   @override
-  String get authNoAccount => 'アカウント登録';
+  String get authNoAccount => 'アカウント登録はこちら';
 
   @override
-  String get authForgotPasswordPrompt => 'Forgot password?';
+  String get authForgotPasswordPrompt => 'パスワードをお忘れですか？';
 
   @override
-  String get authSendCodeSuccess => 'Verification code sent';
+  String get authSendCodeSuccess => '認証コードを送信しました';
 
   @override
-  String get authSendCodeFailed => 'Failed to send code, try again later';
+  String get authSendCodeFailed => 'コード送信に失敗しました';
 
   @override
-  String get authLoginSuccess => 'Login successful';
+  String get authLoginSuccess => 'ログイン成功';
 
   @override
-  String get authLoginFailed => 'Login failed, try again later';
+  String get authLoginFailed => 'ログイン失敗';
 
   @override
-  String get authRegisterSuccess => 'Registration successful';
+  String get authRegisterSuccess => '登録完了';
 
   @override
-  String get authRegisterFailed => 'Registration failed, try again later';
+  String get authRegisterFailed => '登録失敗';
 
   @override
-  String get authResetFailed => 'Password reset failed, try again later';
+  String get authResetFailed => 'パスワードリセット失敗';
 
   @override
-  String get authChangePasswordFailed =>
-      'Password change failed, try again later';
+  String get authChangePasswordFailed => 'パスワード変更失敗';
 
   @override
-  String get authVerifyFailed => 'Verification failed, try again later';
+  String get authVerifyFailed => '認証失敗';
 
   @override
-  String get authUsernameOrPasswordWrong => 'Incorrect username or password';
+  String get authUsernameOrPasswordWrong => 'ユーザー名またはパスワードが間違っています';
 
   @override
-  String get authRegisterVerifyTitle => 'Verify Registration';
+  String get authRegisterVerifyTitle => '登録確認';
 
   @override
-  String get authRegisterVerifyHint => 'Enter the code sent to your account';
+  String get authRegisterVerifyHint => 'アカウントに送信されたコードを入力してください';
 
   @override
-  String get authSelectAvatar => 'Select Avatar';
+  String get authSelectAvatar => 'アバター選択';
 
   @override
-  String get authRandomAvatar => 'Random Generate';
+  String get authRandomAvatar => 'ランダム生成';
 
   @override
-  String get authPickFromGallery => 'From Gallery';
+  String get authPickFromGallery => 'ギャラリーから選択';
 
   @override
-  String get authTakePhoto => 'Take Photo';
+  String get authTakePhoto => '写真を撮る';
 
   @override
-  String get authResendCode => 'Resend Code';
+  String get authResendCode => 'コードを再送';
 
   @override
   String get profileInfo => 'プロフィール情報';
@@ -230,138 +228,136 @@ class AppLocalizationsJa extends AppLocalizations {
   String get profileSecurity => 'アカウントセキュリティ';
 
   @override
-  String get profileSocial => 'Social';
+  String get profileSocial => 'ソーシャル';
 
   @override
-  String get profileBindings => 'Third-party Bindings';
+  String get profileBindings => '外部連携';
 
   @override
-  String get profileNickname => 'Nickname';
+  String get profileNickname => 'ニックネーム';
 
   @override
-  String get profileBio => 'Bio';
+  String get profileBio => '自己紹介';
 
   @override
-  String get profileEmail => 'Email';
+  String get profileEmail => 'メール';
 
   @override
-  String get profilePhone => 'Phone';
+  String get profilePhone => '電話番号';
 
   @override
-  String get profileEmailVerified => 'Verified';
+  String get profileEmailVerified => '確認済み';
 
   @override
-  String get profileEmailNotVerified => 'Not verified';
+  String get profileEmailNotVerified => '未確認';
 
   @override
-  String get profileVerifyEmail => 'Verify';
+  String get profileVerifyEmail => '確認する';
 
   @override
-  String get profileVerifyEmailTitle => 'Email Verification';
+  String get profileVerifyEmailTitle => 'メール確認';
 
   @override
-  String get profileEnterCode => 'Enter verification code';
+  String get profileEnterCode => '認証コードを入力';
 
   @override
-  String get profileEnterCodeHint => 'Enter the code you received';
+  String get profileEnterCodeHint => '受信したコードを入力してください';
 
   @override
-  String get profileConfirmVerify => 'Confirm';
+  String get profileConfirmVerify => '確認';
 
   @override
-  String get profileNotLoggedIn => 'Not logged in';
+  String get profileNotLoggedIn => 'ログインしていません';
 
   @override
-  String get profileNotLoggedInDesc =>
-      'Log in to view your profile and manage settings.';
+  String get profileNotLoggedInDesc => 'ログインしてプロフィールを表示・管理しましょう。';
 
   @override
-  String get profileGoLogin => 'Log in';
+  String get profileGoLogin => 'ログイン';
 
   @override
   String get profileEditProfile => 'プロフィール編集';
 
   @override
-  String get profileSaveChanges => 'Save Changes';
+  String get profileSaveChanges => '変更を保存';
 
   @override
-  String get profileSaving => 'Saving...';
+  String get profileSaving => '保存中...';
 
   @override
-  String get profileUpdated => 'Profile updated';
+  String get profileUpdated => 'プロフィールを更新しました';
 
   @override
-  String get profileUpdateFailed => 'Save failed, try again later';
+  String get profileUpdateFailed => '保存に失敗しました';
 
   @override
-  String get profileNoNickname => 'No nickname set';
+  String get profileNoNickname => 'ニックネーム未設定';
 
   @override
-  String get profileNoBio => 'No bio yet';
+  String get profileNoBio => '自己紹介なし';
 
   @override
-  String get profileNoEmail => 'Not bound';
+  String get profileNoEmail => '未登録';
 
   @override
-  String get profileClickToChangeAvatar => 'Tap to change avatar';
+  String get profileClickToChangeAvatar => 'タップしてアバターを変更';
 
   @override
-  String get profileChangePasswordTitle => 'Change Password';
+  String get profileChangePasswordTitle => 'パスワード変更';
 
   @override
-  String get profileChangePasswordDesc => 'Update account password';
+  String get profileChangePasswordDesc => 'アカウントパスワードを更新';
 
   @override
-  String get profileFollowBlock => 'Follow & Block';
+  String get profileFollowBlock => 'フォロー・ブロック';
 
   @override
-  String get profileFollowBlockDesc => 'Manage followed users and block list';
+  String get profileFollowBlockDesc => 'フォロー中とブロック中のユーザーを管理';
 
   @override
-  String get profileAbout => 'About';
+  String get profileAbout => 'について';
 
   @override
-  String get profileTerms => 'Terms of Service';
+  String get profileTerms => '利用規約';
 
   @override
-  String get profileTermsDesc => 'View platform usage terms';
+  String get profileTermsDesc => 'プラットフォームの利用規約を確認';
 
   @override
-  String get profilePrivacy => 'Privacy Policy';
+  String get profilePrivacy => 'プライバシーポリシー';
 
   @override
-  String get profilePrivacyDesc => 'Learn how we protect your information';
+  String get profilePrivacyDesc => '情報の取り扱いについて';
 
   @override
-  String get profileDisplaySettings => 'Display Settings';
+  String get profileDisplaySettings => '表示設定';
 
   @override
-  String get profileManageSocialDesc =>
-      'Manage Github, Google and other platform connections';
+  String get profileManageSocialDesc => 'Github、Google 等のプラットフォーム連携を管理';
 
   @override
-  String get profileNavTitle => 'Me';
+  String get profileNavTitle => 'マイページ';
 
   @override
-  String get profilePublicProfile => 'User Profile';
+  String get profilePublicProfile => 'ユーザーページ';
 
   @override
-  String get profileUnknownDate => 'Unknown';
+  String get profileUnknownDate => '不明';
 
   @override
-  String get profileEmailVerifySuccess => 'Email verified';
+  String get profileEmailVerifySuccess => 'メール確認完了';
 
   @override
-  String get profileSubmitting => 'Submitting...';
+  String get profileSubmitting => '送信中...';
 
   @override
-  String get profileLogoutDesc => 'Clear current session';
+  String get profileLogoutDesc => '現在のセッションをクリア';
 
   @override
   String get profileFollowers => 'フォロワー';
 
   @override
-  String get profileFollowing => 'フォロー';
+  String get profileFollowing => 'フォロー中';
 
   @override
   String get profileFollow => 'フォロー';
@@ -370,54 +366,52 @@ class AppLocalizationsJa extends AppLocalizations {
   String get profileUnfollow => 'フォロー中';
 
   @override
-  String get profileBlock => 'Block';
+  String get profileBlock => 'ブロック';
 
   @override
-  String get profileUnblock => 'Blocked';
+  String get profileUnblock => 'ブロック中';
 
   @override
-  String get profileThisIsYou => 'This is you';
+  String get profileThisIsYou => 'これはあなたです';
 
   @override
-  String get profileManageMyProfile => 'Manage My Profile';
+  String get profileManageMyProfile => 'プロフィール管理';
 
   @override
-  String get profileJoinDate => 'Joined';
+  String get profileJoinDate => '参加日';
 
   @override
-  String get profileOwnerLowkey =>
-      'This person is low-key and hasn\'t written a bio yet.';
+  String get profileOwnerLowkey => 'このユーザーはまだ自己紹介を書いていません。';
 
   @override
-  String get profileRecentPosts => 'Recent Posts';
+  String get profileRecentPosts => '最近の投稿';
 
   @override
-  String get profileRecentPostsSubtitle =>
-      'See what this student has shared on LightHub.';
+  String get profileRecentPostsSubtitle => 'このユーザーの最近の投稿を見る';
 
   @override
-  String get profileNoPublicPosts => 'No public posts yet';
+  String get profileNoPublicPosts => '公開投稿はまだありません';
 
   @override
-  String get profileNoFollows => 'Not following anyone';
+  String get profileNoFollows => 'フォローしていません';
 
   @override
-  String get profileReachedEnd => 'You\'ve reached the end';
+  String get profileReachedEnd => '最後まで表示しました';
 
   @override
   String get postCreate => '投稿';
 
   @override
-  String get postCreatePublishing => 'Publishing...';
+  String get postCreatePublishing => '公開中...';
 
   @override
   String get postCreatePublish => '投稿する';
 
   @override
-  String get postCreateTitle => 'Post title';
+  String get postCreateTitle => '投稿タイトル';
 
   @override
-  String get postCreateTitleEmpty => 'Please enter a title';
+  String get postCreateTitleEmpty => 'タイトルを入力してください';
 
   @override
   String postCreateTitleTooLong(int max) {
@@ -428,7 +422,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get postCreateContent => 'いま何が起きている？';
 
   @override
-  String get postCreateContentEmpty => 'Please enter some content';
+  String get postCreateContentEmpty => '内容を入力してください';
 
   @override
   String postCreateContentTooLong(int max) {
@@ -436,64 +430,64 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get postCreateImages => 'Images';
+  String get postCreateImages => '画像';
 
   @override
-  String get postCreateAddImages => 'Add Images';
+  String get postCreateAddImages => '画像を追加';
 
   @override
-  String get postCreateNoImages => 'No images selected';
+  String get postCreateNoImages => '画像が選択されていません';
 
   @override
-  String get postCreateTag => 'Tag';
+  String get postCreateTag => 'タグ';
 
   @override
-  String get postCreateNoTag => 'No tag';
+  String get postCreateNoTag => 'タグなし';
 
   @override
-  String get postCreated => 'Post published';
+  String get postCreated => '投稿しました';
 
   @override
-  String get postCreateFailed => 'Failed to create post';
+  String get postCreateFailed => '投稿に失敗しました';
 
   @override
-  String get postUploading => 'Uploading...';
+  String get postUploading => 'アップロード中...';
 
   @override
-  String get postImagesUploadFailed => 'Image upload failed';
+  String get postImagesUploadFailed => '画像アップロード失敗';
 
   @override
-  String get postDetail => 'Details';
+  String get postDetail => '詳細';
 
   @override
-  String get postDetailTitle => 'Post Details';
+  String get postDetailTitle => '投稿詳細';
 
   @override
-  String get postNotFound => 'Post not found';
+  String get postNotFound => '投稿が見つかりません';
 
   @override
-  String get postDeleted => 'Post deleted';
+  String get postDeleted => '投稿は削除されました';
 
   @override
-  String get postDeleteConfirm => 'Delete this post?';
+  String get postDeleteConfirm => 'この投稿を削除しますか？';
 
   @override
-  String get postEdit => 'Edit Post';
+  String get postEdit => '投稿を編集';
 
   @override
-  String get postNoComments => 'No comments yet';
+  String get postNoComments => 'まだコメントがありません';
 
   @override
   String get postWriteComment => 'コメントを書く...';
 
   @override
-  String get postCommentSent => 'Comment posted';
+  String get postCommentSent => 'コメントを投稿しました';
 
   @override
-  String get postCommentFailed => 'Failed to send comment';
+  String get postCommentFailed => 'コメント送信失敗';
 
   @override
-  String get postShareTitle => 'Post from LightHub';
+  String get postShareTitle => 'LightHubからの投稿';
 
   @override
   String postShareText(String name, String title) {
@@ -501,52 +495,52 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get postCommentSortNewest => 'Newest';
+  String get postCommentSortNewest => '最新';
 
   @override
-  String get postCommentSortOldest => 'Oldest';
+  String get postCommentSortOldest => '古い順';
 
   @override
-  String get postCommentSortHot => 'Hottest';
+  String get postCommentSortHot => '人気順';
 
   @override
-  String get postLoadMore => 'Load more';
+  String get postLoadMore => 'もっと読み込む';
 
   @override
-  String get postLoading => 'Loading...';
+  String get postLoading => '読み込み中...';
 
   @override
-  String get postUserNotFound => 'User not found';
+  String get postUserNotFound => 'ユーザーが見つかりません';
 
   @override
-  String get postPleaseLogin => 'Please log in first';
+  String get postPleaseLogin => 'ログインしてください';
 
   @override
-  String get postImageSaveSuccess => 'Image saved to gallery';
+  String get postImageSaveSuccess => '画像をギャラリーに保存しました';
 
   @override
-  String get postImageSaveFailed => 'Image save failed';
+  String get postImageSaveFailed => '画像の保存に失敗しました';
 
   @override
-  String get postTagTitle => 'Tags';
+  String get postTagTitle => 'タグ';
 
   @override
-  String get postTagEmpty => 'No posts under this tag yet';
+  String get postTagEmpty => 'このタグの投稿はまだありません';
 
   @override
-  String get homeSearchPlaceholder => 'Search posts, topics or users';
+  String get homeSearchPlaceholder => '投稿、トピック、ユーザーを検索';
 
   @override
-  String get homeEmpty => 'No posts yet';
+  String get homeEmpty => 'まだ投稿がありません';
 
   @override
-  String get homeHotEmpty => 'No trending posts';
+  String get homeHotEmpty => '人気の投稿はまだありません';
 
   @override
   String get notificationTitle => '通知';
 
   @override
-  String get notificationEmpty => 'No notifications yet';
+  String get notificationEmpty => '通知はまだありません';
 
   @override
   String get notificationPushSettings => 'プッシュ設定';
@@ -555,37 +549,34 @@ class AppLocalizationsJa extends AppLocalizations {
   String get notificationEmail => 'メール通知';
 
   @override
-  String get notificationEmailDesc =>
-      'Receive email for replies and system notices';
+  String get notificationEmailDesc => '返信やシステム通知をメールで受信';
 
   @override
-  String get notificationCommentPush => 'Comment Replies';
+  String get notificationCommentPush => 'コメント返信';
 
   @override
-  String get notificationCommentPushDesc =>
-      'Push when someone replies to your post or comment';
+  String get notificationCommentPushDesc => '投稿やコメントへの返信時にプッシュ通知';
 
   @override
-  String get notificationHotListPush => 'Daily Hot List';
+  String get notificationHotListPush => 'デイリーランキング';
 
   @override
-  String get notificationHotListPushDesc =>
-      'Receive the hottest posts every morning';
+  String get notificationHotListPushDesc => '毎朝キャンパスの人気投稿を受信';
 
   @override
-  String get notificationSaving => 'Saving...';
+  String get notificationSaving => '保存中...';
 
   @override
-  String get notificationSaveSettings => 'Save Settings';
+  String get notificationSaveSettings => '設定を保存';
 
   @override
   String get notificationSaved => '保存しました';
 
   @override
-  String get notificationSaveFailed => 'Save failed';
+  String get notificationSaveFailed => '保存に失敗しました';
 
   @override
-  String get hotRank => 'Trending';
+  String get hotRank => 'トレンド';
 
   @override
   String hotWatch(int count) {
@@ -599,13 +590,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get dislikePost => '低評価';
 
   @override
-  String get verified => 'Verified';
+  String get verified => '確認済み';
 
   @override
-  String get unverified => 'Unverified';
+  String get unverified => '未確認';
 
   @override
-  String get dateJustNow => 'just now';
+  String get dateJustNow => 'たった今';
 
   @override
   String dateMinutesAgo(int minutes) {
@@ -623,7 +614,7 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get dateYesterday => 'yesterday';
+  String get dateYesterday => '昨日';
 
   @override
   String get privacyPolicy => 'Privacy Policy';
@@ -638,7 +629,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsLanguage => '言語';
 
   @override
-  String get settingsLanguageTitle => 'Language Settings';
+  String get settingsLanguageTitle => '言語設定';
 
   @override
   String successUploadImages(int count) {
@@ -900,16 +891,16 @@ class AppLocalizationsJa extends AppLocalizations {
       'Linked, but profile refresh failed';
 
   @override
-  String get postEditTitle => '编辑帖子';
+  String get postEditTitle => '投稿を編集';
 
   @override
-  String get postDeleteTitle => '删除帖子';
+  String get postDeleteTitle => '投稿を削除';
 
   @override
-  String get postSelectTag => '选择标签';
+  String get postSelectTag => 'タグを選択';
 
   @override
-  String get postTagAdminPreset => '标签由管理员预设，可不选择。';
+  String get postTagAdminPreset => 'タグは管理者が設定します';
 
   @override
   String get passwordResetSuccess => 'Password reset, please log in again';

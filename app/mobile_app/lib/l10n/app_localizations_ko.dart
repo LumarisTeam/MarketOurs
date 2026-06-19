@@ -12,7 +12,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get appTitle => '라이트허브';
 
   @override
-  String get appSlogan => 'Campus Market';
+  String get appSlogan => '캠퍼스 마켓';
 
   @override
   String get followSystem => '시스템 따르기';
@@ -27,10 +27,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get confirm => '확인';
 
   @override
-  String get retry => 'Retry';
+  String get retry => '재시도';
 
   @override
-  String get reload => 'Reload';
+  String get reload => '새로고침';
 
   @override
   String get save => '저장';
@@ -45,25 +45,25 @@ class AppLocalizationsKo extends AppLocalizations {
   String get search => '검색';
 
   @override
-  String get submit => 'Submit';
+  String get submit => '제출';
 
   @override
-  String get back => 'Back';
+  String get back => '뒤로';
 
   @override
-  String get close => 'Close';
+  String get close => '닫기';
 
   @override
-  String get done => 'Done';
+  String get done => '완료';
 
   @override
-  String get next => 'Next';
+  String get next => '다음';
 
   @override
-  String get yes => 'Yes';
+  String get yes => '예';
 
   @override
-  String get no => 'No';
+  String get no => '아니오';
 
   @override
   String get themeLight => '라이트';
@@ -78,10 +78,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get themeMode => '테마';
 
   @override
-  String get themeHint => 'Tap to change display mode';
+  String get themeHint => '탭하여 모드 변경';
 
   @override
-  String get appearanceModeTitle => 'Choose Appearance';
+  String get appearanceModeTitle => '테마 선택';
 
   @override
   String get tabHome => '홈';
@@ -108,13 +108,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get authResetPassword => '비밀번호 재설정';
 
   @override
-  String get authChangePassword => 'Change Password';
+  String get authChangePassword => '비밀번호 변경';
 
   @override
   String get authLogout => '로그아웃';
 
   @override
-  String get authLogoutDesc => 'Clear current session';
+  String get authLogoutDesc => '세션 지우기';
 
   @override
   String get authAccount => '계정';
@@ -129,32 +129,31 @@ class AppLocalizationsKo extends AppLocalizations {
   String get authSendCode => '코드 전송';
 
   @override
-  String get authAccountPlaceholder => 'Email or phone number';
+  String get authAccountPlaceholder => '이메일 또는 전화번호';
 
   @override
-  String get authPasswordPlaceholder => 'Enter password';
+  String get authPasswordPlaceholder => '비밀번호 입력';
 
   @override
-  String get authCodePlaceholder => '6-digit code';
+  String get authCodePlaceholder => '6자리 코드';
 
   @override
-  String get authNamePlaceholder => 'Choose a display name';
+  String get authNamePlaceholder => '이름 입력';
 
   @override
-  String get authAccountHint => 'Email or phone number';
+  String get authAccountHint => '이메일 또는 전화번호';
 
   @override
-  String get authNewPassword => 'New Password';
+  String get authNewPassword => '새 비밀번호';
 
   @override
-  String get authOldPassword => 'Current Password';
+  String get authOldPassword => '현재 비밀번호';
 
   @override
-  String get authConfirmPassword => 'Confirm Password';
+  String get authConfirmPassword => '비밀번호 확인';
 
   @override
-  String get authPasswordRequirement =>
-      'At least 6 chars with uppercase, lowercase & digit';
+  String get authPasswordRequirement => '6자 이상, 대소문자 및 숫자 포함';
 
   @override
   String get authCodeLogin => '코드 로그인';
@@ -163,65 +162,64 @@ class AppLocalizationsKo extends AppLocalizations {
   String get authPasswordLogin => '비밀번호 로그인';
 
   @override
-  String get authAlreadyHaveAccount => 'Already have an account? Log in';
+  String get authAlreadyHaveAccount => '계정이 있으신가요?';
 
   @override
-  String get authNoAccount => 'Don\'t have an account? Sign up';
+  String get authNoAccount => '계정이 없으신가요?';
 
   @override
-  String get authForgotPasswordPrompt => 'Forgot password?';
+  String get authForgotPasswordPrompt => '비밀번호를 잊으셨나요?';
 
   @override
-  String get authSendCodeSuccess => 'Verification code sent';
+  String get authSendCodeSuccess => '인증 코드 전송됨';
 
   @override
-  String get authSendCodeFailed => 'Failed to send code, try again later';
+  String get authSendCodeFailed => '코드 전송 실패';
 
   @override
-  String get authLoginSuccess => 'Login successful';
+  String get authLoginSuccess => '로그인 성공';
 
   @override
-  String get authLoginFailed => 'Login failed, try again later';
+  String get authLoginFailed => '로그인 실패';
 
   @override
-  String get authRegisterSuccess => 'Registration successful';
+  String get authRegisterSuccess => '회원가입 완료';
 
   @override
-  String get authRegisterFailed => 'Registration failed, try again later';
+  String get authRegisterFailed => '회원가입 실패';
 
   @override
-  String get authResetFailed => 'Password reset failed, try again later';
+  String get authResetFailed => '비밀번호 재설정 실패';
 
   @override
-  String get authChangePasswordFailed =>
-      'Password change failed, try again later';
+  String get authChangePasswordFailed => '비밀번호 변경 실패';
 
   @override
-  String get authVerifyFailed => 'Verification failed, try again later';
+  String get authVerifyFailed => '인증 실패';
 
   @override
-  String get authUsernameOrPasswordWrong => 'Incorrect username or password';
+  String get authUsernameOrPasswordWrong => '아이디 또는 비밀번호 오류';
 
   @override
-  String get authRegisterVerifyTitle => 'Verify Registration';
+  String get authRegisterVerifyTitle => '회원가입 인증';
 
   @override
-  String get authRegisterVerifyHint => 'Enter the code sent to your account';
+  String get authRegisterVerifyHint => '계정으로 전송된 코드를 입력하세요';
 
   @override
-  String get authSelectAvatar => 'Select Avatar';
+  String get authSelectAvatar => '아바타 선택';
 
   @override
-  String get authRandomAvatar => 'Random Generate';
+  String get authRandomAvatar => '랜덤 생성';
 
   @override
-  String get authPickFromGallery => 'From Gallery';
+  String get authPickFromGallery => '갤러리에서 선택';
 
   @override
-  String get authTakePhoto => 'Take Photo';
+  String get authTakePhoto => '사진 촬영';
 
   @override
-  String get authResendCode => 'Resend Code';
+  String get authResendCode => '코드 재전송';
 
   @override
   String get profileInfo => '프로필 정보';
@@ -230,132 +228,130 @@ class AppLocalizationsKo extends AppLocalizations {
   String get profileSecurity => '계정 보안';
 
   @override
-  String get profileSocial => 'Social';
+  String get profileSocial => '소셜';
 
   @override
-  String get profileBindings => 'Third-party Bindings';
+  String get profileBindings => '외부 연동';
 
   @override
-  String get profileNickname => 'Nickname';
+  String get profileNickname => '닉네임';
 
   @override
-  String get profileBio => 'Bio';
+  String get profileBio => '소개';
 
   @override
-  String get profileEmail => 'Email';
+  String get profileEmail => '이메일';
 
   @override
-  String get profilePhone => 'Phone';
+  String get profilePhone => '전화번호';
 
   @override
-  String get profileEmailVerified => 'Verified';
+  String get profileEmailVerified => '인증됨';
 
   @override
-  String get profileEmailNotVerified => 'Not verified';
+  String get profileEmailNotVerified => '미인증';
 
   @override
-  String get profileVerifyEmail => 'Verify';
+  String get profileVerifyEmail => '인증하기';
 
   @override
-  String get profileVerifyEmailTitle => 'Email Verification';
+  String get profileVerifyEmailTitle => '이메일 인증';
 
   @override
-  String get profileEnterCode => 'Enter verification code';
+  String get profileEnterCode => '인증 코드 입력';
 
   @override
-  String get profileEnterCodeHint => 'Enter the code you received';
+  String get profileEnterCodeHint => '받은 코드를 입력하세요';
 
   @override
-  String get profileConfirmVerify => 'Confirm';
+  String get profileConfirmVerify => '확인';
 
   @override
-  String get profileNotLoggedIn => 'Not logged in';
+  String get profileNotLoggedIn => '로그인하지 않음';
 
   @override
-  String get profileNotLoggedInDesc =>
-      'Log in to view your profile and manage settings.';
+  String get profileNotLoggedInDesc => '로그인하여 프로필을 확인하세요.';
 
   @override
-  String get profileGoLogin => 'Log in';
+  String get profileGoLogin => '로그인';
 
   @override
   String get profileEditProfile => '프로필 편집';
 
   @override
-  String get profileSaveChanges => 'Save Changes';
+  String get profileSaveChanges => '변경사항 저장';
 
   @override
-  String get profileSaving => 'Saving...';
+  String get profileSaving => '저장 중...';
 
   @override
-  String get profileUpdated => 'Profile updated';
+  String get profileUpdated => '프로필 업데이트됨';
 
   @override
-  String get profileUpdateFailed => 'Save failed, try again later';
+  String get profileUpdateFailed => '저장 실패';
 
   @override
-  String get profileNoNickname => 'No nickname set';
+  String get profileNoNickname => '닉네임 없음';
 
   @override
-  String get profileNoBio => 'No bio yet';
+  String get profileNoBio => '소개 없음';
 
   @override
-  String get profileNoEmail => 'Not bound';
+  String get profileNoEmail => '등록 안됨';
 
   @override
-  String get profileClickToChangeAvatar => 'Tap to change avatar';
+  String get profileClickToChangeAvatar => '탭하여 아바타 변경';
 
   @override
-  String get profileChangePasswordTitle => 'Change Password';
+  String get profileChangePasswordTitle => '비밀번호 변경';
 
   @override
-  String get profileChangePasswordDesc => 'Update account password';
+  String get profileChangePasswordDesc => '계정 비밀번호 업데이트';
 
   @override
-  String get profileFollowBlock => 'Follow & Block';
+  String get profileFollowBlock => '팔로우 및 차단';
 
   @override
-  String get profileFollowBlockDesc => 'Manage followed users and block list';
+  String get profileFollowBlockDesc => '팔로우 및 차단 관리';
 
   @override
-  String get profileAbout => 'About';
+  String get profileAbout => '정보';
 
   @override
-  String get profileTerms => 'Terms of Service';
+  String get profileTerms => '이용약관';
 
   @override
-  String get profileTermsDesc => 'View platform usage terms';
+  String get profileTermsDesc => '플랫폼 이용약관 보기';
 
   @override
-  String get profilePrivacy => 'Privacy Policy';
+  String get profilePrivacy => '개인정보처리방침';
 
   @override
-  String get profilePrivacyDesc => 'Learn how we protect your information';
+  String get profilePrivacyDesc => '정보 보호 방법 알아보기';
 
   @override
-  String get profileDisplaySettings => 'Display Settings';
+  String get profileDisplaySettings => '디스플레이 설정';
 
   @override
-  String get profileManageSocialDesc =>
-      'Manage Github, Google and other platform connections';
+  String get profileManageSocialDesc => '외부 플랫폼 연동 관리';
 
   @override
-  String get profileNavTitle => 'Me';
+  String get profileNavTitle => '마이페이지';
 
   @override
-  String get profilePublicProfile => 'User Profile';
+  String get profilePublicProfile => '사용자 프로필';
 
   @override
-  String get profileUnknownDate => 'Unknown';
+  String get profileUnknownDate => '알 수 없음';
 
   @override
-  String get profileEmailVerifySuccess => 'Email verified';
+  String get profileEmailVerifySuccess => '이메일 인증 완료';
 
   @override
-  String get profileSubmitting => 'Submitting...';
+  String get profileSubmitting => '제출 중...';
 
   @override
-  String get profileLogoutDesc => 'Clear current session';
+  String get profileLogoutDesc => '세션 지우기';
 
   @override
   String get profileFollowers => '팔로워';
@@ -370,54 +366,52 @@ class AppLocalizationsKo extends AppLocalizations {
   String get profileUnfollow => '팔로우 중';
 
   @override
-  String get profileBlock => 'Block';
+  String get profileBlock => '차단';
 
   @override
-  String get profileUnblock => 'Blocked';
+  String get profileUnblock => '차단됨';
 
   @override
-  String get profileThisIsYou => 'This is you';
+  String get profileThisIsYou => '본인입니다';
 
   @override
-  String get profileManageMyProfile => 'Manage My Profile';
+  String get profileManageMyProfile => '프로필 관리';
 
   @override
-  String get profileJoinDate => 'Joined';
+  String get profileJoinDate => '가입일';
 
   @override
-  String get profileOwnerLowkey =>
-      'This person is low-key and hasn\'t written a bio yet.';
+  String get profileOwnerLowkey => '아직 소개를 작성하지 않았습니다.';
 
   @override
-  String get profileRecentPosts => 'Recent Posts';
+  String get profileRecentPosts => '최근 게시물';
 
   @override
-  String get profileRecentPostsSubtitle =>
-      'See what this student has shared on LightHub.';
+  String get profileRecentPostsSubtitle => '이 사용자의 최근 게시물';
 
   @override
-  String get profileNoPublicPosts => 'No public posts yet';
+  String get profileNoPublicPosts => '공개 게시물 없음';
 
   @override
-  String get profileNoFollows => 'Not following anyone';
+  String get profileNoFollows => '팔로우 없음';
 
   @override
-  String get profileReachedEnd => 'You\'ve reached the end';
+  String get profileReachedEnd => '더 이상 없습니다';
 
   @override
   String get postCreate => '글쓰기';
 
   @override
-  String get postCreatePublishing => 'Publishing...';
+  String get postCreatePublishing => '게시 중...';
 
   @override
   String get postCreatePublish => '게시';
 
   @override
-  String get postCreateTitle => 'Post title';
+  String get postCreateTitle => '게시물 제목';
 
   @override
-  String get postCreateTitleEmpty => 'Please enter a title';
+  String get postCreateTitleEmpty => '제목을 입력하세요';
 
   @override
   String postCreateTitleTooLong(int max) {
@@ -428,7 +422,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get postCreateContent => '무슨 일이 있나요?';
 
   @override
-  String get postCreateContentEmpty => 'Please enter some content';
+  String get postCreateContentEmpty => '내용을 입력하세요';
 
   @override
   String postCreateContentTooLong(int max) {
@@ -436,64 +430,64 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get postCreateImages => 'Images';
+  String get postCreateImages => '이미지';
 
   @override
-  String get postCreateAddImages => 'Add Images';
+  String get postCreateAddImages => '이미지 추가';
 
   @override
-  String get postCreateNoImages => 'No images selected';
+  String get postCreateNoImages => '선택된 이미지 없음';
 
   @override
-  String get postCreateTag => 'Tag';
+  String get postCreateTag => '태그';
 
   @override
-  String get postCreateNoTag => 'No tag';
+  String get postCreateNoTag => '태그 없음';
 
   @override
-  String get postCreated => 'Post published';
+  String get postCreated => '게시 완료';
 
   @override
-  String get postCreateFailed => 'Failed to create post';
+  String get postCreateFailed => '게시 실패';
 
   @override
-  String get postUploading => 'Uploading...';
+  String get postUploading => '업로드 중...';
 
   @override
-  String get postImagesUploadFailed => 'Image upload failed';
+  String get postImagesUploadFailed => '이미지 업로드 실패';
 
   @override
-  String get postDetail => 'Details';
+  String get postDetail => '상세';
 
   @override
-  String get postDetailTitle => 'Post Details';
+  String get postDetailTitle => '게시물 상세';
 
   @override
-  String get postNotFound => 'Post not found';
+  String get postNotFound => '게시물 없음';
 
   @override
-  String get postDeleted => 'Post deleted';
+  String get postDeleted => '삭제된 게시물';
 
   @override
-  String get postDeleteConfirm => 'Delete this post?';
+  String get postDeleteConfirm => '이 게시물을 삭제할까요?';
 
   @override
-  String get postEdit => 'Edit Post';
+  String get postEdit => '게시물 편집';
 
   @override
-  String get postNoComments => 'No comments yet';
+  String get postNoComments => '댓글 없음';
 
   @override
   String get postWriteComment => '댓글 작성...';
 
   @override
-  String get postCommentSent => 'Comment posted';
+  String get postCommentSent => '댓글 게시됨';
 
   @override
-  String get postCommentFailed => 'Failed to send comment';
+  String get postCommentFailed => '댓글 전송 실패';
 
   @override
-  String get postShareTitle => 'Post from LightHub';
+  String get postShareTitle => 'LightHub 게시물';
 
   @override
   String postShareText(String name, String title) {
@@ -501,52 +495,52 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get postCommentSortNewest => 'Newest';
+  String get postCommentSortNewest => '최신순';
 
   @override
-  String get postCommentSortOldest => 'Oldest';
+  String get postCommentSortOldest => '오래된순';
 
   @override
-  String get postCommentSortHot => 'Hottest';
+  String get postCommentSortHot => '인기순';
 
   @override
-  String get postLoadMore => 'Load more';
+  String get postLoadMore => '더 보기';
 
   @override
-  String get postLoading => 'Loading...';
+  String get postLoading => '로딩 중...';
 
   @override
-  String get postUserNotFound => 'User not found';
+  String get postUserNotFound => '사용자 없음';
 
   @override
-  String get postPleaseLogin => 'Please log in first';
+  String get postPleaseLogin => '로그인이 필요합니다';
 
   @override
-  String get postImageSaveSuccess => 'Image saved to gallery';
+  String get postImageSaveSuccess => '이미지 저장됨';
 
   @override
-  String get postImageSaveFailed => 'Image save failed';
+  String get postImageSaveFailed => '이미지 저장 실패';
 
   @override
-  String get postTagTitle => 'Tags';
+  String get postTagTitle => '태그';
 
   @override
-  String get postTagEmpty => 'No posts under this tag yet';
+  String get postTagEmpty => '태그 게시물 없음';
 
   @override
-  String get homeSearchPlaceholder => 'Search posts, topics or users';
+  String get homeSearchPlaceholder => '게시물, 주제, 사용자 검색';
 
   @override
-  String get homeEmpty => 'No posts yet';
+  String get homeEmpty => '게시물 없음';
 
   @override
-  String get homeHotEmpty => 'No trending posts';
+  String get homeHotEmpty => '인기 게시물 없음';
 
   @override
   String get notificationTitle => '알림';
 
   @override
-  String get notificationEmpty => 'No notifications yet';
+  String get notificationEmpty => '알림 없음';
 
   @override
   String get notificationPushSettings => '푸시 설정';
@@ -555,37 +549,34 @@ class AppLocalizationsKo extends AppLocalizations {
   String get notificationEmail => '이메일 알림';
 
   @override
-  String get notificationEmailDesc =>
-      'Receive email for replies and system notices';
+  String get notificationEmailDesc => '답글 및 시스템 알림 수신';
 
   @override
-  String get notificationCommentPush => 'Comment Replies';
+  String get notificationCommentPush => '댓글 답글';
 
   @override
-  String get notificationCommentPushDesc =>
-      'Push when someone replies to your post or comment';
+  String get notificationCommentPushDesc => '게시물이나 댓글에 답글 시 푸시';
 
   @override
-  String get notificationHotListPush => 'Daily Hot List';
+  String get notificationHotListPush => '일간 인기';
 
   @override
-  String get notificationHotListPushDesc =>
-      'Receive the hottest posts every morning';
+  String get notificationHotListPushDesc => '매일 아침 인기 게시물 수신';
 
   @override
-  String get notificationSaving => 'Saving...';
+  String get notificationSaving => '저장 중...';
 
   @override
-  String get notificationSaveSettings => 'Save Settings';
+  String get notificationSaveSettings => '설정 저장';
 
   @override
   String get notificationSaved => '저장됨';
 
   @override
-  String get notificationSaveFailed => 'Save failed';
+  String get notificationSaveFailed => '저장 실패';
 
   @override
-  String get hotRank => 'Trending';
+  String get hotRank => '트렌드';
 
   @override
   String hotWatch(int count) {
@@ -599,13 +590,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get dislikePost => '싫어요';
 
   @override
-  String get verified => 'Verified';
+  String get verified => '인증됨';
 
   @override
-  String get unverified => 'Unverified';
+  String get unverified => '미인증';
 
   @override
-  String get dateJustNow => 'just now';
+  String get dateJustNow => '방금';
 
   @override
   String dateMinutesAgo(int minutes) {
@@ -623,7 +614,7 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get dateYesterday => 'yesterday';
+  String get dateYesterday => '어제';
 
   @override
   String get privacyPolicy => 'Privacy Policy';
@@ -638,7 +629,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get settingsLanguage => '언어';
 
   @override
-  String get settingsLanguageTitle => 'Language Settings';
+  String get settingsLanguageTitle => '언어 설정';
 
   @override
   String successUploadImages(int count) {
@@ -900,16 +891,16 @@ class AppLocalizationsKo extends AppLocalizations {
       'Linked, but profile refresh failed';
 
   @override
-  String get postEditTitle => '编辑帖子';
+  String get postEditTitle => '게시물 편집';
 
   @override
-  String get postDeleteTitle => '删除帖子';
+  String get postDeleteTitle => '게시물 삭제';
 
   @override
-  String get postSelectTag => '选择标签';
+  String get postSelectTag => '태그 선택';
 
   @override
-  String get postTagAdminPreset => '标签由管理员预设，可不选择。';
+  String get postTagAdminPreset => '관리자가 설정한 태그';
 
   @override
   String get passwordResetSuccess => 'Password reset, please log in again';

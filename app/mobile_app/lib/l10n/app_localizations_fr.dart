@@ -12,7 +12,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get appTitle => 'LightHub';
 
   @override
-  String get appSlogan => 'Campus Market';
+  String get appSlogan => 'Marché du campus';
 
   @override
   String get followSystem => 'Suivre le système';
@@ -27,10 +27,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get confirm => 'Confirmer';
 
   @override
-  String get retry => 'Retry';
+  String get retry => 'Réessayer';
 
   @override
-  String get reload => 'Reload';
+  String get reload => 'Recharger';
 
   @override
   String get save => 'Enregistrer';
@@ -45,25 +45,25 @@ class AppLocalizationsFr extends AppLocalizations {
   String get search => 'Rechercher';
 
   @override
-  String get submit => 'Submit';
+  String get submit => 'Soumettre';
 
   @override
-  String get back => 'Back';
+  String get back => 'Retour';
 
   @override
-  String get close => 'Close';
+  String get close => 'Fermer';
 
   @override
-  String get done => 'Done';
+  String get done => 'Terminé';
 
   @override
-  String get next => 'Next';
+  String get next => 'Suivant';
 
   @override
-  String get yes => 'Yes';
+  String get yes => 'Oui';
 
   @override
-  String get no => 'No';
+  String get no => 'Non';
 
   @override
   String get themeLight => 'Clair';
@@ -78,10 +78,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get themeMode => 'Thème';
 
   @override
-  String get themeHint => 'Tap to change display mode';
+  String get themeHint => 'Appuyez pour changer';
 
   @override
-  String get appearanceModeTitle => 'Choose Appearance';
+  String get appearanceModeTitle => 'Choisir le thème';
 
   @override
   String get tabHome => 'Accueil';
@@ -108,13 +108,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get authResetPassword => 'Réinitialiser';
 
   @override
-  String get authChangePassword => 'Change Password';
+  String get authChangePassword => 'Changer le mot de passe';
 
   @override
   String get authLogout => 'Déconnexion';
 
   @override
-  String get authLogoutDesc => 'Clear current session';
+  String get authLogoutDesc => 'Effacer la session';
 
   @override
   String get authAccount => 'Compte';
@@ -129,32 +129,32 @@ class AppLocalizationsFr extends AppLocalizations {
   String get authSendCode => 'Envoyer le code';
 
   @override
-  String get authAccountPlaceholder => 'Email or phone number';
+  String get authAccountPlaceholder => 'Email ou téléphone';
 
   @override
-  String get authPasswordPlaceholder => 'Enter password';
+  String get authPasswordPlaceholder => 'Entrez le mot de passe';
 
   @override
-  String get authCodePlaceholder => '6-digit code';
+  String get authCodePlaceholder => 'Code à 6 chiffres';
 
   @override
-  String get authNamePlaceholder => 'Choose a display name';
+  String get authNamePlaceholder => 'Choisissez un nom';
 
   @override
-  String get authAccountHint => 'Email or phone number';
+  String get authAccountHint => 'Email ou téléphone';
 
   @override
-  String get authNewPassword => 'New Password';
+  String get authNewPassword => 'Nouveau mot de passe';
 
   @override
-  String get authOldPassword => 'Current Password';
+  String get authOldPassword => 'Mot de passe actuel';
 
   @override
-  String get authConfirmPassword => 'Confirm Password';
+  String get authConfirmPassword => 'Confirmer le mot de passe';
 
   @override
   String get authPasswordRequirement =>
-      'At least 6 chars with uppercase, lowercase & digit';
+      'Au moins 6 caractères avec majuscule, minuscule et chiffre';
 
   @override
   String get authCodeLogin => 'Connexion par code';
@@ -163,65 +163,65 @@ class AppLocalizationsFr extends AppLocalizations {
   String get authPasswordLogin => 'Connexion par mot de passe';
 
   @override
-  String get authAlreadyHaveAccount => 'Already have an account? Log in';
+  String get authAlreadyHaveAccount => 'Déjà un compte ?';
 
   @override
-  String get authNoAccount => 'Don\'t have an account? Sign up';
+  String get authNoAccount => 'Pas de compte ?';
 
   @override
-  String get authForgotPasswordPrompt => 'Forgot password?';
+  String get authForgotPasswordPrompt => 'Mot de passe oublié ?';
 
   @override
-  String get authSendCodeSuccess => 'Verification code sent';
+  String get authSendCodeSuccess => 'Code envoyé';
 
   @override
-  String get authSendCodeFailed => 'Failed to send code, try again later';
+  String get authSendCodeFailed => 'Échec de lenvoi du code';
 
   @override
-  String get authLoginSuccess => 'Login successful';
+  String get authLoginSuccess => 'Connexion réussie';
 
   @override
-  String get authLoginFailed => 'Login failed, try again later';
+  String get authLoginFailed => 'Échec de connexion';
 
   @override
-  String get authRegisterSuccess => 'Registration successful';
+  String get authRegisterSuccess => 'Inscription réussie';
 
   @override
-  String get authRegisterFailed => 'Registration failed, try again later';
+  String get authRegisterFailed => 'Échec dinscription';
 
   @override
-  String get authResetFailed => 'Password reset failed, try again later';
+  String get authResetFailed => 'Échec de réinitialisation';
 
   @override
-  String get authChangePasswordFailed =>
-      'Password change failed, try again later';
+  String get authChangePasswordFailed => 'Échec du changement';
 
   @override
-  String get authVerifyFailed => 'Verification failed, try again later';
+  String get authVerifyFailed => 'Échec de vérification';
 
   @override
-  String get authUsernameOrPasswordWrong => 'Incorrect username or password';
+  String get authUsernameOrPasswordWrong =>
+      'Identifiant ou mot de passe incorrect';
 
   @override
-  String get authRegisterVerifyTitle => 'Verify Registration';
+  String get authRegisterVerifyTitle => 'Vérifier linscription';
 
   @override
-  String get authRegisterVerifyHint => 'Enter the code sent to your account';
+  String get authRegisterVerifyHint => 'Entrez le code envoyé';
 
   @override
-  String get authSelectAvatar => 'Select Avatar';
+  String get authSelectAvatar => 'Choisir un avatar';
 
   @override
-  String get authRandomAvatar => 'Random Generate';
+  String get authRandomAvatar => 'Aléatoire';
 
   @override
-  String get authPickFromGallery => 'From Gallery';
+  String get authPickFromGallery => 'Depuis la galerie';
 
   @override
-  String get authTakePhoto => 'Take Photo';
+  String get authTakePhoto => 'Prendre une photo';
 
   @override
-  String get authResendCode => 'Resend Code';
+  String get authResendCode => 'Renvoyer le code';
 
   @override
   String get profileInfo => 'Informations';
@@ -233,10 +233,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get profileSocial => 'Social';
 
   @override
-  String get profileBindings => 'Third-party Bindings';
+  String get profileBindings => 'Liaisons';
 
   @override
-  String get profileNickname => 'Nickname';
+  String get profileNickname => 'Pseudo';
 
   @override
   String get profileBio => 'Bio';
@@ -245,117 +245,115 @@ class AppLocalizationsFr extends AppLocalizations {
   String get profileEmail => 'Email';
 
   @override
-  String get profilePhone => 'Phone';
+  String get profilePhone => 'Téléphone';
 
   @override
-  String get profileEmailVerified => 'Verified';
+  String get profileEmailVerified => 'Vérifié';
 
   @override
-  String get profileEmailNotVerified => 'Not verified';
+  String get profileEmailNotVerified => 'Non vérifié';
 
   @override
-  String get profileVerifyEmail => 'Verify';
+  String get profileVerifyEmail => 'Vérifier';
 
   @override
-  String get profileVerifyEmailTitle => 'Email Verification';
+  String get profileVerifyEmailTitle => 'Vérification email';
 
   @override
-  String get profileEnterCode => 'Enter verification code';
+  String get profileEnterCode => 'Entrez le code';
 
   @override
-  String get profileEnterCodeHint => 'Enter the code you received';
+  String get profileEnterCodeHint => 'Entrez le code reçu';
 
   @override
-  String get profileConfirmVerify => 'Confirm';
+  String get profileConfirmVerify => 'Confirmer';
 
   @override
-  String get profileNotLoggedIn => 'Not logged in';
+  String get profileNotLoggedIn => 'Non connecté';
 
   @override
-  String get profileNotLoggedInDesc =>
-      'Log in to view your profile and manage settings.';
+  String get profileNotLoggedInDesc => 'Connectez-vous pour voir votre profil.';
 
   @override
-  String get profileGoLogin => 'Log in';
+  String get profileGoLogin => 'Connexion';
 
   @override
   String get profileEditProfile => 'Modifier le profil';
 
   @override
-  String get profileSaveChanges => 'Save Changes';
+  String get profileSaveChanges => 'Enregistrer';
 
   @override
-  String get profileSaving => 'Saving...';
+  String get profileSaving => 'Enregistrement...';
 
   @override
-  String get profileUpdated => 'Profile updated';
+  String get profileUpdated => 'Profil mis à jour';
 
   @override
-  String get profileUpdateFailed => 'Save failed, try again later';
+  String get profileUpdateFailed => 'Échec de lenregistrement';
 
   @override
-  String get profileNoNickname => 'No nickname set';
+  String get profileNoNickname => 'Pas de pseudo';
 
   @override
-  String get profileNoBio => 'No bio yet';
+  String get profileNoBio => 'Pas de bio';
 
   @override
-  String get profileNoEmail => 'Not bound';
+  String get profileNoEmail => 'Non lié';
 
   @override
-  String get profileClickToChangeAvatar => 'Tap to change avatar';
+  String get profileClickToChangeAvatar => 'Appuyez pour changer';
 
   @override
-  String get profileChangePasswordTitle => 'Change Password';
+  String get profileChangePasswordTitle => 'Changer le mot de passe';
 
   @override
-  String get profileChangePasswordDesc => 'Update account password';
+  String get profileChangePasswordDesc => 'Mettre à jour le mot de passe';
 
   @override
-  String get profileFollowBlock => 'Follow & Block';
+  String get profileFollowBlock => 'Abonnements et blocages';
 
   @override
-  String get profileFollowBlockDesc => 'Manage followed users and block list';
+  String get profileFollowBlockDesc => 'Gérer les abonnements';
 
   @override
-  String get profileAbout => 'About';
+  String get profileAbout => 'À propos';
 
   @override
-  String get profileTerms => 'Terms of Service';
+  String get profileTerms => 'Conditions dutilisation';
 
   @override
-  String get profileTermsDesc => 'View platform usage terms';
+  String get profileTermsDesc => 'Voir les conditions';
 
   @override
-  String get profilePrivacy => 'Privacy Policy';
+  String get profilePrivacy => 'Confidentialité';
 
   @override
-  String get profilePrivacyDesc => 'Learn how we protect your information';
+  String get profilePrivacyDesc => 'Comment nous protégeons vos données';
 
   @override
-  String get profileDisplaySettings => 'Display Settings';
+  String get profileDisplaySettings => 'Affichage';
 
   @override
-  String get profileManageSocialDesc =>
-      'Manage Github, Google and other platform connections';
+  String get profileManageSocialDesc => 'Gérer les connexions externes';
 
   @override
-  String get profileNavTitle => 'Me';
+  String get profileNavTitle => 'Moi';
 
   @override
-  String get profilePublicProfile => 'User Profile';
+  String get profilePublicProfile => 'Profil';
 
   @override
-  String get profileUnknownDate => 'Unknown';
+  String get profileUnknownDate => 'Inconnu';
 
   @override
-  String get profileEmailVerifySuccess => 'Email verified';
+  String get profileEmailVerifySuccess => 'Email vérifié';
 
   @override
-  String get profileSubmitting => 'Submitting...';
+  String get profileSubmitting => 'Envoi...';
 
   @override
-  String get profileLogoutDesc => 'Clear current session';
+  String get profileLogoutDesc => 'Effacer la session';
 
   @override
   String get profileFollowers => 'Abonnés';
@@ -370,54 +368,52 @@ class AppLocalizationsFr extends AppLocalizations {
   String get profileUnfollow => 'Abonné';
 
   @override
-  String get profileBlock => 'Block';
+  String get profileBlock => 'Bloquer';
 
   @override
-  String get profileUnblock => 'Blocked';
+  String get profileUnblock => 'Bloqué';
 
   @override
-  String get profileThisIsYou => 'This is you';
+  String get profileThisIsYou => 'Cest vous';
 
   @override
-  String get profileManageMyProfile => 'Manage My Profile';
+  String get profileManageMyProfile => 'Gérer mon profil';
 
   @override
-  String get profileJoinDate => 'Joined';
+  String get profileJoinDate => 'Inscrit le';
 
   @override
-  String get profileOwnerLowkey =>
-      'This person is low-key and hasn\'t written a bio yet.';
+  String get profileOwnerLowkey => 'Cette personne na pas encore écrit de bio.';
 
   @override
-  String get profileRecentPosts => 'Recent Posts';
+  String get profileRecentPosts => 'Publications récentes';
 
   @override
-  String get profileRecentPostsSubtitle =>
-      'See what this student has shared on LightHub.';
+  String get profileRecentPostsSubtitle => 'Voir les publications récentes';
 
   @override
-  String get profileNoPublicPosts => 'No public posts yet';
+  String get profileNoPublicPosts => 'Pas de publications';
 
   @override
-  String get profileNoFollows => 'Not following anyone';
+  String get profileNoFollows => 'Aucun abonnement';
 
   @override
-  String get profileReachedEnd => 'You\'ve reached the end';
+  String get profileReachedEnd => 'Fin de la liste';
 
   @override
   String get postCreate => 'Publier';
 
   @override
-  String get postCreatePublishing => 'Publishing...';
+  String get postCreatePublishing => 'Publication...';
 
   @override
   String get postCreatePublish => 'Publier';
 
   @override
-  String get postCreateTitle => 'Post title';
+  String get postCreateTitle => 'Titre';
 
   @override
-  String get postCreateTitleEmpty => 'Please enter a title';
+  String get postCreateTitleEmpty => 'Entrez un titre';
 
   @override
   String postCreateTitleTooLong(int max) {
@@ -428,7 +424,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get postCreateContent => 'Quoi de neuf ?';
 
   @override
-  String get postCreateContentEmpty => 'Please enter some content';
+  String get postCreateContentEmpty => 'Entrez du contenu';
 
   @override
   String postCreateContentTooLong(int max) {
@@ -439,61 +435,61 @@ class AppLocalizationsFr extends AppLocalizations {
   String get postCreateImages => 'Images';
 
   @override
-  String get postCreateAddImages => 'Add Images';
+  String get postCreateAddImages => 'Ajouter des images';
 
   @override
-  String get postCreateNoImages => 'No images selected';
+  String get postCreateNoImages => 'Aucune image';
 
   @override
   String get postCreateTag => 'Tag';
 
   @override
-  String get postCreateNoTag => 'No tag';
+  String get postCreateNoTag => 'Pas de tag';
 
   @override
-  String get postCreated => 'Post published';
+  String get postCreated => 'Publié';
 
   @override
-  String get postCreateFailed => 'Failed to create post';
+  String get postCreateFailed => 'Échec de publication';
 
   @override
-  String get postUploading => 'Uploading...';
+  String get postUploading => 'Téléchargement...';
 
   @override
-  String get postImagesUploadFailed => 'Image upload failed';
+  String get postImagesUploadFailed => 'Échec du téléchargement';
 
   @override
-  String get postDetail => 'Details';
+  String get postDetail => 'Détails';
 
   @override
-  String get postDetailTitle => 'Post Details';
+  String get postDetailTitle => 'Détails';
 
   @override
-  String get postNotFound => 'Post not found';
+  String get postNotFound => 'Publication introuvable';
 
   @override
-  String get postDeleted => 'Post deleted';
+  String get postDeleted => 'Publication supprimée';
 
   @override
-  String get postDeleteConfirm => 'Delete this post?';
+  String get postDeleteConfirm => 'Supprimer cette publication ?';
 
   @override
-  String get postEdit => 'Edit Post';
+  String get postEdit => 'Modifier';
 
   @override
-  String get postNoComments => 'No comments yet';
+  String get postNoComments => 'Pas de commentaires';
 
   @override
   String get postWriteComment => 'Écrire un commentaire...';
 
   @override
-  String get postCommentSent => 'Comment posted';
+  String get postCommentSent => 'Commentaire publié';
 
   @override
-  String get postCommentFailed => 'Failed to send comment';
+  String get postCommentFailed => 'Échec denvoi';
 
   @override
-  String get postShareTitle => 'Post from LightHub';
+  String get postShareTitle => 'Publication LightHub';
 
   @override
   String postShareText(String name, String title) {
@@ -501,52 +497,52 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get postCommentSortNewest => 'Newest';
+  String get postCommentSortNewest => 'Récents';
 
   @override
-  String get postCommentSortOldest => 'Oldest';
+  String get postCommentSortOldest => 'Anciens';
 
   @override
-  String get postCommentSortHot => 'Hottest';
+  String get postCommentSortHot => 'Populaires';
 
   @override
-  String get postLoadMore => 'Load more';
+  String get postLoadMore => 'Charger plus';
 
   @override
-  String get postLoading => 'Loading...';
+  String get postLoading => 'Chargement...';
 
   @override
-  String get postUserNotFound => 'User not found';
+  String get postUserNotFound => 'Utilisateur introuvable';
 
   @override
-  String get postPleaseLogin => 'Please log in first';
+  String get postPleaseLogin => 'Veuillez vous connecter';
 
   @override
-  String get postImageSaveSuccess => 'Image saved to gallery';
+  String get postImageSaveSuccess => 'Image enregistrée';
 
   @override
-  String get postImageSaveFailed => 'Image save failed';
+  String get postImageSaveFailed => 'Échec de sauvegarde';
 
   @override
   String get postTagTitle => 'Tags';
 
   @override
-  String get postTagEmpty => 'No posts under this tag yet';
+  String get postTagEmpty => 'Pas de publications';
 
   @override
-  String get homeSearchPlaceholder => 'Search posts, topics or users';
+  String get homeSearchPlaceholder => 'Rechercher...';
 
   @override
-  String get homeEmpty => 'No posts yet';
+  String get homeEmpty => 'Pas de publications';
 
   @override
-  String get homeHotEmpty => 'No trending posts';
+  String get homeHotEmpty => 'Pas de tendances';
 
   @override
   String get notificationTitle => 'Notifications';
 
   @override
-  String get notificationEmpty => 'No notifications yet';
+  String get notificationEmpty => 'Pas de notifications';
 
   @override
   String get notificationPushSettings => 'Paramètres push';
@@ -555,37 +551,34 @@ class AppLocalizationsFr extends AppLocalizations {
   String get notificationEmail => 'Notifications email';
 
   @override
-  String get notificationEmailDesc =>
-      'Receive email for replies and system notices';
+  String get notificationEmailDesc => 'Recevoir les notifications par email';
 
   @override
-  String get notificationCommentPush => 'Comment Replies';
+  String get notificationCommentPush => 'Réponses aux commentaires';
 
   @override
-  String get notificationCommentPushDesc =>
-      'Push when someone replies to your post or comment';
+  String get notificationCommentPushDesc => 'Push pour les réponses';
 
   @override
-  String get notificationHotListPush => 'Daily Hot List';
+  String get notificationHotListPush => 'Top quotidien';
 
   @override
-  String get notificationHotListPushDesc =>
-      'Receive the hottest posts every morning';
+  String get notificationHotListPushDesc => 'Recevoir le top chaque matin';
 
   @override
-  String get notificationSaving => 'Saving...';
+  String get notificationSaving => 'Enregistrement...';
 
   @override
-  String get notificationSaveSettings => 'Save Settings';
+  String get notificationSaveSettings => 'Enregistrer';
 
   @override
   String get notificationSaved => 'Enregistré';
 
   @override
-  String get notificationSaveFailed => 'Save failed';
+  String get notificationSaveFailed => 'Échec';
 
   @override
-  String get hotRank => 'Trending';
+  String get hotRank => 'Tendances';
 
   @override
   String hotWatch(int count) {
@@ -593,19 +586,19 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get likePost => 'J\'aime';
+  String get likePost => 'Jaime';
 
   @override
-  String get dislikePost => 'Je n\'aime pas';
+  String get dislikePost => 'Je naime pas';
 
   @override
-  String get verified => 'Verified';
+  String get verified => 'Vérifié';
 
   @override
-  String get unverified => 'Unverified';
+  String get unverified => 'Non vérifié';
 
   @override
-  String get dateJustNow => 'just now';
+  String get dateJustNow => 'à linstant';
 
   @override
   String dateMinutesAgo(int minutes) {
@@ -623,7 +616,7 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get dateYesterday => 'yesterday';
+  String get dateYesterday => 'hier';
 
   @override
   String get privacyPolicy => 'Privacy Policy';
@@ -638,7 +631,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get settingsLanguage => 'Langue';
 
   @override
-  String get settingsLanguageTitle => 'Language Settings';
+  String get settingsLanguageTitle => 'Paramètres de langue';
 
   @override
   String successUploadImages(int count) {
@@ -900,16 +893,16 @@ class AppLocalizationsFr extends AppLocalizations {
       'Linked, but profile refresh failed';
 
   @override
-  String get postEditTitle => '编辑帖子';
+  String get postEditTitle => 'Modifier';
 
   @override
-  String get postDeleteTitle => '删除帖子';
+  String get postDeleteTitle => 'Supprimer';
 
   @override
-  String get postSelectTag => '选择标签';
+  String get postSelectTag => 'Choisir tag';
 
   @override
-  String get postTagAdminPreset => '标签由管理员预设，可不选择。';
+  String get postTagAdminPreset => 'Tags prédéfinis';
 
   @override
   String get passwordResetSuccess => 'Password reset, please log in again';
