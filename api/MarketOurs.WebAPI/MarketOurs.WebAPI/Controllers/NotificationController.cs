@@ -46,8 +46,10 @@ public class NotificationController(INotificationService notificationService) : 
         ["评论了你的贴子:"] = new() { ["en"] = "commented on your post:", ["ja"] = "があなたの投稿にコメントしました:", ["ko"] = "님이 게시물에 댓글:", ["ru"] = "прокомментировал(а) ваш пост:", ["fr"] = "a commenté votre publication:", ["de"] = "hat deinen Beitrag kommentiert:" },
         ["回复了你:"] = new() { ["en"] = "replied to you:", ["ja"] = "があなたに返信しました:", ["ko"] = "님이 답글:", ["ru"] = "ответил(а) вам:", ["fr"] = "vous a répondu:", ["de"] = "hat dir geantwortet:" },
         // Review format: "您的{a}: {name} 已通过"
+        ["您的帖子:"] = new() { ["en"] = "Your post:", ["ja"] = "あなたの投稿:", ["ko"] = "게시물:", ["ru"] = "Ваш пост:", ["fr"] = "Votre publication:", ["de"] = "Dein Beitrag:" },
+        ["您的评论:"] = new() { ["en"] = "Your comment:", ["ja"] = "あなたのコメント:", ["ko"] = "댓글:", ["ru"] = "Ваш комментарий:", ["fr"] = "Votre commentaire:", ["de"] = "Dein Kommentar:" },
         ["您的"] = new() { ["en"] = "Your", ["ja"] = "あなたの", ["ko"] = "귀하의", ["ru"] = "Ваш", ["fr"] = "Votre", ["de"] = "Dein" },
-        ["已通过"] = new() { ["en"] = "has been approved", ["ja"] = "が承認されました", ["ko"] = "이 승인되었습니다", ["ru"] = "одобрен(а)", ["fr"] = "a été approuvé(e)", ["de"] = "wurde genehmigt" },
+        ["已通过"] = new() { ["en"] = " has been approved", ["ja"] = " が承認されました", ["ko"] = " 승인되었습니다", ["ru"] = " одобрен(а)", ["fr"] = " a été approuvé(e)", ["de"] = " wurde genehmigt" },
     };
 
     private string GetLanguageCode()
