@@ -31,14 +31,23 @@ public class NotificationController(INotificationService notificationService) : 
 
     /// <summary>
     /// Content phrase translations (common notification body text).
+    /// These are sentence fragments that get .Replace()'d in the content text.
     /// </summary>
     private static readonly Dictionary<string, Dictionary<string, string>> ContentMap = new()
     {
+        // Hot list
         ["来看看大家都在聊什么："] = new() { ["en"] = "See what everyone is talking about:", ["ja"] = "みんなが話題にしていること：", ["ko"] = "모두가 이야기하는 주제:", ["ru"] = "Смотрите, что все обсуждают:", ["fr"] = "Voyez ce dont tout le monde parle :", ["de"] = "Schau, worüber alle reden:" },
+        // Review
         ["帖子审核通过"] = new() { ["en"] = "Post approved", ["ja"] = "投稿が承認されました", ["ko"] = "게시물 승인됨", ["ru"] = "Пост одобрен", ["fr"] = "Publication approuvée", ["de"] = "Beitrag genehmigt" },
         ["帖子审核未通过"] = new() { ["en"] = "Post rejected", ["ja"] = "投稿が却下されました", ["ko"] = "게시물 거부됨", ["ru"] = "Пост отклонён", ["fr"] = "Publication rejetée", ["de"] = "Beitrag abgelehnt" },
         ["评论审核通过"] = new() { ["en"] = "Comment approved", ["ja"] = "コメントが承認されました", ["ko"] = "댓글 승인됨", ["ru"] = "Комментарий одобрен", ["fr"] = "Commentaire approuvé", ["de"] = "Kommentar genehmigt" },
         ["评论审核未通过"] = new() { ["en"] = "Comment rejected", ["ja"] = "コメントが却下されました", ["ko"] = "댓글 거부됨", ["ru"] = "Комментарий отклонён", ["fr"] = "Commentaire rejeté", ["de"] = "Kommentar abgelehnt" },
+        // Comments & replies
+        ["评论了你的贴子:"] = new() { ["en"] = "commented on your post:", ["ja"] = "があなたの投稿にコメントしました:", ["ko"] = "님이 게시물에 댓글:", ["ru"] = "прокомментировал(а) ваш пост:", ["fr"] = "a commenté votre publication:", ["de"] = "hat deinen Beitrag kommentiert:" },
+        ["回复了你:"] = new() { ["en"] = "replied to you:", ["ja"] = "があなたに返信しました:", ["ko"] = "님이 답글:", ["ru"] = "ответил(а) вам:", ["fr"] = "vous a répondu:", ["de"] = "hat dir geantwortet:" },
+        // Review format: "您的{a}: {name} 已通过"
+        ["您的"] = new() { ["en"] = "Your", ["ja"] = "あなたの", ["ko"] = "귀하의", ["ru"] = "Ваш", ["fr"] = "Votre", ["de"] = "Dein" },
+        ["已通过"] = new() { ["en"] = "has been approved", ["ja"] = "が承認されました", ["ko"] = "이 승인되었습니다", ["ru"] = "одобрен(а)", ["fr"] = "a été approuvé(e)", ["de"] = "wurde genehmigt" },
     };
 
     private string GetLanguageCode()

@@ -365,7 +365,10 @@ class _NotificationCard extends StatelessWidget {
                           fontWeight: notification.isRead
                               ? FontWeight.w600
                               : FontWeight.w800,
-                          color: AppColors.foreground,
+                          color: CupertinoDynamicColor.resolve(
+                            AppColors.foreground,
+                            context,
+                          ),
                         ),
                       ),
                     ),

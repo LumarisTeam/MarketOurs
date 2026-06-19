@@ -32,6 +32,7 @@ class LocaleNotifier extends Notifier<Locale?> {
           final locale = supportedLocales[index - 1];
           if (locale != state) {
             state = locale;
+            ApiService.setLocale(locale.languageCode);
           }
         }
       } catch (e) {
