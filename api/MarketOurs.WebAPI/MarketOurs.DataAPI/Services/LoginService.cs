@@ -351,11 +351,9 @@ public class LoginService(
         var request = JsonSerializer.Deserialize<UserCreateDto>(json.ToString());
         if (request == null) throw new BusinessException(ErrorCode.DataProcessingFailed, "解析注册信息失败");
 
-        // 2. 生成 6 位随机验证码
+        // 2. 生成 6 位纯数字随机验证码
         var isEmail = request.Account.Contains('@');
-        var code = isEmail
-            ? Guid.NewGuid().ToString("N")[..6].ToUpper()
-            : new Random().Next(100000, 999999).ToString();
+        var code = new Random().Next(100000, 999999).ToString();
 
         // 3. 存储验证码到 Redis (与 Token 关联)，有效期 15 分钟
         await db.StringSetAsync(CacheKeys.RegistrationCode(regToken), code, TimeSpan.FromMinutes(15));
@@ -440,11 +438,9 @@ public class LoginService(
         if (_redis == null) throw new BusinessException(ErrorCode.CacheOperationFailed, "Redis 服务不可用");
         var db = _redis.GetDatabase();
 
-        // 1. 生成 6 位随机验证码
+        // 1. 生成 6 位纯数字随机验证码
         var isEmail = account.Contains('@');
-        var code = isEmail
-            ? Guid.NewGuid().ToString("N")[..6].ToUpper()
-            : new Random().Next(100000, 999999).ToString();
+        var code = new Random().Next(100000, 999999).ToString();
 
         // 2. 存储验证码到 Redis，有效期 5 分钟
         await db.StringSetAsync(CacheKeys.LoginCode(account), code, TimeSpan.FromMinutes(5));

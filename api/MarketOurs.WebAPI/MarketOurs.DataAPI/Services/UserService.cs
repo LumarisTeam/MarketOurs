@@ -247,8 +247,8 @@ public class UserService(
         if (user == null) throw new ResourceAccessException(ErrorCode.UserNotFound, "用户不存在");
         if (string.IsNullOrEmpty(user.Email)) throw new BusinessException(ErrorCode.ParameterEmpty, "用户未绑定邮箱");
 
-        // 生成 6 位随机验证码
-        var token = Guid.NewGuid().ToString("N")[..6].ToUpper();
+        // 生成 6 位纯数字随机验证码
+        var token = new Random().Next(100000, 999999).ToString();
         var (subject, template, ttl) = purpose switch
         {
             EmailVerificationPurpose.ThirdPartyUnbind => (
@@ -463,7 +463,7 @@ public class UserService(
         var user = await userRepo.GetByAccountAsync(account);
         if (user == null) throw new ResourceAccessException(ErrorCode.UserNotFound, "该账号未注册");
 
-        var token = Guid.NewGuid().ToString("N")[..6].ToUpper();
+        var token = new Random().Next(100000, 999999).ToString();
 
         if (_redis != null)
         {
