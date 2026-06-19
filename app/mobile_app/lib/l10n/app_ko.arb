@@ -316,5 +316,6 @@
   "postSelectTag": "태그 선택",
   "postTagAdminPreset": "관리자가 설정한 태그",
   "postEmptyCommentCTA": "의견을 공유하고 첫 댓글을 남겨보세요.",
-  "postCommentCount": "댓글 {count}"
+  "postCommentCount": "댓글 {count}",
+  "themeSubtitle": "라이트, 다크 또는 시스템 따르기"
 }

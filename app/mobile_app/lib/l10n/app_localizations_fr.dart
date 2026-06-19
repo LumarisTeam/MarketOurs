@@ -78,7 +78,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get themeMode => 'Thème';
 
   @override
-  String get themeSubtitle => '切换浅色、深色或跟随系统';
+  String get themeSubtitle => 'Clair, sombre ou suivre le système';
 
   @override
   String get themeHint => 'Appuyez pour changer';

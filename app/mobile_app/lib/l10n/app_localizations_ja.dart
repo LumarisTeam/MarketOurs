@@ -78,7 +78,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get themeMode => '外観モード';
 
   @override
-  String get themeSubtitle => '切换浅色、深色或跟随系统';
+  String get themeSubtitle => 'ライト、ダーク、またはシステムに従う';
 
   @override
   String get themeHint => 'タップして表示モードを変更';

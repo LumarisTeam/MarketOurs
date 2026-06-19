@@ -78,7 +78,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get themeMode => 'Design';
 
   @override
-  String get themeSubtitle => '切换浅色、深色或跟随系统';
+  String get themeSubtitle => 'Hell, dunkel oder System folgen';
 
   @override
   String get themeHint => 'Zum Wechseln tippen';

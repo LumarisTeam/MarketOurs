@@ -61,9 +61,13 @@ public class DailyHotListBackgroundService(
             var hotPosts = await postRepo.GetHotAsync(5);
             if (hotPosts.Count == 0) return;
 
-            var hotTitles = string.Join("\n", hotPosts.Select((p, i) => $"{i + 1}. {p.Title}"));
+            var top3 = hotPosts.Take(3).Select((p, i) => new { i, p.Id, p.Title }).ToList();
             var title = "🔥 今日校园热榜";
-            var content = $"来看看大家都在聊什么：\n{hotTitles}";
+            var content = System.Text.Json.JsonSerializer.Serialize(new
+            {
+                header = "来看看大家都在聊什么：",
+                posts = top3.Select(p => new { id = p.Id, title = $"{p.i + 1}. {p.Title}" })
+            });
 
             // 2. 获取所有活跃用户
             var users = await userRepo.GetAllAsync(1, 1000); // 简单起见，这里假设用户量不大，实际应分页处理
@@ -76,7 +80,8 @@ public class DailyHotListBackgroundService(
                     UserId = user.Id,
                     Title = title,
                     Content = content,
-                    Type = NotificationType.HotList
+                    Type = NotificationType.HotList,
+                    TargetId = hotPosts[0].Id
                 });
             }
 

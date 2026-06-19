@@ -78,7 +78,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get themeMode => '테마';
 
   @override
-  String get themeSubtitle => '切换浅色、深色或跟随系统';
+  String get themeSubtitle => '라이트, 다크 또는 시스템 따르기';
 
   @override
   String get themeHint => '탭하여 모드 변경';

@@ -78,7 +78,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get themeMode => 'Тема';
 
   @override
-  String get themeSubtitle => '切换浅色、深色或跟随系统';
+  String get themeSubtitle => 'Светлая, тёмная или как в системе';
 
   @override
   String get themeHint => 'Нажмите для смены темы';

@@ -316,5 +316,6 @@
   "postSelectTag": "Choisir tag",
   "postTagAdminPreset": "Tags prédéfinis",
   "postEmptyCommentCTA": "Partagez votre avis, soyez le premier !",
-  "postCommentCount": "{count} commentaires"
+  "postCommentCount": "{count} commentaires",
+  "themeSubtitle": "Clair, sombre ou suivre le système"
 }

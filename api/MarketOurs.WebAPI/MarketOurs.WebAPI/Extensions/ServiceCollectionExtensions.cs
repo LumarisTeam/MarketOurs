@@ -200,15 +200,13 @@ public static class ServiceCollectionExtensions
                 "hmac-sha256",
         };
 
+        var blobToken = Environment.GetEnvironmentVariable("BLOB_READ_WRITE_TOKEN", EnvironmentVariableTarget.Process);
         var vercelBlobConfig = new VercelBlobConfig()
         {
-            Token =
-                Environment.GetEnvironmentVariable("BLOB_READ_WRITE_TOKEN", EnvironmentVariableTarget.Process) ?? "",
+            Token = blobToken ?? "",
             StoreId = NormalizeStoreId(
                 Environment.GetEnvironmentVariable("BLOB_STORE_ID", EnvironmentVariableTarget.Process)
-                ?? ParseStoreId(
-                    Environment.GetEnvironmentVariable("BLOB_READ_WRITE_TOKEN", EnvironmentVariableTarget.Process) ??
-                    "")),
+                ?? (string.IsNullOrWhiteSpace(blobToken) ? "local" : ParseStoreId(blobToken))),
             Access = Environment.GetEnvironmentVariable("BLOB_ACCESS", EnvironmentVariableTarget.Process) ?? "public",
             BaseUrl = (Environment.GetEnvironmentVariable("BLOB_BASE_PATH", EnvironmentVariableTarget.Process) ??
                        "uploads")

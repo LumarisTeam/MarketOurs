@@ -316,5 +316,6 @@
   "postSelectTag": "Выбрать тег",
   "postTagAdminPreset": "Теги заданы администратором",
   "postEmptyCommentCTA": "Поделитесь мыслями, будьте первым.",
-  "postCommentCount": "{count} комментариев"
+  "postCommentCount": "{count} комментариев",
+  "themeSubtitle": "Светлая, тёмная или как в системе"
 }
