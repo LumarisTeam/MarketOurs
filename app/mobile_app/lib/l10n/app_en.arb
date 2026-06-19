@@ -335,5 +335,11 @@
   "validatorCodeRequiredToken": "Please enter verification code or token",
   "validatorAccountTooLong": "Account cannot exceed {max} characters",
   "validatorEmailOrPhoneRequired": "Please enter a valid email or phone number",
-  "validatorPasswordMinLength": "Password must be at least 6 characters"
+  "validatorPasswordMinLength": "Password must be at least 6 characters",
+
+  "reply": "Reply",
+  "editPostAction": "Edit",
+  "deletePostAction": "Delete",
+  "share": "Share",
+  "myProfile": "My Profile"
 }

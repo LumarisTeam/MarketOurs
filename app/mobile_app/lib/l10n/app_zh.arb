@@ -357,5 +357,11 @@
   "validatorAccountTooLong": "账号长度不能超过 {max} 位",
   "@validatorAccountTooLong": {"placeholders": {"max": {"type": "int"}}},
   "validatorEmailOrPhoneRequired": "请输入有效的邮箱或手机号",
-  "validatorPasswordMinLength": "密码至少 6 位"
+  "validatorPasswordMinLength": "密码至少 6 位",
+
+  "reply": "回复",
+  "editPostAction": "编辑",
+  "deletePostAction": "删除",
+  "share": "分享",
+  "myProfile": "我的主页"
 }

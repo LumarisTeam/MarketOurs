@@ -9,22 +9,22 @@ class AppLocalizationsJa extends AppLocalizations {
   AppLocalizationsJa([String locale = 'ja']) : super(locale);
 
   @override
-  String get appTitle => 'LightHub';
+  String get appTitle => 'ライトハブ';
 
   @override
   String get appSlogan => 'Campus Market';
 
   @override
-  String get followSystem => 'Follow System';
+  String get followSystem => 'システムに従う';
 
   @override
-  String get cancel => 'Cancel';
+  String get cancel => 'キャンセル';
 
   @override
   String get ok => 'OK';
 
   @override
-  String get confirm => 'Confirm';
+  String get confirm => '確認';
 
   @override
   String get retry => 'Retry';
@@ -33,16 +33,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get reload => 'Reload';
 
   @override
-  String get save => 'Save';
+  String get save => '保存';
 
   @override
-  String get delete => 'Delete';
+  String get delete => '削除';
 
   @override
-  String get edit => 'Edit';
+  String get edit => '編集';
 
   @override
-  String get search => 'Search';
+  String get search => '検索';
 
   @override
   String get submit => 'Submit';
@@ -66,16 +66,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get no => 'No';
 
   @override
-  String get themeLight => 'Light';
+  String get themeLight => 'ライト';
 
   @override
-  String get themeDark => 'Dark';
+  String get themeDark => 'ダーク';
 
   @override
-  String get themeSystem => 'Follow System';
+  String get themeSystem => 'システムに従う';
 
   @override
-  String get themeMode => 'Appearance';
+  String get themeMode => '外観';
 
   @override
   String get themeHint => 'Tap to change display mode';
@@ -84,49 +84,49 @@ class AppLocalizationsJa extends AppLocalizations {
   String get appearanceModeTitle => 'Choose Appearance';
 
   @override
-  String get tabHome => 'Home';
+  String get tabHome => 'ホーム';
 
   @override
-  String get tabHot => 'Trending';
+  String get tabHot => 'トレンド';
 
   @override
-  String get tabNotifications => 'Notifications';
+  String get tabNotifications => '通知';
 
   @override
-  String get tabProfile => 'Me';
+  String get tabProfile => 'マイページ';
 
   @override
-  String get authLogin => 'Log in';
+  String get authLogin => 'ログイン';
 
   @override
-  String get authRegister => 'Sign up';
+  String get authRegister => '登録';
 
   @override
-  String get authForgotPassword => 'Forgot Password';
+  String get authForgotPassword => 'パスワードを忘れた';
 
   @override
-  String get authResetPassword => 'Reset Password';
+  String get authResetPassword => 'パスワードリセット';
 
   @override
   String get authChangePassword => 'Change Password';
 
   @override
-  String get authLogout => 'Log out';
+  String get authLogout => 'ログアウト';
 
   @override
   String get authLogoutDesc => 'Clear current session';
 
   @override
-  String get authAccount => 'Account';
+  String get authAccount => 'アカウント';
 
   @override
-  String get authPassword => 'Password';
+  String get authPassword => 'パスワード';
 
   @override
-  String get authVerificationCode => 'Verification Code';
+  String get authVerificationCode => '認証コード';
 
   @override
-  String get authSendCode => 'Send Code';
+  String get authSendCode => 'コード送信';
 
   @override
   String get authAccountPlaceholder => 'Email or phone number';
@@ -157,16 +157,16 @@ class AppLocalizationsJa extends AppLocalizations {
       'At least 6 chars with uppercase, lowercase & digit';
 
   @override
-  String get authCodeLogin => 'Code Login';
+  String get authCodeLogin => 'コードログイン';
 
   @override
-  String get authPasswordLogin => 'Password Login';
+  String get authPasswordLogin => 'パスワードログイン';
 
   @override
-  String get authAlreadyHaveAccount => 'Already have an account? Log in';
+  String get authAlreadyHaveAccount => 'アカウントをお持ちの方';
 
   @override
-  String get authNoAccount => 'Don\'t have an account? Sign up';
+  String get authNoAccount => 'アカウント登録';
 
   @override
   String get authForgotPasswordPrompt => 'Forgot password?';
@@ -224,10 +224,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get authResendCode => 'Resend Code';
 
   @override
-  String get profileInfo => 'Profile Info';
+  String get profileInfo => 'プロフィール情報';
 
   @override
-  String get profileSecurity => 'Account Security';
+  String get profileSecurity => 'アカウントセキュリティ';
 
   @override
   String get profileSocial => 'Social';
@@ -279,7 +279,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get profileGoLogin => 'Log in';
 
   @override
-  String get profileEditProfile => 'Edit Profile';
+  String get profileEditProfile => 'プロフィール編集';
 
   @override
   String get profileSaveChanges => 'Save Changes';
@@ -358,16 +358,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get profileLogoutDesc => 'Clear current session';
 
   @override
-  String get profileFollowers => 'Followers';
+  String get profileFollowers => 'フォロワー';
 
   @override
-  String get profileFollowing => 'Following';
+  String get profileFollowing => 'フォロー';
 
   @override
-  String get profileFollow => 'Follow';
+  String get profileFollow => 'フォロー';
 
   @override
-  String get profileUnfollow => 'Following';
+  String get profileUnfollow => 'フォロー中';
 
   @override
   String get profileBlock => 'Block';
@@ -405,13 +405,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get profileReachedEnd => 'You\'ve reached the end';
 
   @override
-  String get postCreate => 'New Post';
+  String get postCreate => '投稿';
 
   @override
   String get postCreatePublishing => 'Publishing...';
 
   @override
-  String get postCreatePublish => 'Publish';
+  String get postCreatePublish => '投稿する';
 
   @override
   String get postCreateTitle => 'Post title';
@@ -425,7 +425,7 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get postCreateContent => 'Share what\'s happening...';
+  String get postCreateContent => 'いま何が起きている？';
 
   @override
   String get postCreateContentEmpty => 'Please enter some content';
@@ -484,7 +484,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get postNoComments => 'No comments yet';
 
   @override
-  String get postWriteComment => 'Write a comment...';
+  String get postWriteComment => 'コメントを書く...';
 
   @override
   String get postCommentSent => 'Comment posted';
@@ -543,16 +543,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeHotEmpty => 'No trending posts';
 
   @override
-  String get notificationTitle => 'Notifications';
+  String get notificationTitle => '通知';
 
   @override
   String get notificationEmpty => 'No notifications yet';
 
   @override
-  String get notificationPushSettings => 'Push Settings';
+  String get notificationPushSettings => 'プッシュ設定';
 
   @override
-  String get notificationEmail => 'Email Notifications';
+  String get notificationEmail => 'メール通知';
 
   @override
   String get notificationEmailDesc =>
@@ -579,7 +579,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get notificationSaveSettings => 'Save Settings';
 
   @override
-  String get notificationSaved => 'Settings saved';
+  String get notificationSaved => '保存しました';
 
   @override
   String get notificationSaveFailed => 'Save failed';
@@ -593,10 +593,10 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get likePost => 'Like';
+  String get likePost => 'いいね';
 
   @override
-  String get dislikePost => 'Dislike';
+  String get dislikePost => '低評価';
 
   @override
   String get verified => 'Verified';
@@ -632,10 +632,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get termsOfService => 'Terms of Service';
 
   @override
-  String get settingsTitle => 'Settings';
+  String get settingsTitle => '設定';
 
   @override
-  String get settingsLanguage => 'Language';
+  String get settingsLanguage => '言語';
 
   @override
   String get settingsLanguageTitle => 'Language Settings';
@@ -978,4 +978,19 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get validatorPasswordMinLength =>
       'Password must be at least 6 characters';
+
+  @override
+  String get reply => '返信';
+
+  @override
+  String get editPostAction => 'Edit';
+
+  @override
+  String get deletePostAction => 'Delete';
+
+  @override
+  String get share => '共有';
+
+  @override
+  String get myProfile => 'My Profile';
 }

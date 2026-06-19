@@ -1943,6 +1943,36 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'密码至少 6 位'**
   String get validatorPasswordMinLength;
+
+  /// No description provided for @reply.
+  ///
+  /// In zh, this message translates to:
+  /// **'回复'**
+  String get reply;
+
+  /// No description provided for @editPostAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑'**
+  String get editPostAction;
+
+  /// No description provided for @deletePostAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除'**
+  String get deletePostAction;
+
+  /// No description provided for @share.
+  ///
+  /// In zh, this message translates to:
+  /// **'分享'**
+  String get share;
+
+  /// No description provided for @myProfile.
+  ///
+  /// In zh, this message translates to:
+  /// **'我的主页'**
+  String get myProfile;
 }
 
 class _AppLocalizationsDelegate

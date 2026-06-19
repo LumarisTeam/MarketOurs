@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_app/components/post_card.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../models/post.dart';
 import '../../providers/post_feed_provider.dart';
 import '../../router/app_router.dart';
@@ -89,7 +90,7 @@ class _TagScreenState extends ConsumerState<TagScreen> {
       return CupertinoPageScaffold(
         backgroundColor: AppColors.background,
         navigationBar: CupertinoNavigationBar(
-          middle: const Text('标签'),
+          middle: Text(AppLocalizations.of(context).postCreateTag),
         ),
         child: SafeArea(
           child: Center(
@@ -122,7 +123,7 @@ class _TagScreenState extends ConsumerState<TagScreen> {
           ),
           slivers: [
             CupertinoSliverNavigationBar(
-              largeTitle: Text(_tag!.name?.trim().isNotEmpty == true ? _tag!.name!.trim() : '标签'),
+              largeTitle: Text(_tag!.name?.trim().isNotEmpty == true ? _tag!.name!.trim() : AppLocalizations.of(context).postCreateTag),
               backgroundColor: CupertinoDynamicColor.resolve(
                 AppColors.background,
                 context,

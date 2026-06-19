@@ -15,16 +15,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get appSlogan => 'Campus Market';
 
   @override
-  String get followSystem => 'Follow System';
+  String get followSystem => 'System verwenden';
 
   @override
-  String get cancel => 'Cancel';
+  String get cancel => 'Abbrechen';
 
   @override
   String get ok => 'OK';
 
   @override
-  String get confirm => 'Confirm';
+  String get confirm => 'Bestätigen';
 
   @override
   String get retry => 'Retry';
@@ -33,16 +33,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get reload => 'Reload';
 
   @override
-  String get save => 'Save';
+  String get save => 'Speichern';
 
   @override
-  String get delete => 'Delete';
+  String get delete => 'Löschen';
 
   @override
-  String get edit => 'Edit';
+  String get edit => 'Bearbeiten';
 
   @override
-  String get search => 'Search';
+  String get search => 'Suchen';
 
   @override
   String get submit => 'Submit';
@@ -66,16 +66,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get no => 'No';
 
   @override
-  String get themeLight => 'Light';
+  String get themeLight => 'Hell';
 
   @override
-  String get themeDark => 'Dark';
+  String get themeDark => 'Dunkel';
 
   @override
-  String get themeSystem => 'Follow System';
+  String get themeSystem => 'System verwenden';
 
   @override
-  String get themeMode => 'Appearance';
+  String get themeMode => 'Design';
 
   @override
   String get themeHint => 'Tap to change display mode';
@@ -84,49 +84,49 @@ class AppLocalizationsDe extends AppLocalizations {
   String get appearanceModeTitle => 'Choose Appearance';
 
   @override
-  String get tabHome => 'Home';
+  String get tabHome => 'Start';
 
   @override
-  String get tabHot => 'Trending';
+  String get tabHot => 'Trends';
 
   @override
-  String get tabNotifications => 'Notifications';
+  String get tabNotifications => 'Benachrichtigungen';
 
   @override
-  String get tabProfile => 'Me';
+  String get tabProfile => 'Ich';
 
   @override
-  String get authLogin => 'Log in';
+  String get authLogin => 'Anmelden';
 
   @override
-  String get authRegister => 'Sign up';
+  String get authRegister => 'Registrieren';
 
   @override
-  String get authForgotPassword => 'Forgot Password';
+  String get authForgotPassword => 'Passwort vergessen';
 
   @override
-  String get authResetPassword => 'Reset Password';
+  String get authResetPassword => 'Passwort zurücksetzen';
 
   @override
   String get authChangePassword => 'Change Password';
 
   @override
-  String get authLogout => 'Log out';
+  String get authLogout => 'Abmelden';
 
   @override
   String get authLogoutDesc => 'Clear current session';
 
   @override
-  String get authAccount => 'Account';
+  String get authAccount => 'Konto';
 
   @override
-  String get authPassword => 'Password';
+  String get authPassword => 'Passwort';
 
   @override
-  String get authVerificationCode => 'Verification Code';
+  String get authVerificationCode => 'Code';
 
   @override
-  String get authSendCode => 'Send Code';
+  String get authSendCode => 'Code senden';
 
   @override
   String get authAccountPlaceholder => 'Email or phone number';
@@ -157,10 +157,10 @@ class AppLocalizationsDe extends AppLocalizations {
       'At least 6 chars with uppercase, lowercase & digit';
 
   @override
-  String get authCodeLogin => 'Code Login';
+  String get authCodeLogin => 'Code-Login';
 
   @override
-  String get authPasswordLogin => 'Password Login';
+  String get authPasswordLogin => 'Passwort-Login';
 
   @override
   String get authAlreadyHaveAccount => 'Already have an account? Log in';
@@ -224,10 +224,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get authResendCode => 'Resend Code';
 
   @override
-  String get profileInfo => 'Profile Info';
+  String get profileInfo => 'Profilinfo';
 
   @override
-  String get profileSecurity => 'Account Security';
+  String get profileSecurity => 'Sicherheit';
 
   @override
   String get profileSocial => 'Social';
@@ -279,7 +279,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get profileGoLogin => 'Log in';
 
   @override
-  String get profileEditProfile => 'Edit Profile';
+  String get profileEditProfile => 'Profil bearbeiten';
 
   @override
   String get profileSaveChanges => 'Save Changes';
@@ -358,16 +358,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get profileLogoutDesc => 'Clear current session';
 
   @override
-  String get profileFollowers => 'Followers';
+  String get profileFollowers => 'Follower';
 
   @override
-  String get profileFollowing => 'Following';
+  String get profileFollowing => 'Folge ich';
 
   @override
-  String get profileFollow => 'Follow';
+  String get profileFollow => 'Folgen';
 
   @override
-  String get profileUnfollow => 'Following';
+  String get profileUnfollow => 'Gefolgt';
 
   @override
   String get profileBlock => 'Block';
@@ -405,13 +405,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get profileReachedEnd => 'You\'ve reached the end';
 
   @override
-  String get postCreate => 'New Post';
+  String get postCreate => 'Beitrag';
 
   @override
   String get postCreatePublishing => 'Publishing...';
 
   @override
-  String get postCreatePublish => 'Publish';
+  String get postCreatePublish => 'Veröffentlichen';
 
   @override
   String get postCreateTitle => 'Post title';
@@ -425,7 +425,7 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get postCreateContent => 'Share what\'s happening...';
+  String get postCreateContent => 'Was gibt es Neues?';
 
   @override
   String get postCreateContentEmpty => 'Please enter some content';
@@ -484,7 +484,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get postNoComments => 'No comments yet';
 
   @override
-  String get postWriteComment => 'Write a comment...';
+  String get postWriteComment => 'Kommentar schreiben...';
 
   @override
   String get postCommentSent => 'Comment posted';
@@ -543,16 +543,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get homeHotEmpty => 'No trending posts';
 
   @override
-  String get notificationTitle => 'Notifications';
+  String get notificationTitle => 'Benachrichtigungen';
 
   @override
   String get notificationEmpty => 'No notifications yet';
 
   @override
-  String get notificationPushSettings => 'Push Settings';
+  String get notificationPushSettings => 'Push-Einstellungen';
 
   @override
-  String get notificationEmail => 'Email Notifications';
+  String get notificationEmail => 'E-Mail-Nachrichten';
 
   @override
   String get notificationEmailDesc =>
@@ -579,7 +579,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get notificationSaveSettings => 'Save Settings';
 
   @override
-  String get notificationSaved => 'Settings saved';
+  String get notificationSaved => 'Gespeichert';
 
   @override
   String get notificationSaveFailed => 'Save failed';
@@ -593,10 +593,10 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get likePost => 'Like';
+  String get likePost => 'Gefällt mir';
 
   @override
-  String get dislikePost => 'Dislike';
+  String get dislikePost => 'Gefällt mir nicht';
 
   @override
   String get verified => 'Verified';
@@ -632,10 +632,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get termsOfService => 'Terms of Service';
 
   @override
-  String get settingsTitle => 'Settings';
+  String get settingsTitle => 'Einstellungen';
 
   @override
-  String get settingsLanguage => 'Language';
+  String get settingsLanguage => 'Sprache';
 
   @override
   String get settingsLanguageTitle => 'Language Settings';
@@ -978,4 +978,19 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get validatorPasswordMinLength =>
       'Password must be at least 6 characters';
+
+  @override
+  String get reply => 'Antworten';
+
+  @override
+  String get editPostAction => 'Edit';
+
+  @override
+  String get deletePostAction => 'Delete';
+
+  @override
+  String get share => 'Teilen';
+
+  @override
+  String get myProfile => 'My Profile';
 }

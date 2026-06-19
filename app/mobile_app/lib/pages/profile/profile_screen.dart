@@ -190,8 +190,8 @@ class ProfileScreen extends ConsumerWidget {
                         ),
                         _NavRow(
                           icon: CupertinoIcons.square_arrow_right,
-                          title: '退出登录',
-                          subtitle: '清除当前会话',
+                          title: AppLocalizations.of(context).authLogout,
+                          subtitle: AppLocalizations.of(context).authLogoutDesc,
                           destructive: true,
                           onTap: isSubmitting
                               ? null
@@ -480,7 +480,7 @@ class _ThemeModeSection extends ConsumerWidget {
             child: Icon(themeMode.icon, color: AppColors.primary, size: 18),
           ),
           title: Text(
-            '主题模式',
+            AppLocalizations.of(context).themeMode,
             style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w600,

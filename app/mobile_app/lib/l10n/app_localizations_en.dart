@@ -978,4 +978,19 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get validatorPasswordMinLength =>
       'Password must be at least 6 characters';
+
+  @override
+  String get reply => 'Reply';
+
+  @override
+  String get editPostAction => 'Edit';
+
+  @override
+  String get deletePostAction => 'Delete';
+
+  @override
+  String get share => 'Share';
+
+  @override
+  String get myProfile => 'My Profile';
 }

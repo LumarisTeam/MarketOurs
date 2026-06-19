@@ -953,4 +953,19 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get validatorPasswordMinLength => '密码至少 6 位';
+
+  @override
+  String get reply => '回复';
+
+  @override
+  String get editPostAction => '编辑';
+
+  @override
+  String get deletePostAction => '删除';
+
+  @override
+  String get share => '分享';
+
+  @override
+  String get myProfile => '我的主页';
 }

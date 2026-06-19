@@ -15,16 +15,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get appSlogan => 'Campus Market';
 
   @override
-  String get followSystem => 'Follow System';
+  String get followSystem => 'Suivre le système';
 
   @override
-  String get cancel => 'Cancel';
+  String get cancel => 'Annuler';
 
   @override
   String get ok => 'OK';
 
   @override
-  String get confirm => 'Confirm';
+  String get confirm => 'Confirmer';
 
   @override
   String get retry => 'Retry';
@@ -33,16 +33,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get reload => 'Reload';
 
   @override
-  String get save => 'Save';
+  String get save => 'Enregistrer';
 
   @override
-  String get delete => 'Delete';
+  String get delete => 'Supprimer';
 
   @override
-  String get edit => 'Edit';
+  String get edit => 'Modifier';
 
   @override
-  String get search => 'Search';
+  String get search => 'Rechercher';
 
   @override
   String get submit => 'Submit';
@@ -66,16 +66,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get no => 'No';
 
   @override
-  String get themeLight => 'Light';
+  String get themeLight => 'Clair';
 
   @override
-  String get themeDark => 'Dark';
+  String get themeDark => 'Sombre';
 
   @override
-  String get themeSystem => 'Follow System';
+  String get themeSystem => 'Suivre le système';
 
   @override
-  String get themeMode => 'Appearance';
+  String get themeMode => 'Thème';
 
   @override
   String get themeHint => 'Tap to change display mode';
@@ -84,49 +84,49 @@ class AppLocalizationsFr extends AppLocalizations {
   String get appearanceModeTitle => 'Choose Appearance';
 
   @override
-  String get tabHome => 'Home';
+  String get tabHome => 'Accueil';
 
   @override
-  String get tabHot => 'Trending';
+  String get tabHot => 'Tendances';
 
   @override
   String get tabNotifications => 'Notifications';
 
   @override
-  String get tabProfile => 'Me';
+  String get tabProfile => 'Moi';
 
   @override
-  String get authLogin => 'Log in';
+  String get authLogin => 'Connexion';
 
   @override
-  String get authRegister => 'Sign up';
+  String get authRegister => 'Inscription';
 
   @override
-  String get authForgotPassword => 'Forgot Password';
+  String get authForgotPassword => 'Mot de passe oublié';
 
   @override
-  String get authResetPassword => 'Reset Password';
+  String get authResetPassword => 'Réinitialiser';
 
   @override
   String get authChangePassword => 'Change Password';
 
   @override
-  String get authLogout => 'Log out';
+  String get authLogout => 'Déconnexion';
 
   @override
   String get authLogoutDesc => 'Clear current session';
 
   @override
-  String get authAccount => 'Account';
+  String get authAccount => 'Compte';
 
   @override
-  String get authPassword => 'Password';
+  String get authPassword => 'Mot de passe';
 
   @override
-  String get authVerificationCode => 'Verification Code';
+  String get authVerificationCode => 'Code';
 
   @override
-  String get authSendCode => 'Send Code';
+  String get authSendCode => 'Envoyer le code';
 
   @override
   String get authAccountPlaceholder => 'Email or phone number';
@@ -157,10 +157,10 @@ class AppLocalizationsFr extends AppLocalizations {
       'At least 6 chars with uppercase, lowercase & digit';
 
   @override
-  String get authCodeLogin => 'Code Login';
+  String get authCodeLogin => 'Connexion par code';
 
   @override
-  String get authPasswordLogin => 'Password Login';
+  String get authPasswordLogin => 'Connexion par mot de passe';
 
   @override
   String get authAlreadyHaveAccount => 'Already have an account? Log in';
@@ -224,10 +224,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get authResendCode => 'Resend Code';
 
   @override
-  String get profileInfo => 'Profile Info';
+  String get profileInfo => 'Informations';
 
   @override
-  String get profileSecurity => 'Account Security';
+  String get profileSecurity => 'Sécurité';
 
   @override
   String get profileSocial => 'Social';
@@ -279,7 +279,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get profileGoLogin => 'Log in';
 
   @override
-  String get profileEditProfile => 'Edit Profile';
+  String get profileEditProfile => 'Modifier le profil';
 
   @override
   String get profileSaveChanges => 'Save Changes';
@@ -358,16 +358,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get profileLogoutDesc => 'Clear current session';
 
   @override
-  String get profileFollowers => 'Followers';
+  String get profileFollowers => 'Abonnés';
 
   @override
-  String get profileFollowing => 'Following';
+  String get profileFollowing => 'Abonnements';
 
   @override
-  String get profileFollow => 'Follow';
+  String get profileFollow => 'Suivre';
 
   @override
-  String get profileUnfollow => 'Following';
+  String get profileUnfollow => 'Abonné';
 
   @override
   String get profileBlock => 'Block';
@@ -405,13 +405,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get profileReachedEnd => 'You\'ve reached the end';
 
   @override
-  String get postCreate => 'New Post';
+  String get postCreate => 'Publier';
 
   @override
   String get postCreatePublishing => 'Publishing...';
 
   @override
-  String get postCreatePublish => 'Publish';
+  String get postCreatePublish => 'Publier';
 
   @override
   String get postCreateTitle => 'Post title';
@@ -425,7 +425,7 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get postCreateContent => 'Share what\'s happening...';
+  String get postCreateContent => 'Quoi de neuf ?';
 
   @override
   String get postCreateContentEmpty => 'Please enter some content';
@@ -484,7 +484,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get postNoComments => 'No comments yet';
 
   @override
-  String get postWriteComment => 'Write a comment...';
+  String get postWriteComment => 'Écrire un commentaire...';
 
   @override
   String get postCommentSent => 'Comment posted';
@@ -549,10 +549,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get notificationEmpty => 'No notifications yet';
 
   @override
-  String get notificationPushSettings => 'Push Settings';
+  String get notificationPushSettings => 'Paramètres push';
 
   @override
-  String get notificationEmail => 'Email Notifications';
+  String get notificationEmail => 'Notifications email';
 
   @override
   String get notificationEmailDesc =>
@@ -579,7 +579,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get notificationSaveSettings => 'Save Settings';
 
   @override
-  String get notificationSaved => 'Settings saved';
+  String get notificationSaved => 'Enregistré';
 
   @override
   String get notificationSaveFailed => 'Save failed';
@@ -593,10 +593,10 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get likePost => 'Like';
+  String get likePost => 'J\'aime';
 
   @override
-  String get dislikePost => 'Dislike';
+  String get dislikePost => 'Je n\'aime pas';
 
   @override
   String get verified => 'Verified';
@@ -632,10 +632,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get termsOfService => 'Terms of Service';
 
   @override
-  String get settingsTitle => 'Settings';
+  String get settingsTitle => 'Paramètres';
 
   @override
-  String get settingsLanguage => 'Language';
+  String get settingsLanguage => 'Langue';
 
   @override
   String get settingsLanguageTitle => 'Language Settings';
@@ -978,4 +978,19 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get validatorPasswordMinLength =>
       'Password must be at least 6 characters';
+
+  @override
+  String get reply => 'Répondre';
+
+  @override
+  String get editPostAction => 'Edit';
+
+  @override
+  String get deletePostAction => 'Delete';
+
+  @override
+  String get share => 'Partager';
+
+  @override
+  String get myProfile => 'My Profile';
 }

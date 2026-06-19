@@ -257,15 +257,15 @@ class _CommentCard extends StatelessWidget {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  _TextAction(label: '回复', onTap: onReply),
+                  _TextAction(label: AppLocalizations.of(context).reply, onTap: onReply),
                   if (onEdit != null) ...[
                     const SizedBox(width: 16),
-                    _TextAction(label: '编辑', onTap: onEdit!),
+                    _TextAction(label: AppLocalizations.of(context).editPostAction, onTap: onEdit!),
                   ],
                   if (onDelete != null) ...[
                     const SizedBox(width: 16),
                     _TextAction(
-                      label: '删除',
+                      label: AppLocalizations.of(context).deletePostAction,
                       onTap: onDelete!,
                       activeColor: AppColors.destructive,
                       active: true,

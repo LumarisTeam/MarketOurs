@@ -196,7 +196,7 @@ class _HotPostCard extends StatelessWidget {
                     Icon(CupertinoIcons.flame, color: rankColor, size: 14),
                     const SizedBox(width: 4),
                     Text(
-                      '${post.watch ?? 0} 热度',
+                      AppLocalizations.of(context).hotWatch(post.watch ?? 0),
                       style: TextStyle(
                         fontSize: 13,
                         color: rankColor,

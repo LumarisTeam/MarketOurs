@@ -9,22 +9,22 @@ class AppLocalizationsRu extends AppLocalizations {
   AppLocalizationsRu([String locale = 'ru']) : super(locale);
 
   @override
-  String get appTitle => 'LightHub';
+  String get appTitle => 'ЛайтХаб';
 
   @override
   String get appSlogan => 'Campus Market';
 
   @override
-  String get followSystem => 'Follow System';
+  String get followSystem => 'Как в системе';
 
   @override
-  String get cancel => 'Cancel';
+  String get cancel => 'Отмена';
 
   @override
-  String get ok => 'OK';
+  String get ok => 'ОК';
 
   @override
-  String get confirm => 'Confirm';
+  String get confirm => 'Подтвердить';
 
   @override
   String get retry => 'Retry';
@@ -33,16 +33,16 @@ class AppLocalizationsRu extends AppLocalizations {
   String get reload => 'Reload';
 
   @override
-  String get save => 'Save';
+  String get save => 'Сохранить';
 
   @override
-  String get delete => 'Delete';
+  String get delete => 'Удалить';
 
   @override
-  String get edit => 'Edit';
+  String get edit => 'Редактировать';
 
   @override
-  String get search => 'Search';
+  String get search => 'Поиск';
 
   @override
   String get submit => 'Submit';
@@ -66,16 +66,16 @@ class AppLocalizationsRu extends AppLocalizations {
   String get no => 'No';
 
   @override
-  String get themeLight => 'Light';
+  String get themeLight => 'Светлая';
 
   @override
-  String get themeDark => 'Dark';
+  String get themeDark => 'Тёмная';
 
   @override
-  String get themeSystem => 'Follow System';
+  String get themeSystem => 'Как в системе';
 
   @override
-  String get themeMode => 'Appearance';
+  String get themeMode => 'Тема';
 
   @override
   String get themeHint => 'Tap to change display mode';
@@ -84,49 +84,49 @@ class AppLocalizationsRu extends AppLocalizations {
   String get appearanceModeTitle => 'Choose Appearance';
 
   @override
-  String get tabHome => 'Home';
+  String get tabHome => 'Главная';
 
   @override
-  String get tabHot => 'Trending';
+  String get tabHot => 'Популярное';
 
   @override
-  String get tabNotifications => 'Notifications';
+  String get tabNotifications => 'Уведомления';
 
   @override
-  String get tabProfile => 'Me';
+  String get tabProfile => 'Профиль';
 
   @override
-  String get authLogin => 'Log in';
+  String get authLogin => 'Войти';
 
   @override
-  String get authRegister => 'Sign up';
+  String get authRegister => 'Регистрация';
 
   @override
-  String get authForgotPassword => 'Forgot Password';
+  String get authForgotPassword => 'Забыли пароль';
 
   @override
-  String get authResetPassword => 'Reset Password';
+  String get authResetPassword => 'Сброс пароля';
 
   @override
   String get authChangePassword => 'Change Password';
 
   @override
-  String get authLogout => 'Log out';
+  String get authLogout => 'Выйти';
 
   @override
   String get authLogoutDesc => 'Clear current session';
 
   @override
-  String get authAccount => 'Account';
+  String get authAccount => 'Аккаунт';
 
   @override
-  String get authPassword => 'Password';
+  String get authPassword => 'Пароль';
 
   @override
-  String get authVerificationCode => 'Verification Code';
+  String get authVerificationCode => 'Код';
 
   @override
-  String get authSendCode => 'Send Code';
+  String get authSendCode => 'Отправить код';
 
   @override
   String get authAccountPlaceholder => 'Email or phone number';
@@ -157,10 +157,10 @@ class AppLocalizationsRu extends AppLocalizations {
       'At least 6 chars with uppercase, lowercase & digit';
 
   @override
-  String get authCodeLogin => 'Code Login';
+  String get authCodeLogin => 'Вход по коду';
 
   @override
-  String get authPasswordLogin => 'Password Login';
+  String get authPasswordLogin => 'Вход по паролю';
 
   @override
   String get authAlreadyHaveAccount => 'Already have an account? Log in';
@@ -224,10 +224,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get authResendCode => 'Resend Code';
 
   @override
-  String get profileInfo => 'Profile Info';
+  String get profileInfo => 'Информация';
 
   @override
-  String get profileSecurity => 'Account Security';
+  String get profileSecurity => 'Безопасность';
 
   @override
   String get profileSocial => 'Social';
@@ -279,7 +279,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get profileGoLogin => 'Log in';
 
   @override
-  String get profileEditProfile => 'Edit Profile';
+  String get profileEditProfile => 'Редактировать';
 
   @override
   String get profileSaveChanges => 'Save Changes';
@@ -358,16 +358,16 @@ class AppLocalizationsRu extends AppLocalizations {
   String get profileLogoutDesc => 'Clear current session';
 
   @override
-  String get profileFollowers => 'Followers';
+  String get profileFollowers => 'Подписчики';
 
   @override
-  String get profileFollowing => 'Following';
+  String get profileFollowing => 'Подписки';
 
   @override
-  String get profileFollow => 'Follow';
+  String get profileFollow => 'Подписаться';
 
   @override
-  String get profileUnfollow => 'Following';
+  String get profileUnfollow => 'В подписках';
 
   @override
   String get profileBlock => 'Block';
@@ -405,13 +405,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get profileReachedEnd => 'You\'ve reached the end';
 
   @override
-  String get postCreate => 'New Post';
+  String get postCreate => 'Публикация';
 
   @override
   String get postCreatePublishing => 'Publishing...';
 
   @override
-  String get postCreatePublish => 'Publish';
+  String get postCreatePublish => 'Опубликовать';
 
   @override
   String get postCreateTitle => 'Post title';
@@ -425,7 +425,7 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get postCreateContent => 'Share what\'s happening...';
+  String get postCreateContent => 'Что происходит?';
 
   @override
   String get postCreateContentEmpty => 'Please enter some content';
@@ -484,7 +484,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get postNoComments => 'No comments yet';
 
   @override
-  String get postWriteComment => 'Write a comment...';
+  String get postWriteComment => 'Написать комментарий...';
 
   @override
   String get postCommentSent => 'Comment posted';
@@ -543,16 +543,16 @@ class AppLocalizationsRu extends AppLocalizations {
   String get homeHotEmpty => 'No trending posts';
 
   @override
-  String get notificationTitle => 'Notifications';
+  String get notificationTitle => 'Уведомления';
 
   @override
   String get notificationEmpty => 'No notifications yet';
 
   @override
-  String get notificationPushSettings => 'Push Settings';
+  String get notificationPushSettings => 'Push-уведомления';
 
   @override
-  String get notificationEmail => 'Email Notifications';
+  String get notificationEmail => 'Email-уведомления';
 
   @override
   String get notificationEmailDesc =>
@@ -579,7 +579,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get notificationSaveSettings => 'Save Settings';
 
   @override
-  String get notificationSaved => 'Settings saved';
+  String get notificationSaved => 'Сохранено';
 
   @override
   String get notificationSaveFailed => 'Save failed';
@@ -593,10 +593,10 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get likePost => 'Like';
+  String get likePost => 'Нравится';
 
   @override
-  String get dislikePost => 'Dislike';
+  String get dislikePost => 'Не нравится';
 
   @override
   String get verified => 'Verified';
@@ -632,10 +632,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get termsOfService => 'Terms of Service';
 
   @override
-  String get settingsTitle => 'Settings';
+  String get settingsTitle => 'Настройки';
 
   @override
-  String get settingsLanguage => 'Language';
+  String get settingsLanguage => 'Язык';
 
   @override
   String get settingsLanguageTitle => 'Language Settings';
@@ -978,4 +978,19 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get validatorPasswordMinLength =>
       'Password must be at least 6 characters';
+
+  @override
+  String get reply => 'Ответить';
+
+  @override
+  String get editPostAction => 'Edit';
+
+  @override
+  String get deletePostAction => 'Delete';
+
+  @override
+  String get share => 'Поделиться';
+
+  @override
+  String get myProfile => 'My Profile';
 }
