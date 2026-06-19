@@ -42,6 +42,13 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Reload tags when locale changes (tags are localized server-side)
+    _loadTags();
+  }
+
+  @override
   void dispose() {
     _titleController.dispose();
     _contentController.dispose();

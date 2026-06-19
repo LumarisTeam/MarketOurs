@@ -35,6 +35,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Reset tag cache so tags reload with new locale
+    _hasLoadedTags = false;
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     _scrollController

@@ -96,7 +96,11 @@ public class PostTagController(IPostTagService postTagService) : ControllerBase
     [AllowAnonymous]
     public async Task<ApiResponse<List<PostTagDto>>> GetActive()
     {
-        var tags = await postTagService.GetActiveAsync();
+        var tags = (await postTagService.GetActiveAsync()).Select(t => new PostTagDto
+        {
+            Id = t.Id, Name = t.Name, IsActive = t.IsActive,
+            CreatedAt = t.CreatedAt, UpdatedAt = t.UpdatedAt
+        }).ToList();
         LocalizeTags(tags);
         return ApiResponse<List<PostTagDto>>.Success(tags, "获取成功");
     }
@@ -105,7 +109,11 @@ public class PostTagController(IPostTagService postTagService) : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<ApiResponse<List<PostTagDto>>> GetAll()
     {
-        var tags = await postTagService.GetAllAsync();
+        var tags = (await postTagService.GetAllAsync()).Select(t => new PostTagDto
+        {
+            Id = t.Id, Name = t.Name, IsActive = t.IsActive,
+            CreatedAt = t.CreatedAt, UpdatedAt = t.UpdatedAt
+        }).ToList();
         LocalizeTags(tags);
         return ApiResponse<List<PostTagDto>>.Success(tags, "获取成功");
     }
