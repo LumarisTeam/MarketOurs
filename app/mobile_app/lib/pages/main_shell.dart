@@ -49,7 +49,7 @@ class _MainShellState extends ConsumerState<MainShell> {
 
     _lastExitAttemptAt = now;
     unawaited(ref.read(homeFeedProvider.notifier).refresh());
-    unawaited(AppFeedback.showInfo(context, message: AppLocalizations.of(context).appTitle));
+    unawaited(AppFeedback.showInfo(context, message: AppLocalizations.of(context).nextExit));
   }
 
   @override
@@ -107,17 +107,19 @@ class _MainShellState extends ConsumerState<MainShell> {
             ),
     );
 
-    if (!shouldInterceptExit) {
-      return scaffold;
-    }
-
     return PopScope(
-      canPop: widget.navigationShell.currentIndex != 0,
+      canPop: false,
       onPopInvokedWithResult: (didPop, result) {
-        if (didPop || widget.navigationShell.currentIndex != 0) {
+        if (didPop) return;
+
+        if (widget.navigationShell.currentIndex != 0) {
+          widget.navigationShell.goBranch(0);
           return;
         }
-        _handleHomeExitAttempt();
+
+        if (shouldInterceptExit) {
+          _handleHomeExitAttempt();
+        }
       },
       child: scaffold,
     );

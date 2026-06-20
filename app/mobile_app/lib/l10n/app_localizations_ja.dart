@@ -1045,4 +1045,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get myProfile => 'マイプロフィール';
+
+  @override
+  String get nextExit => 'もう一度押すとアプリを終了します';
 }

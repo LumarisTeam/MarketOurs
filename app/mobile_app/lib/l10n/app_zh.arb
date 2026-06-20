@@ -395,5 +395,6 @@
   "editPostAction": "编辑",
   "deletePostAction": "删除",
   "share": "分享",
-  "myProfile": "我的主页"
+  "myProfile": "我的主页",
+  "nextExit": "再按一次退出应用"
 }

@@ -341,5 +341,7 @@
   "postTagAdminPreset": "タグは管理者が設定します",
   "postEmptyCommentCTA": "あなたの意見を共有し、最初のコメントを残そう。",
   "postCommentCount": "{count} コメント",
-  "themeSubtitle": "ライト、ダーク、またはシステムに従う"
+  "themeSubtitle": "ライト、ダーク、またはシステムに従う",
+
+  "nextExit": "もう一度押すとアプリを終了します"
 }

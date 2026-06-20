@@ -1072,4 +1072,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get myProfile => 'My Profile';
+
+  @override
+  String get nextExit => 'Press again to exit the app';
 }

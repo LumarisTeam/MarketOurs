@@ -341,5 +341,8 @@
   "postTagAdminPreset": "Voreingestellte Tags",
   "postEmptyCommentCTA": "Teile deine Gedanken, sei der Erste!",
   "postCommentCount": "{count} Kommentare",
-  "themeSubtitle": "Hell, dunkel oder System folgen"
+  "themeSubtitle": "Hell, dunkel oder System folgen",
+
+
+  "nextExit": "Nochmal drücken, um die App zu beenden"
 }

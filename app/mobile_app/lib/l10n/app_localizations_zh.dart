@@ -1045,4 +1045,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get myProfile => '我的主页';
+
+  @override
+  String get nextExit => '再按一次退出应用';
 }

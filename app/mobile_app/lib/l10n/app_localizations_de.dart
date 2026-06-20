@@ -1058,4 +1058,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get myProfile => 'Mein Profil';
+
+  @override
+  String get nextExit => 'Nochmal drücken, um die App zu beenden';
 }

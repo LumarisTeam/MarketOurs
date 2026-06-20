@@ -1055,4 +1055,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get myProfile => 'Mon profil';
+
+  @override
+  String get nextExit => 'Appuyez à nouveau pour quitter l\'application';
 }

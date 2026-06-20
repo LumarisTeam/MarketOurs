@@ -372,5 +372,8 @@
   "editPostAction": "Edit",
   "deletePostAction": "Delete",
   "share": "Share",
-  "myProfile": "My Profile"
+  "myProfile": "My Profile",
+
+  
+  "nextExit": "Press again to exit the app"
 }

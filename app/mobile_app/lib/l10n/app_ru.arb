@@ -341,5 +341,7 @@
   "postTagAdminPreset": "Теги заданы администратором",
   "postEmptyCommentCTA": "Поделитесь мыслями, будьте первым.",
   "postCommentCount": "{count} комментариев",
-  "themeSubtitle": "Светлая, тёмная или как в системе"
+  "themeSubtitle": "Светлая, тёмная или как в системе",
+
+  "nextExit": "Нажмите ещё раз для выхода"
 }

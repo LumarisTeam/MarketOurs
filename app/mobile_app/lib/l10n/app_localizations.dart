@@ -2097,6 +2097,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'我的主页'**
   String get myProfile;
+
+  /// No description provided for @nextExit.
+  ///
+  /// In zh, this message translates to:
+  /// **'再按一次退出应用'**
+  String get nextExit;
 }
 
 class _AppLocalizationsDelegate

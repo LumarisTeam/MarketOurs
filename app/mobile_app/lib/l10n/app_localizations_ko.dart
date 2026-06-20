@@ -1045,4 +1045,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get myProfile => '내 프로필';
+
+  @override
+  String get nextExit => '앱을 종료하려면 다시 누르세요';
 }

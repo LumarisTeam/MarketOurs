@@ -341,5 +341,7 @@
   "postTagAdminPreset": "Tags prédéfinis",
   "postEmptyCommentCTA": "Partagez votre avis, soyez le premier !",
   "postCommentCount": "{count} commentaires",
-  "themeSubtitle": "Clair, sombre ou suivre le système"
+  "themeSubtitle": "Clair, sombre ou suivre le système",
+
+  "nextExit": "Appuyez à nouveau pour quitter l''application"
 }

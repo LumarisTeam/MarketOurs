@@ -1052,4 +1052,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get myProfile => 'Мой профиль';
+
+  @override
+  String get nextExit => 'Нажмите ещё раз для выхода';
 }
