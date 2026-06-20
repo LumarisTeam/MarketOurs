@@ -22,6 +22,7 @@ import '../pages/profile/public_profile_screen.dart';
 import '../pages/notification/notification_screen.dart';
 import '../pages/legal/terms_screen.dart';
 import '../pages/legal/privacy_screen.dart';
+import '../pages/settings/language_screen.dart';
 import '../pages/main_shell.dart';
 import '../providers/auth_provider.dart';
 import '../providers/notification_provider.dart';
@@ -47,9 +48,11 @@ abstract final class AppRoutePaths {
   static const tag = '/tag/:tagId';
   static const terms = '/terms';
   static const privacy = '/privacy';
+  static const language = '/language';
 }
 
 abstract final class AppRouteNames {
+  static const language = 'language';
   static const splash = 'splash';
   static const login = 'login';
   static const register = 'register';
@@ -303,6 +306,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: AppRoutePaths.privacy,
         name: AppRouteNames.privacy,
         builder: (context, state) => const PrivacyScreen(),
+      ),
+      GoRoute(
+        path: AppRoutePaths.language,
+        name: AppRouteNames.language,
+        builder: (context, state) => const LanguageScreen(),
       ),
     ],
   );

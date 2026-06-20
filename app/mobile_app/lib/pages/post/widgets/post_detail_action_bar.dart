@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 
+import '../../../../l10n/app_localizations.dart';
 import '../../../ui/app_theme.dart';
 
 class PostDetailActionBar extends StatelessWidget {
@@ -70,7 +71,7 @@ class PostDetailActionBar extends StatelessWidget {
           ),
           const Spacer(),
           Text(
-            '$watch 次浏览',
+            AppLocalizations.of(context).postWatchCount(watch),
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w500,
@@ -120,7 +121,9 @@ class _ActionChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: active ? color.withValues(alpha: 0.1) : AppColors.secondary,
+          color: active
+              ? color.withValues(alpha: 0.1)
+              : CupertinoDynamicColor.resolve(AppColors.secondary, context),
           borderRadius: BorderRadius.circular(AppRadii.pill),
         ),
         child: Row(

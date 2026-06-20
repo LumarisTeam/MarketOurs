@@ -1,0 +1,1 @@
+{"permissions":{"allow":["Bash(git *)","Bash(flutter *)","Bash(dotnet *)","Bash(curl *)","Bash(ls *)","Bash(rm *)","Bash(mkdir *)","Bash(cp *)","Bash(mv *)","Bash(cat *)","Bash(python *)","Bash(python3 *)","Bash(taskkill *)","Bash(grep *)","Bash(sed *)","Bash(wc *)","Bash(head *)","Bash(tail *)","Bash(find *)","Bash(sort *)","Bash(uniq *)","Bash(xargs *)","Bash(echo *)"]}}

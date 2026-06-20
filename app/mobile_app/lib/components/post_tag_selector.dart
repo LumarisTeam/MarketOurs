@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:mobile_app/l10n/app_localizations.dart';
 
 import '../models/post.dart';
 import '../ui/app_theme.dart';
@@ -15,12 +16,12 @@ Future<PostTagDto?> showPostTagPicker(
   return showCupertinoModalPopup<PostTagDto?>(
     context: context,
     builder: (ctx) => CupertinoActionSheet(
-      title: const Text('选择标签'),
-      message: const Text('标签由管理员预设，可不选择。'),
+      title: Text(AppLocalizations.of(context).postSelectTag),
+      message: Text(AppLocalizations.of(context).postTagAdminPreset),
       actions: [
         CupertinoActionSheetAction(
           onPressed: () => Navigator.of(ctx).pop(null),
-          child: const Text('无标签'),
+          child: Text(AppLocalizations.of(context).postCreateNoTag),
         ),
         for (final tag in tags)
           CupertinoActionSheetAction(
@@ -30,7 +31,7 @@ Future<PostTagDto?> showPostTagPicker(
       ],
       cancelButton: CupertinoActionSheetAction(
         onPressed: () => Navigator.of(ctx).pop(selectedTag),
-        child: const Text('取消'),
+        child: Text(AppLocalizations.of(context).cancel),
       ),
     ),
   );
@@ -41,9 +42,9 @@ class PostTagSelectorCard extends StatelessWidget {
     super.key,
     required this.tag,
     required this.onPressed,
-    this.emptyText = '无标签',
+    this.emptyText = '',
     this.enabled = true,
-    this.label = '标签',
+    this.label = 'Tag',
   });
 
   final PostTagDto? tag;
@@ -94,9 +95,9 @@ class PostTagInlineSelector extends StatelessWidget {
     super.key,
     required this.tag,
     required this.onPressed,
-    this.emptyText = '无标签',
+    this.emptyText = '',
     this.enabled = true,
-    this.label = '标签',
+    this.label = 'Tag',
     this.actionLabel = '更改',
   });
 

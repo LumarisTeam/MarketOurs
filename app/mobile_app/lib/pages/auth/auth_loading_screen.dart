@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../ui/app_theme.dart';
 
 class AuthLoadingScreen extends StatelessWidget {
@@ -24,7 +25,7 @@ class AuthLoadingScreen extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               Text(
-                '校园集市',
+                AppLocalizations.of(context).appSlogan,
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w400,

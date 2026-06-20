@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
+import 'package:mobile_app/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -50,7 +51,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         return;
       }
 
-      await AppFeedback.showSuccess(context, message: '验证码已发送，请继续重置密码');
+      await AppFeedback.showSuccess(context, message: AppLocalizations.of(context).verifyCodeSentContinue);
       if (!mounted) {
         return;
       }
@@ -68,7 +69,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         context,
         message: (errorMessage != null && errorMessage.isNotEmpty)
             ? errorMessage
-            : '发送验证码失败，请稍后重试',
+            : AppLocalizations.of(context).authSendCodeFailed,
       );
     }
   }
@@ -98,14 +99,14 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     final isSubmitting = authState?.isSubmitting ?? false;
 
     return AuthScaffold(
-      title: '找回密码',
+      title: AppLocalizations.of(context).authForgotPassword,
       footer: Center(
         child: CupertinoButton(
           onPressed: isSubmitting
               ? null
               : () => context.go(AppRoutePaths.login),
-          child: const Text(
-            '返回登录',
+          child: Text(
+            AppLocalizations.of(context).authAlreadyHaveAccount,
             style: TextStyle(fontWeight: FontWeight.w700),
           ),
         ),
@@ -117,10 +118,10 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           children: [
             AppTextField(
               controller: _accountController,
-              placeholder: '账号 / 邮箱 / 手机号',
+              placeholder: AppLocalizations.of(context).authAccountPlaceholder,
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return '请输入账号';
+                  return AppLocalizations.of(context).validatorAccountRequired;
                 }
                 return null;
               },
@@ -128,7 +129,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             const SizedBox(height: 24),
             AppPrimaryButton(
               onPressed: isSubmitting ? null : _submit,
-              child: Text(isSubmitting ? '提交中...' : '发送验证码'),
+              child: Text(isSubmitting ? AppLocalizations.of(context).profileSaving : AppLocalizations.of(context).authSendCode),
             ),
           ],
         ),

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
+import 'package:mobile_app/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -118,34 +119,34 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     showCupertinoModalPopup<void>(
       context: context,
       builder: (ctx) => CupertinoActionSheet(
-        title: const Text('选择头像'),
+        title: Text(AppLocalizations.of(context).authSelectAvatar),
         actions: [
           CupertinoActionSheetAction(
             onPressed: () {
               Navigator.pop(ctx);
               _generateRandomAvatar();
             },
-            child: const Text('随机生成'),
+            child: Text(AppLocalizations.of(context).authRandomAvatar),
           ),
           CupertinoActionSheetAction(
             onPressed: () {
               Navigator.pop(ctx);
               _pickFromGallery();
             },
-            child: const Text('从相册选择'),
+            child: Text(AppLocalizations.of(context).authPickFromGallery),
           ),
           CupertinoActionSheetAction(
             onPressed: () {
               Navigator.pop(ctx);
               _takePhoto();
             },
-            child: const Text('拍照'),
+            child: Text(AppLocalizations.of(context).authTakePhoto),
           ),
         ],
         cancelButton: CupertinoActionSheetAction(
           isDefaultAction: true,
           onPressed: () => Navigator.pop(ctx),
-          child: const Text('取消'),
+          child: Text(AppLocalizations.of(context).cancel),
         ),
       ),
     );
@@ -195,7 +196,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           avatar = url;
         } else {
           if (!mounted) return;
-          await AppFeedback.showError(context, message: '头像上传失败');
+          await AppFeedback.showError(context, message: AppLocalizations.of(context).errorAvatarUploadFailed);
           return;
         }
       }
@@ -240,7 +241,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         context,
         message: (errorMessage != null && errorMessage.isNotEmpty)
             ? errorMessage
-            : '注册失败，请稍后重试',
+            : AppLocalizations.of(context).authRegisterFailed,
       );
     } finally {
       // Clean up temp compressed avatar file
@@ -260,14 +261,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         (_isPasswordDirty && !_isPasswordValid);
 
     return AuthScaffold(
-      title: '注册账号',
+      title: AppLocalizations.of(context).authRegister,
       footer: Center(
         child: CupertinoButton(
           onPressed: isSubmitting
               ? null
               : () => context.go(AppRoutePaths.login),
-          child: const Text(
-            '已有账号？返回登录',
+          child: Text(
+            AppLocalizations.of(context).authAlreadyHaveAccount,
             style: TextStyle(fontWeight: FontWeight.w700),
           ),
         ),
@@ -343,18 +344,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             const SizedBox(height: 4),
             Center(
               child: Text(
-                '点击更换头像',
+                AppLocalizations.of(context).profileClickToChangeAvatar,
                 style: AppTextStyles.label(context).copyWith(fontSize: 11),
               ),
             ),
             const SizedBox(height: 20),
 
             // Name
-            Text('显示名称', style: AppTextStyles.label(context)),
+            Text(AppLocalizations.of(context).displayName, style: AppTextStyles.label(context)),
             const SizedBox(height: 8),
             AppTextField(
               controller: _nameController,
-              placeholder: '给自己起个名字',
+              placeholder: AppLocalizations.of(context).authNamePlaceholder,
               maxLength: DtoLimits.userNameMax,
               prefix: Icon(
                 CupertinoIcons.person,
@@ -363,10 +364,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return '请输入显示名称';
+                  return AppLocalizations.of(context).validatorNameRequired;
                 }
                 if (value.trim().length > DtoLimits.userNameMax) {
-                  return '用户名长度不能超过 ${DtoLimits.userNameMax} 位';
+                  return AppLocalizations.of(context).validatorNameTooLong(DtoLimits.userNameMax);
                 }
                 return null;
               },
@@ -374,11 +375,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             const SizedBox(height: 20),
 
             // Account
-            Text('账号', style: AppTextStyles.label(context)),
+            Text(AppLocalizations.of(context).authAccount, style: AppTextStyles.label(context)),
             const SizedBox(height: 8),
             AppTextField(
               controller: _accountController,
-              placeholder: '邮箱或手机号',
+              placeholder: AppLocalizations.of(context).authAccountHint,
               keyboardType: TextInputType.emailAddress,
               maxLength: DtoLimits.userAccountMax,
               prefix: Icon(
@@ -388,13 +389,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return '请输入账号';
+                  return AppLocalizations.of(context).validatorAccountRequired;
                 }
                 if (value.trim().length > DtoLimits.userAccountMax) {
-                  return '账号长度不能超过 ${DtoLimits.userAccountMax} 位';
+                  return AppLocalizations.of(context).validatorAccountTooLong(DtoLimits.userAccountMax);
                 }
                 if (_isAccountDirty && !_isAccountValid) {
-                  return '请输入有效的邮箱或手机号';
+                  return AppLocalizations.of(context).validatorEmailOrPhoneRequired;
                 }
                 return null;
               },
@@ -407,7 +408,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               Padding(
                 padding: const EdgeInsets.only(left: 4, top: 6),
                 child: Text(
-                  '请输入有效的邮箱或手机号',
+                  AppLocalizations.of(context).validatorEmailOrPhoneRequired,
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -418,18 +419,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             const SizedBox(height: 20),
 
             // Password
-            Text('密码', style: AppTextStyles.label(context)),
+            Text(AppLocalizations.of(context).authPassword, style: AppTextStyles.label(context)),
             const SizedBox(height: 8),
             PasswordFormField(
               controller: _passwordController,
-              placeholder: '密码，至少6位，含大小写字母和数字',
+              placeholder: AppLocalizations.of(context).passwordRequirementHint,
               maxLength: DtoLimits.userPasswordMax,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return '请输入密码';
+                  return AppLocalizations.of(context).validatorPasswordRequired;
                 }
                 if (_isPasswordDirty && !_isPasswordValid) {
-                  return '密码需至少6位，包含大写字母、小写字母和数字';
+                  return AppLocalizations.of(context).authPasswordRequirement;
                 }
                 return null;
               },
@@ -445,7 +446,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '密码需至少6位，包含大写字母、小写字母和数字',
+                      AppLocalizations.of(context).authPasswordRequirement,
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -454,7 +455,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '至少6位，包含大小写字母和数字',
+                      AppLocalizations.of(context).authPasswordRequirement,
                       style: TextStyle(
                         fontSize: 10,
                         color: AppColors.mutedForeground,
@@ -467,7 +468,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
             AppPrimaryButton(
               onPressed: submitDisabled ? null : _submit,
-              child: Text(isSubmitting ? '提交中...' : '注册'),
+              child: Text(isSubmitting ? AppLocalizations.of(context).profileSaving : AppLocalizations.of(context).authRegister),
             ),
           ],
         ),

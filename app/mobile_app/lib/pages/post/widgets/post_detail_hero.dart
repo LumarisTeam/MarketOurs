@@ -2,6 +2,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../l10n/app_localizations.dart';
 import '../../../components/post_tag_pill.dart';
 import '../../../models/post.dart';
 import '../../../router/app_router.dart';
@@ -87,10 +88,10 @@ class PostDetailHero extends StatelessWidget {
                   ),
                   child: Text(
                     isMe
-                        ? '我的主页'
+                        ? AppLocalizations.of(context).myProfile
                         : isFollowingAuthor
-                        ? '已关注'
-                        : '关注',
+                        ? AppLocalizations.of(context).profileUnfollow
+                        : AppLocalizations.of(context).profileFollow,
                     style: TextStyle(
                       fontSize: 13,
                       color: isFollowingAuthor && !isMe
@@ -113,7 +114,7 @@ class PostDetailHero extends StatelessWidget {
         ),
         if (post.tag != null) ...[
           const SizedBox(height: 12),
-          PostTagPill(tag: post.tag),
+          PostTagPill(tag: post.tag, emptyText: AppLocalizations.of(context).postCreateNoTag),
         ],
         const SizedBox(height: 16),
         Text(

@@ -1,7 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:mobile_app/utils/dto_validation.dart';
 
+import 'package:mobile_app/l10n/app_localizations.dart';
+import 'package:mobile_app/utils/dto_validation.dart';
 import 'editable_image_wrap.dart';
 import '../models/post.dart';
 import '../ui/app_fields.dart';
@@ -31,7 +32,7 @@ class PostEditorForm extends StatelessWidget {
     this.onRemoveExistingImage,
     this.onRemoveLocalImage,
     this.uploadProgress,
-    this.tagEmptyText = '无标签',
+    required this.tagEmptyText,
     this.isSubmitting = false,
     // Reorderable mode
     this.reorderableEntries,
@@ -76,10 +77,10 @@ class PostEditorForm extends StatelessWidget {
             children: [
               _buildImageCard(context),
               const SizedBox(height: 12),
-              _buildTagCard(),
+              _buildTagCard(context),
               if (uploadProgress != null) ...[
                 const SizedBox(height: 12),
-                _buildUploadProgress(),
+                _buildUploadProgress(context),
               ],
               const SizedBox(height: 20),
               AppPrimaryButton(onPressed: onSubmit, child: Text(submitLabel)),
@@ -102,10 +103,10 @@ class PostEditorForm extends StatelessWidget {
           const SizedBox(height: 12),
           _buildImageCard(context),
           const SizedBox(height: 12),
-          _buildTagCard(),
+          _buildTagCard(context),
           if (uploadProgress != null) ...[
             const SizedBox(height: 12),
-            _buildUploadProgress(),
+            _buildUploadProgress(context),
           ],
           const SizedBox(height: 20),
           AppPrimaryButton(onPressed: onSubmit, child: Text(submitLabel)),
@@ -126,14 +127,14 @@ class PostEditorForm extends StatelessWidget {
         children: [
           AppTextField(
             controller: titleController,
-            placeholder: '帖子标题',
+            placeholder: AppLocalizations.of(context).postCreateTitle,
             maxLength: DtoLimits.postTitleMax,
             validator: titleValidator,
           ),
           const SizedBox(height: 16),
           AppTextField(
             controller: contentController,
-            placeholder: '分享此刻的新鲜事...',
+            placeholder: AppLocalizations.of(context).postCreateContent,
             maxLines: contentMaxLines,
             maxLength: DtoLimits.postContentMax,
             validator: contentValidator,
@@ -158,16 +159,22 @@ class PostEditorForm extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                '图片',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+              Text(
+                AppLocalizations.of(context).postCreateImages,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               CupertinoButton(
                 padding: EdgeInsets.zero,
                 onPressed: onPickImages,
-                child: const Text(
-                  '添加图片',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                child: Text(
+                  AppLocalizations.of(context).postCreateAddImages,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
@@ -178,12 +185,20 @@ class PostEditorForm extends StatelessWidget {
               height: 120,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: AppColors.secondary,
+                color: CupertinoDynamicColor.resolve(
+                  AppColors.secondary,
+                  context,
+                ),
                 borderRadius: BorderRadius.circular(AppRadii.md),
               ),
-              child: const Text(
-                '还没选择图片',
-                style: TextStyle(color: AppColors.mutedForeground),
+              child: Text(
+                AppLocalizations.of(context).postCreateNoImages,
+                style: TextStyle(
+                  color: CupertinoDynamicColor.resolve(
+                    AppColors.mutedForeground,
+                    context,
+                  ),
+                ),
               ),
             )
           else if (useReorderable)
@@ -210,16 +225,17 @@ class PostEditorForm extends StatelessWidget {
     );
   }
 
-  Widget _buildTagCard() {
+  Widget _buildTagCard(BuildContext context) {
     return PostTagSelectorCard(
       tag: selectedTag,
       onPressed: onPickTag,
       enabled: onPickTag != null,
       emptyText: tagEmptyText,
+      label: AppLocalizations.of(context).postCreateTag,
     );
   }
 
-  Widget _buildUploadProgress() {
+  Widget _buildUploadProgress(BuildContext context) {
     final fraction = uploadProgress ?? 0;
     final percent = (fraction * 100).round();
     return AppTappableCard(
@@ -231,9 +247,9 @@ class PostEditorForm extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                '正在上传图片',
-                style: TextStyle(
+              Text(
+                AppLocalizations.of(context).postUploading,
+                style: const TextStyle(
                   fontSize: 14,
                   color: AppColors.mutedForeground,
                 ),

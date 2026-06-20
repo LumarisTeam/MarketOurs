@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mobile_app/l10n/app_localizations.dart';
 import 'package:mobile_app/models/post.dart';
 import 'package:mobile_app/router/app_router.dart';
 import 'package:mobile_app/services/share_service.dart';
@@ -65,7 +66,11 @@ class PostCard extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        formatEditedRelativeDateTime(post.createdAt, post.updatedAt),
+                        formatEditedRelativeDateTime(
+                          post.createdAt,
+                          post.updatedAt,
+                          l10n: AppLocalizations.of(context),
+                        ),
                         style: AppTextStyles.label(context),
                       ),
                     ],

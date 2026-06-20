@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:mobile_app/l10n/app_localizations.dart';
 import '../../models/notification.dart';
 import '../../router/app_router.dart';
 import '../../services/notification_service.dart';
@@ -22,11 +25,24 @@ class NotificationScreen extends StatefulWidget {
 class _NotificationScreenState extends State<NotificationScreen> {
   List<NotificationDto> _notifications = [];
   bool _isLoading = true;
+  Locale? _lastLocale;
 
   @override
   void initState() {
     super.initState();
     _loadNotifications();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final currentLocale = Localizations.localeOf(context);
+    if (_lastLocale != null && _lastLocale != currentLocale) {
+      _lastLocale = currentLocale;
+      _loadNotifications();
+    } else if (_lastLocale == null) {
+      _lastLocale = currentLocale;
+    }
   }
 
   Future<void> _loadNotifications() async {
@@ -88,7 +104,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
         ),
         slivers: [
           CupertinoSliverNavigationBar(
-            largeTitle: const Text('通知'),
+            largeTitle: Text(AppLocalizations.of(context).tabNotifications),
             backgroundColor: CupertinoDynamicColor.resolve(
               AppColors.background,
               context,
@@ -137,7 +153,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 notifications: _notifications,
                 iconForType: _getIcon,
                 iconColorForType: _getIconColor,
-                formatDate: formatNotificationDateTime,
+                formatDate: (date, context) => formatNotificationDateTime(
+                  date,
+                  AppLocalizations.of(context),
+                ),
                 onOpen: _openNotification,
               ),
             ),
@@ -166,7 +185,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
       return;
     }
 
-    if (n.targetId?.isNotEmpty == true) {
+    if (n.type == NotificationType.hotList) {
+      context.go(AppRoutePaths.hot);
+    } else if (n.targetId?.isNotEmpty == true) {
       context.push(buildPostDetailLocation(n.targetId!));
     }
   }
@@ -218,9 +239,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
-            '暂无通知',
-            style: TextStyle(
+          Text(
+            AppLocalizations.of(context).notificationEmpty,
+            style: const TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w600,
               color: AppColors.mutedForeground,
@@ -244,7 +265,7 @@ class _NotificationList extends StatelessWidget {
   final List<NotificationDto> notifications;
   final IconData Function(NotificationType type) iconForType;
   final Color Function(NotificationType type) iconColorForType;
-  final String Function(DateTime date) formatDate;
+  final String Function(DateTime? date, BuildContext context) formatDate;
   final Future<void> Function(int index) onOpen;
 
   @override
@@ -261,7 +282,7 @@ class _NotificationList extends StatelessWidget {
                 notification: entry.$2,
                 icon: iconForType(entry.$2.type),
                 iconColor: iconColorForType(entry.$2.type),
-                formattedDate: formatDate(entry.$2.createdAt),
+                formattedDate: formatDate(entry.$2.createdAt, context),
                 onPressed: () {
                   onOpen(entry.$1);
                 },
@@ -287,7 +308,7 @@ class _NotificationList extends StatelessWidget {
                   notification: entry.$2,
                   icon: iconForType(entry.$2.type),
                   iconColor: iconColorForType(entry.$2.type),
-                  formattedDate: formatDate(entry.$2.createdAt),
+                  formattedDate: formatDate(entry.$2.createdAt, context),
                   onPressed: () {
                     onOpen(entry.$1);
                   },
@@ -348,7 +369,10 @@ class _NotificationCard extends StatelessWidget {
                           fontWeight: notification.isRead
                               ? FontWeight.w600
                               : FontWeight.w800,
-                          color: AppColors.foreground,
+                          color: CupertinoDynamicColor.resolve(
+                            AppColors.foreground,
+                            context,
+                          ),
                         ),
                       ),
                     ),
@@ -364,13 +388,12 @@ class _NotificationCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  notification.content,
-                  style: AppTextStyles.muted(
-                    context,
-                  ).copyWith(fontSize: 14, height: 1.4),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                _NotificationBody(
+                  content: notification.content,
+                  type: notification.type,
+                  onPostTap: (postId) {
+                    context.push(buildPostDetailLocation(postId));
+                  },
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -383,6 +406,109 @@ class _NotificationCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _NotificationBody extends StatelessWidget {
+  const _NotificationBody({
+    required this.content,
+    required this.type,
+    required this.onPostTap,
+  });
+
+  final String content;
+  final NotificationType type;
+  final ValueChanged<String> onPostTap;
+
+  @override
+  Widget build(BuildContext context) {
+    if (type != NotificationType.hotList) {
+      return Text(
+        content,
+        style: AppTextStyles.muted(context).copyWith(
+          fontSize: 14,
+          height: 1.4,
+        ),
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+      );
+    }
+
+    try {
+      final json = jsonDecode(content) as Map<String, dynamic>;
+      final header = json['header'] as String?;
+      final posts = json['posts'] as List<dynamic>?;
+
+      if (header == null || posts == null || posts.isEmpty) {
+        return _plainText(content, context);
+      }
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            header,
+            style: AppTextStyles.muted(context).copyWith(
+              fontSize: 14,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 4),
+          for (final post in posts)
+            _HotPostLine(
+              title: (post as Map<String, dynamic>)['title'] as String? ?? '',
+              onTap: () {
+                final id = post['id'] as String?;
+                if (id != null) onPostTap(id);
+              },
+            ),
+        ],
+      );
+    } catch (_) {
+      return _plainText(content, context);
+    }
+  }
+
+  Widget _plainText(String text, BuildContext context) {
+    return Text(
+      text,
+      style: AppTextStyles.muted(context).copyWith(
+        fontSize: 14,
+        height: 1.4,
+      ),
+      maxLines: 10,
+      overflow: TextOverflow.ellipsis,
+    );
+  }
+}
+
+class _HotPostLine extends StatelessWidget {
+  const _HotPostLine({required this.title, required this.onTap});
+
+  final String title;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: Text(
+          title,
+          style: TextStyle(
+            fontSize: 14,
+            height: 1.5,
+            color: CupertinoDynamicColor.resolve(
+              AppColors.primary,
+              context,
+            ),
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ),
     );
   }

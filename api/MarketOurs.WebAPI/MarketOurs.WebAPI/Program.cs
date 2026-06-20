@@ -502,8 +502,8 @@ app.UseMiddleware<GlobalExceptionMiddleware>();
 // 注册数据脱敏中间件
 app.UseMiddleware<DataMaskingMiddleware>();
 
-// 限流中间件
-app.UseMiddleware<RateLimitMiddleware>();
+// 限流中间件（开发环境跳过）
+if (!app.Environment.IsDevelopment()) app.UseMiddleware<RateLimitMiddleware>();
 
 #endregion
 
@@ -617,10 +617,10 @@ app.UseStaticFiles();
 app.UseSession(); // 会话中间件应该在认证和跨域中间件之前
 
 app.UseForwardedHeaders();
-app.UseHttpsRedirection();
+app.UseCors();
+if (!app.Environment.IsDevelopment()) app.UseHttpsRedirection();
 app.UseAuthentication(); // 添加这行以启用身份验证中间件
 app.UseAuthorization();
-app.UseCors();
 app.UseMiddleware<RequestMetricsMiddleware>();
 
 // 添加 Prometheus HTTP 请求指标收集中间件

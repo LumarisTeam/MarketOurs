@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
+import 'package:mobile_app/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -96,7 +97,7 @@ class _RegisterVerifyScreenState extends ConsumerState<RegisterVerifyScreen> {
         context,
         message: (errorMessage != null && errorMessage.isNotEmpty)
             ? errorMessage
-            : '重发验证码失败，请稍后重试',
+            : AppLocalizations.of(context).authSendCodeFailed,
       );
     }
   }
@@ -135,7 +136,7 @@ class _RegisterVerifyScreenState extends ConsumerState<RegisterVerifyScreen> {
 
       if (!mounted) return;
 
-      await AppFeedback.showSuccess(context, message: '注册完成，请使用账号密码登录');
+      await AppFeedback.showSuccess(context, message: AppLocalizations.of(context).registerComplete);
       if (!mounted) return;
       context.go(AppRoutePaths.login);
     } catch (_) {
@@ -149,7 +150,7 @@ class _RegisterVerifyScreenState extends ConsumerState<RegisterVerifyScreen> {
         context,
         message: (errorMessage != null && errorMessage.isNotEmpty)
             ? errorMessage
-            : '验证失败，请稍后重试',
+            : AppLocalizations.of(context).authVerifyFailed,
       );
     }
   }
@@ -160,15 +161,15 @@ class _RegisterVerifyScreenState extends ConsumerState<RegisterVerifyScreen> {
     final isSubmitting = authState?.isSubmitting ?? false;
 
     return AuthScaffold(
-      title: '验证注册',
+      title: AppLocalizations.of(context).authRegisterVerifyTitle,
       footer: Center(
         child: CupertinoButton(
           onPressed: isSubmitting
               ? null
               : () => context.go(AppRoutePaths.register),
-          child: const Text(
-            '返回上一步',
-            style: TextStyle(fontWeight: FontWeight.w700),
+          child: Text(
+            AppLocalizations.of(context).goBack,
+            style: const TextStyle(fontWeight: FontWeight.w700),
           ),
         ),
       ),
@@ -201,10 +202,10 @@ class _RegisterVerifyScreenState extends ConsumerState<RegisterVerifyScreen> {
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return '请输入验证码';
+                  return AppLocalizations.of(context).validatorCodeRequired;
                 }
                 if (value.trim().length < 4) {
-                  return '验证码至少4位';
+                  return AppLocalizations.of(context).codeMinLength;
                 }
                 return null;
               },
@@ -217,7 +218,7 @@ class _RegisterVerifyScreenState extends ConsumerState<RegisterVerifyScreen> {
                 onPressed: isSubmitting || _countdown > 0 ? null : _resendCode,
                 padding: EdgeInsets.zero,
                 child: Text(
-                  _countdown > 0 ? '${_countdown}s 后重新发送' : '重新发送验证码',
+                  _countdown > 0 ? '${_countdown}s 后重新发送' : AppLocalizations.of(context).authResendCode,
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
@@ -232,7 +233,7 @@ class _RegisterVerifyScreenState extends ConsumerState<RegisterVerifyScreen> {
 
             AppPrimaryButton(
               onPressed: isSubmitting || !_isCodeValid ? null : _submit,
-              child: Text(isSubmitting ? '验证中...' : '验证并完成'),
+              child: Text(isSubmitting ? AppLocalizations.of(context).profileSaving : AppLocalizations.of(context).submit),
             ),
           ],
         ),

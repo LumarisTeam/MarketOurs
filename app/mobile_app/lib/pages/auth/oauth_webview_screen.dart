@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -124,7 +126,7 @@ class _OAuthWebViewScreenState extends ConsumerState<OAuthWebViewScreen> {
     final message = uri.queryParameters['message'];
     final isBindSuccess =
         message != null &&
-        (message.contains('绑定成功') || message.contains('Binding successful'));
+        (message.contains(AppLocalizations.of(context).commentBindingSuccess) || message.contains('Binding successful'));
     if (isBindSuccess) {
       _handleBindSuccess();
       return;
@@ -134,7 +136,7 @@ class _OAuthWebViewScreenState extends ConsumerState<OAuthWebViewScreen> {
     final refreshToken = uri.queryParameters['refreshToken'];
 
     if (accessToken == null || refreshToken == null) {
-      _fail('登录失败，缺少令牌');
+      _fail(AppLocalizations.of(context).oauthWebViewLoginFailed);
       return;
     }
 
@@ -145,12 +147,12 @@ class _OAuthWebViewScreenState extends ConsumerState<OAuthWebViewScreen> {
     try {
       await ref.read(authControllerProvider.notifier).refreshProfile();
       if (!mounted) return;
-      await AppFeedback.showSuccess(context, message: '绑定成功');
+      await AppFeedback.showSuccess(context, message: AppLocalizations.of(context).commentBindingSuccess);
       if (!mounted) return;
       context.pop();
     } catch (_) {
       if (!mounted) return;
-      _fail('绑定成功，但刷新资料失败，请稍后下拉刷新');
+      _fail(AppLocalizations.of(context).commentBindingSuccessRefreshFailed);
     }
   }
 
@@ -166,17 +168,17 @@ class _OAuthWebViewScreenState extends ConsumerState<OAuthWebViewScreen> {
       if (!mounted) return;
 
       if (success) {
-        await AppFeedback.showSuccess(context, message: '登录成功');
+        await AppFeedback.showSuccess(context, message: AppLocalizations.of(context).authLoginSuccess);
         if (!mounted) return;
         context.go(AppRoutePaths.home);
       } else {
         final authState = ref.read(authControllerProvider).asData?.value;
         final errorMessage = authState?.errorMessage;
-        _fail(errorMessage ?? '登录失败，请稍后重试');
+        _fail(errorMessage ?? AppLocalizations.of(context).authLoginFailed);
       }
     } catch (_) {
       if (!mounted) return;
-      _fail('登录失败，请稍后重试');
+      _fail(AppLocalizations.of(context).authLoginFailed);
     }
   }
 
@@ -189,9 +191,10 @@ class _OAuthWebViewScreenState extends ConsumerState<OAuthWebViewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final title = widget.purpose == 'bind'
-        ? '绑定 ${widget.provider}'
-        : '${widget.provider} 登录';
+        ? l10n.oauthBindProvider(widget.provider)
+        : l10n.oauthLoginProvider(widget.provider);
 
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
@@ -212,7 +215,7 @@ class _OAuthWebViewScreenState extends ConsumerState<OAuthWebViewScreen> {
               const CupertinoActivityIndicator(radius: 16),
               const SizedBox(height: 20),
               Text(
-                _isLaunching ? '正在打开系统浏览器' : '请在浏览器中完成授权',
+                _isLaunching ? l10n.oauthWebViewOpenBrowser : l10n.oauthWebViewAuthorizeInBrowser,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 18,
@@ -221,19 +224,19 @@ class _OAuthWebViewScreenState extends ConsumerState<OAuthWebViewScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                _statusMessage ?? '完成后会自动回到光汇',
+                _statusMessage ?? l10n.oauthWebViewAutoReturn,
                 textAlign: TextAlign.center,
                 style: AppTextStyles.muted(context),
               ),
               const SizedBox(height: 28),
               AppPrimaryButton(
                 onPressed: _isLaunching ? null : _startOAuth,
-                child: Text(_isLaunching ? '正在打开' : '重新打开'),
+                child: Text(_isLaunching ? AppLocalizations.of(context).oauthWebViewOpening : AppLocalizations.of(context).oauthWebViewReopen),
               ),
               const SizedBox(height: 12),
               CupertinoButton(
                 onPressed: () => context.pop(),
-                child: const Text('取消'),
+                child: Text(AppLocalizations.of(context).cancel),
               ),
             ],
           ),

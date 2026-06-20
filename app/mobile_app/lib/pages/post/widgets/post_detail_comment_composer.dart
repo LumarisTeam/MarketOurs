@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 
+import '../../../../l10n/app_localizations.dart';
 import '../../../components/editable_image_wrap.dart';
 import '../../../ui/app_responsive.dart';
 import '../../../ui/app_theme.dart';
@@ -125,7 +126,7 @@ class PostDetailCommentComposer extends StatelessWidget {
                           alignment: Alignment.centerLeft,
                           child: CupertinoTextField(
                             controller: controller,
-                            placeholder: '写下你的评论...',
+                            placeholder: AppLocalizations.of(context).postWriteComment,
                             placeholderStyle: TextStyle(
                               fontSize: 14,
                               color: CupertinoDynamicColor.resolve(
@@ -155,7 +156,7 @@ class PostDetailCommentComposer extends StatelessWidget {
                         padding: EdgeInsets.zero,
                         onPressed: isWorking ? null : onSubmit,
                         child: Text(
-                          '发布',
+                          AppLocalizations.of(context).postCreatePublish,
                           style: TextStyle(
                             color: AppColors.primary.withValues(
                               alpha: isWorking ? 0.5 : 1.0,

@@ -12,9 +12,15 @@ class ApiService {
   late final Dio dio;
   static final ApiService _instance = ApiService._internal();
   static const String _apiBaseUrlOverride =
-      'https://lumalisapi.luckyfishes.site';
+      'http://localhost:5053';
   static const Duration _defaultTimeout = Duration(seconds: 15);
   static const Duration _uploadTimeout = Duration(minutes: 2);
+
+  static String? _currentLocale;
+
+  static void setLocale(String locale) {
+    _currentLocale = locale;
+  }
 
   static String get baseUrl => _resolveBaseUrl();
   static const String _skipAuthExtraKey = 'skipAuth';
@@ -51,6 +57,10 @@ class ApiService {
               : await _authStorage?.readAccessToken();
           if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
+          }
+
+          if (_currentLocale != null && _currentLocale != 'zh') {
+            options.headers['Accept-Language'] = _currentLocale;
           }
 
           AppLogger.info(

@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 
+import '../../../../l10n/app_localizations.dart';
 import '../../../models/comment.dart';
 import '../../../ui/app_theme.dart';
 import '../../../ui/app_widgets.dart';
@@ -202,7 +203,11 @@ class _CommentCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    formatEditedRelativeDateTime(comment.createdAt, comment.updatedAt),
+                    formatEditedRelativeDateTime(
+                      comment.createdAt,
+                      comment.updatedAt,
+                      l10n: AppLocalizations.of(context),
+                    ),
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
@@ -256,15 +261,15 @@ class _CommentCard extends StatelessWidget {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  _TextAction(label: '回复', onTap: onReply),
+                  _TextAction(label: AppLocalizations.of(context).reply, onTap: onReply),
                   if (onEdit != null) ...[
                     const SizedBox(width: 16),
-                    _TextAction(label: '编辑', onTap: onEdit!),
+                    _TextAction(label: AppLocalizations.of(context).editPostAction, onTap: onEdit!),
                   ],
                   if (onDelete != null) ...[
                     const SizedBox(width: 16),
                     _TextAction(
-                      label: '删除',
+                      label: AppLocalizations.of(context).deletePostAction,
                       onTap: onDelete!,
                       activeColor: AppColors.destructive,
                       active: true,

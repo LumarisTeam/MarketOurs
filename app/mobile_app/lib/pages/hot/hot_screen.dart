@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
+import 'package:mobile_app/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -31,7 +32,7 @@ class HotScreen extends ConsumerWidget {
           ),
           slivers: [
             CupertinoSliverNavigationBar(
-              largeTitle: const Text('热榜'),
+              largeTitle: Text(AppLocalizations.of(context).tabHot),
               backgroundColor: CupertinoDynamicColor.resolve(
                 AppColors.background,
                 context,
@@ -66,11 +67,11 @@ class HotScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(16),
             child: AppEmptyState(
               icon: CupertinoIcons.exclamationmark_triangle,
-              title: '加载失败',
+              title: AppLocalizations.of(context).loadingFailed,
               description: extractErrorFromException(error),
               action: AppPrimaryButton(
                 onPressed: () => ref.read(hotFeedProvider.notifier).refresh(),
-                child: const Text('重新加载'),
+                child: Text(AppLocalizations.of(context).retry),
               ),
             ),
           ),
@@ -88,10 +89,10 @@ class _HotPostList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (posts.isEmpty) {
-      return const AppEmptyState(
+      return AppEmptyState(
         icon: CupertinoIcons.flame,
-        title: '热榜暂时为空',
-        description: '等大家再热闹一点，热门帖子就会出现在这里。',
+        title: AppLocalizations.of(context).hotListEmpty,
+        description: AppLocalizations.of(context).hotListEmptyDesc,
       );
     }
 
@@ -199,7 +200,7 @@ class _HotPostCard extends StatelessWidget {
                     Icon(CupertinoIcons.flame, color: rankColor, size: 14),
                     const SizedBox(width: 4),
                     Text(
-                      '$hot 热度',
+                      AppLocalizations.of(context).hotWatch(hot),
                       style: TextStyle(
                         fontSize: 13,
                         color: rankColor,

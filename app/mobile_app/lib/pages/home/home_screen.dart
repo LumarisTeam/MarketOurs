@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:mobile_app/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_app/components/post_card.dart';
@@ -31,6 +32,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void initState() {
     super.initState();
     _scrollController = ScrollController()..addListener(_handleScroll);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Reset tag cache so tags reload with new locale
+    _hasLoadedTags = false;
   }
 
   @override
@@ -82,15 +90,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (!mounted) return;
 
       if (_tags.isEmpty) {
-        await AppFeedback.showInfo(context, message: '当前没有可进入的标签');
+        await AppFeedback.showInfo(context, message: AppLocalizations.of(context).noTagAvailable);
         return;
       }
 
       final selectedTag = await showCupertinoModalPopup<PostTagDto>(
         context: context,
         builder: (ctx) => CupertinoActionSheet(
-          title: const Text('进入标签页'),
-          message: const Text('选择一个标签，查看该标签下的帖子。'),
+          title: Text(AppLocalizations.of(context).enterTagPage),
+          message: Text(AppLocalizations.of(context).chooseTagHint),
           actions: [
             for (final tag in _tags)
               CupertinoActionSheetAction(
@@ -98,13 +106,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: Text(
                   tag.name?.trim().isNotEmpty == true
                       ? tag.name!.trim()
-                      : '未命名标签',
+                      : AppLocalizations.of(context).unnamedTag,
                 ),
               ),
           ],
           cancelButton: CupertinoActionSheetAction(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('取消'),
+            child: Text(AppLocalizations.of(context).cancel),
           ),
         ),
       );
@@ -143,7 +151,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           slivers: [
             CupertinoSliverNavigationBar(
-              largeTitle: const Text('首页'),
+              largeTitle: Text(AppLocalizations.of(context).tabHome),
               backgroundColor: CupertinoDynamicColor.resolve(
                 AppColors.background,
                 context,
@@ -194,7 +202,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: CupertinoSearchTextField(
                   key: const ValueKey('home-responsive-search-field'),
                   controller: _searchController,
-                  placeholder: '搜索帖子、话题或用户',
+                  placeholder: AppLocalizations.of(context).homeSearchPlaceholder,
                   borderRadius: BorderRadius.circular(AppRadii.md),
                   backgroundColor: AppColors.secondary,
                   onSubmitted: (value) =>
@@ -263,10 +271,10 @@ class _PostListSection extends StatelessWidget {
     if (posts.isEmpty) {
       return AppEmptyState(
         icon: keyword.isEmpty ? CupertinoIcons.news : CupertinoIcons.search,
-        title: keyword.isEmpty ? '还没有帖子' : '没有找到相关帖子',
+        title: keyword.isEmpty ? AppLocalizations.of(context).homeEmpty : '没有找到相关帖子',
         description: keyword.isEmpty
-            ? '等第一位同学来发布内容，或者稍后再刷新看看。'
-            : '换个关键词试试，或者清空搜索回到首页。',
+            ? AppLocalizations.of(context).waitFirstPoster
+            : AppLocalizations.of(context).tryDifferentKeyword,
       );
     }
 
@@ -339,7 +347,7 @@ class _SearchLoadingIndicator extends StatelessWidget {
         const CupertinoActivityIndicator(radius: 8),
         const SizedBox(width: 8),
         Text(
-          keyword.isEmpty ? '正在刷新帖子...' : '正在搜索...',
+          keyword.isEmpty ? AppLocalizations.of(context).refreshingPosts : AppLocalizations.of(context).searching,
           style: AppTextStyles.label(context),
         ),
       ],
@@ -369,11 +377,11 @@ class _FeedErrorView extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: AppEmptyState(
           icon: CupertinoIcons.exclamationmark_triangle,
-          title: '加载失败',
+          title: AppLocalizations.of(context).loadingFailed,
           description: message,
           action: AppPrimaryButton(
             onPressed: onRetry,
-            child: const Text('重新加载'),
+            child: Text(AppLocalizations.of(context).retry),
           ),
         ),
       ),

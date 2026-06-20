@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
+import 'package:mobile_app/l10n/app_localizations.dart';
 import '../../components/editable_image_wrap.dart';
 import '../../components/post_editor_form.dart';
 import '../../components/post_tag_selector.dart';
@@ -131,7 +132,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       final response = await postFuture;
       final post = response.data;
       if (post == null) {
-        throw Exception('帖子不存在');
+        throw Exception(AppLocalizations.of(context).postNotFound);
       }
 
       if (!mounted) return;
@@ -290,7 +291,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           _commentImageEntries.clear();
           _commentUploadProgress = null;
         });
-        if (mounted) await AppFeedback.showSuccess(context, message: '评论已发布');
+        if (mounted)
+          await AppFeedback.showSuccess(
+            context,
+            message: AppLocalizations.of(context).postCommentSent,
+          );
       }
     } catch (error) {
       if (!mounted) return;
@@ -775,7 +780,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         await ref.read(postServiceProvider).deletePost(post.id);
         if (mounted) context.pop();
       },
-      successMessage: '帖子已删除',
+      successMessage: AppLocalizations.of(context).postDeleted,
       reloadAll: false,
     );
   }
@@ -880,7 +885,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         newImages: List<XFile>.from(selectedImages),
                       ),
                     ),
-                    child: const Text('保存'),
+                    child: Text(AppLocalizations.of(context).save),
                   ),
                 ],
               ),
@@ -956,7 +961,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               ),
               child: PostEditorForm(
                 layout: PostEditorLayout.sheet,
-                headerText: '编辑帖子',
+                headerText: AppLocalizations.of(context).postEditTitle,
                 titleController: titleController,
                 contentController: contentController,
                 selectedTag: selectedTag,
@@ -988,8 +993,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     ),
                   );
                 },
-                submitLabel: '保存修改',
-                tagEmptyText: availableTags.isEmpty ? '暂无标签' : '无标签',
+                submitLabel: AppLocalizations.of(context).notificationSaveSettings,
+                tagEmptyText: availableTags.isEmpty
+                    ? AppLocalizations.of(context).postCreateNoTag
+                    : AppLocalizations.of(context).postCreateNoTag,
               ),
             );
           },
@@ -1005,7 +1012,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   String? _validatePostDraft(String title, String content) {
     final titleError = requiredMaxValidator(
       title,
-      emptyMessage: '请输入标题',
+      emptyMessage: AppLocalizations.of(context).postCreateTitleEmpty,
       max: DtoLimits.postTitleMax,
       maxMessage: '标题长度不能超过 ${DtoLimits.postTitleMax} 位',
     );
@@ -1013,7 +1020,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 
     return requiredMaxValidator(
       content,
-      emptyMessage: '请输入内容',
+      emptyMessage: AppLocalizations.of(context).postCreateContentEmpty,
       max: DtoLimits.postContentMax,
       maxMessage: '内容长度不能超过 ${DtoLimits.postContentMax} 位',
     );
@@ -1198,7 +1205,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         Navigator.of(context).pop();
                         _editPost();
                       },
-                      child: const Text('编辑帖子'),
+                      child: Text(AppLocalizations.of(context).postEditTitle),
                     ),
                     CupertinoActionSheetAction(
                       isDestructiveAction: true,
@@ -1206,12 +1213,12 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         Navigator.of(context).pop();
                         _deletePost();
                       },
-                      child: const Text('删除帖子'),
+                      child: Text(AppLocalizations.of(context).postDeleteTitle),
                     ),
                   ],
                   cancelButton: CupertinoActionSheetAction(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('取消'),
+                    child: Text(AppLocalizations.of(context).cancel),
                   ),
                 ),
               );
@@ -1222,7 +1229,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 
     if (_isLoading) {
       return AppPageScaffold(
-        title: '详情',
+        title: AppLocalizations.of(context).postDetail,
         navigationBarStyle: AppNavigationBarStyle.compact,
         trailing: trailing,
         child: const Center(child: CupertinoActivityIndicator(radius: 14)),
@@ -1231,7 +1238,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 
     if (_errorMessage != null || post == null) {
       return AppPageScaffold(
-        title: '详情',
+        title: AppLocalizations.of(context).postDetail,
         navigationBarStyle: AppNavigationBarStyle.compact,
         trailing: trailing,
         child: PostDetailErrorView(
@@ -1242,7 +1249,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     }
 
     return AppPageScaffold(
-      title: '详情',
+      title: AppLocalizations.of(context).postDetail,
       navigationBarStyle: AppNavigationBarStyle.compact,
       trailing: trailing,
       bottomBar: _buildCommentComposer(context),
@@ -1275,7 +1282,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       children: [
                         Expanded(
                           child: Text(
-                            '评论 ${_comments.length}',
+                            AppLocalizations.of(context).postCommentCount(_comments.length),
                             style: AppTextStyles.sectionTitle(context),
                           ),
                         ),
@@ -1285,14 +1292,20 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             AppColors.secondary,
                             context,
                           ),
-                          children: const {
+                          children: {
                             'recent': Padding(
                               padding: EdgeInsets.symmetric(horizontal: 10),
-                              child: Text('最新', style: TextStyle(fontSize: 13)),
+                              child: Text(
+                                AppLocalizations.of(context).postCommentSortNewest,
+                                style: TextStyle(fontSize: 13),
+                              ),
                             ),
                             'hot': Padding(
                               padding: EdgeInsets.symmetric(horizontal: 10),
-                              child: Text('最热', style: TextStyle(fontSize: 13)),
+                              child: Text(
+                                AppLocalizations.of(context).postCommentSortHot,
+                                style: TextStyle(fontSize: 13),
+                              ),
                             ),
                           },
                           onValueChanged: (v) {
@@ -1313,10 +1326,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         ),
                       ),
                     if (_comments.isEmpty && !_isCommentsLoading)
-                      const AppEmptyState(
+                      AppEmptyState(
                         icon: CupertinoIcons.chat_bubble,
-                        title: '暂无评论',
-                        description: '分享你的见解，成为第一个评论的人。',
+                        title: AppLocalizations.of(context).postNoComments,
+                        description: AppLocalizations.of(context).postEmptyCommentCTA,
                       )
                     else
                       ..._comments.map(
