@@ -219,8 +219,8 @@ public class CommentService(
                     notificationQueue.Enqueue(new Background.NotificationMessage
                     {
                         UserId = post.UserId,
-                        Title = "你的贴子收到了新评论",
-                        Content = $"{commenter.Name} 评论了你的贴子: {comment.Content.Substring(0, Math.Min(comment.Content.Length, 20))}...",
+                        Title = "你的帖子收到了新评论",
+                        Content = $"{commenter.Name} 评论了你的帖子: {comment.Content.Substring(0, Math.Min(comment.Content.Length, 20))}...",
                         Type = NotificationType.PostReply,
                         TargetId = comment.PostId
                     });

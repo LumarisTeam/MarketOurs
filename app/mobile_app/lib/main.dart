@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,9 +8,11 @@ import 'l10n/app_localizations.dart';
 import 'providers/locale_provider.dart';
 import 'providers/theme_provider.dart';
 import 'router/app_router.dart';
+import 'services/api_service.dart';
 import 'ui/app_theme.dart';
 
 void main() {
+  ApiService.setLocale(PlatformDispatcher.instance.locale.languageCode);
   runApp(const ProviderScope(child: MarketOursApp()));
 }
 

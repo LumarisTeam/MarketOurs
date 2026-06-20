@@ -31,6 +31,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
     _loadNotifications();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loadNotifications();
+  }
+
   Future<void> _loadNotifications() async {
     setState(() => _isLoading = true);
     try {
