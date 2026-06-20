@@ -12,7 +12,7 @@ class ApiService {
   late final Dio dio;
   static final ApiService _instance = ApiService._internal();
   static const String _apiBaseUrlOverride =
-      'http://localhost:5053';
+      'https://lumalisapi.luckyfishes.site';
   static const Duration _defaultTimeout = Duration(seconds: 15);
   static const Duration _uploadTimeout = Duration(minutes: 2);
 
