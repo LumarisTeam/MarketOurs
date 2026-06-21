@@ -995,6 +995,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get passwordRequirementHint => 'Mot de passe: 6+ caractères';
 
   @override
+  String get authAgreeToTermsPrefix => 'Jai lu et jaccepte les';
+
+  @override
+  String get authAnd => 'et';
+
+  @override
+  String get authMustAgreeTerms =>
+      'Veuillez lire et accepter les conditions d\'utilisation et la politique de confidentialité';
+
+  @override
   String get noTagAvailable => 'Aucun tag disponible';
 
   @override

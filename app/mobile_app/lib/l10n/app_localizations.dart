@@ -1978,6 +1978,24 @@ abstract class AppLocalizations {
   /// **'密码，至少6位，含大小写字母和数字'**
   String get passwordRequirementHint;
 
+  /// No description provided for @authAgreeToTermsPrefix.
+  ///
+  /// In zh, this message translates to:
+  /// **'我已阅读并同意'**
+  String get authAgreeToTermsPrefix;
+
+  /// No description provided for @authAnd.
+  ///
+  /// In zh, this message translates to:
+  /// **'和'**
+  String get authAnd;
+
+  /// No description provided for @authMustAgreeTerms.
+  ///
+  /// In zh, this message translates to:
+  /// **'请先阅读并同意用户协议和隐私条款'**
+  String get authMustAgreeTerms;
+
   /// No description provided for @noTagAvailable.
   ///
   /// In zh, this message translates to:

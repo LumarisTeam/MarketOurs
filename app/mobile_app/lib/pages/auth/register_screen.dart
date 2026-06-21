@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:mobile_app/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -40,6 +41,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   bool _isPasswordDirty = false;
   bool _isAccountValid = false;
   bool _isPasswordValid = false;
+  bool _agreedToTerms = false;
 
   final _imagePicker = ImagePicker();
   final _fileService = FileService();
@@ -176,6 +178,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       return;
     }
 
+    if (!_agreedToTerms) {
+      await AppFeedback.showError(context, message: AppLocalizations.of(context).authMustAgreeTerms);
+      return;
+    }
+
     CompressedImage? compressedAvatar;
     try {
       var avatar = _avatarUrl;
@@ -258,7 +265,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final submitDisabled =
         isSubmitting ||
         (_isAccountDirty && !_isAccountValid) ||
-        (_isPasswordDirty && !_isPasswordValid);
+        (_isPasswordDirty && !_isPasswordValid) ||
+        !_agreedToTerms;
 
     return AuthScaffold(
       title: AppLocalizations.of(context).authRegister,
@@ -465,6 +473,54 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
               ),
             const SizedBox(height: 28),
+
+            GestureDetector(
+              onTap: () => setState(() => _agreedToTerms = !_agreedToTerms),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    _agreedToTerms ? CupertinoIcons.checkmark_circle_fill : CupertinoIcons.circle,
+                    size: 20,
+                    color: _agreedToTerms ? AppColors.primary : AppColors.mutedForeground,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: RichText(
+                      text: TextSpan(
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: CupertinoDynamicColor.resolve(AppColors.mutedForeground, context),
+                        ),
+                        children: [
+                          TextSpan(text: '${AppLocalizations.of(context).authAgreeToTermsPrefix} '),
+                          TextSpan(
+                            text: AppLocalizations.of(context).termsOfService,
+                            style: TextStyle(
+                              color: CupertinoDynamicColor.resolve(AppColors.primary, context),
+                              fontWeight: FontWeight.w600,
+                            ),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () => context.push(AppRoutePaths.terms),
+                          ),
+                          TextSpan(text: ' ${AppLocalizations.of(context).authAnd} '),
+                          TextSpan(
+                            text: AppLocalizations.of(context).privacyPolicy,
+                            style: TextStyle(
+                              color: CupertinoDynamicColor.resolve(AppColors.primary, context),
+                              fontWeight: FontWeight.w600,
+                            ),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () => context.push(AppRoutePaths.privacy),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
 
             AppPrimaryButton(
               onPressed: submitDisabled ? null : _submit,

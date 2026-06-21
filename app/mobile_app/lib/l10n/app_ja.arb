@@ -315,6 +315,10 @@
   "regenerateInstructions": "リセット手順を再取得",
   "passwordNewPlaceholder": "新しいパスワード",
   "passwordRequirementHint": "パスワード、6文字以上・大文字小文字数字を含む",
+
+  "authAgreeToTermsPrefix": "以下を読み、同意します",
+  "authAnd": "および",
+  "authMustAgreeTerms": "利用規約とプライバシーポリシーを読み、同意してください",
   "noTagAvailable": "利用可能なタグがありません",
   "enterTagPage": "タグページへ",
   "chooseTagHint": "タグを選択して投稿を表示します。",

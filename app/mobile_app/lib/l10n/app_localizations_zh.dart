@@ -985,6 +985,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get passwordRequirementHint => '密码，至少6位，含大小写字母和数字';
 
   @override
+  String get authAgreeToTermsPrefix => '我已阅读并同意';
+
+  @override
+  String get authAnd => '和';
+
+  @override
+  String get authMustAgreeTerms => '请先阅读并同意用户协议和隐私条款';
+
+  @override
   String get noTagAvailable => '当前没有可进入的标签';
 
   @override

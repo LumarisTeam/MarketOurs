@@ -85,7 +85,10 @@
     "random_avatar": "Random Avatar",
     "pick_from_gallery": "Pick from Gallery",
     "take_photo": "Take Photo",
-    "click_to_change_avatar": "Click avatar to change"
+    "click_to_change_avatar": "Click avatar to change",
+    "agree_to_terms_prefix": "I have read and agree to the",
+    "and": "and",
+    "must_agree_terms": "Please read and agree to the Terms of Service and Privacy Policy"
   },
   "post": {
     "not_found": "Post not found",

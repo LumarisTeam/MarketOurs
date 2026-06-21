@@ -985,6 +985,15 @@ class AppLocalizationsJa extends AppLocalizations {
   String get passwordRequirementHint => 'パスワード、6文字以上・大文字小文字数字を含む';
 
   @override
+  String get authAgreeToTermsPrefix => '以下を読み、同意します';
+
+  @override
+  String get authAnd => 'および';
+
+  @override
+  String get authMustAgreeTerms => '利用規約とプライバシーポリシーを読み、同意してください';
+
+  @override
   String get noTagAvailable => '利用可能なタグがありません';
 
   @override

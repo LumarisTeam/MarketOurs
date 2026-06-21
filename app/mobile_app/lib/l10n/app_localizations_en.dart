@@ -1006,6 +1006,16 @@ class AppLocalizationsEn extends AppLocalizations {
       'Password, at least 6 chars with upper, lower & digit';
 
   @override
+  String get authAgreeToTermsPrefix => 'I have read and agree to the';
+
+  @override
+  String get authAnd => 'and';
+
+  @override
+  String get authMustAgreeTerms =>
+      'Please read and agree to the Terms of Service and Privacy Policy';
+
+  @override
   String get noTagAvailable => 'No tags available';
 
   @override

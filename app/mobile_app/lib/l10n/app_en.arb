@@ -351,6 +351,10 @@
   "regenerateInstructions": "Get reset instructions again",
   "passwordNewPlaceholder": "New password",
   "passwordRequirementHint": "Password, at least 6 chars with upper, lower & digit",
+
+  "authAgreeToTermsPrefix": "I have read and agree to the",
+  "authAnd": "and",
+  "authMustAgreeTerms": "Please read and agree to the Terms of Service and Privacy Policy",
   "noTagAvailable": "No tags available",
   "enterTagPage": "Enter Tag Page",
   "chooseTagHint": "Choose a tag to view posts.",

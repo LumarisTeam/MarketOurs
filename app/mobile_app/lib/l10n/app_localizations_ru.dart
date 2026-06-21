@@ -992,6 +992,16 @@ class AppLocalizationsRu extends AppLocalizations {
       'Пароль: мин. 6 симв., загл., строчн., цифры';
 
   @override
+  String get authAgreeToTermsPrefix => 'Я прочитал(а) и согласен(на) с';
+
+  @override
+  String get authAnd => 'и';
+
+  @override
+  String get authMustAgreeTerms =>
+      'Пожалуйста, прочитайте и согласитесь с условиями использования и политикой конфиденциальности';
+
+  @override
   String get noTagAvailable => 'Нет доступных тегов';
 
   @override

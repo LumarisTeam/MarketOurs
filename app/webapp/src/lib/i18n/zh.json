@@ -85,7 +85,10 @@
     "random_avatar": "随机生成",
     "pick_from_gallery": "从相册选择",
     "take_photo": "拍照",
-    "click_to_change_avatar": "点击头像更换"
+    "click_to_change_avatar": "点击头像更换",
+    "agree_to_terms_prefix": "我已阅读并同意",
+    "and": "和",
+    "must_agree_terms": "请先阅读并同意用户协议和隐私条款"
   },
   "post": {
     "not_found": "文章未找到",

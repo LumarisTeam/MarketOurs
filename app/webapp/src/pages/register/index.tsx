@@ -11,6 +11,7 @@ import { SliderCaptcha } from "@/components/auth/SliderCaptcha";
 import { DTO_LIMITS, passwordLength, requiredMax } from "@/lib/dtoValidation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
@@ -32,6 +33,7 @@ export default function RegisterPage() {
   const [verificationCode, setVerificationCode] = useState("");
   const [countdown, setCountdown] = useState(0);
   const [showCaptcha, setShowCaptcha] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   const navigate = useNavigate();
   const galleryInputRef = useRef<HTMLInputElement>(null);
@@ -108,6 +110,12 @@ export default function RegisterPage() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!agreedToTerms) {
+      toast.error(t("auth.must_agree_terms"));
+      setIsLoading(true);
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
     setError("");
     const nameError = requiredMax(name, DTO_LIMITS.userNameMax, t("validation.user_name_required"), t("validation.user_name_too_long", { max: DTO_LIMITS.userNameMax }));
@@ -306,9 +314,29 @@ export default function RegisterPage() {
               </div>
             </div>
 
+            {/* Agreement checkbox */}
+            <div className="flex items-start gap-2">
+              <Checkbox
+                id="terms-register"
+                checked={agreedToTerms}
+                onCheckedChange={setAgreedToTerms}
+                className="mt-0.5"
+              />
+              <label htmlFor="terms-register" className="text-xs text-muted-foreground leading-relaxed">
+                {t("auth.agree_to_terms_prefix")}{" "}
+                <Link to="/terms" target="_blank" className="font-medium text-primary hover:underline">
+                  {t("legal.terms")}
+                </Link>{" "}
+                {t("auth.and")}{" "}
+                <Link to="/privacy" target="_blank" className="font-medium text-primary hover:underline">
+                  {t("legal.privacy")}
+                </Link>
+              </label>
+            </div>
+
             <Button
               type="submit"
-              disabled={isLoading || accountType === 'invalid' || !isPasswordValid}
+              disabled={isLoading || accountType === 'invalid' || !isPasswordValid || !agreedToTerms}
               size="lg"
               className="w-full rounded-2xl font-semibold shadow-md shadow-primary/20 gap-2"
             >

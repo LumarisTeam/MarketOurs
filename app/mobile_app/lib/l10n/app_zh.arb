@@ -373,6 +373,13 @@
   "regenerateInstructions": "重新获取重置说明",
   "passwordNewPlaceholder": "新密码",
   "passwordRequirementHint": "密码，至少6位，含大小写字母和数字",
+
+  "authAgreeToTermsPrefix": "我已阅读并同意",
+  "@authAgreeToTermsPrefix": {},
+  "authAnd": "和",
+  "@authAnd": {},
+  "authMustAgreeTerms": "请先阅读并同意用户协议和隐私条款",
+  "@authMustAgreeTerms": {},
   "noTagAvailable": "当前没有可进入的标签",
   "enterTagPage": "进入标签页",
   "chooseTagHint": "选择一个标签，查看该标签下的帖子。",

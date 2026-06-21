@@ -315,6 +315,10 @@
   "regenerateInstructions": "Получить инструкцию повторно",
   "passwordNewPlaceholder": "Новый пароль",
   "passwordRequirementHint": "Пароль: мин. 6 симв., загл., строчн., цифры",
+
+  "authAgreeToTermsPrefix": "Я прочитал(а) и согласен(на) с",
+  "authAnd": "и",
+  "authMustAgreeTerms": "Пожалуйста, прочитайте и согласитесь с условиями использования и политикой конфиденциальности",
   "noTagAvailable": "Нет доступных тегов",
   "enterTagPage": "Войти на страницу тега",
   "chooseTagHint": "Выберите тег для просмотра постов.",

@@ -985,6 +985,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get passwordRequirementHint => '비밀번호, 6자 이상 대소문자 숫자';
 
   @override
+  String get authAgreeToTermsPrefix => '다음을 읽고 동의합니다';
+
+  @override
+  String get authAnd => '및';
+
+  @override
+  String get authMustAgreeTerms => '이용약관과 개인정보처리방침을 읽고 동의해 주세요';
+
+  @override
   String get noTagAvailable => '사용 가능한 태그 없음';
 
   @override

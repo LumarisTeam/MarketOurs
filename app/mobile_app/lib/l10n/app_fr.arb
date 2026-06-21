@@ -315,6 +315,10 @@
   "regenerateInstructions": "Recevoir les instructions",
   "passwordNewPlaceholder": "Nouveau mot de passe",
   "passwordRequirementHint": "Mot de passe: 6+ caractères",
+
+  "authAgreeToTermsPrefix": "J'ai lu et j'accepte les",
+  "authAnd": "et",
+  "authMustAgreeTerms": "Veuillez lire et accepter les conditions d''utilisation et la politique de confidentialité",
   "noTagAvailable": "Aucun tag disponible",
   "enterTagPage": "Entrer dans la page du tag",
   "chooseTagHint": "Choisissez un tag pour voir les publications.",

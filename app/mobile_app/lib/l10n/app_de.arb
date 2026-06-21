@@ -315,6 +315,10 @@
   "regenerateInstructions": "Anleitung erneut anfordern",
   "passwordNewPlaceholder": "Neues Passwort",
   "passwordRequirementHint": "Passwort: 6+ Zeichen",
+
+  "authAgreeToTermsPrefix": "Ich habe die",
+  "authAnd": "und",
+  "authMustAgreeTerms": "Bitte lesen und akzeptieren Sie die Nutzungsbedingungen und Datenschutzrichtlinie",
   "noTagAvailable": "Keine Tags verfügbar",
   "enterTagPage": "Tag-Seite öffnen",
   "chooseTagHint": "Wähle einen Tag zum Anzeigen.",

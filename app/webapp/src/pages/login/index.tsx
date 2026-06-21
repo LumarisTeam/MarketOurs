@@ -9,6 +9,7 @@ import { toast } from "@/lib/toast";
 import { Mail, Lock, Loader2, ArrowRight, ShieldCheck, GraduationCap } from "lucide-react";
 import { PasswordField } from "@/components/auth/PasswordField";
 import { SliderCaptcha } from "@/components/auth/SliderCaptcha";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -25,6 +26,7 @@ export default function LoginPage() {
   const [isSendingCode, setIsSendingCode] = useState(false);
   const [error, setError] = useState("");
   const [showCaptcha, setShowCaptcha] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -61,6 +63,10 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!agreedToTerms) {
+      toast.error(t("auth.must_agree_terms"));
+      return;
+    }
     setIsLoading(true);
     setError("");
 
@@ -247,9 +253,29 @@ export default function LoginPage() {
             )}
           </div>
 
+          {/* Agreement checkbox */}
+          <div className="flex items-start gap-2">
+            <Checkbox
+              id="terms-login"
+              checked={agreedToTerms}
+              onCheckedChange={setAgreedToTerms}
+              className="mt-0.5"
+            />
+            <label htmlFor="terms-login" className="text-xs text-muted-foreground leading-relaxed">
+              {t("auth.agree_to_terms_prefix")}{" "}
+              <Link to="/terms" target="_blank" className="font-medium text-primary hover:underline">
+                {t("legal.terms")}
+              </Link>{" "}
+              {t("auth.and")}{" "}
+              <Link to="/privacy" target="_blank" className="font-medium text-primary hover:underline">
+                {t("legal.privacy")}
+              </Link>
+            </label>
+          </div>
+
           <Button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || !agreedToTerms}
             size="lg"
             className="w-full rounded-2xl font-semibold shadow-md shadow-primary/20 gap-2"
           >
