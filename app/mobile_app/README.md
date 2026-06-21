@@ -11,7 +11,10 @@
    flutter build apk --obfuscate --split-debug-info=xx --target-platform android-arm64 --split-per-abi
    ```
 
-可以加入 `--dart-define=UPDATE_CHANNEL=appstore` 来表明使用应用商店版本
+3. iOS (ipa):
+   ```bash
+   flutter build ipa
+   ```
 
 ### Android 极光推送配置
 
