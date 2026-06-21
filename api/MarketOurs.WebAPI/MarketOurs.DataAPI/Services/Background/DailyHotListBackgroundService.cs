@@ -1,3 +1,4 @@
+using System.Text;
 using MarketOurs.Data.DataModels;
 using MarketOurs.DataAPI.Repos;
 using Microsoft.Extensions.DependencyInjection;
@@ -63,11 +64,14 @@ public class DailyHotListBackgroundService(
 
             var top3 = hotPosts.Take(3).Select((p, i) => new { i, p.Id, p.Title }).ToList();
             var title = "🔥 今日校园热榜";
-            var content = System.Text.Json.JsonSerializer.Serialize(new
+            const string header = "来看看大家都在聊什么：";
+            var contentBuilder = new StringBuilder(header);
+            foreach (var post in top3)
             {
-                header = "来看看大家都在聊什么：",
-                posts = top3.Select(p => new { id = p.Id, title = $"{p.i + 1}. {p.Title}" })
-            });
+                contentBuilder.AppendLine()
+                    .Append($"{post.i + 1}. {post.Title}");
+            }
+            var content = contentBuilder.ToString();
 
             // 2. 获取所有活跃用户
             var users = await userRepo.GetAllAsync(1, 1000); // 简单起见，这里假设用户量不大，实际应分页处理
@@ -83,7 +87,7 @@ public class DailyHotListBackgroundService(
                     Type = NotificationType.HotList,
                     TargetId = hotPosts[0].Id,
                     Params = new HotListParams(
-                        "来看看大家都在聊什么：",
+                        header,
                         top3.Select(p => new HotListPost(p.Id, $"{p.i + 1}. {p.Title}")).ToList()
                     )
                 });
