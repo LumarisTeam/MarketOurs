@@ -27,4 +27,18 @@ export const notificationService = {
 
   updateSettings: (settings: PushSettingsDto) =>
     apiClient.put<void>('/Notification/settings', settings),
+
+  /**
+   * Register a push notification token with the backend.
+   * Used by both mobile (JPush) and web (WebPush) clients.
+   */
+  registerPushToken: (provider: string, token: string) =>
+    apiClient.post<void>('/User/push-token', { provider, token }),
+
+  /**
+   * Unregister a push token (e.g., on logout or switch-off).
+   * Send an empty token to clear the registration.
+   */
+  unregisterPushToken: (provider: string) =>
+    apiClient.post<void>('/User/push-token', { provider, token: '' }),
 };

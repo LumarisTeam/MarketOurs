@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from "react-redux"
 import type { RootState, AppDispatch } from "@/stores"
 import { fetchNotifications, markReadLocal, markAllReadLocal } from "@/stores/notificationSlice"
 import { notificationService } from "@/services/notificationService"
+import { webPushService } from "@/services/webPushService"
 import { NotificationType, type PushSettingsDto, type NotificationParams } from "@/types"
 import { Bell, MessageSquare, Reply, Flame, Check, Save, Loader2 } from "lucide-react"
 import { Link } from "react-router"
@@ -28,13 +29,29 @@ export default function NotificationsPage() {
   const [settingsLoading, setSettingsLoading] = useState(false)
   const [saving, setSaving] = useState(false)
 
+  // Web Push state
+  const [webPushSupported] = useState(() => webPushService.isSupported())
+  const [webPushSubscribed, setWebPushSubscribed] = useState(false)
+  const [webPushLoading, setWebPushLoading] = useState(false)
+
   useEffect(() => {
     if (activeTab === "list") {
       dispatch(fetchNotifications({ pageIndex: 1, pageSize: 50 }))
     } else {
       loadSettings()
+      checkWebPushStatus()
     }
   }, [dispatch, activeTab])
+
+  const checkWebPushStatus = async () => {
+    if (!webPushSupported) return
+    try {
+      const subscribed = await webPushService.isSubscribed()
+      setWebPushSubscribed(subscribed)
+    } catch {
+      // Silently ignore — subscription check is advisory
+    }
+  }
 
   const loadSettings = async () => {
     setSettingsLoading(true)
@@ -45,6 +62,32 @@ export default function NotificationsPage() {
       toast.error(t("notifications.settings_load_error"))
     } finally {
       setSettingsLoading(false)
+    }
+  }
+
+  const handleWebPushToggle = async (enabled: boolean) => {
+    setWebPushLoading(true)
+    try {
+      if (enabled) {
+        const subscription = await webPushService.subscribe()
+        if (subscription) {
+          const serialized = webPushService.serializeSubscription(subscription)
+          await notificationService.registerPushToken('webpush', JSON.stringify(serialized))
+          setWebPushSubscribed(true)
+          toast.success(t("notifications.settings_saved"))
+        } else {
+          toast.error(t("notifications.web_push_enable_failed"))
+        }
+      } else {
+        await webPushService.unsubscribe()
+        await notificationService.unregisterPushToken('webpush')
+        setWebPushSubscribed(false)
+        toast.success(t("notifications.settings_saved"))
+      }
+    } catch {
+      toast.error(enabled ? t("notifications.web_push_enable_failed") : t("notifications.web_push_disable_failed"))
+    } finally {
+      setWebPushLoading(false)
     }
   }
 
@@ -298,6 +341,27 @@ export default function NotificationsPage() {
                 onCheckedChange={(checked) => setSettings({ ...settings, enableHotListPush: checked })}
               />
             </div>
+
+            {/* Web Push Toggle — only shown on supported browsers */}
+            {webPushSupported && (
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <h3 className="text-lg font-bold">{t("notifications.web_push")}</h3>
+                  <p className="text-sm text-muted-foreground">{t("notifications.web_push_desc")}</p>
+                </div>
+                <Switch
+                  checked={webPushSubscribed}
+                  onCheckedChange={handleWebPushToggle}
+                  disabled={webPushLoading}
+                />
+              </div>
+            )}
+
+            {!webPushSupported && (
+              <p className="text-sm text-muted-foreground text-center py-2">
+                {t("notifications.web_push_unsupported")}
+              </p>
+            )}
           </div>
 
           <Button
