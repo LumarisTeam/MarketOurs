@@ -1,5 +1,6 @@
 using MarketOurs.Data.DataModels;
 using MarketOurs.Data.DTOs;
+using MarketOurs.DataAPI.Exceptions;
 using MarketOurs.DataAPI.Repos;
 using MarketOurs.DataAPI.Services;
 using Microsoft.Extensions.Caching.Distributed;
@@ -299,6 +300,31 @@ public class PostServiceTests
     }
 
     [Test]
+    public async Task SetLikesAsync_WhenPostIsNotReviewed_ShouldRejectAsNotFound()
+    {
+        _mockPostRepo.Setup(r => r.GetReviewedByIdAsync("pending-post")).ReturnsAsync((PostModel?)null);
+
+        Assert.ThrowsAsync<ResourceAccessException>(async () =>
+            await _postService.SetLikesAsync("user-1", "pending-post"));
+
+        _mockLikeManager.Verify(m => m.SetPostLikeAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Test]
+    public async Task SetDislikesAsync_WhenPostIsReviewed_ShouldCallLikeManager()
+    {
+        _mockPostRepo.Setup(r => r.GetReviewedByIdAsync("post-1"))
+            .ReturnsAsync(new PostModel { Id = "post-1", IsReview = true });
+        _mockLikeManager.Setup(m => m.SetPostDislikeAsync("post-1", "user-1"))
+            .ReturnsAsync(new LikeToggleResult(false, true, 0, 1));
+
+        var result = await _postService.SetDislikesAsync("user-1", "post-1");
+
+        Assert.That(result.IsDisliked, Is.True);
+        _mockLikeManager.Verify(m => m.SetPostDislikeAsync("post-1", "user-1"), Times.Once);
+    }
+
+    [Test]
     public async Task SearchAsync_WithEmptyKeyword_ReturnsEmptyPageWithoutRepoSearch()
     {
         var result = await _postService.SearchAsync(new PaginationParams { Keyword = "   " });
@@ -372,6 +398,9 @@ public class PostServiceTests
         };
 
         _mockPostRepo
+            .Setup(r => r.GetReviewedByIdAsync("post-1"))
+            .ReturnsAsync(new PostModel { Id = "post-1", IsReview = true });
+        _mockPostRepo
             .Setup(r => r.GetCommentsAsync("post-1", null, false))
             .ReturnsAsync(comments);
         _mockLikeManager
@@ -383,5 +412,16 @@ public class PostServiceTests
         Assert.That(result, Has.Count.EqualTo(1));
         Assert.That(result[0].Id, Is.EqualTo("c1"));
         _mockPostRepo.Verify(r => r.GetCommentsAsync("post-1", null, false), Times.Once);
+    }
+
+    [Test]
+    public async Task GetCommentsAsync_WhenPostIsNotReviewed_ShouldRejectAsNotFound()
+    {
+        _mockPostRepo.Setup(r => r.GetReviewedByIdAsync("pending-post")).ReturnsAsync((PostModel?)null);
+
+        Assert.ThrowsAsync<ResourceAccessException>(async () =>
+            await _postService.GetCommentsAsync("pending-post", "New", null, false));
+
+        _mockPostRepo.Verify(r => r.GetCommentsAsync(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<bool>()), Times.Never);
     }
 }

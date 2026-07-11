@@ -612,7 +612,7 @@ public class PostService(
     /// <inheritdoc/>
     public async Task<LikeToggleResult> SetLikesAsync(string userId, string postId)
     {
-        var post = await postRepo.GetByIdAsync(postId);
+        var post = await postRepo.GetReviewedByIdAsync(postId);
         if (post == null) throw new ResourceAccessException(ErrorCode.PostNotFound, "帖子不存在");
 
         return await likeManager.SetPostLikeAsync(postId, userId);
@@ -621,7 +621,7 @@ public class PostService(
     /// <inheritdoc/>
     public async Task<LikeToggleResult> SetDislikesAsync(string userId, string postId)
     {
-        var post = await postRepo.GetByIdAsync(postId);
+        var post = await postRepo.GetReviewedByIdAsync(postId);
         if (post == null) throw new ResourceAccessException(ErrorCode.PostNotFound, "帖子不存在");
 
         return await likeManager.SetPostDislikeAsync(postId, userId);
@@ -630,6 +630,11 @@ public class PostService(
     /// <inheritdoc/>
     public async Task<List<CommentDto>> GetCommentsAsync(string id, string type, string? requesterUserId = null, bool isAdmin = false)
     {
+        var post = isAdmin
+            ? await postRepo.GetByIdAsync(id)
+            : await postRepo.GetReviewedByIdAsync(id);
+        if (post == null) throw new ResourceAccessException(ErrorCode.PostNotFound, "帖子不存在");
+
         // 尝试从本地缓存读取评论列表
         var cacheKey = CacheKeys.PostComments(id);
         if (!isAdmin && string.IsNullOrWhiteSpace(requesterUserId)

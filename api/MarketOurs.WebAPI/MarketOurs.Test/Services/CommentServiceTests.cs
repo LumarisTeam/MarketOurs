@@ -1,5 +1,6 @@
 using MarketOurs.Data.DataModels;
 using MarketOurs.Data.DTOs;
+using MarketOurs.DataAPI.Exceptions;
 using MarketOurs.DataAPI.Repos;
 using MarketOurs.DataAPI.Services;
 using MarketOurs.DataAPI.Services.Background;
@@ -85,7 +86,7 @@ public class CommentServiceTests
         };
 
         _mockUserRepo.Setup(r => r.GetByIdAsync("user_1")).ReturnsAsync(user);
-        _mockPostRepo.Setup(r => r.GetByIdAsync("post_1")).ReturnsAsync(post);
+        _mockPostRepo.Setup(r => r.GetReviewedByIdAsync("post_1")).ReturnsAsync(post);
 
         CommentModel? createdComment = null;
         _mockCommentRepo.Setup(r => r.CreateAsync(It.IsAny<CommentModel>()))
@@ -108,6 +109,47 @@ public class CommentServiceTests
         Assert.That(await enumerator.MoveNextAsync(), Is.True);
         Assert.That(enumerator.Current.TargetId, Is.EqualTo("comment_1"));
         Assert.That(enumerator.Current.Type, Is.EqualTo(ReviewType.Comment));
+    }
+
+    [Test]
+    public async Task CreateAsync_WhenPostIsNotReviewed_ShouldRejectAsNotFound()
+    {
+        var createDto = new CommentCreateDto
+        {
+            UserId = "user_1",
+            PostId = "pending_post",
+            Content = "New Comment"
+        };
+
+        _mockUserRepo.Setup(r => r.GetByIdAsync("user_1"))
+            .ReturnsAsync(new UserModel { Id = "user_1" });
+        _mockPostRepo.Setup(r => r.GetReviewedByIdAsync("pending_post"))
+            .ReturnsAsync((PostModel?)null);
+
+        Assert.ThrowsAsync<ResourceAccessException>(async () => await _commentService.CreateAsync(createDto));
+        _mockCommentRepo.Verify(r => r.CreateAsync(It.IsAny<CommentModel>()), Times.Never);
+    }
+
+    [Test]
+    public async Task CreateAsync_WhenParentCommentIsNotReviewed_ShouldRejectAsNotFound()
+    {
+        var createDto = new CommentCreateDto
+        {
+            UserId = "user_1",
+            PostId = "post_1",
+            ParentCommentId = "pending_comment",
+            Content = "Reply"
+        };
+
+        _mockUserRepo.Setup(r => r.GetByIdAsync("user_1"))
+            .ReturnsAsync(new UserModel { Id = "user_1" });
+        _mockPostRepo.Setup(r => r.GetReviewedByIdAsync("post_1"))
+            .ReturnsAsync(new PostModel { Id = "post_1", IsReview = true });
+        _mockCommentRepo.Setup(r => r.GetReviewedByIdAsync("pending_comment"))
+            .ReturnsAsync((CommentModel?)null);
+
+        Assert.ThrowsAsync<ResourceAccessException>(async () => await _commentService.CreateAsync(createDto));
+        _mockCommentRepo.Verify(r => r.CreateAsync(It.IsAny<CommentModel>()), Times.Never);
     }
 
     [Test]
@@ -169,11 +211,23 @@ public class CommentServiceTests
     [Test]
     public async Task SetLikesAsync_WhenCommentExists_ShouldCallLikeManager()
     {
-        var comment = new CommentModel { Id = "1" };
-        _mockCommentRepo.Setup(r => r.GetByIdAsync("1")).ReturnsAsync(comment);
+        var comment = new CommentModel { Id = "1", IsReview = true };
+        _mockCommentRepo.Setup(r => r.GetReviewedByIdAsync("1")).ReturnsAsync(comment);
 
         await _commentService.SetLikesAsync("user_1", "1");
 
         _mockLikeManager.Verify(m => m.SetCommentLikeAsync("1", "user_1"), Times.Once);
+    }
+
+    [Test]
+    public async Task SetDislikesAsync_WhenCommentIsNotReviewed_ShouldRejectAsNotFound()
+    {
+        _mockCommentRepo.Setup(r => r.GetReviewedByIdAsync("pending_comment"))
+            .ReturnsAsync((CommentModel?)null);
+
+        Assert.ThrowsAsync<ResourceAccessException>(async () =>
+            await _commentService.SetDislikesAsync("user_1", "pending_comment"));
+
+        _mockLikeManager.Verify(m => m.SetCommentDislikeAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
     }
 }

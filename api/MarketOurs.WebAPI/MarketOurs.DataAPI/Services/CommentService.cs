@@ -177,11 +177,11 @@ public class CommentService(
     {
         var user = await userRepo.GetByIdAsync(createDto.UserId);
         if (user == null) throw new ResourceAccessException(ErrorCode.UserNotFound, "用户不存在");
-        var post = await postRepo.GetByIdAsync(createDto.PostId);
+        var post = await postRepo.GetReviewedByIdAsync(createDto.PostId);
         if (post == null) throw new ResourceAccessException(ErrorCode.PostNotFound, "帖子不存在");
         if (!string.IsNullOrEmpty(createDto.ParentCommentId))
         {
-            var parentComment = await commentRepo.GetByIdAsync(createDto.ParentCommentId);
+            var parentComment = await commentRepo.GetReviewedByIdAsync(createDto.ParentCommentId);
             if (parentComment == null)
             {
                 throw new ResourceAccessException(ErrorCode.ParentCommentNotFound, "要回复的评论不存在");
@@ -311,7 +311,7 @@ public class CommentService(
     /// <inheritdoc/>
     public async Task<LikeToggleResult> SetLikesAsync(string userId, string commentId)
     {
-        var comment = await commentRepo.GetByIdAsync(commentId);
+        var comment = await commentRepo.GetReviewedByIdAsync(commentId);
         if (comment == null) throw new ResourceAccessException(ErrorCode.CommentNotFound, "评论不存在");
 
         return await likeManager.SetCommentLikeAsync(commentId, userId);
@@ -320,7 +320,7 @@ public class CommentService(
     /// <inheritdoc/>
     public async Task<LikeToggleResult> SetDislikesAsync(string userId, string commentId)
     {
-        var comment = await commentRepo.GetByIdAsync(commentId);
+        var comment = await commentRepo.GetReviewedByIdAsync(commentId);
         if (comment == null) throw new ResourceAccessException(ErrorCode.CommentNotFound, "评论不存在");
 
         return await likeManager.SetCommentDislikeAsync(commentId, userId);
