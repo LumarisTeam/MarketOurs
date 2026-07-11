@@ -50,6 +50,40 @@ public class PostRepoIntegrationTests : IntegrationTestBase
     }
 
     [Test]
+    public async Task GetByUserDtosAsync_ShouldOnlyReturnReviewedPosts()
+    {
+        // Arrange
+        var user = new UserModel { Name = "Author", Email = "author@test.com", Password = "p" };
+        await _userRepo.CreateAsync(user);
+
+        var reviewedPost = new PostModel
+        {
+            Title = "Visible",
+            Content = "Reviewed content",
+            UserId = user.Id,
+            IsReview = true
+        };
+        var pendingPost = new PostModel
+        {
+            Title = "Hidden",
+            Content = "Pending content",
+            UserId = user.Id,
+            IsReview = false
+        };
+        await _postRepo.CreateAsync(reviewedPost);
+        await _postRepo.CreateAsync(pendingPost);
+
+        // Act
+        var posts = await _postRepo.GetByUserDtosAsync(user.Id, 1, 10);
+        var count = await _postRepo.CountByUserIdAsync(user.Id);
+
+        // Assert
+        Assert.That(posts, Has.Count.EqualTo(1));
+        Assert.That(posts.Single().Id, Is.EqualTo(reviewedPost.Id));
+        Assert.That(count, Is.EqualTo(1));
+    }
+
+    [Test]
     public async Task SetLikesAsync_ShouldUpdateCounterAndRelation()
     {
         // Arrange

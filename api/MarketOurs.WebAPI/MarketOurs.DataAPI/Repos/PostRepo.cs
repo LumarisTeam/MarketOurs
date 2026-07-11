@@ -86,7 +86,7 @@ public class PostRepo(IDbContextFactory<MarketContext> factory) : IPostRepo
             .AsNoTracking()
             .Include(x => x.User)
             .Include(x => x.Tag)
-            .Where(x => x.UserId == userId)
+            .Where(x => x.UserId == userId && x.IsReview)
             .OrderByDescending(x => x.CreatedAt)
             .Skip((pageIndex - 1) * pageSize)
             .Take(pageSize)
@@ -98,7 +98,7 @@ public class PostRepo(IDbContextFactory<MarketContext> factory) : IPostRepo
         await using var context = await factory.CreateDbContextAsync();
         return await ProjectPostDtos(context.Posts
             .AsNoTracking()
-            .Where(x => x.UserId == userId)
+            .Where(x => x.UserId == userId && x.IsReview)
             .OrderByDescending(x => x.CreatedAt)
             .Skip((pageIndex - 1) * pageSize)
             .Take(pageSize))
@@ -108,7 +108,7 @@ public class PostRepo(IDbContextFactory<MarketContext> factory) : IPostRepo
     public async Task<int> CountByUserIdAsync(string userId)
     {
         await using var context = await factory.CreateDbContextAsync();
-        return await context.Posts.CountAsync(x => x.UserId == userId);
+        return await context.Posts.CountAsync(x => x.UserId == userId && x.IsReview);
     }
 
     public async Task<List<PostModel>> GetHotAsync(int count)
