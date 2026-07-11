@@ -7,7 +7,6 @@ This file provides guidance to Codex (Codex.ai/code) when working with code in t
 **MarketOurs** ("我们的集市，不属于任何人") is a campus marketplace platform consisting of:
 - `api/` — ASP.NET Core 10.0 backend
 - `app/webapp/` — React 19 customer-facing web app
-- `app/admin_app/` — React 19 admin dashboard
 - `app/mobile_app/` — Flutter mobile app
 
 ---

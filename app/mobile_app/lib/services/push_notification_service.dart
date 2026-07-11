@@ -266,31 +266,31 @@ class PushNotificationService {
     }
   }
 
-  Future<void> _handleForegroundNotification(Map<dynamic, dynamic> message) async {
-    final extras = _extractPayloadData(message);
-    final title = _extractString(message, ['title', 'cn_title']) ?? '光汇通知';
-    final body = _extractString(message, ['alert', 'message']) ?? '';
-
-    final details = NotificationDetails(
-      android: AndroidNotificationDetails(
-        channelId,
-        channelName,
-        channelDescription: channelDescription,
-        importance: Importance.max,
-        priority: Priority.high,
-        icon: '@drawable/ic_stat_marketours_notification',
-      ),
-      iOS: const DarwinNotificationDetails(),
-    );
-
-    await _localNotifications.show(
-      id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-      title: title,
-      body: body,
-      notificationDetails: details,
-      payload: jsonEncode(extras),
-    );
-  }
+  // Future<void> _handleForegroundNotification(Map<dynamic, dynamic> message) async {
+  //   final extras = _extractPayloadData(message);
+  //   final title = _extractString(message, ['title', 'cn_title']) ?? '光汇通知';
+  //   final body = _extractString(message, ['alert', 'message']) ?? '';
+  //
+  //   final details = NotificationDetails(
+  //     android: AndroidNotificationDetails(
+  //       channelId,
+  //       channelName,
+  //       channelDescription: channelDescription,
+  //       importance: Importance.max,
+  //       priority: Priority.high,
+  //       icon: '@drawable/ic_stat_marketours_notification',
+  //     ),
+  //     iOS: const DarwinNotificationDetails(),
+  //   );
+  //
+  //   await _localNotifications.show(
+  //     id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+  //     title: title,
+  //     body: body,
+  //     notificationDetails: details,
+  //     payload: jsonEncode(extras),
+  //   );
+  // }
 
   Future<void> _onLocalNotificationTapped(NotificationResponse response) async {
     _handlePayloadNavigation(response.payload);
@@ -353,24 +353,24 @@ class PushNotificationService {
     return <String, dynamic>{};
   }
 
-  String? _extractString(Map<dynamic, dynamic> message, List<String> keys) {
-    for (final key in keys) {
-      final value = message[key];
-      if (value is String && value.isNotEmpty) {
-        return value;
-      }
-    }
-
-    final content = message['content'];
-    if (content is Map) {
-      for (final key in keys) {
-        final value = content[key];
-        if (value is String && value.isNotEmpty) {
-          return value;
-        }
-      }
-    }
-
-    return null;
-  }
+  // String? _extractString(Map<dynamic, dynamic> message, List<String> keys) {
+  //   for (final key in keys) {
+  //     final value = message[key];
+  //     if (value is String && value.isNotEmpty) {
+  //       return value;
+  //     }
+  //   }
+  //
+  //   final content = message['content'];
+  //   if (content is Map) {
+  //     for (final key in keys) {
+  //       final value = content[key];
+  //       if (value is String && value.isNotEmpty) {
+  //         return value;
+  //       }
+  //     }
+  //   }
+  //
+  //   return null;
+  // }
 }

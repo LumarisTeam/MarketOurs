@@ -1,15 +1,20 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_app/l10n/app_localizations.dart';
 import 'package:mobile_app/models/post.dart';
+import 'package:mobile_app/providers/auth_provider.dart';
+import 'package:mobile_app/providers/post_feed_provider.dart';
 import 'package:mobile_app/router/app_router.dart';
+import 'package:mobile_app/services/error_messages.dart';
+import 'package:mobile_app/services/follow_service.dart';
 import 'package:mobile_app/services/share_service.dart';
 import 'package:mobile_app/ui/app_feedback.dart';
 import 'package:mobile_app/ui/app_theme.dart';
 import 'package:mobile_app/ui/app_widgets.dart';
 import 'package:mobile_app/utils/date_formatters.dart';
 
-class PostCard extends StatelessWidget {
+class PostCard extends ConsumerWidget {
   const PostCard({super.key, required this.post});
 
   final PostDto post;
@@ -29,8 +34,106 @@ class PostCard extends StatelessWidget {
     }
   }
 
+  void _showPostActions(BuildContext context, WidgetRef ref, bool isOwner) {
+    final l10n = AppLocalizations.of(context);
+
+    showCupertinoModalPopup<void>(
+      context: context,
+      builder: (ctx) => CupertinoActionSheet(
+        actions: [
+          if (isOwner) ...[
+            CupertinoActionSheetAction(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                context.push(buildPostDetailLocation(post.id));
+              },
+              child: Text(l10n.postEdit),
+            ),
+            CupertinoActionSheetAction(
+              isDestructiveAction: true,
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                _handleDelete(context, ref);
+              },
+              child: Text(l10n.postDeleteTitle),
+            ),
+          ] else
+            CupertinoActionSheetAction(
+              isDestructiveAction: true,
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                _handleBlock(context, ref);
+              },
+              child: Text(l10n.profileBlock),
+            ),
+        ],
+        cancelButton: CupertinoActionSheetAction(
+          onPressed: () => Navigator.of(ctx).pop(),
+          child: Text(l10n.cancel),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleDelete(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context);
+    final confirmed = await AppFeedback.confirm(
+      context,
+      message: l10n.postDeleteConfirm,
+      title: l10n.postDeleteTitle,
+      confirmText: l10n.delete,
+      cancelText: l10n.cancel,
+      destructive: true,
+    );
+    if (confirmed != true) return;
+
+    try {
+      await ref.read(postServiceProvider).deletePost(post.id);
+      if (context.mounted) {
+        await AppFeedback.showSuccess(context, message: l10n.postDeleted);
+      }
+    } catch (error) {
+      if (context.mounted) {
+        await AppFeedback.showError(
+          context,
+          message: extractErrorFromException(error),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleBlock(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context);
+    final targetName = post.author?.name ?? l10n.profileBlock;
+    final confirmed = await AppFeedback.confirm(
+      context,
+      message: '确定要屏蔽 $targetName 吗？屏蔽后你将看不到对方的帖子。',
+      title: l10n.profileBlock,
+      confirmText: l10n.profileBlock,
+      cancelText: l10n.cancel,
+      destructive: true,
+    );
+    if (confirmed != true) return;
+
+    try {
+      final userId = post.userId;
+      if (userId == null || userId.isEmpty) return;
+      await FollowService().blockUser(userId);
+      if (context.mounted) {
+        await AppFeedback.showSuccess(context, message: '已屏蔽该用户');
+      }
+    } catch (error) {
+      if (context.mounted) {
+        await AppFeedback.showError(
+          context,
+          message: extractErrorFromException(error),
+        );
+      }
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final title = post.title?.trim().isNotEmpty == true
         ? post.title!.trim()
         : '未命名帖子';
@@ -40,6 +143,10 @@ class PostCard extends StatelessWidget {
     final excerpt = content.length > 100
         ? '${content.substring(0, 100)}...'
         : content;
+
+    final authState = ref.watch(authControllerProvider).asData?.value;
+    final user = authState?.user;
+    final isOwner = user != null && post.userId == user.id;
 
     return AppTappableCard(
       padding: EdgeInsets.zero,
@@ -80,11 +187,17 @@ class PostCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const Icon(
-                  CupertinoIcons.ellipsis,
-                  size: 18,
-                  color: AppColors.mutedForeground,
-                ),
+                if (user != null)
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    minimumSize: Size.zero,
+                    onPressed: () => _showPostActions(context, ref, isOwner),
+                    child: const Icon(
+                      CupertinoIcons.ellipsis,
+                      size: 18,
+                      color: AppColors.mutedForeground,
+                    ),
+                  ),
               ],
             ),
           ),
@@ -160,7 +273,6 @@ class PostCard extends StatelessWidget {
                 _StatItem(
                   icon: CupertinoIcons.heart,
                   label: '${post.likes ?? 0}',
-                  active: false,
                 ),
                 const SizedBox(width: 24),
                 _StatItem(

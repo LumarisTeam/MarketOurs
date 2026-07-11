@@ -9,7 +9,8 @@
     "loading": "Loading...",
     "error": "Error",
     "null" : "N/A",
-    "me": "Me"
+    "me": "Me",
+    "more": "More"
   },
   "nav": {
     "home": "Home",
@@ -132,6 +133,7 @@
     "share_panel_opened": "Share panel opened",
     "share_link_copied": "Link copied",
     "share_failed": "Share failed, please try again",
+    "block_confirm": "Block {{name}}? You will no longer see their posts.",
     "close_image_viewer": "Close image viewer",
     "remove_image": "Remove image",
     "drag_to_reorder": "Drag to reorder images",
@@ -194,6 +196,7 @@
     "unbind_need_contact": "Bind an email or phone before unbinding",
     "follow_error": "Failed to update follow status",
     "block_error": "Failed to update block status",
+    "block_success": "User blocked successfully",
     "follow_block": "Follow & Block",
     "follow": "Follow",
     "following": "Following",

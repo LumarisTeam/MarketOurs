@@ -1,10 +1,11 @@
-import { Heart, Share2, MoreHorizontal, Search, Loader2, Eye, ArrowLeft } from "lucide-react"
+import { Heart, Share2, Search, Loader2, Eye, ArrowLeft, Ban } from "lucide-react"
 import { useNavigate } from "react-router"
 import { useState, useRef, useEffectEvent, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { useSelector } from "react-redux"
 import type { RootState } from "@/stores"
 import { postService } from "@/services/postService"
+import { followService } from "@/services/followService"
 import { extractUserMessage } from "@/services/errorCodes"
 import { toast } from "@/lib/toast"
 import type { PostDto } from "@/types"
@@ -15,6 +16,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,6 +46,7 @@ export function PostCard({ post, onDelete }: { post: PostDto; onDelete?: (id: st
   const authorAvatar = post.author?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.userId}`
   const authorInitials = authorName.slice(0, 2).toUpperCase()
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showBlockDialog, setShowBlockDialog] = useState(false)
 
   const handleDelete = async () => {
     try {
@@ -46,6 +54,16 @@ export function PostCard({ post, onDelete }: { post: PostDto; onDelete?: (id: st
       onDelete?.(post.id)
     } catch (err) {
       toast.error(extractUserMessage(err, t("post.delete_error")))
+    }
+  }
+
+  const handleBlock = async () => {
+    try {
+      await followService.blockUser(post.userId)
+      setShowBlockDialog(false)
+        toast.success(t("profile.block_success", { defaultValue: "已屏蔽该用户" }))
+    } catch (err) {
+      toast.error(extractUserMessage(err, t("profile.block_error")))
     }
   }
 
@@ -73,7 +91,6 @@ export function PostCard({ post, onDelete }: { post: PostDto; onDelete?: (id: st
 
   return (
     <article
-      onClick={() => navigate(`/post/${post.id}`)}
       className="group relative cursor-pointer rounded-3xl border border-border/40 bg-card p-5 sm:p-6 transition-all duration-300 hover:border-primary/20 hover:shadow-md hover:shadow-primary/5 hover:-translate-y-0.5"
     >
       {/* Author Row */}
@@ -107,18 +124,52 @@ export function PostCard({ post, onDelete }: { post: PostDto; onDelete?: (id: st
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
           </Button>
         )}
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={(e) => { e.stopPropagation() }}
-          className="rounded-xl text-muted-foreground"
-        >
-          <MoreHorizontal size={18} />
-        </Button>
+        {user && (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <button
+                  className="rounded-xl p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                  onClick={(e) => { e.stopPropagation() }}
+                  aria-label={t("common.more", { defaultValue: "更多" })}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                </button>
+              }
+            />
+            <DropdownMenuContent
+              align="end"
+              sideOffset={4}
+              className="w-44"
+              onClick={(e) => { e.stopPropagation() }}
+            >
+              {(isMe || isAdmin) && (
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={(e) => { e.stopPropagation(); setShowDeleteDialog(true) }}
+                  className="rounded-lg"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                  {t("post.delete")}
+                </DropdownMenuItem>
+              )}
+              {!isMe && (
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={(e) => { e.stopPropagation(); setShowBlockDialog(true) }}
+                  className="rounded-lg"
+                >
+                  <Ban size={14} className="mr-2" />
+                  {t("profile.block")}
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
 
       {/* Content */}
-      <div className="mb-5 space-y-2.5">
+      <div className="mb-5 space-y-2.5" onClick={() => navigate(`/post/${post.id}`)}>
         <PostTagBadge tag={post.tag} />
         <h2 className="text-xl font-semibold tracking-tight transition-colors group-hover:text-primary sm:text-2xl">
           {post.title}
@@ -137,20 +188,18 @@ export function PostCard({ post, onDelete }: { post: PostDto; onDelete?: (id: st
 
       {/* Actions */}
       <div className="flex items-center gap-4 border-t border-border/20 pt-4">
-        <button
-          onClick={(e) => { e.stopPropagation() }}
+        <div
           className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
         >
           <Heart size={18} />
           <span>{post.likes}</span>
-        </button>
-        <button
-          onClick={(e) => { e.stopPropagation() }}
+        </div>
+        <div
           className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
         >
           <Eye size={18} />
           <span>{post.watch}</span>
-        </button>
+        </div>
         <button
           onClick={handleShare}
           className="ml-auto flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
@@ -176,6 +225,23 @@ export function PostCard({ post, onDelete }: { post: PostDto; onDelete?: (id: st
             <AlertDialogCancel>{t("post.cancel")}</AlertDialogCancel>
             <AlertDialogAction variant="destructive" onClick={handleDelete}>
               {t("post.delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showBlockDialog} onOpenChange={setShowBlockDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("profile.block")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("post.block_confirm", { name: authorName, defaultValue: `确定要屏蔽 ${authorName} 吗？屏蔽后你将看不到对方的帖子。` })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("post.cancel")}</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={handleBlock}>
+              {t("profile.block")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -9,7 +9,8 @@
     "loading": "加载中...",
     "error": "错误",
     "null" : "无",
-    "me": "我"
+    "me": "我",
+    "more": "更多"
   },
   "nav": {
     "home": "首页",
@@ -132,6 +133,7 @@
     "share_panel_opened": "已打开分享面板",
     "share_link_copied": "链接已复制",
     "share_failed": "分享失败，请稍后重试",
+    "block_confirm": "确定要屏蔽 {{name}} 吗？屏蔽后你将看不到对方的帖子。",
     "close_image_viewer": "关闭图片预览",
     "remove_image": "移除图片",
     "drag_to_reorder": "拖动以重新排序图片",
@@ -194,6 +196,7 @@
     "unbind_need_contact": "请先绑定邮箱或手机号后再解绑",
     "follow_error": "关注操作失败",
     "block_error": "屏蔽操作失败",
+    "block_success": "已屏蔽该用户",
     "follow_block": "关注与屏蔽",
     "follow": "关注",
     "following": "已关注",
