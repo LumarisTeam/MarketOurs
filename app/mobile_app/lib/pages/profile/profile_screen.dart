@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:mobile_app/l10n/app_localizations.dart';
@@ -12,14 +11,13 @@ import '../../providers/auth_provider.dart';
 import '../../providers/locale_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../router/app_router.dart';
-import '../../services/file_service.dart';
-import '../../services/image_compression_service.dart';
 import '../../ui/app_feedback.dart';
 import '../../ui/app_fields.dart';
 import '../../ui/app_responsive.dart';
 import '../../ui/app_theme.dart';
 import '../../ui/app_widgets.dart';
 import '../../utils/dto_validation.dart';
+import 'profile_edit_controller.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -107,7 +105,10 @@ class ProfileScreen extends ConsumerWidget {
                       children: [
                         _InfoRow(
                           label: AppLocalizations.of(context).profileNickname,
-                          value: _fallback(user.name, AppLocalizations.of(context).profileNotSet),
+                          value: _fallback(
+                            user.name,
+                            AppLocalizations.of(context).profileNotSet,
+                          ),
                         ),
                         _InfoRow(
                           label: AppLocalizations.of(context).profileBio,
@@ -786,12 +787,6 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
   late final TextEditingController _nameController;
   late final TextEditingController _infoController;
 
-  String _avatarUrl = '';
-  XFile? _avatarFile;
-  bool _isSaving = false;
-  final _imagePicker = ImagePicker();
-  final _fileService = FileService();
-
   @override
   void initState() {
     super.initState();
@@ -801,7 +796,6 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
     _infoController = TextEditingController(
       text: widget.initialUser.info ?? '',
     );
-    _avatarUrl = widget.initialUser.avatar ?? '';
   }
 
   @override
@@ -812,38 +806,21 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
   }
 
   void _generateRandomAvatar() {
-    final random = Random();
-    final seed = random.nextInt(0xFFFFFF).toRadixString(36).padLeft(5, '0');
-    setState(() {
-      _avatarFile = null;
-      _avatarUrl = 'https://api.dicebear.com/9.x/avataaars/svg?seed=$seed';
-    });
+    ref
+        .read(profileEditControllerProvider(widget.initialUser).notifier)
+        .generateRandomAvatar();
   }
 
   Future<void> _pickFromGallery() async {
-    final picked = await _imagePicker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 90,
-    );
-    if (picked != null) {
-      setState(() {
-        _avatarFile = picked;
-        _avatarUrl = '';
-      });
-    }
+    await ref
+        .read(profileEditControllerProvider(widget.initialUser).notifier)
+        .pickFromGallery();
   }
 
   Future<void> _takePhoto() async {
-    final picked = await _imagePicker.pickImage(
-      source: ImageSource.camera,
-      imageQuality: 90,
-    );
-    if (picked != null) {
-      setState(() {
-        _avatarFile = picked;
-        _avatarUrl = '';
-      });
-    }
+    await ref
+        .read(profileEditControllerProvider(widget.initialUser).notifier)
+        .takePhoto();
   }
 
   void _showAvatarOptions() {
@@ -884,57 +861,11 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() => _isSaving = true);
-    CompressedImage? compressedAvatar;
+    if (_formKey.currentState?.validate() != true) return;
     try {
-      var avatar = _avatarUrl;
-      if (_avatarFile != null) {
-        try {
-          // Compress avatar to WebP before upload
-          compressedAvatar = await ImageCompressionService.compress(
-            _avatarFile!,
-            quality: ImageCompressionService.avatarQuality,
-            maxWidth: ImageCompressionService.avatarMaxWidth,
-            maxHeight: ImageCompressionService.avatarMaxHeight,
-          );
-
-          final uploadResponse = await _fileService.uploadAvatar(
-            ImageCompressionService.toXFile(compressedAvatar),
-          );
-          final url = uploadResponse.data;
-          if (url != null && url.isNotEmpty) {
-            avatar = url;
-          } else {
-            if (!mounted) return;
-            await AppFeedback.showError(
-              context,
-              message: AppLocalizations.of(context).errorAvatarUploadFailed,
-            );
-            return;
-          }
-        } catch (_) {
-          if (!mounted) return;
-          await AppFeedback.showError(
-            context,
-            message: AppLocalizations.of(context).errorAvatarUploadFailed,
-          );
-          return;
-        }
-      }
-
-      if (!mounted) return;
-
       await ref
-          .read(authControllerProvider.notifier)
-          .updateProfile(
-            UserUpdateDto(
-              name: _nameController.text.trim(),
-              info: _infoController.text.trim(),
-              avatar: avatar,
-            ),
-          );
+          .read(profileEditControllerProvider(widget.initialUser).notifier)
+          .submit(name: _nameController.text, info: _infoController.text);
       if (!mounted) return;
       await AppFeedback.showSuccess(
         context,
@@ -942,6 +873,13 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
       );
       if (!mounted) return;
       Navigator.of(context).pop();
+    } on ProfileAvatarUploadException {
+      if (mounted) {
+        await AppFeedback.showError(
+          context,
+          message: AppLocalizations.of(context).errorAvatarUploadFailed,
+        );
+      }
     } catch (_) {
       final errorMessage = ref
           .read(authControllerProvider)
@@ -956,12 +894,6 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
               : AppLocalizations.of(context).profileUpdateFailed,
         );
       }
-    } finally {
-      // Clean up temp compressed avatar file
-      if (compressedAvatar != null) {
-        ImageCompressionService.cleanup([compressedAvatar]);
-      }
-      if (mounted) setState(() => _isSaving = false);
     }
   }
 
@@ -969,7 +901,11 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final authState = ref.watch(authControllerProvider).asData?.value;
-    final isSubmitting = _isSaving || (authState?.isSubmitting ?? false);
+    final editState = ref.watch(
+      profileEditControllerProvider(widget.initialUser),
+    );
+    final isSubmitting =
+        editState.isSaving || (authState?.isSubmitting ?? false);
 
     return Padding(
       padding: EdgeInsets.only(
@@ -997,8 +933,8 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
                   clipBehavior: Clip.none,
                   children: [
                     _AvatarPreview(
-                      file: _avatarFile,
-                      url: _avatarUrl,
+                      file: editState.avatarFile,
+                      url: editState.avatarUrl,
                       name: _nameController.text,
                     ),
                     Positioned(
@@ -1057,9 +993,7 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
             AppPrimaryButton(
               onPressed: isSubmitting ? null : _submit,
               child: Text(
-                isSubmitting
-                    ? l10n.profileSaving
-                    : l10n.profileSaveChanges,
+                isSubmitting ? l10n.profileSaving : l10n.profileSaveChanges,
               ),
             ),
           ],
