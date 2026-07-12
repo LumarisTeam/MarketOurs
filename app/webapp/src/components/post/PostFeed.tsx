@@ -1,8 +1,9 @@
 import { Heart, Share2, Search, Loader2, Eye, ArrowLeft, Ban } from "lucide-react"
 import { useNavigate } from "react-router"
-import { useState, useRef, useEffectEvent, useEffect } from "react"
+import { useState, useRef, useEffectEvent, useEffect, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useSelector } from "react-redux"
+import { useWindowVirtualizer } from "@tanstack/react-virtual"
 import type { RootState } from "@/stores"
 import { postService } from "@/services/postService"
 import { followService } from "@/services/followService"
@@ -382,6 +383,11 @@ export function usePostFeed(tagId?: string) {
     return () => observer.disconnect()
   }, [])
 
+  const loadMore = useEffectEvent(() => {
+    if (requestPhaseRef.current !== "idle" || !hasMoreRef.current || loadingRef.current) return
+    void fetchPosts(currentPageRef.current + 1, true, feedVersionRef.current)
+  })
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     setKeyword(searchInput.trim())
@@ -390,6 +396,7 @@ export function usePostFeed(tagId?: string) {
   return {
     posts, setPosts, searchInput, setSearchInput, loading, hasMore,
     feedError, observerTarget, isRefreshingFeed, isSearching, keyword, handleSearch,
+    loadMore,
   }
 }
 
@@ -398,47 +405,75 @@ export function PostFeed({
   searchPlaceholder,
   emptyMessage,
   header,
+  className,
 }: {
   tagId?: string
   searchPlaceholder?: string
   emptyMessage?: string
   header?: React.ReactNode
+  className?: string
 }) {
   const { t } = useTranslation()
+  const feed = usePostFeed(tagId)
   const {
     posts, setPosts, searchInput, setSearchInput, loading, hasMore,
     feedError, observerTarget, isRefreshingFeed, isSearching, handleSearch,
-  } = usePostFeed(tagId)
+    loadMore,
+  } = feed
+
+  const scrollElementRef = useRef<HTMLDivElement>(null)
+
+  const virtualizer = useWindowVirtualizer({
+    count: posts.length,
+    estimateSize: useCallback(() => 320, []),
+    overscan: 5,
+    scrollMargin: scrollElementRef.current?.offsetTop ?? 0,
+    measureElement: useCallback((el: Element) => el.getBoundingClientRect().height, []),
+  })
+
+  // Backup trigger: load more when approaching the end of virtual items
+  useEffect(() => {
+    const endIndex = virtualizer.range?.endIndex ?? 0
+    if (endIndex >= posts.length - 3 && hasMore && !loading) {
+      loadMore()
+    }
+  }, [virtualizer.range?.endIndex, posts.length, hasMore, loading, loadMore])
+
+  const virtualItems = virtualizer.getVirtualItems()
 
   return (
-    <div className="mx-auto max-w-2xl space-y-8 pb-20">
-      {header}
-      <form onSubmit={handleSearch} className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" size={18} />
-        <Input
-          type="text"
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          placeholder={searchPlaceholder ?? t("common.search_placeholder")}
-          className="h-12 rounded-2xl border-border/50 bg-card pl-11 pr-12 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
-          aria-busy={isSearching}
-        />
-        {isSearching ? (
-          <Loader2
-            className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-primary"
-            size={18}
-            aria-hidden="true"
+    <div className={className}>
+      {header && <div className="mx-auto max-w-2xl">{header}</div>}
+      <div className="mx-auto max-w-2xl px-4 sm:px-0">
+        <form onSubmit={handleSearch} className="relative mb-8">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" size={18} />
+          <Input
+            type="text"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder={searchPlaceholder ?? t("common.search_placeholder")}
+            className="h-12 rounded-2xl border-border/50 bg-card pl-11 pr-12 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+            aria-busy={isSearching}
           />
-        ) : null}
-        <button type="submit" className="hidden">{t("common.search")}</button>
-      </form>
+          {isSearching ? (
+            <Loader2
+              className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-primary"
+              size={18}
+              aria-hidden="true"
+            />
+          ) : null}
+          <button type="submit" className="hidden">{t("common.search")}</button>
+        </form>
+      </div>
 
-      <div className="space-y-5">
+      <div className="mx-auto max-w-2xl px-4 sm:px-0 space-y-5">
         {feedError && (
           <div className="animate-in rounded-2xl bg-destructive/10 p-4 text-center text-sm font-medium text-destructive fade-in duration-300">
             {feedError}
           </div>
         )}
+
+        {/* Initial loading skeletons — outside virtualizer */}
         {isRefreshingFeed && (
           <div className="space-y-5">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -446,15 +481,41 @@ export function PostFeed({
             ))}
           </div>
         )}
-        {posts.map((post) => (
-          <PostCard
-            key={post.id}
-            post={post}
-            onDelete={(id) => setPosts((prev) => prev.filter((p) => p.id !== id))}
-          />
-        ))}
+
+        {/* Virtualized post list */}
+        {posts.length > 0 && (
+          <div ref={scrollElementRef}>
+            <div style={{ position: "relative", height: `${virtualizer.getTotalSize()}px` }}>
+              {virtualItems.map((virtualRow) => {
+                const post = posts[virtualRow.index]
+                return (
+                  <div
+                    key={post.id}
+                    data-index={virtualRow.index}
+                    ref={virtualizer.measureElement}
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      transform: `translateY(${virtualRow.start - virtualizer.options.scrollMargin}px)`,
+                    }}
+                  >
+                    <div className="pb-5">
+                      <PostCard
+                        post={post}
+                        onDelete={(id) => setPosts((prev) => prev.filter((p) => p.id !== id))}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
+      {/* Sentinel — after virtualized area */}
       <div ref={observerTarget} className="flex justify-center py-8">
         {loading && posts.length > 0 && <Loader2 className="animate-spin text-primary" size={28} />}
         {!hasMore && posts.length > 0 && (

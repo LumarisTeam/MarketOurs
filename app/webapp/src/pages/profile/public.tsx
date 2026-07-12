@@ -1,8 +1,9 @@
 import { Link, useParams } from "react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { ArrowRight, Calendar, FileText, Loader2, Sparkles, UserPlus, UserMinus, Ban } from "lucide-react";
+import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { userService } from "../../services/userService";
 import { postService } from "../../services/postService";
 import { followService } from "../../services/followService";
@@ -168,6 +169,16 @@ export default function PublicProfilePage() {
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [followLoading, setFollowLoading] = useState(false);
+
+  const postsScrollRef = useRef<HTMLDivElement>(null);
+
+  const postVirtualizer = useWindowVirtualizer({
+    count: recentPosts.length,
+    estimateSize: useCallback(() => 130, []),
+    overscan: 5,
+    scrollMargin: postsScrollRef.current?.offsetTop ?? 0,
+    measureElement: useCallback((el: Element) => el.getBoundingClientRect().height, []),
+  });
 
   const isCurrentUser = useMemo(() => {
     if (!currentUser || !profile) {
@@ -360,32 +371,54 @@ export default function PublicProfilePage() {
         </div>
 
         {recentPosts.length > 0 ? (
-          <div className="grid gap-4">
-            {recentPosts.map((post) => (
-              <Link
-                key={post.id}
-                to={`/post/${post.id}`}
-                className="rounded-[2rem] border border-border/50 bg-card p-6 transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="space-y-3">
-                    <PostTagBadge tag={post.tag} />
-                    <h3 className="text-xl font-bold tracking-tight">{post.title}</h3>
-                    <p className="line-clamp-2 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
-                      {post.content}
-                    </p>
-                  </div>
-                  <ArrowRight className="mt-1 shrink-0 text-muted-foreground" size={18} />
-                </div>
-              </Link>
-            ))}
+          <>
+            <div ref={postsScrollRef}>
+              <div style={{ position: "relative", height: `${postVirtualizer.getTotalSize()}px` }}>
+                {postVirtualizer.getVirtualItems().map((virtualRow) => {
+                  const post = recentPosts[virtualRow.index]
+                  return (
+                    <div
+                      key={post.id}
+                      data-index={virtualRow.index}
+                      ref={postVirtualizer.measureElement}
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        transform: `translateY(${virtualRow.start - postVirtualizer.options.scrollMargin}px)`,
+                      }}
+                    >
+                      <div className="pb-4">
+                        <Link
+                          to={`/post/${post.id}`}
+                          className="rounded-[2rem] border border-border/50 bg-card p-6 transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 block"
+                        >
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="space-y-3">
+                              <PostTagBadge tag={post.tag} />
+                              <h3 className="text-xl font-bold tracking-tight">{post.title}</h3>
+                              <p className="line-clamp-2 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
+                                {post.content}
+                              </p>
+                            </div>
+                            <ArrowRight className="mt-1 shrink-0 text-muted-foreground" size={18} />
+                          </div>
+                        </Link>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+            {/* Sentinel — after virtualized area */}
             <div ref={loadMoreRef} className="flex min-h-12 items-center justify-center">
               {isLoadingMore ? <Loader2 className="animate-spin text-primary" size={20} /> : null}
               {!isLoadingMore && !hasNextPage ? (
                 <p className="text-sm text-muted-foreground">{t("common.no_more_posts")}</p>
               ) : null}
             </div>
-          </div>
+          </>
         ) : (
           <div className="rounded-[2rem] border border-dashed border-border bg-card px-6 py-10 text-center text-muted-foreground">
             {t("profile.no_public_posts")}
