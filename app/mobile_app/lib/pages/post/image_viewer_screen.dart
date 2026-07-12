@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:gal/gal.dart';
@@ -7,6 +8,7 @@ import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../components/app_network_image.dart';
 import '../../ui/app_feedback.dart';
 
 class ImageViewerScreen extends StatefulWidget {
@@ -84,7 +86,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
     }
 
     _resolvingImages.add(imageUrl);
-    final stream = NetworkImage(
+    final stream = CachedNetworkImageProvider(
       imageUrl,
     ).resolve(createLocalImageConfiguration(context));
 
@@ -370,11 +372,13 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                   controller: _photoControllers[index],
                   childSize: _imageSizes[url],
                   child: Center(
-                    child: Image.network(
-                      url,
+                    child: AppNetworkImage(
+                      url: url,
+                      width: null,
+                      height: null,
                       fit: BoxFit.contain,
                       gaplessPlayback: true,
-                      errorBuilder: (context, error, stackTrace) => const Icon(
+                      errorPlaceholder: const Icon(
                         CupertinoIcons.photo,
                         color: CupertinoColors.white,
                         size: 48,
@@ -388,7 +392,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
               }
               return PhotoViewGalleryPageOptions(
                 controller: _photoControllers[index],
-                imageProvider: NetworkImage(url),
+                imageProvider: CachedNetworkImageProvider(url),
                 minScale: PhotoViewComputedScale.contained,
                 maxScale: PhotoViewComputedScale.covered * 3,
                 heroAttributes: PhotoViewHeroAttributes(tag: 'image_$url'),

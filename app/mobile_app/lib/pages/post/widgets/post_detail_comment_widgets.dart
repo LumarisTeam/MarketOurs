@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
 import '../../../../l10n/app_localizations.dart';
+import '../../../components/app_network_image.dart';
 import '../../../models/comment.dart';
 import '../../../ui/app_theme.dart';
 import '../../../ui/app_widgets.dart';
@@ -330,18 +331,11 @@ class CommentImageGrid extends StatelessWidget {
                       AppColors.secondary,
                       context,
                     ),
-                    child: Image.network(
-                      images[i],
+                    child: AppNetworkImage(
+                      url: images[i],
                       width: previewSize,
                       height: previewSize,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        width: previewSize,
-                        height: previewSize,
-                        color: AppColors.secondary,
-                        alignment: Alignment.center,
-                        child: const Icon(CupertinoIcons.photo),
-                      ),
                     ),
                   ),
                 ),

@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' show Colors, Material;
 import 'package:image_picker/image_picker.dart';
 
+import '../components/app_network_image.dart';
 import '../ui/app_theme.dart';
 
 /// Represents a single image in the editable list, which may be either
@@ -96,7 +97,12 @@ class EditableImageWrap extends StatelessWidget {
         for (var i = 0; i < existingImages.length; i++)
           _EditableImageTile(
             size: tileSize,
-            image: Image.network(existingImages[i], fit: BoxFit.cover),
+            image: AppNetworkImage(
+              url: existingImages[i],
+              width: tileSize,
+              height: tileSize,
+              fit: BoxFit.cover,
+            ),
             onRemove: onRemoveExisting == null
                 ? null
                 : () => onRemoveExisting!(i),
@@ -167,7 +173,12 @@ class _ReorderableImageGridState extends State<_ReorderableImageGrid> {
         final tile = _EditableImageTile(
           size: widget.tileSize,
           image: entry.isExisting
-              ? Image.network(entry.displayUrl, fit: BoxFit.cover)
+              ? AppNetworkImage(
+                url: entry.displayUrl,
+                width: widget.tileSize,
+                height: widget.tileSize,
+                fit: BoxFit.cover,
+              )
               : Image.file(File(entry.localFile!.path), fit: BoxFit.cover),
           onRemove: widget.onRemoveEntry == null
               ? null

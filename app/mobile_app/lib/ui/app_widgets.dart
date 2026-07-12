@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mobile_app/l10n/app_localizations.dart';
 
+import '../components/app_network_image.dart';
 import 'app_responsive.dart';
 import 'app_theme.dart';
 
@@ -806,19 +807,16 @@ class AppAvatar extends StatelessWidget {
           ),
         );
       } else {
-        imageWidget = Image.network(
-          avatarUrl,
+        imageWidget = AppNetworkImage(
+          url: avatarUrl,
           width: size,
           height: size,
           fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) => _buildFallback(context),
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) return child;
-            return Container(
-              color: resolvedBg,
-              child: const Center(child: CupertinoActivityIndicator(radius: 8)),
-            );
-          },
+          loadingPlaceholder: Container(
+            color: resolvedBg,
+            child: const Center(child: CupertinoActivityIndicator(radius: 8)),
+          ),
+          errorPlaceholder: _buildFallback(context),
         );
       }
     }

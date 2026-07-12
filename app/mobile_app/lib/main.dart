@@ -33,7 +33,7 @@ class MarketOursApp extends ConsumerWidget {
     PushNotificationService.instance.initialize(router: router);
 
     return CupertinoApp.router(
-      title: 'LightHub',
+      title: 'MarketOurs',
       debugShowCheckedModeBanner: false,
       routerConfig: router,
       locale: appLocale,

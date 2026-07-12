@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../components/app_network_image.dart';
 import '../../providers/auth_provider.dart';
 import '../../router/app_router.dart';
 import '../../services/file_service.dart';
@@ -309,15 +310,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                 File(_avatarFile!.path),
                                 fit: BoxFit.cover,
                               )
-                            : Image.network(
-                                _avatarUrl,
+                            : AppNetworkImage(
+                                url: _avatarUrl,
+                                width: 64,
+                                height: 64,
                                 fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    Icon(
-                                      CupertinoIcons.person_circle,
-                                      size: 64,
-                                      color: AppColors.mutedForeground,
-                                    ),
+                                errorPlaceholder: Icon(
+                                  CupertinoIcons.person_circle,
+                                  size: 64,
+                                  color: AppColors.mutedForeground,
+                                ),
                               ),
                       ),
                     ),

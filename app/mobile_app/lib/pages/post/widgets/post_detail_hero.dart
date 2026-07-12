@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../l10n/app_localizations.dart';
+import '../../../components/app_network_image.dart';
 import '../../../components/post_tag_pill.dart';
 import '../../../models/post.dart';
 import '../../../router/app_router.dart';
@@ -158,21 +159,20 @@ class PostDetailHero extends StatelessWidget {
                           AppColors.secondary,
                           context,
                         ),
-                        child: Image.network(
-                          post.images?[itemIndex] ?? '',
+                        child: AppNetworkImage(
+                          url: post.images?[itemIndex] ?? '',
                           width: double.infinity,
                           fit: BoxFit.cover,
                           gaplessPlayback: true,
-                          errorBuilder:
-                              (context, error, stackTrace) => Container(
-                                height: 200,
-                                width: double.infinity,
-                                color: AppColors.muted,
-                                child: const Icon(
-                                  CupertinoIcons.photo,
-                                  color: AppColors.mutedForeground,
-                                ),
-                              ),
+                          errorPlaceholder: Container(
+                            height: 200,
+                            width: double.infinity,
+                            color: AppColors.muted,
+                            child: const Icon(
+                              CupertinoIcons.photo,
+                              color: AppColors.mutedForeground,
+                            ),
+                          ),
                         ),
                       ),
                     ),

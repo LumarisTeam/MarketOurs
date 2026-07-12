@@ -12,7 +12,7 @@ import 'package:mobile_app/services/share_service.dart';
 import 'package:mobile_app/ui/app_feedback.dart';
 import 'package:mobile_app/ui/app_theme.dart';
 import 'package:mobile_app/ui/app_widgets.dart';
-import 'package:mobile_app/utils/date_formatters.dart';
+import 'package:mobile_app/components/app_network_image.dart';
 
 class PostCard extends ConsumerWidget {
   const PostCard({super.key, required this.post});
@@ -237,17 +237,12 @@ class PostCard extends ConsumerWidget {
                     child: SizedBox(
                       width: 88,
                       height: 88,
-                      child: Image.network(
-                        post.images!.first,
+                      child: AppNetworkImage(
+                        url: post.images!.first,
+                        width: 88,
+                        height: 88,
                         fit: BoxFit.cover,
                         gaplessPlayback: true,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          color: AppColors.muted,
-                          child: const Icon(
-                            CupertinoIcons.photo,
-                            color: AppColors.mutedForeground,
-                          ),
-                        ),
                       ),
                     ),
                   ),
