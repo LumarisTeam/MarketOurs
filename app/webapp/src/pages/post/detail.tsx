@@ -17,6 +17,7 @@ import { DTO_LIMITS, requiredMax } from "@/lib/dtoValidation"
 import { PostTagBadge } from "@/components/post/PostTagBadge"
 import { formatEditedRelativeTime } from "@/lib/dateTime"
 import SortableImageGrid, { type ImageItem } from "@/components/ui/sortable-image-grid"
+import { OptimizedImage } from "@/components/ui/optimized-image"
 import { arrayMove } from "@dnd-kit/sortable"
 import {
   AlertDialog,
@@ -85,7 +86,7 @@ function CommentImageGrid({ images, imageLabel }: { images: string[]; imageLabel
             onClick={() => setViewerIndex(index)}
             className="aspect-square overflow-hidden rounded-xl border border-border/50 bg-muted"
           >
-            <img src={image} alt={`${imageLabel} ${index + 1}`} className="h-full w-full object-cover" loading="lazy" />
+            <OptimizedImage src={image} alt={`${imageLabel} ${index + 1}`} className="h-full w-full object-cover" loading="lazy" />
           </button>
         ))}
       </div>
@@ -105,11 +106,13 @@ function CommentImageGrid({ images, imageLabel }: { images: string[]; imageLabel
           >
             <X size={22} />
           </button>
-          <img
+          <OptimizedImage
             src={images[viewerIndex]}
             className="max-h-[88vh] max-w-[92vw] rounded-2xl object-contain shadow-2xl"
             alt={`${imageLabel} ${viewerIndex + 1}`}
             onClick={(event) => event.stopPropagation()}
+            loading="eager"
+            fetchPriority="high"
           />
         </div>
       )}
@@ -172,11 +175,12 @@ function PostImageCarousel({ images, imageLabel }: { images: string[]; imageLabe
                 onClick={() => setViewerIndex(idx)}
                 className="group relative min-w-full aspect-video overflow-hidden bg-muted text-left"
               >
-                <img
+                <OptimizedImage
                   src={img}
                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
                   alt={`${imageLabel} ${idx + 1}`}
                   loading={idx === 0 ? "eager" : "lazy"}
+                  fetchPriority={idx === 0 ? "high" : "low"}
                 />
               </button>
             ))}
@@ -253,11 +257,13 @@ function PostImageCarousel({ images, imageLabel }: { images: string[]; imageLabe
               <ChevronLeft size={24} />
             </button>
           )}
-          <img
+          <OptimizedImage
             src={images[viewerIndex]}
             className="max-h-[88vh] max-w-[92vw] rounded-2xl object-contain shadow-2xl"
             alt={`${imageLabel} ${viewerIndex + 1}`}
             onClick={(event) => event.stopPropagation()}
+            loading="eager"
+            fetchPriority="high"
           />
           {hasMultipleImages && (
             <>
@@ -487,7 +493,7 @@ function CommentItem({
   return (
     <div className={cn("flex gap-4 group transition-opacity", isDeleting && "opacity-50 pointer-events-none")}>
       <Link to={`/user/${comment.userId}`} className="flex-shrink-0">
-        <img src={authorAvatar} alt={authorName} className="w-10 h-10 rounded-full bg-muted shadow-sm" />
+        <OptimizedImage src={authorAvatar} alt={authorName} className="w-10 h-10 rounded-full bg-muted shadow-sm" />
       </Link>
       <div className="flex-1 space-y-2">
         <div className="p-5 rounded-[1.5rem] bg-card border border-border/40 shadow-sm group-hover:border-primary/20 transition-colors">
@@ -1205,7 +1211,7 @@ export default function PostDetailPage() {
           
           <div className="flex items-center gap-4 py-6 border-y border-border/30">
             <Link to={`/user/${post.userId}`} className="shrink-0">
-              <img src={authorAvatar} alt={authorName} className="w-12 h-12 rounded-full bg-muted shadow-inner" />
+              <OptimizedImage src={authorAvatar} alt={authorName} className="w-12 h-12 rounded-full bg-muted shadow-inner" />
             </Link>
             <div className="flex-1">
               <Link to={`/user/${post.userId}`} className="font-bold text-lg transition-colors hover:text-primary">

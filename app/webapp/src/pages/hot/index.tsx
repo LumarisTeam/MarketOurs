@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Skeleton } from "@/components/ui/skeleton"
+import { OptimizedImage } from "@/components/ui/optimized-image"
 
 function HotPostSkeleton({ index }: { index: number }) {
   return (
@@ -229,7 +230,7 @@ export default function HotPage() {
                   {coverImage ? (
                     <div className="relative shrink-0 p-5 pb-0 sm:w-60 sm:p-4 sm:pl-0">
                       <div className="overflow-hidden rounded-2xl sm:h-full sm:min-h-48">
-                        <img
+                      <OptimizedImage
                           src={coverImage}
                           alt={post.title}
                           className="h-44 w-full object-cover transition duration-700 group-hover:scale-[1.05] sm:h-full"

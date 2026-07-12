@@ -19,6 +19,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { X, GripVertical } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 
 export interface ImageItem {
   id: string;
@@ -71,7 +72,7 @@ function SortableImageTile({
         isDragging && "z-10 shadow-xl"
       )}
     >
-      <img
+      <OptimizedImage
         src={item.url}
         alt=""
         className="w-full h-full object-cover"
@@ -161,7 +162,7 @@ export default function SortableImageGrid({
       <DragOverlay>
         {activeItem ? (
           <div className="aspect-square w-full max-w-[120px] rounded-2xl overflow-hidden border-2 border-primary shadow-xl opacity-90">
-            <img
+            <OptimizedImage
               src={activeItem.url}
               alt=""
               className="w-full h-full object-cover"

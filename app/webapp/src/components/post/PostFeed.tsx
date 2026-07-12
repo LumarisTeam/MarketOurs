@@ -16,6 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
+import { OptimizedImage } from "@/components/ui/optimized-image"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -180,7 +181,13 @@ export function PostCard({ post, onDelete }: { post: PostDto; onDelete?: (id: st
         {post.images && post.images.length > 0 && (
           <div className="mt-4 flex h-36 sm:h-40 gap-2 overflow-hidden rounded-2xl">
             {post.images.slice(0, 3).map((img, i) => (
-              <img key={i} src={img} className="h-full flex-1 bg-muted object-cover" alt="" />
+              <OptimizedImage
+                key={i}
+                src={img}
+                className="h-full flex-1 bg-muted object-cover"
+                alt=""
+                loading="lazy"
+              />
             ))}
           </div>
         )}
