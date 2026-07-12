@@ -1,34 +1,37 @@
 import { BrowserRouter, Routes, Route, Outlet } from "react-router"
+import { Suspense, lazy, useEffect } from "react"
 import { ThemeProvider } from "./components/theme-provider"
 import { Toaster } from "./components/ui/sonner"
 import { MainLayout } from "./components/layout/MainLayout"
-import { AdminLayout } from "./components/layout/AdminLayout"
-import { AdminGuard } from "./components/auth/AdminGuard"
+import { PageLoading } from "./components/layout/PageLoading"
 
-import HomePage from "./pages/home"
-import HotPage from "./pages/hot"
-import AdminDashboard from "./pages/admin/dashboard"
-import AdminUsersPage from "./pages/admin/users"
-import AdminPostsPage from "./pages/admin/posts"
-import AdminTagsPage from "./pages/admin/tags"
-import AdminCommentsPage from "./pages/admin/comments"
-import AdminLogsPage from "./pages/admin/logs"
-import AdminBlacklistPage from "./pages/admin/blacklist"
-import LoginPage from "./pages/login"
-import LoginCallbackPage from "./pages/login/callback"
-import RegisterPage from "./pages/register"
-import PostDetailPage from "./pages/post/detail"
-import CreatePostPage from "./pages/post/create"
-import NotificationsPage from "./pages/notifications"
-import ProfilePage from "./pages/profile"
-import PublicProfilePage from "./pages/profile/public"
-import FollowingPage from "./pages/profile/following"
-import ForgotPasswordPage from "./pages/forgot-password"
-import ResetPasswordPage from "./pages/profile/reset-password"
-import TermsPage from "./pages/legal/terms"
-import PrivacyPage from "./pages/legal/privacy"
-import TagPage from "./pages/tag"
-import { useEffect } from "react"
+// Admin shell (Guard + Layout) is lazy-loaded — only downloaded for admin users
+const AdminShell = lazy(() => import("./components/auth/AdminShell").then(m => ({ default: m.AdminShell })))
+
+// Route-level code splitting — each page is loaded on demand
+const HomePage = lazy(() => import("./pages/home"))
+const HotPage = lazy(() => import("./pages/hot"))
+const AdminDashboard = lazy(() => import("./pages/admin/dashboard"))
+const AdminUsersPage = lazy(() => import("./pages/admin/users"))
+const AdminPostsPage = lazy(() => import("./pages/admin/posts"))
+const AdminTagsPage = lazy(() => import("./pages/admin/tags"))
+const AdminCommentsPage = lazy(() => import("./pages/admin/comments"))
+const AdminLogsPage = lazy(() => import("./pages/admin/logs"))
+const AdminBlacklistPage = lazy(() => import("./pages/admin/blacklist"))
+const LoginPage = lazy(() => import("./pages/login"))
+const LoginCallbackPage = lazy(() => import("./pages/login/callback"))
+const RegisterPage = lazy(() => import("./pages/register"))
+const PostDetailPage = lazy(() => import("./pages/post/detail"))
+const CreatePostPage = lazy(() => import("./pages/post/create"))
+const NotificationsPage = lazy(() => import("./pages/notifications"))
+const ProfilePage = lazy(() => import("./pages/profile"))
+const PublicProfilePage = lazy(() => import("./pages/profile/public"))
+const FollowingPage = lazy(() => import("./pages/profile/following"))
+const ForgotPasswordPage = lazy(() => import("./pages/forgot-password"))
+const ResetPasswordPage = lazy(() => import("./pages/profile/reset-password"))
+const TermsPage = lazy(() => import("./pages/legal/terms"))
+const PrivacyPage = lazy(() => import("./pages/legal/privacy"))
+const TagPage = lazy(() => import("./pages/tag"))
 import { useDispatch, useSelector } from "react-redux"
 import type { RootState } from "./stores"
 import { userService } from "./services/userService"
@@ -75,6 +78,7 @@ export function App() {
     <ThemeProvider defaultTheme="system" storageKey="marketours-theme">
       <BrowserRouter>
         <Toaster richColors closeButton />
+        <Suspense fallback={<PageLoading />}>
         <Routes>
           {/* Public Routes with MainLayout */}
           <Route element={<MainLayout><Outlet /></MainLayout>}>
@@ -96,16 +100,10 @@ export function App() {
             <Route path="/privacy" element={<PrivacyPage />} />
           </Route>
 
-          {/* Admin Routes with AdminLayout and AdminGuard */}
-          <Route 
-            path="/admin" 
-            element={
-              <AdminGuard>
-                <AdminLayout>
-                  <Outlet />
-                </AdminLayout>
-              </AdminGuard>
-            }
+          {/* Admin Routes — lazy-loaded AdminShell (Guard + Layout) */}
+          <Route
+            path="/admin"
+            element={<AdminShell />}
           >
             <Route index element={<AdminDashboard />} />
             <Route path="users" element={<AdminUsersPage />} />
@@ -116,6 +114,7 @@ export function App() {
             <Route path="blacklist" element={<AdminBlacklistPage />} />
           </Route>
         </Routes>
+        </Suspense>
       </BrowserRouter>
     </ThemeProvider>
   )

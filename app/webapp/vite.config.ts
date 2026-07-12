@@ -9,6 +9,23 @@ import path from 'path'
 export default defineConfig({
   build: {
     outDir: 'build',
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          // Vendor chunk: all node_modules
+          if (id.includes('node_modules')) {
+            // Isolate large chart / editor libraries in their own chunks
+            if (id.includes('recharts')) return 'vendor-charts'
+            if (id.includes('@tiptap')) return 'vendor-editor'
+            return 'vendor'
+          }
+          // Admin pages — only loaded when navigating to /admin
+          if (id.includes('src/pages/admin')) {
+            return 'admin'
+          }
+        },
+      },
+    },
   },
   plugins: [
     react(),
