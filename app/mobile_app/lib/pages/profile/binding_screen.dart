@@ -13,6 +13,7 @@ import '../../ui/app_fields.dart';
 import '../../ui/app_responsive.dart';
 import '../../ui/app_theme.dart';
 import '../../ui/app_widgets.dart';
+import '../../l10n/app_localizations.dart';
 
 class BindingScreen extends ConsumerWidget {
   const BindingScreen({super.key});
@@ -23,7 +24,7 @@ class BindingScreen extends ConsumerWidget {
     final user = authState?.user;
 
     return AppPageScaffold(
-      title: '第三方绑定',
+      title: AppLocalizations.of(context).bindingTitle,
       navigationBarStyle: AppNavigationBarStyle.compact,
       slivers: [
         CupertinoSliverRefreshControl(
@@ -81,7 +82,7 @@ class _BindingSection extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(left: 8, bottom: 12),
           child: Text(
-            '将您的账号与第三方平台关联，方便快速登录',
+            AppLocalizations.of(context).bindingSubtitle,
             style: AppTextStyles.muted(context),
           ),
         ),
@@ -131,20 +132,21 @@ class _BindingSection extends StatelessWidget {
   ) async {
     final currentUser = provider.user;
     if (currentUser == null) {
-      await AppFeedback.showError(context, message: '请先登录');
+      final l10n = AppLocalizations.of(context);
+      await AppFeedback.showError(context, message: l10n.postPleaseLogin);
       return;
     }
 
     if (!_hasText(currentUser.email) && !_hasText(currentUser.phone)) {
-      await AppFeedback.showError(context, message: '请先绑定邮箱或手机号后再解绑');
+      await AppFeedback.showError(context, message: AppLocalizations.of(context).bindingFirstWarning);
       return;
     }
 
     final confirmed = await AppFeedback.confirm(
       context,
-      title: '解绑 ${provider.name}',
-      message: '解绑前需要完成本次邮箱或手机验证码校验。',
-      confirmText: '继续',
+      title: AppLocalizations.of(context).bindingUnbindCheckTitle(provider.name),
+      message: AppLocalizations.of(context).bindingUnbindCheckDesc,
+      confirmText: AppLocalizations.of(context).bindingContinue,
       destructive: true,
     );
     if (confirmed != true || !context.mounted) return;
@@ -157,7 +159,7 @@ class _BindingSection extends StatelessWidget {
     );
 
     if (success == true && context.mounted) {
-      await AppFeedback.showSuccess(context, message: '${provider.name} 已解绑');
+      await AppFeedback.showSuccess(context, message: AppLocalizations.of(context).bindingUnboundSuccess(provider.name));
     }
   }
 
@@ -213,14 +215,14 @@ class _BindingRow extends StatelessWidget {
         provider.name,
         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
       ),
-      subtitle: provider.isBound ? const Text('已绑定') : null,
+      subtitle: provider.isBound ? Text(AppLocalizations.of(context).bindingBound) : null,
       trailing: provider.isBound
           ? CupertinoButton(
               padding: EdgeInsets.zero,
               minimumSize: Size.zero,
               onPressed: onUnbind,
-              child: const Text(
-                '解绑',
+              child: Text(
+                AppLocalizations.of(context).bindingUnbind,
                 style: TextStyle(
                   color: AppColors.destructive,
                   fontSize: 14,
@@ -232,8 +234,8 @@ class _BindingRow extends StatelessWidget {
               padding: EdgeInsets.zero,
               minimumSize: Size.zero,
               onPressed: onBind,
-              child: const Text(
-                '去绑定',
+              child: Text(
+                AppLocalizations.of(context).bindingGoBind,
                 style: TextStyle(
                   color: AppColors.primary,
                   fontSize: 14,
@@ -288,14 +290,14 @@ class _UnbindThirdPartyDialogState
       if (_hasText(widget.user.email))
         _VerificationChannel(
           id: 'email',
-          label: '邮箱',
+          label: AppLocalizations.of(context).bindingEmailTab,
           destination: widget.user.email!,
           icon: CupertinoIcons.mail,
         ),
       if (_hasText(widget.user.phone))
         _VerificationChannel(
           id: 'phone',
-          label: '手机',
+          label: AppLocalizations.of(context).bindingPhoneTab,
           destination: widget.user.phone!,
           icon: CupertinoIcons.phone,
         ),
@@ -328,7 +330,7 @@ class _UnbindThirdPartyDialogState
       }
       _startCountdown();
       if (mounted) {
-        await AppFeedback.showSuccess(context, message: '验证码已发送');
+        await AppFeedback.showSuccess(context, message: AppLocalizations.of(context).bindingCodeSent);
       }
     } catch (error) {
       if (mounted) {
@@ -345,7 +347,7 @@ class _UnbindThirdPartyDialogState
     final channel = _selectedChannel;
     final code = _codeController.text.trim();
     if (channel == null || code.isEmpty || _isSubmitting) {
-      setState(() => _errorMessage = '请输入验证码');
+      setState(() => _errorMessage = AppLocalizations.of(context).bindingEnterCode);
       return;
     }
 
@@ -394,13 +396,13 @@ class _UnbindThirdPartyDialogState
     final channel = _selectedChannel;
 
     return CupertinoAlertDialog(
-      title: Text('解绑 ${widget.provider}'),
+      title: Text(AppLocalizations.of(context).bindingUnbindTitle(widget.provider)),
       content: Padding(
         padding: const EdgeInsets.only(top: 12),
         child: Column(
           children: [
             Text(
-              '选择邮箱或手机接收验证码，验证通过后立即解绑。',
+              AppLocalizations.of(context).bindingUnbindDesc,
               style: AppTextStyles.muted(context),
             ),
             const SizedBox(height: 14),
@@ -446,7 +448,7 @@ class _UnbindThirdPartyDialogState
             const SizedBox(height: 12),
             AppTextField(
               controller: _codeController,
-              placeholder: '6 位验证码',
+              placeholder: AppLocalizations.of(context).authCodePlaceholder,
               keyboardType: TextInputType.number,
               textInputAction: TextInputAction.done,
               onFieldSubmitted: (_) => _submit(),
@@ -460,8 +462,8 @@ class _UnbindThirdPartyDialogState
                   _countdown > 0
                       ? '${_countdown}s'
                       : _isSending
-                      ? '发送中'
-                      : '发送',
+                      ? AppLocalizations.of(context).bindingSending
+                      : AppLocalizations.of(context).bindingSendCode,
                   style: const TextStyle(
                     color: AppColors.primary,
                     fontSize: 13,
@@ -489,12 +491,12 @@ class _UnbindThirdPartyDialogState
           onPressed: _isSubmitting
               ? null
               : () => Navigator.of(context).pop(false),
-          child: const Text('取消'),
+          child: Text(AppLocalizations.of(context).cancel),
         ),
         CupertinoDialogAction(
           isDestructiveAction: true,
           onPressed: _isSubmitting ? null : _submit,
-          child: Text(_isSubmitting ? '解绑中...' : '确认解绑'),
+          child: Text(_isSubmitting ? AppLocalizations.of(context).bindingUnbinding : AppLocalizations.of(context).bindingConfirmUnbind),
         ),
       ],
     );

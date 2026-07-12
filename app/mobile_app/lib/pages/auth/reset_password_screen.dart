@@ -101,7 +101,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
           children: [
             AppTextField(
               controller: _tokenController,
-              placeholder: '验证码 / Token',
+              placeholder: AppLocalizations.of(context).validatorCodeRequiredToken,
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
                   return AppLocalizations.of(context).validatorCodeRequiredToken;

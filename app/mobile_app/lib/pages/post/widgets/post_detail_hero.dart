@@ -58,7 +58,7 @@ class PostDetailHero extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                post.author?.name ?? '匿名用户',
+                                post.author?.name ?? AppLocalizations.of(context).anonymousUser,
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
@@ -105,7 +105,7 @@ class PostDetailHero extends StatelessWidget {
             ),
           ),
         Text(
-          post.title?.trim().isNotEmpty == true ? post.title!.trim() : '未命名帖子',
+          post.title?.trim().isNotEmpty == true ? post.title!.trim() : AppLocalizations.of(context).postUnnamed,
           style: TextStyle(
             fontSize: 22,
             height: 1.3,
@@ -121,7 +121,7 @@ class PostDetailHero extends StatelessWidget {
         Text(
           post.content?.trim().isNotEmpty == true
               ? post.content!.trim()
-              : '这个帖子还没有填写描述。',
+              : AppLocalizations.of(context).postNoDescription,
           style: TextStyle(
             fontSize: 17,
             height: 1.6,

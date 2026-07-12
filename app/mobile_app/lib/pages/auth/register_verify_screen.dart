@@ -182,7 +182,7 @@ class _RegisterVerifyScreenState extends ConsumerState<RegisterVerifyScreen> {
             if (widget.account != null && widget.account!.isNotEmpty) ...[
               Center(
                 child: Text(
-                  '验证码已发送至 ${widget.account}',
+                  AppLocalizations.of(context).codeSentToAccount(widget.account!),
                   style: AppTextStyles.label(context),
                   textAlign: TextAlign.center,
                 ),
@@ -218,7 +218,7 @@ class _RegisterVerifyScreenState extends ConsumerState<RegisterVerifyScreen> {
                 onPressed: isSubmitting || _countdown > 0 ? null : _resendCode,
                 padding: EdgeInsets.zero,
                 child: Text(
-                  _countdown > 0 ? '${_countdown}s 后重新发送' : AppLocalizations.of(context).authResendCode,
+                  _countdown > 0 ? AppLocalizations.of(context).codeResendAfterSeconds(_countdown) : AppLocalizations.of(context).authResendCode,
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,

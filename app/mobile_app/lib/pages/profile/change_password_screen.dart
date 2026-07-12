@@ -48,7 +48,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
       if (!mounted) {
         return;
       }
-      await AppFeedback.showSuccess(context, message: '密码修改成功');
+      await AppFeedback.showSuccess(context, message: AppLocalizations.of(context).passwordChanged);
       if (!mounted) {
         return;
       }
@@ -70,11 +70,12 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final authState = ref.watch(authControllerProvider).asData?.value;
     final isSubmitting = authState?.isSubmitting ?? false;
 
     return AppPageScaffold(
-      title: AppLocalizations.of(context).profileChangePasswordTitle,
+      title: l10n.profileChangePasswordTitle,
       navigationBarStyle: AppNavigationBarStyle.compact,
       maxContentWidth: AppResponsive.readableMaxWidth(context, fallback: 560),
       child: Form(
@@ -83,10 +84,10 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
           children: [
             PasswordFormField(
               controller: _oldPasswordController,
-              placeholder: '当前密码',
+              placeholder: l10n.currentPasswordPlaceholder,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return '请输入当前密码';
+                  return l10n.enterCurrentPassword;
                 }
                 return null;
               },
@@ -94,24 +95,24 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
             const SizedBox(height: 16),
             PasswordFormField(
               controller: _newPasswordController,
-              placeholder: '新密码，至少 6 位',
+              placeholder: l10n.newPasswordPlaceholder,
               maxLength: DtoLimits.userPasswordMax,
               validator: (value) {
                 return passwordLengthValidator(
                   value,
-                  emptyMessage: '请输入新密码',
-                  minMessage: '密码至少 ${DtoLimits.userPasswordMin} 位',
-                  maxMessage: '密码长度不能超过 ${DtoLimits.userPasswordMax} 位',
+                  emptyMessage: l10n.enterNewPassword,
+                  minMessage: l10n.passwordMinLength(DtoLimits.userPasswordMin),
+                  maxMessage: l10n.passwordMaxLength(DtoLimits.userPasswordMax),
                 );
               },
             ),
             const SizedBox(height: 16),
             PasswordFormField(
               controller: _confirmPasswordController,
-              placeholder: '确认新密码',
+              placeholder: l10n.confirmPasswordPlaceholder,
               validator: (value) {
                 if (value != _newPasswordController.text) {
-                  return '两次输入的密码不一致';
+                  return l10n.passwordsMismatch;
                 }
                 return null;
               },
@@ -119,7 +120,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
             const SizedBox(height: 24),
             AppPrimaryButton(
               onPressed: isSubmitting ? null : _submit,
-              child: Text(isSubmitting ? '提交中...' : '保存新密码'),
+              child: Text(isSubmitting ? l10n.profileSubmitting : l10n.save),
             ),
           ],
         ),

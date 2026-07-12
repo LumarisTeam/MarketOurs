@@ -7,7 +7,7 @@ class FollowService {
 
   Map<String, dynamic> _asMap(dynamic data) {
     if (data is! Map<String, dynamic>) {
-      throw const FormatException('关注服务响应格式异常');
+      throw const FormatException('Follow service response format error');
     }
     return data;
   }

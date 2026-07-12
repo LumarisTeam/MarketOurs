@@ -1057,4 +1057,317 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get nextExit => 'もう一度押すとアプリを終了します';
+
+  @override
+  String get anonymousUser => '匿名ユーザー';
+
+  @override
+  String get postUnnamed => '無題の投稿';
+
+  @override
+  String get postNoContent => 'この投稿には内容がありません。';
+
+  @override
+  String get postNoContentDesc => 'この投稿には説明がありません。';
+
+  @override
+  String get postNoDescription => 'この投稿にはまだ説明がありません。';
+
+  @override
+  String get postDetailNotFound => '投稿の詳細が見つかりません';
+
+  @override
+  String get postDataEmpty => '投稿データが空です';
+
+  @override
+  String postCommentTooLong(int max) {
+    return 'コメントは$max文字を超えることはできません';
+  }
+
+  @override
+  String get postUpdated => '投稿が更新されました';
+
+  @override
+  String get replyComment => 'コメントに返信';
+
+  @override
+  String get replyHint => '返信内容を入力';
+
+  @override
+  String get replySent => '返信が送信されました';
+
+  @override
+  String get editCommentTitle => 'コメントを編集';
+
+  @override
+  String get editCommentHint => 'コメント内容を更新';
+
+  @override
+  String get commentUpdated => 'コメントが更新されました';
+
+  @override
+  String get commentDeleteConfirm => 'このコメントを削除しますか？';
+
+  @override
+  String get commentDeleted => 'コメントが削除されました';
+
+  @override
+  String get shareFailed => '共有に失敗しました。後でもう一度お試しください';
+
+  @override
+  String get shareImageFailed => '画像の転送に失敗しました';
+
+  @override
+  String get noPhotoPermission => 'フォトライブラリの権限がありません';
+
+  @override
+  String get imageSaveFailed => '画像の保存に失敗しました';
+
+  @override
+  String get imageActions => '画像操作';
+
+  @override
+  String imageCurrentPosition(int current, int total) {
+    return '画像: $current / $total';
+  }
+
+  @override
+  String get saveImageAction => '画像を保存';
+
+  @override
+  String get forwardImage => '画像を転送';
+
+  @override
+  String get forwardImageTitle => '画像を転送';
+
+  @override
+  String blockConfirmMessage(String name) {
+    return '$nameをブロックしますか？相手の投稿が表示されなくなります。';
+  }
+
+  @override
+  String get blockSuccess => 'ユーザーをブロックしました';
+
+  @override
+  String get tagUnavailableTitle => 'タグは利用できません';
+
+  @override
+  String get tagNotFoundDesc => 'タグが見つかりません。';
+
+  @override
+  String get tagGoHome => 'ホームに戻る';
+
+  @override
+  String get tagSearchPlaceholder => 'このタグの投稿を検索';
+
+  @override
+  String get tagNoPostsDesc => '投稿が増えるとここに表示されます。';
+
+  @override
+  String get tagNoSearchResultsDesc => '別のキーワードをお試しください。';
+
+  @override
+  String get tagRefreshingPosts => '投稿を更新中...';
+
+  @override
+  String get tagSearching => '検索中...';
+
+  @override
+  String get homeNoSearchResults => '一致する投稿が見つかりません';
+
+  @override
+  String get captchaFailed => '検証の取得に失敗しました。再試行してください';
+
+  @override
+  String get captchaVerifyFailed => '検証に失敗しました。再試行してください';
+
+  @override
+  String get captchaComplete => '検証を完了してください';
+
+  @override
+  String get captchaDragSlider => 'スライダーをドラッグしてパズルを合わせてください';
+
+  @override
+  String get captchaDragComplete => 'スライダーをドラッグして完了してください';
+
+  @override
+  String get captchaRefreshLabel => '更新';
+
+  @override
+  String get passwordChanged => 'パスワードが変更されました';
+
+  @override
+  String get currentPasswordPlaceholder => '現在のパスワード';
+
+  @override
+  String get enterCurrentPassword => '現在のパスワードを入力してください';
+
+  @override
+  String get newPasswordPlaceholder => '新しいパスワード（6文字以上）';
+
+  @override
+  String get enterNewPassword => '新しいパスワードを入力してください';
+
+  @override
+  String passwordMinLength(int min) {
+    return 'パスワードは$min文字以上必要です';
+  }
+
+  @override
+  String passwordMaxLength(int max) {
+    return 'パスワードは$max文字を超えることはできません';
+  }
+
+  @override
+  String get confirmPasswordPlaceholder => '新しいパスワードを確認';
+
+  @override
+  String get passwordsMismatch => 'パスワードが一致しません';
+
+  @override
+  String get profileBioPlaceholder => '自己紹介';
+
+  @override
+  String profileBioTooLong(int max) {
+    return '自己紹介は$max文字を超えることはできません';
+  }
+
+  @override
+  String get profileNotSet => '未設定';
+
+  @override
+  String get profileConfirmLogout => 'ログアウトしますか？';
+
+  @override
+  String get profileConfirmLogoutDesc => 'ログアウトすると現在のセッションがクリアされます。';
+
+  @override
+  String get profileUnfollowLabel => 'フォロー解除';
+
+  @override
+  String get profileUnblockLabel => 'ブロック解除';
+
+  @override
+  String get profileFollowingEmptyDesc => '興味のあるユーザーを見つけてフォローしましょう';
+
+  @override
+  String get profileBlockListEmptyDesc => 'ブロックリストは空です';
+
+  @override
+  String get profileLoadFailed => 'プロフィールの読み込みに失敗しました';
+
+  @override
+  String get userInfoLoadFailed => 'ユーザー情報の読み込みに失敗しました';
+
+  @override
+  String get bindingTitle => '外部連携';
+
+  @override
+  String get bindingSubtitle => 'アカウントを外部プラットフォームと連携して簡単ログイン';
+
+  @override
+  String get bindingFirstWarning => '解除する前にメールまたは電話番号を連携してください';
+
+  @override
+  String bindingUnbindCheckTitle(String provider) {
+    return '$providerの連携解除';
+  }
+
+  @override
+  String get bindingUnbindCheckDesc => '解除前にメールまたは電話の確認が必要です。';
+
+  @override
+  String get bindingContinue => '続ける';
+
+  @override
+  String bindingUnboundSuccess(String provider) {
+    return '$providerの連携を解除しました';
+  }
+
+  @override
+  String get bindingBound => '連携済み';
+
+  @override
+  String get bindingUnbind => '解除';
+
+  @override
+  String get bindingGoBind => '連携する';
+
+  @override
+  String get bindingEmailTab => 'メール';
+
+  @override
+  String get bindingPhoneTab => '電話';
+
+  @override
+  String get bindingCodeSent => '確認コードを送信しました';
+
+  @override
+  String get bindingEnterCode => '確認コードを入力してください';
+
+  @override
+  String bindingUnbindTitle(String provider) {
+    return '$providerの連携解除';
+  }
+
+  @override
+  String get bindingUnbindDesc => 'コードを受け取る方法を選択してください。';
+
+  @override
+  String get bindingSendCode => '送信';
+
+  @override
+  String get bindingSending => '送信中';
+
+  @override
+  String get bindingConfirmUnbind => '解除を確認';
+
+  @override
+  String get bindingUnbinding => '解除中...';
+
+  @override
+  String codeResendAfterSeconds(int seconds) {
+    return '$seconds秒後に再送信';
+  }
+
+  @override
+  String get pushNotificationChannelName => 'LightHub 通知';
+
+  @override
+  String get pushNotificationChannelDesc => 'コメント返信、トレンド更新、システム通知用';
+
+  @override
+  String get pushTokenUpdateFailed => 'プッシュトークンの更新に失敗しました';
+
+  @override
+  String get serviceErrorFollow => 'フォローサービス応答形式エラー';
+
+  @override
+  String get serviceErrorNotification => '通知応答形式エラー';
+
+  @override
+  String get serviceErrorComment => 'コメントリスト応答形式エラー';
+
+  @override
+  String get serviceErrorUser => 'ユーザーサービス応答形式エラー';
+
+  @override
+  String get serviceErrorPost => '投稿リスト応答形式エラー';
+
+  @override
+  String get detailLoadFailed => '詳細の読み込みに失敗しました';
+
+  @override
+  String get tokenRefreshIncomplete => 'トークン更新失敗：不完全なデータ';
+
+  @override
+  String get changeActionLabel => '変更';
+
+  @override
+  String get editedLabel => '編集済み';
+
+  @override
+  String lastUpdatedLabel(String date) {
+    return '最終更新: $date';
+  }
 }

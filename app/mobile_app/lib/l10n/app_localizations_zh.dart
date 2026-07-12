@@ -1057,4 +1057,317 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get nextExit => '再按一次退出应用';
+
+  @override
+  String get anonymousUser => '匿名用户';
+
+  @override
+  String get postUnnamed => '未命名帖子';
+
+  @override
+  String get postNoContent => '这个帖子还没有填写内容。';
+
+  @override
+  String get postNoContentDesc => '这个帖子还没有内容描述。';
+
+  @override
+  String get postNoDescription => '这个帖子还没有填写描述。';
+
+  @override
+  String get postDetailNotFound => '帖子详情不存在';
+
+  @override
+  String get postDataEmpty => '帖子数据为空';
+
+  @override
+  String postCommentTooLong(int max) {
+    return '评论内容长度不能超过 $max 位';
+  }
+
+  @override
+  String get postUpdated => '帖子已更新';
+
+  @override
+  String get replyComment => '回复评论';
+
+  @override
+  String get replyHint => '输入回复内容';
+
+  @override
+  String get replySent => '回复已发送';
+
+  @override
+  String get editCommentTitle => '编辑评论';
+
+  @override
+  String get editCommentHint => '更新评论内容';
+
+  @override
+  String get commentUpdated => '评论已更新';
+
+  @override
+  String get commentDeleteConfirm => '确定删除这条评论吗？';
+
+  @override
+  String get commentDeleted => '评论已删除';
+
+  @override
+  String get shareFailed => '分享失败，请稍后重试';
+
+  @override
+  String get shareImageFailed => '转发图片失败，请稍后重试';
+
+  @override
+  String get noPhotoPermission => '没有相册权限，无法保存图片';
+
+  @override
+  String get imageSaveFailed => '保存图片失败，请稍后重试';
+
+  @override
+  String get imageActions => '图片操作';
+
+  @override
+  String imageCurrentPosition(int current, int total) {
+    return '当前图片：$current / $total';
+  }
+
+  @override
+  String get saveImageAction => '保存图片';
+
+  @override
+  String get forwardImage => '转发图片';
+
+  @override
+  String get forwardImageTitle => '转发图片';
+
+  @override
+  String blockConfirmMessage(String name) {
+    return '确定要屏蔽 $name 吗？屏蔽后你将看不到对方的帖子。';
+  }
+
+  @override
+  String get blockSuccess => '已屏蔽该用户';
+
+  @override
+  String get tagUnavailableTitle => '标签暂不可用';
+
+  @override
+  String get tagNotFoundDesc => '没有找到这个标签。';
+
+  @override
+  String get tagGoHome => '返回首页';
+
+  @override
+  String get tagSearchPlaceholder => '在该标签下搜索帖子';
+
+  @override
+  String get tagNoPostsDesc => '等同学们发布更多内容后，这里会出现帖子。';
+
+  @override
+  String get tagNoSearchResultsDesc => '换个关键词试试。';
+
+  @override
+  String get tagRefreshingPosts => '正在刷新帖子...';
+
+  @override
+  String get tagSearching => '正在搜索...';
+
+  @override
+  String get homeNoSearchResults => '没有找到相关帖子';
+
+  @override
+  String get captchaFailed => '获取验证失败，请重试';
+
+  @override
+  String get captchaVerifyFailed => '验证失败，请重试';
+
+  @override
+  String get captchaComplete => '请完成验证';
+
+  @override
+  String get captchaDragSlider => '拖动滑块使拼图对齐';
+
+  @override
+  String get captchaDragComplete => '拖动滑块完成拼图';
+
+  @override
+  String get captchaRefreshLabel => '刷新';
+
+  @override
+  String get passwordChanged => '密码修改成功';
+
+  @override
+  String get currentPasswordPlaceholder => '当前密码';
+
+  @override
+  String get enterCurrentPassword => '请输入当前密码';
+
+  @override
+  String get newPasswordPlaceholder => '新密码，至少 6 位';
+
+  @override
+  String get enterNewPassword => '请输入新密码';
+
+  @override
+  String passwordMinLength(int min) {
+    return '密码至少 $min 位';
+  }
+
+  @override
+  String passwordMaxLength(int max) {
+    return '密码长度不能超过 $max 位';
+  }
+
+  @override
+  String get confirmPasswordPlaceholder => '确认新密码';
+
+  @override
+  String get passwordsMismatch => '两次输入的密码不一致';
+
+  @override
+  String get profileBioPlaceholder => '个人简介';
+
+  @override
+  String profileBioTooLong(int max) {
+    return '个人简介长度不能超过 $max 位';
+  }
+
+  @override
+  String get profileNotSet => '未设置';
+
+  @override
+  String get profileConfirmLogout => '确认退出登录？';
+
+  @override
+  String get profileConfirmLogoutDesc => '退出登录将清除当前会话，可能需要重新登录。';
+
+  @override
+  String get profileUnfollowLabel => '取消关注';
+
+  @override
+  String get profileUnblockLabel => '取消屏蔽';
+
+  @override
+  String get profileFollowingEmptyDesc => '去发现感兴趣的用户并关注他们吧';
+
+  @override
+  String get profileBlockListEmptyDesc => '你的屏蔽列表是空的';
+
+  @override
+  String get profileLoadFailed => '个人资料加载失败';
+
+  @override
+  String get userInfoLoadFailed => '用户信息加载失败';
+
+  @override
+  String get bindingTitle => '第三方绑定';
+
+  @override
+  String get bindingSubtitle => '将您的账号与第三方平台关联，方便快速登录';
+
+  @override
+  String get bindingFirstWarning => '请先绑定邮箱或手机号后再解绑';
+
+  @override
+  String bindingUnbindCheckTitle(String provider) {
+    return '解绑 $provider';
+  }
+
+  @override
+  String get bindingUnbindCheckDesc => '解绑前需要完成本次邮箱或手机验证码校验。';
+
+  @override
+  String get bindingContinue => '继续';
+
+  @override
+  String bindingUnboundSuccess(String provider) {
+    return '$provider 已解绑';
+  }
+
+  @override
+  String get bindingBound => '已绑定';
+
+  @override
+  String get bindingUnbind => '解绑';
+
+  @override
+  String get bindingGoBind => '去绑定';
+
+  @override
+  String get bindingEmailTab => '邮箱';
+
+  @override
+  String get bindingPhoneTab => '手机';
+
+  @override
+  String get bindingCodeSent => '验证码已发送';
+
+  @override
+  String get bindingEnterCode => '请输入验证码';
+
+  @override
+  String bindingUnbindTitle(String provider) {
+    return '解绑 $provider';
+  }
+
+  @override
+  String get bindingUnbindDesc => '选择邮箱或手机接收验证码，验证通过后立即解绑。';
+
+  @override
+  String get bindingSendCode => '发送';
+
+  @override
+  String get bindingSending => '发送中';
+
+  @override
+  String get bindingConfirmUnbind => '确认解绑';
+
+  @override
+  String get bindingUnbinding => '解绑中...';
+
+  @override
+  String codeResendAfterSeconds(int seconds) {
+    return '${seconds}s 后重新发送';
+  }
+
+  @override
+  String get pushNotificationChannelName => '光汇 通知';
+
+  @override
+  String get pushNotificationChannelDesc => '用于评论回复、热门动态与系统提醒';
+
+  @override
+  String get pushTokenUpdateFailed => '推送 Token 更新失败';
+
+  @override
+  String get serviceErrorFollow => '关注服务响应格式异常';
+
+  @override
+  String get serviceErrorNotification => '通知响应格式异常';
+
+  @override
+  String get serviceErrorComment => '评论列表响应格式异常';
+
+  @override
+  String get serviceErrorUser => '用户服务响应格式异常';
+
+  @override
+  String get serviceErrorPost => '帖子列表响应格式异常';
+
+  @override
+  String get detailLoadFailed => '详情加载失败';
+
+  @override
+  String get tokenRefreshIncomplete => '令牌刷新失败：服务端返回了不完整的令牌数据';
+
+  @override
+  String get changeActionLabel => '更改';
+
+  @override
+  String get editedLabel => '已编辑';
+
+  @override
+  String lastUpdatedLabel(String date) {
+    return '最后更新：$date';
+  }
 }

@@ -7,7 +7,7 @@ class UserService {
 
   Map<String, dynamic> _asMap(dynamic data) {
     if (data is! Map<String, dynamic>) {
-      throw const FormatException('用户服务响应格式异常');
+      throw const FormatException('User service response format error');
     }
     return data;
   }

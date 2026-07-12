@@ -260,7 +260,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     if (content.length > DtoLimits.commentContentMax) {
       await AppFeedback.showError(
         context,
-        message: '评论内容长度不能超过 ${DtoLimits.commentContentMax} 位',
+        message: AppLocalizations.of(context).postCommentTooLong(DtoLimits.commentContentMax),
       );
       return;
     }
@@ -326,7 +326,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       if (!mounted) return;
     } catch (error) {
       if (!mounted) return;
-      await AppFeedback.showError(context, message: '分享失败，请稍后重试');
+      await AppFeedback.showError(context, message: AppLocalizations.of(context).shareFailed);
     }
   }
 
@@ -338,9 +338,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     }
 
     final draft = await _openCommentComposer(
-      title: '回复评论',
+      title: AppLocalizations.of(context).replyComment,
       initialValue: '',
-      hintText: '输入回复内容',
+      hintText: AppLocalizations.of(context).replyHint,
     );
     if (draft == null ||
         (draft.content.trim().isEmpty && draft.newImages.isEmpty)) {
@@ -350,7 +350,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       if (!mounted) return;
       await AppFeedback.showError(
         context,
-        message: '评论内容长度不能超过 ${DtoLimits.commentContentMax} 位',
+        message: AppLocalizations.of(context).postCommentTooLong(DtoLimits.commentContentMax),
       );
       return;
     }
@@ -373,7 +373,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           : _withAuthorFallback(response.data!, user);
       if (newReply != null) {
         _insertReplyLocally(comment.id, newReply);
-        if (mounted) await AppFeedback.showSuccess(context, message: '回复已发送');
+        if (mounted) await AppFeedback.showSuccess(context, message: AppLocalizations.of(context).replySent);
       }
     } catch (error) {
       if (!mounted) return;
@@ -388,9 +388,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 
   Future<void> _editComment(CommentDto comment) async {
     final draft = await _openCommentComposer(
-      title: '编辑评论',
+      title: AppLocalizations.of(context).editCommentTitle,
       initialValue: comment.content ?? '',
-      hintText: '更新评论内容',
+      hintText: AppLocalizations.of(context).editCommentHint,
       initialImages: comment.images ?? const [],
     );
     if (draft == null ||
@@ -403,7 +403,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       if (!mounted) return;
       await AppFeedback.showError(
         context,
-        message: '评论内容长度不能超过 ${DtoLimits.commentContentMax} 位',
+        message: AppLocalizations.of(context).postCommentTooLong(DtoLimits.commentContentMax),
       );
       return;
     }
@@ -417,7 +417,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         CommentUpdateDto(content: draft.content.trim(), images: nextImages),
       );
       _updateCommentLocally(comment.id, draft.content.trim(), nextImages);
-      if (mounted) await AppFeedback.showSuccess(context, message: '评论已更新');
+      if (mounted) await AppFeedback.showSuccess(context, message: AppLocalizations.of(context).commentUpdated);
     } catch (error) {
       if (!mounted) return;
       await AppFeedback.showError(
@@ -534,14 +534,14 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }
 
   Future<void> _deleteComment(CommentDto comment) async {
-    final confirmed = await _confirm('确定删除这条评论吗？');
+    final confirmed = await _confirm(AppLocalizations.of(context).commentDeleteConfirm);
     if (confirmed != true) return;
 
     setState(() => _isWorking = true);
     try {
       await _commentService.deleteComment(comment.id);
       _removeCommentLocally(comment.id);
-      if (mounted) await AppFeedback.showSuccess(context, message: '评论已删除');
+      if (mounted) await AppFeedback.showSuccess(context, message: AppLocalizations.of(context).commentDeleted);
     } catch (error) {
       if (!mounted) return;
       await AppFeedback.showError(
@@ -759,7 +759,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           );
       if (mounted && result.data != null) {
         setState(() => _post = result.data);
-        await AppFeedback.showSuccess(context, message: '帖子已更新');
+        await AppFeedback.showSuccess(context, message: AppLocalizations.of(context).postUpdated);
       }
     } catch (error) {
       if (!mounted) return;
@@ -776,7 +776,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     final post = _post;
     if (post == null) return;
 
-    final confirmed = await _confirm('确定删除这篇帖子吗？');
+    final confirmed = await _confirm(AppLocalizations.of(context).postDeleteConfirm);
     if (confirmed != true) return;
 
     await _runAction(
@@ -845,7 +845,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     validator: (v) => optionalMaxValidator(
                       v,
                       max: DtoLimits.commentContentMax,
-                      maxMessage: '评论内容长度不能超过 ${DtoLimits.commentContentMax} 位',
+                      maxMessage: AppLocalizations.of(context).postCommentTooLong(DtoLimits.commentContentMax),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -1018,7 +1018,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       title,
       emptyMessage: AppLocalizations.of(context).postCreateTitleEmpty,
       max: DtoLimits.postTitleMax,
-      maxMessage: '标题长度不能超过 ${DtoLimits.postTitleMax} 位',
+      maxMessage: AppLocalizations.of(context).postCreateTitleTooLong(DtoLimits.postTitleMax),
     );
     if (titleError != null) return titleError;
 
@@ -1026,7 +1026,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       content,
       emptyMessage: AppLocalizations.of(context).postCreateContentEmpty,
       max: DtoLimits.postContentMax,
-      maxMessage: '内容长度不能超过 ${DtoLimits.postContentMax} 位',
+      maxMessage: AppLocalizations.of(context).postCreateContentTooLong(DtoLimits.postContentMax),
     );
   }
 
@@ -1246,7 +1246,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         navigationBarStyle: AppNavigationBarStyle.compact,
         trailing: trailing,
         child: PostDetailErrorView(
-          message: _errorMessage ?? '详情加载失败',
+          message: _errorMessage ?? AppLocalizations.of(context).detailLoadFailed,
           onRetry: _loadData,
         ),
       );

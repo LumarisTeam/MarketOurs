@@ -8,7 +8,7 @@ class NotificationService {
 
   Map<String, dynamic> _asMap(dynamic data) {
     if (data is! Map<String, dynamic>) {
-      throw const FormatException('通知响应格式异常');
+      throw const FormatException('Notification response format error');
     }
     return data;
   }

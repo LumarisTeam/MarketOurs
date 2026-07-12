@@ -5,9 +5,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../services/app_logger.dart';
 
 enum AppThemeMode {
-  system('跟随系统', CupertinoIcons.gear_alt),
-  light('亮色', CupertinoIcons.sun_max),
-  dark('暗色', CupertinoIcons.moon);
+  system('System', CupertinoIcons.gear_alt),
+  light('Light', CupertinoIcons.sun_max),
+  dark('Dark', CupertinoIcons.moon);
 
   const AppThemeMode(this.label, this.icon);
 

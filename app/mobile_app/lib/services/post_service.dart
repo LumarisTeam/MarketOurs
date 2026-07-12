@@ -10,7 +10,7 @@ class PostService {
 
   ApiResponse<PagedResult<PostDto>> _parsePagedPosts(dynamic data) {
     if (data is! Map<String, dynamic>) {
-      throw const FormatException('帖子列表响应格式异常');
+      throw const FormatException('Post list response format error');
     }
     return ApiResponse<PagedResult<PostDto>>.fromJson(
       data,

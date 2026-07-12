@@ -11,6 +11,7 @@ import '../../ui/app_feedback.dart';
 import '../../ui/app_responsive.dart';
 import '../../ui/app_theme.dart';
 import '../../ui/app_widgets.dart';
+import '../../l10n/app_localizations.dart';
 
 class FollowingScreen extends ConsumerStatefulWidget {
   const FollowingScreen({super.key, this.initialTab = 'following'});
@@ -126,7 +127,7 @@ class _FollowingScreenState extends ConsumerState<FollowingScreen> {
     final list = _activeTab == 'following' ? _followingList : _blockedList;
 
     return AppPageScaffold(
-      title: '社交管理',
+      title: AppLocalizations.of(context).profileSocial,
       navigationBarStyle: AppNavigationBarStyle.compact,
       slivers: [
         CupertinoSliverRefreshControl(onRefresh: _loadData),
@@ -141,14 +142,14 @@ class _FollowingScreenState extends ConsumerState<FollowingScreen> {
                     AppColors.secondary,
                     context,
                   ),
-                  children: const {
+                  children: {
                     'following': Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16),
-                      child: Text('我的关注', style: TextStyle(fontSize: 14)),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(AppLocalizations.of(context).profileFollowing, style: const TextStyle(fontSize: 14)),
                     ),
                     'blocked': Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16),
-                      child: Text('屏蔽列表', style: TextStyle(fontSize: 14)),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(AppLocalizations.of(context).profileBlock, style: const TextStyle(fontSize: 14)),
                     ),
                   },
                   onValueChanged: (v) {
@@ -170,10 +171,10 @@ class _FollowingScreenState extends ConsumerState<FollowingScreen> {
                       icon: _activeTab == 'following'
                           ? CupertinoIcons.person_2
                           : CupertinoIcons.hand_raised,
-                      title: _activeTab == 'following' ? '还没有关注任何人' : '没有屏蔽任何人',
+                      title: _activeTab == 'following' ? AppLocalizations.of(context).profileNoFollows : AppLocalizations.of(context).profileBlockListEmptyDesc,
                       description: _activeTab == 'following'
-                          ? '去发现感兴趣的用户并关注他们吧'
-                          : '你的屏蔽列表是空的',
+                          ? AppLocalizations.of(context).profileFollowingEmptyDesc
+                          : AppLocalizations.of(context).profileBlockListEmptyDesc,
                     ),
                   )
                 else
@@ -226,7 +227,7 @@ class _UserTile extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                user.name?.isNotEmpty == true ? user.name! : '未设置昵称',
+                user.name?.isNotEmpty == true ? user.name! : AppLocalizations.of(context).profileNoNickname,
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -245,7 +246,7 @@ class _UserTile extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
               onPressed: isLoading ? null : onAction,
               child: Text(
-                isBlocked ? '取消屏蔽' : '取消关注',
+                isBlocked ? AppLocalizations.of(context).profileUnblockLabel : AppLocalizations.of(context).profileUnfollowLabel,
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,

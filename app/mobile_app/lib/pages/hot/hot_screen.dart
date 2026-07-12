@@ -139,9 +139,10 @@ class _HotPostCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final title = post.title?.trim().isNotEmpty == true
         ? post.title!.trim()
-        : '未命名帖子';
+        : l10n.postUnnamed;
     final isTop3 = rank <= 3;
     final rankColor = isTop3 ? AppColors.hot : AppColors.mutedForeground;
     final day = post.createdAt != null ? DateTime.now().difference(post.createdAt!).inDays + 1 : 0;

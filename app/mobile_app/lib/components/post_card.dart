@@ -13,6 +13,7 @@ import 'package:mobile_app/ui/app_feedback.dart';
 import 'package:mobile_app/ui/app_theme.dart';
 import 'package:mobile_app/ui/app_widgets.dart';
 import 'package:mobile_app/components/app_network_image.dart';
+import 'package:mobile_app/utils/date_formatters.dart';
 
 class PostCard extends ConsumerWidget {
   const PostCard({super.key, required this.post});
@@ -29,7 +30,7 @@ class PostCard extends ConsumerWidget {
       await _shareService.sharePost(post, sharePositionOrigin: origin);
     } catch (_) {
       if (context.mounted) {
-        await AppFeedback.showError(context, message: '分享失败，请稍后重试');
+        await AppFeedback.showError(context, message: AppLocalizations.of(context).shareFailed);
       }
     }
   }
@@ -107,7 +108,7 @@ class PostCard extends ConsumerWidget {
     final targetName = post.author?.name ?? l10n.profileBlock;
     final confirmed = await AppFeedback.confirm(
       context,
-      message: '确定要屏蔽 $targetName 吗？屏蔽后你将看不到对方的帖子。',
+      message: l10n.blockConfirmMessage(targetName),
       title: l10n.profileBlock,
       confirmText: l10n.profileBlock,
       cancelText: l10n.cancel,
@@ -120,7 +121,7 @@ class PostCard extends ConsumerWidget {
       if (userId == null || userId.isEmpty) return;
       await FollowService().blockUser(userId);
       if (context.mounted) {
-        await AppFeedback.showSuccess(context, message: '已屏蔽该用户');
+        await AppFeedback.showSuccess(context, message: l10n.blockSuccess);
       }
     } catch (error) {
       if (context.mounted) {
@@ -134,12 +135,13 @@ class PostCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final title = post.title?.trim().isNotEmpty == true
         ? post.title!.trim()
-        : '未命名帖子';
+        : l10n.postUnnamed;
     final content = post.content?.trim().isNotEmpty == true
         ? post.content!.trim()
-        : '这个帖子还没有填写内容。';
+        : l10n.postNoContent;
     final excerpt = content.length > 100
         ? '${content.substring(0, 100)}...'
         : content;
@@ -170,7 +172,7 @@ class PostCard extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        post.author?.name ?? '匿名用户',
+                        post.author?.name ?? l10n.anonymousUser,
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -338,6 +340,7 @@ class SimplePostCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return AppTappableCard(
       padding: EdgeInsets.zero,
       onPressed: () => context.push(buildPostDetailLocation(post.id)),
@@ -352,7 +355,7 @@ class SimplePostCard extends StatelessWidget {
                 Text(
                   post.title?.trim().isNotEmpty == true
                       ? post.title!.trim()
-                      : '未命名帖子',
+                      : l10n.postUnnamed,
                   style: const TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
@@ -363,7 +366,7 @@ class SimplePostCard extends StatelessWidget {
                 Text(
                   post.content?.trim().isNotEmpty == true
                       ? post.content!.trim()
-                      : '这个帖子还没有内容描述。',
+                      : l10n.postNoContentDesc,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -427,7 +430,7 @@ class SimplePostCard extends StatelessWidget {
       await _shareService.sharePost(post, sharePositionOrigin: origin);
     } catch (_) {
       if (context.mounted) {
-        await AppFeedback.showError(context, message: '分享失败，请稍后重试');
+        await AppFeedback.showError(context, message: AppLocalizations.of(context).shareFailed);
       }
     }
   }

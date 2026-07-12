@@ -54,7 +54,7 @@ class _OAuthWebViewScreenState extends ConsumerState<OAuthWebViewScreen> {
       _handleIncomingUri,
       onError: (_) {
         if (mounted && !_callbackHandled) {
-          setState(() => _statusMessage = '无法接收登录回调，请重试');
+          setState(() => _statusMessage = AppLocalizations.of(context).oauthWebViewCantReceive);
         }
       },
     );
@@ -83,13 +83,13 @@ class _OAuthWebViewScreenState extends ConsumerState<OAuthWebViewScreen> {
 
       setState(() {
         _isLaunching = false;
-        _statusMessage = launched ? null : '无法打开系统浏览器，请检查系统设置';
+        _statusMessage = launched ? null : AppLocalizations.of(context).oauthWebViewCantOpenBrowser;
       });
     } catch (_) {
       if (!mounted || _callbackHandled) return;
       setState(() {
         _isLaunching = false;
-        _statusMessage = '无法发起第三方认证，请稍后重试';
+        _statusMessage = AppLocalizations.of(context).oauthWebViewCantInitiate;
       });
     }
   }

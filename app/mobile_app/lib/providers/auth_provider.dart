@@ -162,7 +162,7 @@ class AuthController extends AsyncNotifier<AuthState> {
 
       final token = response.data;
       if (token?.accessToken == null || token?.refreshToken == null) {
-        throw Exception(response.message ?? '登录失败，请稍后重试');
+        throw Exception(response.message ?? 'Login failed, please try again later');
       }
 
       await _storage.saveTokens(token!);
@@ -234,7 +234,7 @@ class AuthController extends AsyncNotifier<AuthState> {
 
       final token = response.data;
       if (token?.accessToken == null || token?.refreshToken == null) {
-        throw Exception(response.message ?? '登录失败，请稍后重试');
+        throw Exception(response.message ?? 'Login failed, please try again later');
       }
 
       await _storage.saveTokens(token!);
@@ -293,7 +293,7 @@ class AuthController extends AsyncNotifier<AuthState> {
 
       final registrationToken = response.data;
       if (registrationToken == null || registrationToken.isEmpty) {
-        throw Exception(response.message ?? '注册失败，请稍后重试');
+        throw Exception(response.message ?? 'Registration failed, please try again later');
       }
 
       state = AsyncData(
@@ -379,7 +379,7 @@ class AuthController extends AsyncNotifier<AuthState> {
       final response = await _userService.getProfile();
       final user = response.data;
       if (user == null) {
-        throw Exception(response.message ?? '个人资料加载失败');
+        throw Exception(response.message ?? 'Failed to load profile');
       }
 
       final nextSession = current.session!.copyWith(user: user);
@@ -395,7 +395,7 @@ class AuthController extends AsyncNotifier<AuthState> {
   Future<UserDto> updateProfile(UserUpdateDto request) async {
     final current = state.asData?.value;
     if (current == null || current.session == null) {
-      throw Exception('请先登录');
+      throw Exception('Please sign in first');
     }
 
     state = AsyncData(current.copyWith(isSubmitting: true, clearError: true));
@@ -403,7 +403,7 @@ class AuthController extends AsyncNotifier<AuthState> {
       final response = await _userService.updateProfile(request);
       final user = response.data;
       if (user == null) {
-        throw Exception(response.message ?? '更新个人资料失败');
+        throw Exception(response.message ?? 'Profile update failed');
       }
 
       final nextSession = current.session!.copyWith(user: user);
@@ -433,7 +433,7 @@ class AuthController extends AsyncNotifier<AuthState> {
   }) async {
     final current = state.asData?.value;
     if (current == null || current.session == null) {
-      throw Exception('请先登录');
+      throw Exception('Please sign in first');
     }
 
     state = AsyncData(current.copyWith(isSubmitting: true, clearError: true));
@@ -577,7 +577,7 @@ class AuthController extends AsyncNotifier<AuthState> {
   ) async {
     final current = state.asData?.value;
     if (current == null || current.session == null) {
-      throw Exception('请先登录');
+      throw Exception('Please sign in first');
     }
 
     state = AsyncData(current.copyWith(isSubmitting: true, clearError: true));
@@ -602,7 +602,7 @@ class AuthController extends AsyncNotifier<AuthState> {
     final response = await _authService.getInfo();
     final user = response.data;
     if (user == null) {
-      throw Exception(response.message ?? '用户信息加载失败');
+      throw Exception(response.message ?? 'Failed to load user info');
     }
     return user;
   }
@@ -623,7 +623,7 @@ class AuthController extends AsyncNotifier<AuthState> {
       );
       final token = refreshed.data;
       if (token?.accessToken == null || token?.refreshToken == null) {
-        throw Exception('令牌刷新失败：服务端返回了不完整的令牌数据');
+        throw Exception('Token refresh failed: server returned incomplete token data');
       }
 
       await _storage.saveTokens(token!);

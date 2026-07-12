@@ -197,7 +197,7 @@ class _CommentCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    comment.author?.name ?? '匿名用户',
+                    comment.author?.name ?? AppLocalizations.of(context).anonymousUser,
                     style: TextStyle(
                       fontSize: isReply ? 13 : 14,
                       fontWeight: FontWeight.w600,

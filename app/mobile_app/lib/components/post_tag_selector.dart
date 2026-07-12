@@ -26,7 +26,7 @@ Future<PostTagDto?> showPostTagPicker(
         for (final tag in tags)
           CupertinoActionSheetAction(
             onPressed: () => Navigator.of(ctx).pop(tag),
-            child: Text(tag.name ?? '未命名标签'),
+            child: Text(tag.name ?? AppLocalizations.of(context).unnamedTag),
           ),
       ],
       cancelButton: CupertinoActionSheetAction(
@@ -98,7 +98,7 @@ class PostTagInlineSelector extends StatelessWidget {
     this.emptyText = '',
     this.enabled = true,
     this.label = 'Tag',
-    this.actionLabel = '更改',
+    this.actionLabel = 'Change',
   });
 
   final PostTagDto? tag;

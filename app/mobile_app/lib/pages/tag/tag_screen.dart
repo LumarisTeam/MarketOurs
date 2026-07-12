@@ -98,11 +98,11 @@ class _TagScreenState extends ConsumerState<TagScreen> {
               padding: const EdgeInsets.all(20),
               child: AppEmptyState(
                 icon: CupertinoIcons.tag,
-                title: '标签暂不可用',
-                description: _tagError ?? '没有找到这个标签。',
+                title: AppLocalizations.of(context).tagUnavailableTitle,
+                description: _tagError ?? AppLocalizations.of(context).tagNotFoundDesc,
                 action: AppPrimaryButton(
                   onPressed: () => context.go(AppRoutePaths.home),
-                  child: const Text('返回首页'),
+                  child: Text(AppLocalizations.of(context).tagGoHome),
                 ),
               ),
             ),
@@ -145,7 +145,7 @@ class _TagScreenState extends ConsumerState<TagScreen> {
                   children: [
                     CupertinoSearchTextField(
                       controller: _searchController,
-                      placeholder: '在该标签下搜索帖子',
+                      placeholder: AppLocalizations.of(context).tagSearchPlaceholder,
                       borderRadius: BorderRadius.circular(AppRadii.md),
                       backgroundColor: AppColors.secondary,
                       onSubmitted: (value) =>
@@ -185,11 +185,11 @@ class _TagScreenState extends ConsumerState<TagScreen> {
             padding: const EdgeInsets.all(16),
             child: AppEmptyState(
               icon: CupertinoIcons.exclamationmark_triangle,
-              title: '加载失败',
+              title: AppLocalizations.of(context).loadingFailed,
               description: extractErrorFromException(error),
               action: AppPrimaryButton(
                 onPressed: () => ref.read(tagFeedProvider(widget.tagId).notifier).refresh(),
-                child: const Text('重新加载'),
+                child: Text(AppLocalizations.of(context).reload),
               ),
             ),
           ),
@@ -226,8 +226,8 @@ class _TagPostListSection extends StatelessWidget {
     if (posts.isEmpty) {
       return AppEmptyState(
         icon: keyword.isEmpty ? CupertinoIcons.tag : CupertinoIcons.search,
-        title: keyword.isEmpty ? '这个标签下还没有帖子' : '没有找到相关帖子',
-        description: keyword.isEmpty ? '等同学们发布更多内容后，这里会出现帖子。' : '换个关键词试试。',
+        title: keyword.isEmpty ? AppLocalizations.of(context).postTagEmpty : AppLocalizations.of(context).homeNoSearchResults,
+        description: keyword.isEmpty ? AppLocalizations.of(context).tagNoPostsDesc : AppLocalizations.of(context).tagNoSearchResultsDesc,
       );
     }
 
@@ -298,7 +298,7 @@ class _TagSearchLoadingIndicator extends StatelessWidget {
         const CupertinoActivityIndicator(radius: 8),
         const SizedBox(width: 8),
         Text(
-          keyword.isEmpty ? '正在刷新帖子...' : '正在搜索...',
+          keyword.isEmpty ? AppLocalizations.of(context).tagRefreshingPosts : AppLocalizations.of(context).tagSearching,
           style: AppTextStyles.label(context),
         ),
       ],

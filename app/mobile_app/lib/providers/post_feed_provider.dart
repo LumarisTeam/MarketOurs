@@ -143,7 +143,7 @@ class HomeFeedNotifier extends AsyncNotifier<HomeFeedState> {
     final page = response.data;
 
     if (page == null) {
-      throw Exception(response.message ?? '帖子数据为空');
+      throw Exception(response.message ?? 'No post data available');
     }
 
     return HomeFeedState(
@@ -241,7 +241,7 @@ class TagFeedNotifier extends AsyncNotifier<HomeFeedState> {
     final page = response.data;
 
     if (page == null) {
-      throw Exception(response.message ?? '帖子数据为空');
+      throw Exception(response.message ?? 'No post data available');
     }
 
     return HomeFeedState(

@@ -107,7 +107,7 @@ class ProfileScreen extends ConsumerWidget {
                       children: [
                         _InfoRow(
                           label: AppLocalizations.of(context).profileNickname,
-                          value: _fallback(user.name, '未设置'),
+                          value: _fallback(user.name, AppLocalizations.of(context).profileNotSet),
                         ),
                         _InfoRow(
                           label: AppLocalizations.of(context).profileBio,
@@ -238,17 +238,17 @@ class ProfileScreen extends ConsumerWidget {
     final confirmed = await showCupertinoDialog<bool>(
       context: context,
       builder: (context) => CupertinoAlertDialog(
-        title: const Text('确认退出登录？'),
-        content: const Text('退出登录将清除当前会话，可能需要重新登录。'),
+        title: Text(AppLocalizations.of(context).profileConfirmLogout),
+        content: Text(AppLocalizations.of(context).profileConfirmLogoutDesc),
         actions: [
           CupertinoDialogAction(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('取消'),
+            child: Text(AppLocalizations.of(context).cancel),
           ),
           CupertinoDialogAction(
             isDestructiveAction: true,
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('退出登录'),
+            child: Text(AppLocalizations.of(context).authLogout),
           ),
         ],
       ),
@@ -850,28 +850,28 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
     showCupertinoModalPopup<void>(
       context: context,
       builder: (ctx) => CupertinoActionSheet(
-        title: const Text('选择头像'),
+        title: Text(AppLocalizations.of(context).authSelectAvatar),
         actions: [
           CupertinoActionSheetAction(
             onPressed: () {
               Navigator.pop(ctx);
               _generateRandomAvatar();
             },
-            child: const Text('随机生成'),
+            child: Text(AppLocalizations.of(context).authRandomAvatar),
           ),
           CupertinoActionSheetAction(
             onPressed: () {
               Navigator.pop(ctx);
               _pickFromGallery();
             },
-            child: const Text('从相册选择'),
+            child: Text(AppLocalizations.of(context).authPickFromGallery),
           ),
           CupertinoActionSheetAction(
             onPressed: () {
               Navigator.pop(ctx);
               _takePhoto();
             },
-            child: const Text('拍照'),
+            child: Text(AppLocalizations.of(context).authTakePhoto),
           ),
         ],
         cancelButton: CupertinoActionSheetAction(
@@ -967,6 +967,7 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final authState = ref.watch(authControllerProvider).asData?.value;
     final isSubmitting = _isSaving || (authState?.isSubmitting ?? false);
 
@@ -983,7 +984,7 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
           shrinkWrap: true,
           children: [
             Text(
-              AppLocalizations.of(context).profileEditProfile,
+              l10n.profileEditProfile,
               style: AppTextStyles.sectionTitle(context),
             ),
             const SizedBox(height: 20),
@@ -1024,7 +1025,7 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
             const SizedBox(height: 8),
             Center(
               child: Text(
-                AppLocalizations.of(context).profileClickToChangeAvatar,
+                l10n.profileClickToChangeAvatar,
                 style: AppTextStyles.label(context).copyWith(fontSize: 11),
               ),
             ),
@@ -1032,24 +1033,24 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
 
             AppTextField(
               controller: _nameController,
-              placeholder: AppLocalizations.of(context).profileNickname,
+              placeholder: l10n.profileNickname,
               maxLength: DtoLimits.userNameMax,
               validator: (v) => optionalMaxValidator(
                 v,
                 max: DtoLimits.userNameMax,
-                maxMessage: '用户名长度不能超过 ${DtoLimits.userNameMax} 位',
+                maxMessage: l10n.validatorNameTooLong(DtoLimits.userNameMax),
               ),
             ),
             const SizedBox(height: 12),
             AppTextField(
               controller: _infoController,
-              placeholder: '个人简介',
+              placeholder: l10n.profileBioPlaceholder,
               maxLines: 3,
               maxLength: DtoLimits.userInfoMax,
               validator: (v) => optionalMaxValidator(
                 v,
                 max: DtoLimits.userInfoMax,
-                maxMessage: '个人简介长度不能超过 ${DtoLimits.userInfoMax} 位',
+                maxMessage: l10n.profileBioTooLong(DtoLimits.userInfoMax),
               ),
             ),
             const SizedBox(height: 24),
@@ -1057,8 +1058,8 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
               onPressed: isSubmitting ? null : _submit,
               child: Text(
                 isSubmitting
-                    ? AppLocalizations.of(context).profileSaving
-                    : AppLocalizations.of(context).profileSaveChanges,
+                    ? l10n.profileSaving
+                    : l10n.profileSaveChanges,
               ),
             ),
           ],

@@ -9,7 +9,7 @@ class CommentService {
 
   ApiResponse<PagedResult<CommentDto>> _parsePagedComments(dynamic data) {
     if (data is! Map<String, dynamic>) {
-      throw const FormatException('评论列表响应格式异常');
+      throw const FormatException('Comment list response format error');
     }
     return ApiResponse<PagedResult<CommentDto>>.fromJson(
       data,

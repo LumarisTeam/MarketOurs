@@ -1057,4 +1057,317 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get nextExit => '앱을 종료하려면 다시 누르세요';
+
+  @override
+  String get anonymousUser => '익명 사용자';
+
+  @override
+  String get postUnnamed => '제목 없는 게시물';
+
+  @override
+  String get postNoContent => '이 게시물에는 내용이 없습니다.';
+
+  @override
+  String get postNoContentDesc => '이 게시물에는 설명이 없습니다.';
+
+  @override
+  String get postNoDescription => '이 게시물에는 아직 설명이 없습니다.';
+
+  @override
+  String get postDetailNotFound => '게시물 상세를 찾을 수 없음';
+
+  @override
+  String get postDataEmpty => '게시물 데이터가 비어 있음';
+
+  @override
+  String postCommentTooLong(int max) {
+    return '댓글은 $max자를 초과할 수 없습니다';
+  }
+
+  @override
+  String get postUpdated => '게시물이 업데이트됨';
+
+  @override
+  String get replyComment => '댓글에 답글';
+
+  @override
+  String get replyHint => '답글 내용 입력';
+
+  @override
+  String get replySent => '답글 전송됨';
+
+  @override
+  String get editCommentTitle => '댓글 편집';
+
+  @override
+  String get editCommentHint => '댓글 내용 업데이트';
+
+  @override
+  String get commentUpdated => '댓글 업데이트됨';
+
+  @override
+  String get commentDeleteConfirm => '이 댓글을 삭제할까요?';
+
+  @override
+  String get commentDeleted => '댓글 삭제됨';
+
+  @override
+  String get shareFailed => '공유 실패, 나중에 다시 시도하세요';
+
+  @override
+  String get shareImageFailed => '이미지 전달 실패';
+
+  @override
+  String get noPhotoPermission => '사진 라이브러리 권한이 없습니다';
+
+  @override
+  String get imageSaveFailed => '이미지 저장 실패';
+
+  @override
+  String get imageActions => '이미지 작업';
+
+  @override
+  String imageCurrentPosition(int current, int total) {
+    return '이미지: $current / $total';
+  }
+
+  @override
+  String get saveImageAction => '이미지 저장';
+
+  @override
+  String get forwardImage => '이미지 전달';
+
+  @override
+  String get forwardImageTitle => '이미지 전달';
+
+  @override
+  String blockConfirmMessage(String name) {
+    return '$name님을 차단할까요? 차단 후에는 게시물을 볼 수 없습니다.';
+  }
+
+  @override
+  String get blockSuccess => '사용자가 차단됨';
+
+  @override
+  String get tagUnavailableTitle => '태그 사용 불가';
+
+  @override
+  String get tagNotFoundDesc => '태그를 찾을 수 없습니다.';
+
+  @override
+  String get tagGoHome => '홈으로';
+
+  @override
+  String get tagSearchPlaceholder => '이 태그의 게시물 검색';
+
+  @override
+  String get tagNoPostsDesc => '더 많은 콘텐츠가 공유되면 여기에 게시물이 표시됩니다.';
+
+  @override
+  String get tagNoSearchResultsDesc => '다른 키워드를 시도해 보세요.';
+
+  @override
+  String get tagRefreshingPosts => '게시물 새로고침 중...';
+
+  @override
+  String get tagSearching => '검색 중...';
+
+  @override
+  String get homeNoSearchResults => '일치하는 게시물 없음';
+
+  @override
+  String get captchaFailed => '인증 가져오기 실패, 다시 시도하세요';
+
+  @override
+  String get captchaVerifyFailed => '인증 실패, 다시 시도하세요';
+
+  @override
+  String get captchaComplete => '인증을 완료해 주세요';
+
+  @override
+  String get captchaDragSlider => '슬라이더를 드래그하여 퍼즐 정렬';
+
+  @override
+  String get captchaDragComplete => '슬라이더를 드래그하여 완료';
+
+  @override
+  String get captchaRefreshLabel => '새로고침';
+
+  @override
+  String get passwordChanged => '비밀번호 변경 성공';
+
+  @override
+  String get currentPasswordPlaceholder => '현재 비밀번호';
+
+  @override
+  String get enterCurrentPassword => '현재 비밀번호를 입력하세요';
+
+  @override
+  String get newPasswordPlaceholder => '새 비밀번호, 6자 이상';
+
+  @override
+  String get enterNewPassword => '새 비밀번호를 입력하세요';
+
+  @override
+  String passwordMinLength(int min) {
+    return '비밀번호는 $min자 이상이어야 합니다';
+  }
+
+  @override
+  String passwordMaxLength(int max) {
+    return '비밀번호는 $max자를 초과할 수 없습니다';
+  }
+
+  @override
+  String get confirmPasswordPlaceholder => '새 비밀번호 확인';
+
+  @override
+  String get passwordsMismatch => '비밀번호가 일치하지 않습니다';
+
+  @override
+  String get profileBioPlaceholder => '소개';
+
+  @override
+  String profileBioTooLong(int max) {
+    return '소개는 $max자를 초과할 수 없습니다';
+  }
+
+  @override
+  String get profileNotSet => '설정 안 됨';
+
+  @override
+  String get profileConfirmLogout => '로그아웃 확인?';
+
+  @override
+  String get profileConfirmLogoutDesc => '로그아웃하면 현재 세션이 지워집니다.';
+
+  @override
+  String get profileUnfollowLabel => '언팔로우';
+
+  @override
+  String get profileUnblockLabel => '차단 해제';
+
+  @override
+  String get profileFollowingEmptyDesc => '관심 있는 사용자를 발견하고 팔로우하세요';
+
+  @override
+  String get profileBlockListEmptyDesc => '차단 목록이 비어 있습니다';
+
+  @override
+  String get profileLoadFailed => '프로필 로드 실패';
+
+  @override
+  String get userInfoLoadFailed => '사용자 정보 로드 실패';
+
+  @override
+  String get bindingTitle => '외부 연동';
+
+  @override
+  String get bindingSubtitle => '빠른 로그인을 위해 계정을 외부 플랫폼과 연동';
+
+  @override
+  String get bindingFirstWarning => '연동 해제 전에 이메일 또는 전화번호를 연동하세요';
+
+  @override
+  String bindingUnbindCheckTitle(String provider) {
+    return '$provider 연동 해제';
+  }
+
+  @override
+  String get bindingUnbindCheckDesc => '연동 해제 전에 이메일 또는 전화 인증이 필요합니다.';
+
+  @override
+  String get bindingContinue => '계속';
+
+  @override
+  String bindingUnboundSuccess(String provider) {
+    return '$provider 연동 해제됨';
+  }
+
+  @override
+  String get bindingBound => '연동됨';
+
+  @override
+  String get bindingUnbind => '해제';
+
+  @override
+  String get bindingGoBind => '연동';
+
+  @override
+  String get bindingEmailTab => '이메일';
+
+  @override
+  String get bindingPhoneTab => '전화';
+
+  @override
+  String get bindingCodeSent => '인증 코드 전송됨';
+
+  @override
+  String get bindingEnterCode => '인증 코드를 입력하세요';
+
+  @override
+  String bindingUnbindTitle(String provider) {
+    return '$provider 연동 해제';
+  }
+
+  @override
+  String get bindingUnbindDesc => '코드를 받을 방법을 선택하세요.';
+
+  @override
+  String get bindingSendCode => '전송';
+
+  @override
+  String get bindingSending => '전송 중';
+
+  @override
+  String get bindingConfirmUnbind => '해제 확인';
+
+  @override
+  String get bindingUnbinding => '해제 중...';
+
+  @override
+  String codeResendAfterSeconds(int seconds) {
+    return '$seconds초 후 재전송';
+  }
+
+  @override
+  String get pushNotificationChannelName => 'LightHub 알림';
+
+  @override
+  String get pushNotificationChannelDesc => '댓글 답글, 트렌드 업데이트 및 시스템 알림';
+
+  @override
+  String get pushTokenUpdateFailed => '푸시 토큰 업데이트 실패';
+
+  @override
+  String get serviceErrorFollow => '팔로우 서비스 응답 형식 오류';
+
+  @override
+  String get serviceErrorNotification => '알림 응답 형식 오류';
+
+  @override
+  String get serviceErrorComment => '댓글 목록 응답 형식 오류';
+
+  @override
+  String get serviceErrorUser => '사용자 서비스 응답 형식 오류';
+
+  @override
+  String get serviceErrorPost => '게시물 목록 응답 형식 오류';
+
+  @override
+  String get detailLoadFailed => '상세 로드 실패';
+
+  @override
+  String get tokenRefreshIncomplete => '토큰 갱신 실패: 불완전한 데이터';
+
+  @override
+  String get changeActionLabel => '변경';
+
+  @override
+  String get editedLabel => '편집됨';
+
+  @override
+  String lastUpdatedLabel(String date) {
+    return '마지막 업데이트: $date';
+  }
 }

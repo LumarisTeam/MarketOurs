@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../services/auth_service.dart';
+import '../l10n/app_localizations.dart';
 import '../ui/app_theme.dart';
 
 const _kDisplayWidth = 280.0;
@@ -79,14 +80,14 @@ class _SliderCaptchaState extends State<SliderCaptcha> {
       if (mounted) {
         setState(() {
           _loading = false;
-          _error = e.response?.data?['message'] ?? '获取验证失败，请重试';
+          _error = e.response?.data?['message'] ?? AppLocalizations.of(context).captchaFailed;
         });
       }
     } catch (_) {
       if (mounted) {
         setState(() {
           _loading = false;
-          _error = '获取验证失败，请重试';
+          _error = AppLocalizations.of(context).captchaFailed;
         });
       }
     }
@@ -124,7 +125,7 @@ class _SliderCaptchaState extends State<SliderCaptcha> {
         setState(() {
           _verifying = false;
           _sliderValue = 0;
-          _error = e.response?.data?['message'] ?? '验证失败，请重试';
+          _error = e.response?.data?['message'] ?? AppLocalizations.of(context).captchaVerifyFailed;
         });
       }
     } catch (_) {
@@ -132,7 +133,7 @@ class _SliderCaptchaState extends State<SliderCaptcha> {
         setState(() {
           _verifying = false;
           _sliderValue = 0;
-          _error = '验证失败，请重试';
+          _error = AppLocalizations.of(context).captchaVerifyFailed;
         });
       }
     }
@@ -158,8 +159,8 @@ class _SliderCaptchaState extends State<SliderCaptcha> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
-                    '请完成验证',
+                  Text(
+                    AppLocalizations.of(context).captchaComplete,
                     style: TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w600,
@@ -167,7 +168,7 @@ class _SliderCaptchaState extends State<SliderCaptcha> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '拖动滑块使拼图对齐',
+                    AppLocalizations.of(context).captchaDragSlider,
                     style: TextStyle(
                       fontSize: 12,
                       color: AppColors.mutedForeground,
@@ -223,7 +224,7 @@ class _SliderCaptchaState extends State<SliderCaptcha> {
                             onPressed:
                                 _verifying ? null : _fetchChallenge,
                             child: Text(
-                              '刷新',
+                              AppLocalizations.of(context).captchaRefreshLabel,
                               style: TextStyle(
                                 fontSize: 13,
                                 color: _verifying
@@ -239,7 +240,7 @@ class _SliderCaptchaState extends State<SliderCaptcha> {
                             padding: EdgeInsets.zero,
                             onPressed: widget.onCancel,
                             child: Text(
-                              '取消',
+                              AppLocalizations.of(context).cancel,
                               style: TextStyle(
                                 fontSize: 13,
                                 color: AppColors.mutedForeground,
@@ -292,9 +293,9 @@ class _SliderCaptchaState extends State<SliderCaptcha> {
                   ),
                 ),
                 if (!_success && !_verifying)
-                  const Center(
+                  Center(
                     child: Text(
-                      '拖动滑块完成拼图',
+                      AppLocalizations.of(context).captchaDragComplete,
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,

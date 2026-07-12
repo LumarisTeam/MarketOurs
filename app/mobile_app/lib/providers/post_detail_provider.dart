@@ -12,7 +12,7 @@ final postDetailProvider = FutureProvider.autoDispose.family<PostDto, String>((
   final post = response.data;
 
   if (post == null) {
-    throw Exception(response.message ?? '帖子详情不存在');
+    throw Exception(response.message ?? 'Post detail not found');
   }
 
   return post;

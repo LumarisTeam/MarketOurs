@@ -1068,4 +1068,332 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get nextExit => 'Appuyez à nouveau pour quitter l\'application';
+
+  @override
+  String get anonymousUser => 'Anonyme';
+
+  @override
+  String get postUnnamed => 'Publication sans titre';
+
+  @override
+  String get postNoContent => 'Cette publication n\'a pas de contenu.';
+
+  @override
+  String get postNoContentDesc => 'Cette publication n\'a pas de description.';
+
+  @override
+  String get postNoDescription =>
+      'Cette publication n\'a pas encore de description.';
+
+  @override
+  String get postDetailNotFound => 'Détail de la publication introuvable';
+
+  @override
+  String get postDataEmpty => 'Données de la publication vides';
+
+  @override
+  String postCommentTooLong(int max) {
+    return 'Le commentaire ne peut dépasser $max caractères';
+  }
+
+  @override
+  String get postUpdated => 'Publication mise à jour';
+
+  @override
+  String get replyComment => 'Répondre au commentaire';
+
+  @override
+  String get replyHint => 'Entrez votre réponse';
+
+  @override
+  String get replySent => 'Réponse envoyée';
+
+  @override
+  String get editCommentTitle => 'Modifier le commentaire';
+
+  @override
+  String get editCommentHint => 'Mettre à jour le contenu';
+
+  @override
+  String get commentUpdated => 'Commentaire mis à jour';
+
+  @override
+  String get commentDeleteConfirm => 'Supprimer ce commentaire ?';
+
+  @override
+  String get commentDeleted => 'Commentaire supprimé';
+
+  @override
+  String get shareFailed => 'Échec du partage, réessayez plus tard';
+
+  @override
+  String get shareImageFailed => 'Échec du transfert de l\'image';
+
+  @override
+  String get noPhotoPermission =>
+      'Pas d\'autorisation photo, impossible d\'enregistrer';
+
+  @override
+  String get imageSaveFailed => 'Échec de l\'enregistrement de l\'image';
+
+  @override
+  String get imageActions => 'Actions sur l\'image';
+
+  @override
+  String imageCurrentPosition(int current, int total) {
+    return 'Image : $current / $total';
+  }
+
+  @override
+  String get saveImageAction => 'Enregistrer l\'image';
+
+  @override
+  String get forwardImage => 'Transférer l\'image';
+
+  @override
+  String get forwardImageTitle => 'Transférer l\'image';
+
+  @override
+  String blockConfirmMessage(String name) {
+    return 'Bloquer $name ? Vous ne verrez plus ses publications.';
+  }
+
+  @override
+  String get blockSuccess => 'Utilisateur bloqué';
+
+  @override
+  String get tagUnavailableTitle => 'Tag indisponible';
+
+  @override
+  String get tagNotFoundDesc => 'Tag introuvable.';
+
+  @override
+  String get tagGoHome => 'Accueil';
+
+  @override
+  String get tagSearchPlaceholder => 'Rechercher des publications sous ce tag';
+
+  @override
+  String get tagNoPostsDesc => 'Les publications apparaîtront ici.';
+
+  @override
+  String get tagNoSearchResultsDesc => 'Essayez un autre mot-clé.';
+
+  @override
+  String get tagRefreshingPosts => 'Actualisation...';
+
+  @override
+  String get tagSearching => 'Recherche...';
+
+  @override
+  String get homeNoSearchResults => 'Aucune publication trouvée';
+
+  @override
+  String get captchaFailed => 'Échec de la vérification, réessayez';
+
+  @override
+  String get captchaVerifyFailed => 'Vérification échouée, réessayez';
+
+  @override
+  String get captchaComplete => 'Veuillez terminer la vérification';
+
+  @override
+  String get captchaDragSlider => 'Faites glisser le curseur pour aligner';
+
+  @override
+  String get captchaDragComplete => 'Faites glisser pour terminer';
+
+  @override
+  String get captchaRefreshLabel => 'Actualiser';
+
+  @override
+  String get passwordChanged => 'Mot de passe modifié avec succès';
+
+  @override
+  String get currentPasswordPlaceholder => 'Mot de passe actuel';
+
+  @override
+  String get enterCurrentPassword => 'Entrez votre mot de passe actuel';
+
+  @override
+  String get newPasswordPlaceholder =>
+      'Nouveau mot de passe, au moins 6 caractères';
+
+  @override
+  String get enterNewPassword => 'Entrez un nouveau mot de passe';
+
+  @override
+  String passwordMinLength(int min) {
+    return 'Le mot de passe doit avoir au moins $min caractères';
+  }
+
+  @override
+  String passwordMaxLength(int max) {
+    return 'Le mot de passe ne peut dépasser $max caractères';
+  }
+
+  @override
+  String get confirmPasswordPlaceholder => 'Confirmer le nouveau mot de passe';
+
+  @override
+  String get passwordsMismatch => 'Les mots de passe ne correspondent pas';
+
+  @override
+  String get profileBioPlaceholder => 'Bio';
+
+  @override
+  String profileBioTooLong(int max) {
+    return 'La bio ne peut dépasser $max caractères';
+  }
+
+  @override
+  String get profileNotSet => 'Non défini';
+
+  @override
+  String get profileConfirmLogout => 'Confirmer la déconnexion ?';
+
+  @override
+  String get profileConfirmLogoutDesc =>
+      'La déconnexion effacera votre session.';
+
+  @override
+  String get profileUnfollowLabel => 'Se désabonner';
+
+  @override
+  String get profileUnblockLabel => 'Débloquer';
+
+  @override
+  String get profileFollowingEmptyDesc =>
+      'Découvrez et suivez des utilisateurs';
+
+  @override
+  String get profileBlockListEmptyDesc => 'Votre liste de blocage est vide';
+
+  @override
+  String get profileLoadFailed => 'Échec du chargement du profil';
+
+  @override
+  String get userInfoLoadFailed => 'Échec du chargement des infos utilisateur';
+
+  @override
+  String get bindingTitle => 'Liaisons tierces';
+
+  @override
+  String get bindingSubtitle =>
+      'Associez votre compte pour une connexion rapide';
+
+  @override
+  String get bindingFirstWarning =>
+      'Veuillez d\'abord lier un email ou un téléphone';
+
+  @override
+  String bindingUnbindCheckTitle(String provider) {
+    return 'Délier $provider';
+  }
+
+  @override
+  String get bindingUnbindCheckDesc =>
+      'Vérification par email ou téléphone requise.';
+
+  @override
+  String get bindingContinue => 'Continuer';
+
+  @override
+  String bindingUnboundSuccess(String provider) {
+    return '$provider a été délié';
+  }
+
+  @override
+  String get bindingBound => 'Lié';
+
+  @override
+  String get bindingUnbind => 'Délier';
+
+  @override
+  String get bindingGoBind => 'Lier';
+
+  @override
+  String get bindingEmailTab => 'Email';
+
+  @override
+  String get bindingPhoneTab => 'Téléphone';
+
+  @override
+  String get bindingCodeSent => 'Code envoyé';
+
+  @override
+  String get bindingEnterCode => 'Entrez le code de vérification';
+
+  @override
+  String bindingUnbindTitle(String provider) {
+    return 'Délier $provider';
+  }
+
+  @override
+  String get bindingUnbindDesc =>
+      'Choisissez email ou téléphone pour recevoir le code.';
+
+  @override
+  String get bindingSendCode => 'Envoyer';
+
+  @override
+  String get bindingSending => 'Envoi...';
+
+  @override
+  String get bindingConfirmUnbind => 'Confirmer la déliaison';
+
+  @override
+  String get bindingUnbinding => 'Déliaison...';
+
+  @override
+  String codeResendAfterSeconds(int seconds) {
+    return '${seconds}s pour renvoyer';
+  }
+
+  @override
+  String get pushNotificationChannelName => 'Notifications LightHub';
+
+  @override
+  String get pushNotificationChannelDesc =>
+      'Pour les réponses, tendances et système';
+
+  @override
+  String get pushTokenUpdateFailed => 'Échec de mise à jour du token push';
+
+  @override
+  String get serviceErrorFollow =>
+      'Erreur de format de réponse du service de suivi';
+
+  @override
+  String get serviceErrorNotification =>
+      'Erreur de format de réponse des notifications';
+
+  @override
+  String get serviceErrorComment =>
+      'Erreur de format de réponse des commentaires';
+
+  @override
+  String get serviceErrorUser =>
+      'Erreur de format de réponse du service utilisateur';
+
+  @override
+  String get serviceErrorPost => 'Erreur de format de réponse des publications';
+
+  @override
+  String get detailLoadFailed => 'Échec du chargement des détails';
+
+  @override
+  String get tokenRefreshIncomplete =>
+      'Échec du rafraîchissement du token : données incomplètes';
+
+  @override
+  String get changeActionLabel => 'Modifier';
+
+  @override
+  String get editedLabel => 'Modifié';
+
+  @override
+  String lastUpdatedLabel(String date) {
+    return 'Dernière mise à jour : $date';
+  }
 }

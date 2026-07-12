@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 
+import '../../../../l10n/app_localizations.dart';
 import '../../../ui/app_widgets.dart';
 
 class PostDetailErrorView extends StatelessWidget {
@@ -16,7 +17,7 @@ class PostDetailErrorView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: AppRetryState(
-        title: '详情加载失败',
+        title: AppLocalizations.of(context).detailLoadFailed,
         description: message,
         icon: CupertinoIcons.doc_text,
         onRetry: onRetry,

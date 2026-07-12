@@ -2121,6 +2121,588 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'再按一次退出应用'**
   String get nextExit;
+
+  /// No description provided for @anonymousUser.
+  ///
+  /// In zh, this message translates to:
+  /// **'匿名用户'**
+  String get anonymousUser;
+
+  /// No description provided for @postUnnamed.
+  ///
+  /// In zh, this message translates to:
+  /// **'未命名帖子'**
+  String get postUnnamed;
+
+  /// No description provided for @postNoContent.
+  ///
+  /// In zh, this message translates to:
+  /// **'这个帖子还没有填写内容。'**
+  String get postNoContent;
+
+  /// No description provided for @postNoContentDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'这个帖子还没有内容描述。'**
+  String get postNoContentDesc;
+
+  /// No description provided for @postNoDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'这个帖子还没有填写描述。'**
+  String get postNoDescription;
+
+  /// No description provided for @postDetailNotFound.
+  ///
+  /// In zh, this message translates to:
+  /// **'帖子详情不存在'**
+  String get postDetailNotFound;
+
+  /// No description provided for @postDataEmpty.
+  ///
+  /// In zh, this message translates to:
+  /// **'帖子数据为空'**
+  String get postDataEmpty;
+
+  /// No description provided for @postCommentTooLong.
+  ///
+  /// In zh, this message translates to:
+  /// **'评论内容长度不能超过 {max} 位'**
+  String postCommentTooLong(int max);
+
+  /// No description provided for @postUpdated.
+  ///
+  /// In zh, this message translates to:
+  /// **'帖子已更新'**
+  String get postUpdated;
+
+  /// No description provided for @replyComment.
+  ///
+  /// In zh, this message translates to:
+  /// **'回复评论'**
+  String get replyComment;
+
+  /// No description provided for @replyHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'输入回复内容'**
+  String get replyHint;
+
+  /// No description provided for @replySent.
+  ///
+  /// In zh, this message translates to:
+  /// **'回复已发送'**
+  String get replySent;
+
+  /// No description provided for @editCommentTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑评论'**
+  String get editCommentTitle;
+
+  /// No description provided for @editCommentHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'更新评论内容'**
+  String get editCommentHint;
+
+  /// No description provided for @commentUpdated.
+  ///
+  /// In zh, this message translates to:
+  /// **'评论已更新'**
+  String get commentUpdated;
+
+  /// No description provided for @commentDeleteConfirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'确定删除这条评论吗？'**
+  String get commentDeleteConfirm;
+
+  /// No description provided for @commentDeleted.
+  ///
+  /// In zh, this message translates to:
+  /// **'评论已删除'**
+  String get commentDeleted;
+
+  /// No description provided for @shareFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'分享失败，请稍后重试'**
+  String get shareFailed;
+
+  /// No description provided for @shareImageFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'转发图片失败，请稍后重试'**
+  String get shareImageFailed;
+
+  /// No description provided for @noPhotoPermission.
+  ///
+  /// In zh, this message translates to:
+  /// **'没有相册权限，无法保存图片'**
+  String get noPhotoPermission;
+
+  /// No description provided for @imageSaveFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'保存图片失败，请稍后重试'**
+  String get imageSaveFailed;
+
+  /// No description provided for @imageActions.
+  ///
+  /// In zh, this message translates to:
+  /// **'图片操作'**
+  String get imageActions;
+
+  /// No description provided for @imageCurrentPosition.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前图片：{current} / {total}'**
+  String imageCurrentPosition(int current, int total);
+
+  /// No description provided for @saveImageAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'保存图片'**
+  String get saveImageAction;
+
+  /// No description provided for @forwardImage.
+  ///
+  /// In zh, this message translates to:
+  /// **'转发图片'**
+  String get forwardImage;
+
+  /// No description provided for @forwardImageTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'转发图片'**
+  String get forwardImageTitle;
+
+  /// No description provided for @blockConfirmMessage.
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要屏蔽 {name} 吗？屏蔽后你将看不到对方的帖子。'**
+  String blockConfirmMessage(String name);
+
+  /// No description provided for @blockSuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'已屏蔽该用户'**
+  String get blockSuccess;
+
+  /// No description provided for @tagUnavailableTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'标签暂不可用'**
+  String get tagUnavailableTitle;
+
+  /// No description provided for @tagNotFoundDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'没有找到这个标签。'**
+  String get tagNotFoundDesc;
+
+  /// No description provided for @tagGoHome.
+  ///
+  /// In zh, this message translates to:
+  /// **'返回首页'**
+  String get tagGoHome;
+
+  /// No description provided for @tagSearchPlaceholder.
+  ///
+  /// In zh, this message translates to:
+  /// **'在该标签下搜索帖子'**
+  String get tagSearchPlaceholder;
+
+  /// No description provided for @tagNoPostsDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'等同学们发布更多内容后，这里会出现帖子。'**
+  String get tagNoPostsDesc;
+
+  /// No description provided for @tagNoSearchResultsDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'换个关键词试试。'**
+  String get tagNoSearchResultsDesc;
+
+  /// No description provided for @tagRefreshingPosts.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在刷新帖子...'**
+  String get tagRefreshingPosts;
+
+  /// No description provided for @tagSearching.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在搜索...'**
+  String get tagSearching;
+
+  /// No description provided for @homeNoSearchResults.
+  ///
+  /// In zh, this message translates to:
+  /// **'没有找到相关帖子'**
+  String get homeNoSearchResults;
+
+  /// No description provided for @captchaFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'获取验证失败，请重试'**
+  String get captchaFailed;
+
+  /// No description provided for @captchaVerifyFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'验证失败，请重试'**
+  String get captchaVerifyFailed;
+
+  /// No description provided for @captchaComplete.
+  ///
+  /// In zh, this message translates to:
+  /// **'请完成验证'**
+  String get captchaComplete;
+
+  /// No description provided for @captchaDragSlider.
+  ///
+  /// In zh, this message translates to:
+  /// **'拖动滑块使拼图对齐'**
+  String get captchaDragSlider;
+
+  /// No description provided for @captchaDragComplete.
+  ///
+  /// In zh, this message translates to:
+  /// **'拖动滑块完成拼图'**
+  String get captchaDragComplete;
+
+  /// No description provided for @captchaRefreshLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'刷新'**
+  String get captchaRefreshLabel;
+
+  /// No description provided for @passwordChanged.
+  ///
+  /// In zh, this message translates to:
+  /// **'密码修改成功'**
+  String get passwordChanged;
+
+  /// No description provided for @currentPasswordPlaceholder.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前密码'**
+  String get currentPasswordPlaceholder;
+
+  /// No description provided for @enterCurrentPassword.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入当前密码'**
+  String get enterCurrentPassword;
+
+  /// No description provided for @newPasswordPlaceholder.
+  ///
+  /// In zh, this message translates to:
+  /// **'新密码，至少 6 位'**
+  String get newPasswordPlaceholder;
+
+  /// No description provided for @enterNewPassword.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入新密码'**
+  String get enterNewPassword;
+
+  /// No description provided for @passwordMinLength.
+  ///
+  /// In zh, this message translates to:
+  /// **'密码至少 {min} 位'**
+  String passwordMinLength(int min);
+
+  /// No description provided for @passwordMaxLength.
+  ///
+  /// In zh, this message translates to:
+  /// **'密码长度不能超过 {max} 位'**
+  String passwordMaxLength(int max);
+
+  /// No description provided for @confirmPasswordPlaceholder.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认新密码'**
+  String get confirmPasswordPlaceholder;
+
+  /// No description provided for @passwordsMismatch.
+  ///
+  /// In zh, this message translates to:
+  /// **'两次输入的密码不一致'**
+  String get passwordsMismatch;
+
+  /// No description provided for @profileBioPlaceholder.
+  ///
+  /// In zh, this message translates to:
+  /// **'个人简介'**
+  String get profileBioPlaceholder;
+
+  /// No description provided for @profileBioTooLong.
+  ///
+  /// In zh, this message translates to:
+  /// **'个人简介长度不能超过 {max} 位'**
+  String profileBioTooLong(int max);
+
+  /// No description provided for @profileNotSet.
+  ///
+  /// In zh, this message translates to:
+  /// **'未设置'**
+  String get profileNotSet;
+
+  /// No description provided for @profileConfirmLogout.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认退出登录？'**
+  String get profileConfirmLogout;
+
+  /// No description provided for @profileConfirmLogoutDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'退出登录将清除当前会话，可能需要重新登录。'**
+  String get profileConfirmLogoutDesc;
+
+  /// No description provided for @profileUnfollowLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'取消关注'**
+  String get profileUnfollowLabel;
+
+  /// No description provided for @profileUnblockLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'取消屏蔽'**
+  String get profileUnblockLabel;
+
+  /// No description provided for @profileFollowingEmptyDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'去发现感兴趣的用户并关注他们吧'**
+  String get profileFollowingEmptyDesc;
+
+  /// No description provided for @profileBlockListEmptyDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'你的屏蔽列表是空的'**
+  String get profileBlockListEmptyDesc;
+
+  /// No description provided for @profileLoadFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'个人资料加载失败'**
+  String get profileLoadFailed;
+
+  /// No description provided for @userInfoLoadFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'用户信息加载失败'**
+  String get userInfoLoadFailed;
+
+  /// No description provided for @bindingTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'第三方绑定'**
+  String get bindingTitle;
+
+  /// No description provided for @bindingSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'将您的账号与第三方平台关联，方便快速登录'**
+  String get bindingSubtitle;
+
+  /// No description provided for @bindingFirstWarning.
+  ///
+  /// In zh, this message translates to:
+  /// **'请先绑定邮箱或手机号后再解绑'**
+  String get bindingFirstWarning;
+
+  /// No description provided for @bindingUnbindCheckTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'解绑 {provider}'**
+  String bindingUnbindCheckTitle(String provider);
+
+  /// No description provided for @bindingUnbindCheckDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'解绑前需要完成本次邮箱或手机验证码校验。'**
+  String get bindingUnbindCheckDesc;
+
+  /// No description provided for @bindingContinue.
+  ///
+  /// In zh, this message translates to:
+  /// **'继续'**
+  String get bindingContinue;
+
+  /// No description provided for @bindingUnboundSuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'{provider} 已解绑'**
+  String bindingUnboundSuccess(String provider);
+
+  /// No description provided for @bindingBound.
+  ///
+  /// In zh, this message translates to:
+  /// **'已绑定'**
+  String get bindingBound;
+
+  /// No description provided for @bindingUnbind.
+  ///
+  /// In zh, this message translates to:
+  /// **'解绑'**
+  String get bindingUnbind;
+
+  /// No description provided for @bindingGoBind.
+  ///
+  /// In zh, this message translates to:
+  /// **'去绑定'**
+  String get bindingGoBind;
+
+  /// No description provided for @bindingEmailTab.
+  ///
+  /// In zh, this message translates to:
+  /// **'邮箱'**
+  String get bindingEmailTab;
+
+  /// No description provided for @bindingPhoneTab.
+  ///
+  /// In zh, this message translates to:
+  /// **'手机'**
+  String get bindingPhoneTab;
+
+  /// No description provided for @bindingCodeSent.
+  ///
+  /// In zh, this message translates to:
+  /// **'验证码已发送'**
+  String get bindingCodeSent;
+
+  /// No description provided for @bindingEnterCode.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入验证码'**
+  String get bindingEnterCode;
+
+  /// No description provided for @bindingUnbindTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'解绑 {provider}'**
+  String bindingUnbindTitle(String provider);
+
+  /// No description provided for @bindingUnbindDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择邮箱或手机接收验证码，验证通过后立即解绑。'**
+  String get bindingUnbindDesc;
+
+  /// No description provided for @bindingSendCode.
+  ///
+  /// In zh, this message translates to:
+  /// **'发送'**
+  String get bindingSendCode;
+
+  /// No description provided for @bindingSending.
+  ///
+  /// In zh, this message translates to:
+  /// **'发送中'**
+  String get bindingSending;
+
+  /// No description provided for @bindingConfirmUnbind.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认解绑'**
+  String get bindingConfirmUnbind;
+
+  /// No description provided for @bindingUnbinding.
+  ///
+  /// In zh, this message translates to:
+  /// **'解绑中...'**
+  String get bindingUnbinding;
+
+  /// No description provided for @codeResendAfterSeconds.
+  ///
+  /// In zh, this message translates to:
+  /// **'{seconds}s 后重新发送'**
+  String codeResendAfterSeconds(int seconds);
+
+  /// No description provided for @pushNotificationChannelName.
+  ///
+  /// In zh, this message translates to:
+  /// **'光汇 通知'**
+  String get pushNotificationChannelName;
+
+  /// No description provided for @pushNotificationChannelDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'用于评论回复、热门动态与系统提醒'**
+  String get pushNotificationChannelDesc;
+
+  /// No description provided for @pushTokenUpdateFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'推送 Token 更新失败'**
+  String get pushTokenUpdateFailed;
+
+  /// No description provided for @serviceErrorFollow.
+  ///
+  /// In zh, this message translates to:
+  /// **'关注服务响应格式异常'**
+  String get serviceErrorFollow;
+
+  /// No description provided for @serviceErrorNotification.
+  ///
+  /// In zh, this message translates to:
+  /// **'通知响应格式异常'**
+  String get serviceErrorNotification;
+
+  /// No description provided for @serviceErrorComment.
+  ///
+  /// In zh, this message translates to:
+  /// **'评论列表响应格式异常'**
+  String get serviceErrorComment;
+
+  /// No description provided for @serviceErrorUser.
+  ///
+  /// In zh, this message translates to:
+  /// **'用户服务响应格式异常'**
+  String get serviceErrorUser;
+
+  /// No description provided for @serviceErrorPost.
+  ///
+  /// In zh, this message translates to:
+  /// **'帖子列表响应格式异常'**
+  String get serviceErrorPost;
+
+  /// No description provided for @detailLoadFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'详情加载失败'**
+  String get detailLoadFailed;
+
+  /// No description provided for @tokenRefreshIncomplete.
+  ///
+  /// In zh, this message translates to:
+  /// **'令牌刷新失败：服务端返回了不完整的令牌数据'**
+  String get tokenRefreshIncomplete;
+
+  /// No description provided for @changeActionLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'更改'**
+  String get changeActionLabel;
+
+  /// No description provided for @editedLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'已编辑'**
+  String get editedLabel;
+
+  /// No description provided for @lastUpdatedLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'最后更新：{date}'**
+  String lastUpdatedLabel(String date);
 }
 
 class _AppLocalizationsDelegate

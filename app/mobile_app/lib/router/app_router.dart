@@ -262,7 +262,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final userId = state.pathParameters[AppRouteParams.userId];
           if (userId == null || userId.isEmpty) {
-            throw StateError('公开主页路由缺少 userId');
+            throw StateError('Public profile route missing userId');
           }
           return PublicProfileScreen(userId: userId);
         },
@@ -278,7 +278,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final postId = state.pathParameters[AppRouteParams.postId];
           if (postId == null || postId.isEmpty) {
-            throw StateError('帖子详情路由缺少 postId');
+            throw StateError('Post detail route missing postId');
           }
           return PostDetailScreen(postId: postId);
         },
@@ -289,7 +289,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final tagId = state.pathParameters[AppRouteParams.tagId];
           if (tagId == null || tagId.isEmpty) {
-            throw StateError('标签页路由缺少 tagId');
+            throw StateError('Tag page route missing tagId');
           }
           return TagScreen(tagId: tagId);
         },

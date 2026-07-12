@@ -1065,4 +1065,320 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get nextExit => 'Нажмите ещё раз для выхода';
+
+  @override
+  String get anonymousUser => 'Аноним';
+
+  @override
+  String get postUnnamed => 'Без названия';
+
+  @override
+  String get postNoContent => 'У этого поста нет содержания.';
+
+  @override
+  String get postNoContentDesc => 'У этого поста нет описания.';
+
+  @override
+  String get postNoDescription => 'У этого поста ещё нет описания.';
+
+  @override
+  String get postDetailNotFound => 'Детали поста не найдены';
+
+  @override
+  String get postDataEmpty => 'Данные поста пусты';
+
+  @override
+  String postCommentTooLong(int max) {
+    return 'Комментарий не может превышать $max симв.';
+  }
+
+  @override
+  String get postUpdated => 'Пост обновлён';
+
+  @override
+  String get replyComment => 'Ответить на комментарий';
+
+  @override
+  String get replyHint => 'Введите ответ';
+
+  @override
+  String get replySent => 'Ответ отправлен';
+
+  @override
+  String get editCommentTitle => 'Редактировать комментарий';
+
+  @override
+  String get editCommentHint => 'Обновить содержание';
+
+  @override
+  String get commentUpdated => 'Комментарий обновлён';
+
+  @override
+  String get commentDeleteConfirm => 'Удалить этот комментарий?';
+
+  @override
+  String get commentDeleted => 'Комментарий удалён';
+
+  @override
+  String get shareFailed => 'Не удалось поделиться';
+
+  @override
+  String get shareImageFailed => 'Не удалось переслать изображение';
+
+  @override
+  String get noPhotoPermission => 'Нет доступа к фото';
+
+  @override
+  String get imageSaveFailed => 'Не удалось сохранить изображение';
+
+  @override
+  String get imageActions => 'Действия с фото';
+
+  @override
+  String imageCurrentPosition(int current, int total) {
+    return 'Изображение: $current / $total';
+  }
+
+  @override
+  String get saveImageAction => 'Сохранить фото';
+
+  @override
+  String get forwardImage => 'Переслать фото';
+
+  @override
+  String get forwardImageTitle => 'Переслать фото';
+
+  @override
+  String blockConfirmMessage(String name) {
+    return 'Заблокировать $name? Вы перестанете видеть их посты.';
+  }
+
+  @override
+  String get blockSuccess => 'Пользователь заблокирован';
+
+  @override
+  String get tagUnavailableTitle => 'Тег недоступен';
+
+  @override
+  String get tagNotFoundDesc => 'Тег не найден.';
+
+  @override
+  String get tagGoHome => 'На главную';
+
+  @override
+  String get tagSearchPlaceholder => 'Поиск постов с этим тегом';
+
+  @override
+  String get tagNoPostsDesc => 'Посты появятся здесь, когда их добавят.';
+
+  @override
+  String get tagNoSearchResultsDesc => 'Попробуйте другое ключевое слово.';
+
+  @override
+  String get tagRefreshingPosts => 'Обновление...';
+
+  @override
+  String get tagSearching => 'Поиск...';
+
+  @override
+  String get homeNoSearchResults => 'Ничего не найдено';
+
+  @override
+  String get captchaFailed => 'Ошибка получения капчи';
+
+  @override
+  String get captchaVerifyFailed => 'Проверка не пройдена';
+
+  @override
+  String get captchaComplete => 'Пожалуйста, пройдите проверку';
+
+  @override
+  String get captchaDragSlider => 'Перетащите ползунок для совмещения';
+
+  @override
+  String get captchaDragComplete => 'Перетащите ползунок для завершения';
+
+  @override
+  String get captchaRefreshLabel => 'Обновить';
+
+  @override
+  String get passwordChanged => 'Пароль изменён';
+
+  @override
+  String get currentPasswordPlaceholder => 'Текущий пароль';
+
+  @override
+  String get enterCurrentPassword => 'Введите текущий пароль';
+
+  @override
+  String get newPasswordPlaceholder => 'Новый пароль, не менее 6 симв.';
+
+  @override
+  String get enterNewPassword => 'Введите новый пароль';
+
+  @override
+  String passwordMinLength(int min) {
+    return 'Пароль не менее $min симв.';
+  }
+
+  @override
+  String passwordMaxLength(int max) {
+    return 'Пароль не более $max симв.';
+  }
+
+  @override
+  String get confirmPasswordPlaceholder => 'Подтвердите новый пароль';
+
+  @override
+  String get passwordsMismatch => 'Пароли не совпадают';
+
+  @override
+  String get profileBioPlaceholder => 'О себе';
+
+  @override
+  String profileBioTooLong(int max) {
+    return 'О себе не более $max симв.';
+  }
+
+  @override
+  String get profileNotSet => 'Не задано';
+
+  @override
+  String get profileConfirmLogout => 'Подтвердить выход?';
+
+  @override
+  String get profileConfirmLogoutDesc => 'Выход очистит текущую сессию.';
+
+  @override
+  String get profileUnfollowLabel => 'Отписаться';
+
+  @override
+  String get profileUnblockLabel => 'Разблокировать';
+
+  @override
+  String get profileFollowingEmptyDesc =>
+      'Найдите и подпишитесь на интересных пользователей';
+
+  @override
+  String get profileBlockListEmptyDesc => 'Список блокировки пуст';
+
+  @override
+  String get profileLoadFailed => 'Ошибка загрузки профиля';
+
+  @override
+  String get userInfoLoadFailed => 'Ошибка загрузки информации';
+
+  @override
+  String get bindingTitle => 'Привязки';
+
+  @override
+  String get bindingSubtitle => 'Привяжите аккаунт для быстрого входа';
+
+  @override
+  String get bindingFirstWarning => 'Сначала привяжите email или телефон';
+
+  @override
+  String bindingUnbindCheckTitle(String provider) {
+    return 'Отвязать $provider';
+  }
+
+  @override
+  String get bindingUnbindCheckDesc => 'Подтверждение по email или телефону.';
+
+  @override
+  String get bindingContinue => 'Продолжить';
+
+  @override
+  String bindingUnboundSuccess(String provider) {
+    return '$provider отвязан';
+  }
+
+  @override
+  String get bindingBound => 'Привязано';
+
+  @override
+  String get bindingUnbind => 'Отвязать';
+
+  @override
+  String get bindingGoBind => 'Привязать';
+
+  @override
+  String get bindingEmailTab => 'Email';
+
+  @override
+  String get bindingPhoneTab => 'Телефон';
+
+  @override
+  String get bindingCodeSent => 'Код отправлен';
+
+  @override
+  String get bindingEnterCode => 'Введите код';
+
+  @override
+  String bindingUnbindTitle(String provider) {
+    return 'Отвязать $provider';
+  }
+
+  @override
+  String get bindingUnbindDesc => 'Выберите способ получения кода.';
+
+  @override
+  String get bindingSendCode => 'Отправить';
+
+  @override
+  String get bindingSending => 'Отправка...';
+
+  @override
+  String get bindingConfirmUnbind => 'Подтвердить';
+
+  @override
+  String get bindingUnbinding => 'Отвязка...';
+
+  @override
+  String codeResendAfterSeconds(int seconds) {
+    return '$secondsс до повторной отправки';
+  }
+
+  @override
+  String get pushNotificationChannelName => 'LightHub Уведомления';
+
+  @override
+  String get pushNotificationChannelDesc =>
+      'Для ответов, трендов и системных уведомлений';
+
+  @override
+  String get pushTokenUpdateFailed => 'Ошибка обновления push-токена';
+
+  @override
+  String get serviceErrorFollow => 'Ошибка формата ответа сервиса подписок';
+
+  @override
+  String get serviceErrorNotification => 'Ошибка формата ответа уведомлений';
+
+  @override
+  String get serviceErrorComment => 'Ошибка формата ответа комментариев';
+
+  @override
+  String get serviceErrorUser => 'Ошибка формата ответа сервиса пользователей';
+
+  @override
+  String get serviceErrorPost => 'Ошибка формата ответа списка постов';
+
+  @override
+  String get detailLoadFailed => 'Ошибка загрузки деталей';
+
+  @override
+  String get tokenRefreshIncomplete =>
+      'Ошибка обновления токена: неполные данные';
+
+  @override
+  String get changeActionLabel => 'Изменить';
+
+  @override
+  String get editedLabel => 'Изменено';
+
+  @override
+  String lastUpdatedLabel(String date) {
+    return 'Обновлено: $date';
+  }
 }

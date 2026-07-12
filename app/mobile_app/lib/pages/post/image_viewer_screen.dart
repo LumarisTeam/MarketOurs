@@ -9,6 +9,7 @@ import 'package:photo_view/photo_view_gallery.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../components/app_network_image.dart';
+import '../../l10n/app_localizations.dart';
 import '../../ui/app_feedback.dart';
 
 class ImageViewerScreen extends StatefulWidget {
@@ -175,30 +176,33 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
 
     await showCupertinoModalPopup<void>(
       context: context,
-      builder: (sheetContext) => CupertinoActionSheet(
-        title: const Text('图片操作'),
-        message: Text('当前图片：${_currentIndex + 1} / ${widget.images.length}'),
-        actions: [
-          CupertinoActionSheetAction(
-            onPressed: () async {
-              Navigator.of(sheetContext).pop();
-              await _saveCurrentImage(imageUrl);
-            },
-            child: const Text('保存图片'),
+      builder: (sheetContext) {
+        final l10n = AppLocalizations.of(sheetContext);
+        return CupertinoActionSheet(
+          title: Text(l10n.imageActions),
+          message: Text(l10n.imageCurrentPosition(_currentIndex + 1, widget.images.length)),
+          actions: [
+            CupertinoActionSheetAction(
+              onPressed: () async {
+                Navigator.of(sheetContext).pop();
+                await _saveCurrentImage(imageUrl);
+              },
+              child: Text(l10n.saveImageAction),
+            ),
+            CupertinoActionSheetAction(
+              onPressed: () async {
+                Navigator.of(sheetContext).pop();
+                await _shareCurrentImage(imageUrl);
+              },
+              child: Text(l10n.forwardImage),
+            ),
+          ],
+          cancelButton: CupertinoActionSheetAction(
+            onPressed: () => Navigator.of(sheetContext).pop(),
+            child: Text(l10n.cancel),
           ),
-          CupertinoActionSheetAction(
-            onPressed: () async {
-              Navigator.of(sheetContext).pop();
-              await _shareCurrentImage(imageUrl);
-            },
-            child: const Text('转发图片'),
-          ),
-        ],
-        cancelButton: CupertinoActionSheetAction(
-          onPressed: () => Navigator.of(sheetContext).pop(),
-          child: const Text('取消'),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -211,7 +215,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
           if (!mounted) {
             return;
           }
-          await AppFeedback.showError(context, message: '没有相册权限，无法保存图片');
+          await AppFeedback.showError(context, message: AppLocalizations.of(context).noPhotoPermission);
           return;
         }
       }
@@ -226,12 +230,12 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
       if (!mounted) {
         return;
       }
-      await AppFeedback.showSuccess(context, message: '图片已保存到系统相册');
+      await AppFeedback.showSuccess(context, message: AppLocalizations.of(context).postImageSaveSuccess);
     } catch (_) {
       if (!mounted) {
         return;
       }
-      await AppFeedback.showError(context, message: '保存图片失败，请稍后重试');
+      await AppFeedback.showError(context, message: AppLocalizations.of(context).imageSaveFailed);
     }
   }
 
@@ -242,7 +246,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
         await SharePlus.instance.share(
           ShareParams(
             files: [XFile(downloaded.file.path, mimeType: downloaded.mimeType)],
-            title: '转发图片',
+            title: AppLocalizations.of(context).forwardImageTitle,
             sharePositionOrigin: _sharePositionOrigin,
           ),
         );
@@ -253,7 +257,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
       if (!mounted) {
         return;
       }
-      await AppFeedback.showError(context, message: '转发图片失败，请稍后重试');
+      await AppFeedback.showError(context, message: AppLocalizations.of(context).shareImageFailed);
     }
   }
 

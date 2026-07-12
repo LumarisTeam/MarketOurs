@@ -18,18 +18,18 @@ bool isEdited(
 
 String formatRelativeDateTime(DateTime? dateTime, [AppLocalizations? l10n]) {
   final localDateTime = _toLocalDateTime(dateTime);
-  if (localDateTime == null) return l10n?.dateJustNow ?? '刚刚';
+  if (localDateTime == null) return l10n?.dateJustNow ?? 'just now';
 
   final diff = DateTime.now().difference(localDateTime);
-  if (diff.inMinutes < 1) return l10n?.dateJustNow ?? '刚刚';
+  if (diff.inMinutes < 1) return l10n?.dateJustNow ?? 'just now';
   if (diff.inHours < 1) {
-    return l10n?.dateMinutesAgo(diff.inMinutes) ?? '${diff.inMinutes}分钟前';
+    return l10n?.dateMinutesAgo(diff.inMinutes) ?? '${diff.inMinutes}m ago';
   }
   if (diff.inDays < 1) {
-    return l10n?.dateHoursAgo(diff.inHours) ?? '${diff.inHours}小时前';
+    return l10n?.dateHoursAgo(diff.inHours) ?? '${diff.inHours}h ago';
   }
   if (diff.inDays < 7) {
-    return l10n?.dateDaysAgo(diff.inDays) ?? '${diff.inDays}天前';
+    return l10n?.dateDaysAgo(diff.inDays) ?? '${diff.inDays}d ago';
   }
   return formatYmdDate(localDateTime);
 }
@@ -38,7 +38,7 @@ String formatEditedRelativeDateTime(
   DateTime? createdAt,
   DateTime? updatedAt, {
   AppLocalizations? l10n,
-  String editedLabel = '已编辑',
+  String editedLabel = 'Edited',
 }) {
   final relative = formatRelativeDateTime(createdAt, l10n);
   if (!isEdited(createdAt, updatedAt)) {
@@ -66,7 +66,7 @@ String formatHmTime(DateTime? dateTime) {
 
 String formatNotificationDateTime(DateTime? dateTime, [AppLocalizations? l10n]) {
   final localDateTime = _toLocalDateTime(dateTime);
-  if (localDateTime == null) return l10n?.dateJustNow ?? '刚刚';
+  if (localDateTime == null) return l10n?.dateJustNow ?? 'just now';
 
   final now = DateTime.now();
   final startOfToday = DateTime(now.year, now.month, now.day);
@@ -81,10 +81,10 @@ String formatNotificationDateTime(DateTime? dateTime, [AppLocalizations? l10n]) 
     return formatHmTime(localDateTime);
   }
   if (dayDiff == 1) {
-    return l10n?.dateYesterday ?? '昨天';
+    return l10n?.dateYesterday ?? 'yesterday';
   }
   if (dayDiff > 1 && dayDiff < 7) {
-    return l10n?.dateDaysAgo(dayDiff) ?? '$dayDiff天前';
+    return l10n?.dateDaysAgo(dayDiff) ?? '${dayDiff}d ago';
   }
   return formatYmdDate(localDateTime, separator: '/');
 }

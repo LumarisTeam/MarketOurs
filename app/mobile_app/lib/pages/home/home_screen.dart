@@ -271,7 +271,7 @@ class _PostListSection extends StatelessWidget {
     if (posts.isEmpty) {
       return AppEmptyState(
         icon: keyword.isEmpty ? CupertinoIcons.news : CupertinoIcons.search,
-        title: keyword.isEmpty ? AppLocalizations.of(context).homeEmpty : '没有找到相关帖子',
+        title: keyword.isEmpty ? AppLocalizations.of(context).homeEmpty : AppLocalizations.of(context).homeNoSearchResults,
         description: keyword.isEmpty
             ? AppLocalizations.of(context).waitFirstPoster
             : AppLocalizations.of(context).tryDifferentKeyword,

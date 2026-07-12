@@ -1,134 +1,135 @@
 import 'package:dio/dio.dart';
 
-/// 后端业务错误码 → 用户可读消息映射。
-/// 与后端 ErrorCode.cs 保持同步。客户端应基于 errorCode（而非 message）做程序化错误处理。
+/// Maps backend ErrorCode values to human-readable messages (English fallbacks).
+/// Kept in sync with backend ErrorCode.cs. Callers should use errorCode for
+/// programmatic handling rather than parsing message strings.
 ///
-/// 错误码分段：
-///   0           成功
-///   1000-1099   通用/参数错误
-///   1100-1199   通用业务错误
-///   2000-2099   认证错误
-///   2100-2199   权限错误
-///   3000-3099   用户错误
-///   4000-4099   帖子错误
-///   4100-4199   评论错误
-///   5000-5099   关注/屏蔽错误
-///   6000-6099   文件错误
-///   7000-7099   点赞错误
-///   8000-8099   系统/基础设施错误
-///   8100-8199   外部服务错误
-///   9000-9099   平台/限流错误
+/// Error code ranges:
+///   0           Success
+///   1000-1099   General / parameter errors
+///   1100-1199   General business errors
+///   2000-2099   Authentication errors
+///   2100-2199   Authorization errors
+///   3000-3099   User errors
+///   4000-4099   Post errors
+///   4100-4199   Comment errors
+///   5000-5099   Follow / block errors
+///   6000-6099   File errors
+///   7000-7099   Like errors
+///   8000-8099   System / infrastructure errors
+///   8100-8199   External service errors
+///   9000-9099   Platform / rate-limit errors
 const Map<int, String> _errorCodeMessages = {
-  // 成功
-  0: '操作成功',
+  // Success
+  0: 'Operation succeeded',
 
-  // 通用/参数错误 (1000-1099)
-  1000: '参数不能为空',
-  1001: '参数格式不正确',
-  1002: '参数超出允许范围',
-  1003: '参数验证失败',
-  1004: '请求体缺失',
-  1005: '不支持的 Content-Type',
+  // General / parameter errors (1000-1099)
+  1000: 'Parameter cannot be empty',
+  1001: 'Parameter format is incorrect',
+  1002: 'Parameter is out of allowed range',
+  1003: 'Parameter validation failed',
+  1004: 'Request body is missing',
+  1005: 'Unsupported Content-Type',
 
-  // 通用业务错误 (1100-1199)
-  1100: '资源已存在',
-  1101: '操作失败',
-  1102: '数据处理失败',
-  1103: '当前状态不允许执行此操作',
-  1104: '操作过于频繁，请稍后重试',
-  1105: '资源已过期',
+  // General business errors (1100-1199)
+  1100: 'Resource already exists',
+  1101: 'Operation failed',
+  1102: 'Data processing failed',
+  1103: 'This operation is not allowed in the current state',
+  1104: 'Too many requests, please try again later',
+  1105: 'Resource has expired',
 
-  // 认证错误 (2000-2099)
-  2000: '请先登录',
-  2001: '令牌无效',
-  2002: '令牌已过期',
-  2003: '登录已过期，请重新登录',
-  2004: '刷新令牌无效或已过期',
-  2005: '用户名或密码错误',
-  2006: 'OAuth 授权码无效',
-  2007: '不支持的第三方登录方式',
-  2008: '验证码无效或已过期',
-  2009: '注册会话已过期，请重新开始',
-  2010: '第三方账号未绑定本地账户',
-  2011: '该第三方账号已被其他账户绑定',
-  2012: '未找到关联账户，请先登录并绑定',
+  // Authentication errors (2000-2099)
+  2000: 'Please sign in first',
+  2001: 'Invalid token',
+  2002: 'Token has expired',
+  2003: 'Session expired, please sign in again',
+  2004: 'Refresh token is invalid or has expired',
+  2005: 'Incorrect username or password',
+  2006: 'Invalid OAuth authorization code',
+  2007: 'Unsupported third-party login method',
+  2008: 'Verification code is invalid or has expired',
+  2009: 'Registration session expired, please start over',
+  2010: 'Third-party account is not linked to a local account',
+  2011: 'This third-party account is already linked to another account',
+  2012: 'No linked account found, please sign in and link first',
 
-  // 权限错误 (2100-2199)
-  2100: '权限不足',
-  2101: '无权修改他人的帖子',
-  2102: '无权删除他人的帖子',
-  2103: '无权修改他人的评论',
-  2104: '无权删除他人的评论',
-  2105: '账号已被禁用',
-  2106: '账号尚未激活',
+  // Authorization errors (2100-2199)
+  2100: 'Insufficient permissions',
+  2101: 'Not authorized to modify another user\'s post',
+  2102: 'Not authorized to delete another user\'s post',
+  2103: 'Not authorized to modify another user\'s comment',
+  2104: 'Not authorized to delete another user\'s comment',
+  2105: 'Account has been disabled',
+  2106: 'Account is not yet activated',
 
-  // 用户错误 (3000-3099)
-  3000: '用户不存在',
-  3001: '用户未绑定邮箱',
-  3002: '用户未绑定手机号',
-  3003: '该账号已存在',
-  3004: '邮箱已被注册',
-  3005: '旧密码错误',
-  3006: '密码验证失败',
-  3007: '不能操作自己的账号',
-  3008: '该账号未绑定邮箱或手机号，无法接收重置验证码',
-  3009: '不支持的验证方式',
-  3010: '不支持的第三方平台',
-  3011: '该第三方账号尚未绑定',
+  // User errors (3000-3099)
+  3000: 'User not found',
+  3001: 'User has no linked email address',
+  3002: 'User has no linked phone number',
+  3003: 'This account already exists',
+  3004: 'Email address is already registered',
+  3005: 'Old password is incorrect',
+  3006: 'Password verification failed',
+  3007: 'Cannot operate on your own account',
+  3008: 'Account has no linked email or phone; cannot send reset code',
+  3009: 'Unsupported verification method',
+  3010: 'Unsupported third-party platform',
+  3011: 'This third-party account is not yet linked',
 
-  // 帖子错误 (4000-4099)
-  4000: '帖子不存在',
-  4001: '帖子创建失败',
-  4002: '帖子更新失败',
+  // Post errors (4000-4099)
+  4000: 'Post not found',
+  4001: 'Failed to create post',
+  4002: 'Failed to update post',
 
-  // 评论错误 (4100-4199)
-  4100: '评论不存在',
-  4101: '要回复的评论不存在',
-  4102: '评论创建失败',
-  4103: '评论更新失败',
+  // Comment errors (4100-4199)
+  4100: 'Comment not found',
+  4101: 'The comment being replied to does not exist',
+  4102: 'Failed to create comment',
+  4103: 'Failed to update comment',
 
-  // 关注/屏蔽错误 (5000-5099)
-  5000: '不能关注自己',
-  5001: '不能屏蔽自己',
-  5002: '无法关注已屏蔽或屏蔽您的用户',
-  5003: '关注操作过于频繁，请稍后重试',
-  5004: '屏蔽操作过于频繁，请稍后重试',
+  // Follow / block errors (5000-5099)
+  5000: 'Cannot follow yourself',
+  5001: 'Cannot block yourself',
+  5002: 'Cannot follow a user who has blocked or been blocked by you',
+  5003: 'Follow rate limit exceeded, please try again later',
+  5004: 'Block rate limit exceeded, please try again later',
 
-  // 文件错误 (6000-6099)
-  6000: '文件未找到',
-  6001: '不支持的文件类型',
-  6002: '文件上传失败',
-  6003: '文件大小超出限制',
+  // File errors (6000-6099)
+  6000: 'File not found',
+  6001: 'Unsupported file type',
+  6002: 'File upload failed',
+  6003: 'File size exceeds the limit',
 
-  // 点赞错误 (7000-7099)
-  7000: '点赞操作过于频繁，请稍后重试',
-  7001: '已点过赞',
-  7002: '未点过赞，无法取消',
+  // Like errors (7000-7099)
+  7000: 'Like rate limit exceeded, please try again later',
+  7001: 'Already liked',
+  7002: 'Not liked yet, cannot unlike',
 
-  // 系统/基础设施错误 (8000-8099)
-  8000: '服务器内部错误，请稍后重试',
-  8001: '数据库操作失败',
-  8002: '缓存服务不可用',
-  8003: '缓存操作失败',
-  8004: '网络连接异常，请检查网络',
+  // System / infrastructure errors (8000-8099)
+  8000: 'Internal server error, please try again later',
+  8001: 'Database operation failed',
+  8002: 'Cache service is unavailable',
+  8003: 'Cache operation failed',
+  8004: 'Network connection error, please check your connection',
 
-  // 外部服务错误 (8100-8199)
-  8100: '外部服务调用失败',
-  8101: '外部服务响应超时',
-  8102: '外部服务返回错误',
-  8103: '外部服务未配置',
-  8104: '邮件发送失败',
-  8105: '短信发送失败',
+  // External service errors (8100-8199)
+  8100: 'External service call failed',
+  8101: 'External service response timed out',
+  8102: 'External service returned an error',
+  8103: 'External service is not configured',
+  8104: 'Failed to send email',
+  8105: 'Failed to send SMS',
 
-  // 平台/限流错误 (9000-9099)
-  9000: '请求频率过高，请稍后重试',
-  9001: 'IP 已被加入黑名单',
+  // Platform / rate-limit errors (9000-9099)
+  9000: 'Too many requests, please try again later',
+  9001: 'IP address has been blacklisted',
 };
 
-const String _defaultErrorMessage = '操作失败，请稍后重试';
+const String _defaultErrorMessage = 'Operation failed, please try again later';
 
-/// 根据后端返回的 errorCode 获取用户可读消息。
-/// 优先使用 errorCode 映射；其次使用 fallback；最后使用默认消息。
+/// Returns a human-readable message for the given backend errorCode.
+/// Prefers the errorCode map, then the optional fallback, then a default.
 String errorMessageFromCode(int? code, {String? fallback}) {
   if (code != null && code != 0 && _errorCodeMessages.containsKey(code)) {
     return _errorCodeMessages[code]!;
@@ -139,20 +140,21 @@ String errorMessageFromCode(int? code, {String? fallback}) {
   return _defaultErrorMessage;
 }
 
-/// 从异常对象（DioException 或其他）提取用户可读错误消息。
+/// Extracts a human-readable error message from an exception object
+/// (DioException or other).
 String extractErrorFromException(Object error) {
   if (error is DioException) {
     switch (error.type) {
       case DioExceptionType.connectionTimeout:
-        return '连接服务器超时，请检查网络后重试';
+        return 'Connection timed out, please check your network and try again';
       case DioExceptionType.sendTimeout:
-        return '图片上传超时，请换个网络或减少图片数量后重试';
+        return 'Upload timed out, please switch networks or reduce the number of images';
       case DioExceptionType.receiveTimeout:
-        return '服务器处理时间较长，请稍后重试或减少图片数量';
+        return 'Server is taking too long, please try again later';
       case DioExceptionType.connectionError:
-        return '网络连接失败，请检查网络后重试';
+        return 'Network connection failed, please check your network and try again';
       case DioExceptionType.cancel:
-        return '请求已取消';
+        return 'Request was cancelled';
       case DioExceptionType.badCertificate:
       case DioExceptionType.badResponse:
       case DioExceptionType.unknown:

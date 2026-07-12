@@ -1085,4 +1085,327 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get nextExit => 'Press again to exit the app';
+
+  @override
+  String get anonymousUser => 'Anonymous';
+
+  @override
+  String get postUnnamed => 'Untitled Post';
+
+  @override
+  String get postNoContent => 'This post has no content.';
+
+  @override
+  String get postNoContentDesc => 'This post doesn\'t have a description.';
+
+  @override
+  String get postNoDescription => 'This post doesn\'t have a description yet.';
+
+  @override
+  String get postDetailNotFound => 'Post detail not found';
+
+  @override
+  String get postDataEmpty => 'Post data is empty';
+
+  @override
+  String postCommentTooLong(int max) {
+    return 'Comment cannot exceed $max characters';
+  }
+
+  @override
+  String get postUpdated => 'Post updated';
+
+  @override
+  String get replyComment => 'Reply to Comment';
+
+  @override
+  String get replyHint => 'Enter your reply';
+
+  @override
+  String get replySent => 'Reply sent';
+
+  @override
+  String get editCommentTitle => 'Edit Comment';
+
+  @override
+  String get editCommentHint => 'Update comment content';
+
+  @override
+  String get commentUpdated => 'Comment updated';
+
+  @override
+  String get commentDeleteConfirm => 'Delete this comment?';
+
+  @override
+  String get commentDeleted => 'Comment deleted';
+
+  @override
+  String get shareFailed => 'Share failed, please try again later';
+
+  @override
+  String get shareImageFailed => 'Failed to forward image, try again later';
+
+  @override
+  String get noPhotoPermission =>
+      'No photo library permission, cannot save image';
+
+  @override
+  String get imageSaveFailed => 'Failed to save image, try again later';
+
+  @override
+  String get imageActions => 'Image Actions';
+
+  @override
+  String imageCurrentPosition(int current, int total) {
+    return 'Image: $current / $total';
+  }
+
+  @override
+  String get saveImageAction => 'Save Image';
+
+  @override
+  String get forwardImage => 'Forward Image';
+
+  @override
+  String get forwardImageTitle => 'Forward Image';
+
+  @override
+  String blockConfirmMessage(String name) {
+    return 'Block $name? You will no longer see their posts.';
+  }
+
+  @override
+  String get blockSuccess => 'User has been blocked';
+
+  @override
+  String get tagUnavailableTitle => 'Tag Unavailable';
+
+  @override
+  String get tagNotFoundDesc => 'Tag not found.';
+
+  @override
+  String get tagGoHome => 'Go Home';
+
+  @override
+  String get tagSearchPlaceholder => 'Search posts under this tag';
+
+  @override
+  String get tagNoPostsDesc =>
+      'Posts will appear here once students share more content.';
+
+  @override
+  String get tagNoSearchResultsDesc => 'Try a different keyword.';
+
+  @override
+  String get tagRefreshingPosts => 'Refreshing posts...';
+
+  @override
+  String get tagSearching => 'Searching...';
+
+  @override
+  String get homeNoSearchResults => 'No matching posts found';
+
+  @override
+  String get captchaFailed => 'Failed to get verification, please retry';
+
+  @override
+  String get captchaVerifyFailed => 'Verification failed, please retry';
+
+  @override
+  String get captchaComplete => 'Please complete the verification';
+
+  @override
+  String get captchaDragSlider => 'Drag the slider to align the puzzle';
+
+  @override
+  String get captchaDragComplete => 'Drag the slider to complete the puzzle';
+
+  @override
+  String get captchaRefreshLabel => 'Refresh';
+
+  @override
+  String get passwordChanged => 'Password changed successfully';
+
+  @override
+  String get currentPasswordPlaceholder => 'Current password';
+
+  @override
+  String get enterCurrentPassword => 'Please enter your current password';
+
+  @override
+  String get newPasswordPlaceholder => 'New password, at least 6 characters';
+
+  @override
+  String get enterNewPassword => 'Please enter a new password';
+
+  @override
+  String passwordMinLength(int min) {
+    return 'Password must be at least $min characters';
+  }
+
+  @override
+  String passwordMaxLength(int max) {
+    return 'Password cannot exceed $max characters';
+  }
+
+  @override
+  String get confirmPasswordPlaceholder => 'Confirm new password';
+
+  @override
+  String get passwordsMismatch => 'Passwords do not match';
+
+  @override
+  String get profileBioPlaceholder => 'Bio';
+
+  @override
+  String profileBioTooLong(int max) {
+    return 'Bio cannot exceed $max characters';
+  }
+
+  @override
+  String get profileNotSet => 'Not set';
+
+  @override
+  String get profileConfirmLogout => 'Confirm logout?';
+
+  @override
+  String get profileConfirmLogoutDesc =>
+      'Logging out will clear your current session and you may need to log in again.';
+
+  @override
+  String get profileUnfollowLabel => 'Unfollow';
+
+  @override
+  String get profileUnblockLabel => 'Unblock';
+
+  @override
+  String get profileFollowingEmptyDesc =>
+      'Discover and follow users you\'re interested in';
+
+  @override
+  String get profileBlockListEmptyDesc => 'Your block list is empty';
+
+  @override
+  String get profileLoadFailed => 'Failed to load profile';
+
+  @override
+  String get userInfoLoadFailed => 'Failed to load user info';
+
+  @override
+  String get bindingTitle => 'Third-party Bindings';
+
+  @override
+  String get bindingSubtitle =>
+      'Link your account with third-party platforms for quick login';
+
+  @override
+  String get bindingFirstWarning =>
+      'Please bind an email or phone number before unlinking';
+
+  @override
+  String bindingUnbindCheckTitle(String provider) {
+    return 'Unlink $provider';
+  }
+
+  @override
+  String get bindingUnbindCheckDesc =>
+      'Please complete email or phone verification before unlinking.';
+
+  @override
+  String get bindingContinue => 'Continue';
+
+  @override
+  String bindingUnboundSuccess(String provider) {
+    return '$provider has been unlinked';
+  }
+
+  @override
+  String get bindingBound => 'Linked';
+
+  @override
+  String get bindingUnbind => 'Unlink';
+
+  @override
+  String get bindingGoBind => 'Link';
+
+  @override
+  String get bindingEmailTab => 'Email';
+
+  @override
+  String get bindingPhoneTab => 'Phone';
+
+  @override
+  String get bindingCodeSent => 'Verification code sent';
+
+  @override
+  String get bindingEnterCode => 'Please enter the verification code';
+
+  @override
+  String bindingUnbindTitle(String provider) {
+    return 'Unlink $provider';
+  }
+
+  @override
+  String get bindingUnbindDesc =>
+      'Select email or phone to receive the verification code. Unlink will take effect after verification.';
+
+  @override
+  String get bindingSendCode => 'Send';
+
+  @override
+  String get bindingSending => 'Sending';
+
+  @override
+  String get bindingConfirmUnbind => 'Confirm Unlink';
+
+  @override
+  String get bindingUnbinding => 'Unlinking...';
+
+  @override
+  String codeResendAfterSeconds(int seconds) {
+    return '${seconds}s to resend';
+  }
+
+  @override
+  String get pushNotificationChannelName => 'LightHub Notifications';
+
+  @override
+  String get pushNotificationChannelDesc =>
+      'For comment replies, trending updates, and system notifications';
+
+  @override
+  String get pushTokenUpdateFailed => 'Push token update failed';
+
+  @override
+  String get serviceErrorFollow => 'Follow service response format error';
+
+  @override
+  String get serviceErrorNotification => 'Notification response format error';
+
+  @override
+  String get serviceErrorComment => 'Comment list response format error';
+
+  @override
+  String get serviceErrorUser => 'User service response format error';
+
+  @override
+  String get serviceErrorPost => 'Post list response format error';
+
+  @override
+  String get detailLoadFailed => 'Failed to load details';
+
+  @override
+  String get tokenRefreshIncomplete =>
+      'Token refresh failed: server returned incomplete token data';
+
+  @override
+  String get changeActionLabel => 'Change';
+
+  @override
+  String get editedLabel => 'Edited';
+
+  @override
+  String lastUpdatedLabel(String date) {
+    return 'Last updated: $date';
+  }
 }

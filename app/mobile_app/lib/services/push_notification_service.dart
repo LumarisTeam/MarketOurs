@@ -29,8 +29,8 @@ class PushNotificationService {
 
   static const String provider = 'jpush';
   static const String channelId = 'marketours_notifications';
-  static const String channelName = '光汇 通知';
-  static const String channelDescription = '用于评论回复、热门动态与系统提醒';
+  static const String channelName = 'LightHub Notifications';
+  static const String channelDescription = 'For comment replies, trending updates, and system notifications';
   static const String _tokenEndpoint = '/User/push-token';
 
   final Dio _api = ApiService().dio;
@@ -262,7 +262,7 @@ class PushNotificationService {
         apiRes.code == 200 &&
         (apiRes.errorCode == null || apiRes.errorCode == 0);
     if (!success) {
-      throw Exception(apiRes.message ?? '推送 Token 更新失败');
+      throw Exception(apiRes.message ?? 'Push token update failed');
     }
   }
 

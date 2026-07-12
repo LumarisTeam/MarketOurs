@@ -1071,4 +1071,325 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get nextExit => 'Nochmal drücken, um die App zu beenden';
+
+  @override
+  String get anonymousUser => 'Anonym';
+
+  @override
+  String get postUnnamed => 'Unbenannter Beitrag';
+
+  @override
+  String get postNoContent => 'Dieser Beitrag hat keinen Inhalt.';
+
+  @override
+  String get postNoContentDesc => 'Dieser Beitrag hat keine Beschreibung.';
+
+  @override
+  String get postNoDescription => 'Dieser Beitrag hat noch keine Beschreibung.';
+
+  @override
+  String get postDetailNotFound => 'Beitragsdetail nicht gefunden';
+
+  @override
+  String get postDataEmpty => 'Beitragsdaten sind leer';
+
+  @override
+  String postCommentTooLong(int max) {
+    return 'Kommentar darf $max Zeichen nicht überschreiten';
+  }
+
+  @override
+  String get postUpdated => 'Beitrag aktualisiert';
+
+  @override
+  String get replyComment => 'Auf Kommentar antworten';
+
+  @override
+  String get replyHint => 'Antwort eingeben';
+
+  @override
+  String get replySent => 'Antwort gesendet';
+
+  @override
+  String get editCommentTitle => 'Kommentar bearbeiten';
+
+  @override
+  String get editCommentHint => 'Kommentarinhalt aktualisieren';
+
+  @override
+  String get commentUpdated => 'Kommentar aktualisiert';
+
+  @override
+  String get commentDeleteConfirm => 'Diesen Kommentar löschen?';
+
+  @override
+  String get commentDeleted => 'Kommentar gelöscht';
+
+  @override
+  String get shareFailed => 'Teilen fehlgeschlagen';
+
+  @override
+  String get shareImageFailed => 'Bild weiterleiten fehlgeschlagen';
+
+  @override
+  String get noPhotoPermission => 'Keine Fotoberechtigung';
+
+  @override
+  String get imageSaveFailed => 'Speichern fehlgeschlagen';
+
+  @override
+  String get imageActions => 'Bildaktionen';
+
+  @override
+  String imageCurrentPosition(int current, int total) {
+    return 'Bild: $current / $total';
+  }
+
+  @override
+  String get saveImageAction => 'Bild speichern';
+
+  @override
+  String get forwardImage => 'Bild weiterleiten';
+
+  @override
+  String get forwardImageTitle => 'Bild weiterleiten';
+
+  @override
+  String blockConfirmMessage(String name) {
+    return '$name blockieren?';
+  }
+
+  @override
+  String get blockSuccess => 'Benutzer wurde blockiert';
+
+  @override
+  String get tagUnavailableTitle => 'Tag nicht verfügbar';
+
+  @override
+  String get tagNotFoundDesc => 'Tag nicht gefunden.';
+
+  @override
+  String get tagGoHome => 'Startseite';
+
+  @override
+  String get tagSearchPlaceholder => 'Beiträge unter diesem Tag suchen';
+
+  @override
+  String get tagNoPostsDesc =>
+      'Beiträge erscheinen hier, sobald mehr geteilt wird.';
+
+  @override
+  String get tagNoSearchResultsDesc => 'Anderes Stichwort versuchen.';
+
+  @override
+  String get tagRefreshingPosts => 'Beiträge werden aktualisiert...';
+
+  @override
+  String get tagSearching => 'Suche...';
+
+  @override
+  String get homeNoSearchResults => 'Keine passenden Beiträge';
+
+  @override
+  String get captchaFailed => 'Verifikation fehlgeschlagen';
+
+  @override
+  String get captchaVerifyFailed => 'Verifikation fehlgeschlagen';
+
+  @override
+  String get captchaComplete => 'Bitte Verifikation abschließen';
+
+  @override
+  String get captchaDragSlider => 'Schieberegler zum Ausrichten ziehen';
+
+  @override
+  String get captchaDragComplete => 'Schieberegler zum Abschließen ziehen';
+
+  @override
+  String get captchaRefreshLabel => 'Aktualisieren';
+
+  @override
+  String get passwordChanged => 'Passwort erfolgreich geändert';
+
+  @override
+  String get currentPasswordPlaceholder => 'Aktuelles Passwort';
+
+  @override
+  String get enterCurrentPassword => 'Aktuelles Passwort eingeben';
+
+  @override
+  String get newPasswordPlaceholder => 'Neues Passwort, mind. 6 Zeichen';
+
+  @override
+  String get enterNewPassword => 'Neues Passwort eingeben';
+
+  @override
+  String passwordMinLength(int min) {
+    return 'Passwort mind. $min Zeichen';
+  }
+
+  @override
+  String passwordMaxLength(int max) {
+    return 'Passwort max. $max Zeichen';
+  }
+
+  @override
+  String get confirmPasswordPlaceholder => 'Neues Passwort bestätigen';
+
+  @override
+  String get passwordsMismatch => 'Passwörter stimmen nicht überein';
+
+  @override
+  String get profileBioPlaceholder => 'Bio';
+
+  @override
+  String profileBioTooLong(int max) {
+    return 'Bio max. $max Zeichen';
+  }
+
+  @override
+  String get profileNotSet => 'Nicht gesetzt';
+
+  @override
+  String get profileConfirmLogout => 'Abmelden bestätigen?';
+
+  @override
+  String get profileConfirmLogoutDesc =>
+      'Abmelden löscht die aktuelle Sitzung.';
+
+  @override
+  String get profileUnfollowLabel => 'Entfolgen';
+
+  @override
+  String get profileUnblockLabel => 'Entblocken';
+
+  @override
+  String get profileFollowingEmptyDesc =>
+      'Entdecke und folge interessanten Benutzern';
+
+  @override
+  String get profileBlockListEmptyDesc => 'Deine Blockierliste ist leer';
+
+  @override
+  String get profileLoadFailed => 'Profil laden fehlgeschlagen';
+
+  @override
+  String get userInfoLoadFailed => 'Benutzerinfo laden fehlgeschlagen';
+
+  @override
+  String get bindingTitle => 'Verknüpfungen';
+
+  @override
+  String get bindingSubtitle =>
+      'Konto mit Drittanbieter-Plattformen verknüpfen';
+
+  @override
+  String get bindingFirstWarning =>
+      'Bitte E-Mail oder Telefon vor dem Lösen verknüpfen';
+
+  @override
+  String bindingUnbindCheckTitle(String provider) {
+    return '$provider lösen';
+  }
+
+  @override
+  String get bindingUnbindCheckDesc =>
+      'E-Mail- oder Telefon-Verifikation vor dem Lösen.';
+
+  @override
+  String get bindingContinue => 'Weiter';
+
+  @override
+  String bindingUnboundSuccess(String provider) {
+    return '$provider wurde gelöst';
+  }
+
+  @override
+  String get bindingBound => 'Verknüpft';
+
+  @override
+  String get bindingUnbind => 'Lösen';
+
+  @override
+  String get bindingGoBind => 'Verknüpfen';
+
+  @override
+  String get bindingEmailTab => 'E-Mail';
+
+  @override
+  String get bindingPhoneTab => 'Telefon';
+
+  @override
+  String get bindingCodeSent => 'Code gesendet';
+
+  @override
+  String get bindingEnterCode => 'Code eingeben';
+
+  @override
+  String bindingUnbindTitle(String provider) {
+    return '$provider lösen';
+  }
+
+  @override
+  String get bindingUnbindDesc => 'E-Mail oder Telefon für Code wählen.';
+
+  @override
+  String get bindingSendCode => 'Senden';
+
+  @override
+  String get bindingSending => 'Senden...';
+
+  @override
+  String get bindingConfirmUnbind => 'Lösen bestätigen';
+
+  @override
+  String get bindingUnbinding => 'Lösen...';
+
+  @override
+  String codeResendAfterSeconds(int seconds) {
+    return '${seconds}s bis erneut senden';
+  }
+
+  @override
+  String get pushNotificationChannelName => 'LightHub Benachrichtigungen';
+
+  @override
+  String get pushNotificationChannelDesc =>
+      'Für Kommentare, Trends und Systemmeldungen';
+
+  @override
+  String get pushTokenUpdateFailed => 'Push-Token-Update fehlgeschlagen';
+
+  @override
+  String get serviceErrorFollow => 'Follow-Service Antwortfehler';
+
+  @override
+  String get serviceErrorNotification => 'Benachrichtigungs-Antwortfehler';
+
+  @override
+  String get serviceErrorComment => 'Kommentarlisten-Antwortfehler';
+
+  @override
+  String get serviceErrorUser => 'Benutzerservice-Antwortfehler';
+
+  @override
+  String get serviceErrorPost => 'Beitragslisten-Antwortfehler';
+
+  @override
+  String get detailLoadFailed => 'Details laden fehlgeschlagen';
+
+  @override
+  String get tokenRefreshIncomplete =>
+      'Token-Aktualisierung: unvollständige Daten';
+
+  @override
+  String get changeActionLabel => 'Ändern';
+
+  @override
+  String get editedLabel => 'Bearbeitet';
+
+  @override
+  String lastUpdatedLabel(String date) {
+    return 'Letzte Aktualisierung: $date';
+  }
 }

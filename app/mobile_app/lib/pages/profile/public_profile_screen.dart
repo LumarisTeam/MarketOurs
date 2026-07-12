@@ -111,7 +111,7 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
       final postsPage = postsResponse.data;
 
       if (profile == null) {
-        throw Exception('用户不存在');
+        throw Exception('User not found');
       }
 
       if (!mounted ||
@@ -244,7 +244,7 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
       return AppPageScaffold(
         navigationBarStyle: AppNavigationBarStyle.compact,
         title: AppLocalizations.of(context).profilePublicProfile,
-        child: _ErrorState(message: _errorMessage ?? '用户不存在', onRetry: _load),
+        child: _ErrorState(message: _errorMessage ?? AppLocalizations.of(context).postUserNotFound, onRetry: _load),
       );
     }
 
@@ -654,7 +654,7 @@ class _ErrorState extends StatelessWidget {
             const SizedBox(height: 12),
             Text(message, textAlign: TextAlign.center),
             const SizedBox(height: 12),
-            AppPrimaryButton(onPressed: onRetry, child: const Text('重新加载')),
+            AppPrimaryButton(onPressed: onRetry, child: Text(AppLocalizations.of(context).reload)),
           ],
         ),
       ),

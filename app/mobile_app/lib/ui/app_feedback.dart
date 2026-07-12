@@ -8,7 +8,7 @@ abstract final class AppFeedback {
   static Future<void> showMessage(
     BuildContext context, {
     required String message,
-    String title = '提示',
+    String title = '',
   }) {
     return showInfo(context, message: message, title: title);
   }
@@ -58,9 +58,9 @@ abstract final class AppFeedback {
   static Future<bool?> confirm(
     BuildContext context, {
     required String message,
-    String title = '确认',
-    String cancelText = '取消',
-    String confirmText = '确定',
+    String title = '',
+    String cancelText = '',
+    String confirmText = '',
     bool destructive = false,
   }) {
     return showCupertinoDialog<bool>(

@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../ui/app_responsive.dart';
 import '../../ui/app_theme.dart';
 
@@ -79,7 +80,7 @@ class LegalScreen extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          '最后更新：$lastUpdated',
+          AppLocalizations.of(context).lastUpdatedLabel(lastUpdated),
           style: TextStyle(
             fontSize: 13,
             color: CupertinoDynamicColor.resolve(
