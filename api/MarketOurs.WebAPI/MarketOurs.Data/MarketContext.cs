@@ -15,6 +15,7 @@ public class MarketContext(DbContextOptions<MarketContext> options) : DbContext(
     public DbSet<NotificationModel> Notifications { get; set; }
     public DbSet<SensitiveWordModel> SensitiveWords { get; set; }
     public DbSet<PostTagModel> PostTags { get; set; }
+    public DbSet<ReportModel> Reports { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -128,6 +129,12 @@ public class MarketContext(DbContextOptions<MarketContext> options) : DbContext(
         // 评论审核 + 排序辅助
         modelBuilder.Entity<CommentModel>()
             .HasIndex(x => new { x.IsReview, x.CreatedAt });
+
+        modelBuilder.Entity<ReportModel>()
+            .HasIndex(x => new { x.ReporterUserId, x.TargetType, x.TargetId })
+            .IsUnique();
+        modelBuilder.Entity<ReportModel>()
+            .HasIndex(x => new { x.Status, x.CreatedAt });
     }
 }
 

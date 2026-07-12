@@ -11,6 +11,8 @@ import '../../providers/post_feed_provider.dart';
 import '../../services/follow_service.dart';
 import '../../services/user_service.dart';
 import '../../services/error_messages.dart';
+import '../../components/report_sheet.dart';
+import '../../models/report.dart';
 import '../../ui/app_responsive.dart';
 import '../../ui/app_widgets.dart';
 import '../../utils/date_formatters.dart';
@@ -227,6 +229,8 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
     if (mounted) setState(() => _followLoading = false);
   }
 
+  Future<void> _reportUser() => showReportSheet(context, targetType: ReportTargetType.user, targetId: widget.userId);
+
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider).asData?.value;
@@ -279,6 +283,7 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
                       isLoading: _followLoading,
                       onToggleFollow: _handleToggleFollow,
                       onToggleBlock: _handleToggleBlock,
+                      onReport: _reportUser,
                     ),
                   ],
                 ],
@@ -542,6 +547,7 @@ class _FollowBlockButtons extends StatelessWidget {
     required this.isLoading,
     required this.onToggleFollow,
     required this.onToggleBlock,
+    required this.onReport,
   });
 
   final bool isFollowing;
@@ -549,6 +555,7 @@ class _FollowBlockButtons extends StatelessWidget {
   final bool isLoading;
   final VoidCallback onToggleFollow;
   final VoidCallback onToggleBlock;
+  final VoidCallback onReport;
 
   @override
   Widget build(BuildContext context) {
@@ -626,6 +633,12 @@ class _FollowBlockButtons extends StatelessWidget {
               ),
             ],
           ),
+        ),
+        const SizedBox(width: 8),
+        CupertinoButton(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+          onPressed: isLoading ? null : onReport,
+          child: const Icon(CupertinoIcons.exclamationmark_triangle, color: CupertinoColors.systemRed),
         ),
       ],
     );

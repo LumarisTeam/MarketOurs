@@ -19,6 +19,7 @@ class PostDetailCommentThread extends StatelessWidget {
     required this.onReply,
     required this.onEdit,
     required this.onDelete,
+    this.onReport,
     required this.onLike,
     required this.onDislike,
     required this.onReplyChild,
@@ -36,6 +37,7 @@ class PostDetailCommentThread extends StatelessWidget {
   final VoidCallback onReply;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
+  final ValueChanged<CommentDto>? onReport;
   final VoidCallback onLike;
   final VoidCallback onDislike;
   final ValueChanged<CommentDto> onReplyChild;
@@ -60,6 +62,7 @@ class PostDetailCommentThread extends StatelessWidget {
           onReply: onReply,
           onEdit: onEdit,
           onDelete: onDelete,
+          onReport: onReport == null ? null : () => onReport!(comment),
           onLike: onLike,
           onDislike: onDislike,
           isLiked: likedComments.contains(comment.id),
@@ -97,6 +100,7 @@ class PostDetailCommentThread extends StatelessWidget {
                     onDelete: currentUserId == flat.comment.userId
                         ? () => onDeleteChild?.call(flat.comment)
                         : null,
+                    onReport: currentUserId != null && currentUserId != flat.comment.userId && onReport != null ? () => onReport!(flat.comment) : null,
                     onLike: () => onLikeChild(flat.comment),
                     onDislike: () => onDislikeChild(flat.comment),
                     isLiked: likedComments.contains(flat.comment.id),
@@ -159,6 +163,7 @@ class _CommentCard extends StatelessWidget {
     required this.onReply,
     this.onEdit,
     this.onDelete,
+    this.onReport,
     required this.onLike,
     required this.onDislike,
     this.isLiked = false,
@@ -172,6 +177,7 @@ class _CommentCard extends StatelessWidget {
   final VoidCallback onReply;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
+  final VoidCallback? onReport;
   final VoidCallback onLike;
   final VoidCallback onDislike;
   final bool isLiked;
@@ -275,6 +281,10 @@ class _CommentCard extends StatelessWidget {
                       activeColor: AppColors.destructive,
                       active: true,
                     ),
+                  ],
+                  if (onReport != null) ...[
+                    const SizedBox(width: 16),
+                    _TextAction(label: '举报', onTap: onReport!, activeColor: AppColors.destructive, active: true),
                   ],
                   const Spacer(),
                   _CommentActionIcon(

@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router"
 import {
   LayoutDashboard, Users, FileText, Home,
-  ScrollText, ShieldBan, MessageSquare, Tags
+  ScrollText, ShieldBan, MessageSquare, Tags, Flag
 } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import {
@@ -29,6 +29,7 @@ export function AdminSidebar() {
     { name: t("admin.sidebar.posts"), href: "/admin/posts", icon: FileText },
     { name: t("admin.sidebar.tags"), href: "/admin/tags", icon: Tags },
     { name: t("admin.sidebar.comments"), href: "/admin/comments", icon: MessageSquare },
+    { name: "举报中心", href: "/admin/reports", icon: Flag },
     { name: t("admin.sidebar.logs"), href: "/admin/logs", icon: ScrollText },
     { name: t("admin.sidebar.blacklist"), href: "/admin/blacklist", icon: ShieldBan },
   ]

@@ -312,6 +312,11 @@ export interface UpdatePostReviewRequest {
   isReview: boolean;
 }
 
+export const ReportTargetType = { Post: 0, Comment: 1, User: 2 } as const;
+export const ReportStatus = { Pending: 0, Resolved: 1, Rejected: 2 } as const;
+export const ReportReason = { SpamOrAdvertising: 0, FraudOrTransactionRisk: 1, SexualOrInappropriate: 2, HateOrHarassment: 3, Other: 4 } as const;
+export interface ReportDto { id: string; targetType: number; targetId: string; targetSummary: string; reporterUserId: string; reporterName: string; reason: number; description?: string | null; status: number; reviewedByUserId?: string | null; resolutionNote?: string | null; reviewedAt?: string | null; createdAt: string; }
+
 /**
  * Notification Models
  */

@@ -5,6 +5,8 @@ import 'package:image_picker/image_picker.dart';
 
 import 'package:mobile_app/l10n/app_localizations.dart';
 import '../../components/editable_image_wrap.dart';
+import '../../components/report_sheet.dart';
+import '../../models/report.dart';
 import '../../components/post_editor_form.dart';
 import '../../components/post_tag_selector.dart';
 import '../../models/comment.dart';
@@ -1208,21 +1210,27 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     final post = _post;
     final isOwner = post != null && user != null && post.userId == user.id;
 
-    final trailing = isOwner
-        ? CupertinoButton(
+    final trailing = user == null ? null : CupertinoButton(
             padding: EdgeInsets.zero,
             onPressed: () {
               showCupertinoModalPopup<void>(
                 context: context,
                 builder: (_) => CupertinoActionSheet(
                   actions: [
-                    CupertinoActionSheetAction(
+                    if (!isOwner) CupertinoActionSheetAction(
+                      isDestructiveAction: true,
+                      onPressed: () { Navigator.of(context).pop(); showReportSheet(context, targetType: ReportTargetType.post, targetId: post?.id ?? widget.postId); },
+                      child: const Text('举报帖子'),
+                    ),
+                    if (isOwner) ...[
+                    if (isOwner) CupertinoActionSheetAction(
                       onPressed: () {
                         Navigator.of(context).pop();
                         _editPost();
                       },
                       child: Text(AppLocalizations.of(context).postEditTitle),
                     ),
+                    ],
                     CupertinoActionSheetAction(
                       isDestructiveAction: true,
                       onPressed: () {
@@ -1240,8 +1248,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               );
             },
             child: const Icon(CupertinoIcons.ellipsis, size: 22),
-          )
-        : null;
+          );
 
     if (_isLoading) {
       return AppPageScaffold(
@@ -1369,6 +1376,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                 : null,
                             onDelete: user?.id == c.userId
                                 ? () => _deleteComment(c)
+                                : null,
+                            onReport: user != null
+                                ? (comment) => showReportSheet(context, targetType: ReportTargetType.comment, targetId: comment.id)
                                 : null,
                             likedComments: _likedComments,
                             dislikedComments: _dislikedComments,

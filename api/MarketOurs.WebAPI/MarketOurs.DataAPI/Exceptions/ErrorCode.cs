@@ -147,6 +147,12 @@ public static class ErrorCode
 
     #endregion
 
+    #region 举报错误 (4200-4299)
+    public const int ReportNotFound = 4200;
+    public const int ReportAlreadySubmitted = 4201;
+    public const int ReportTargetNotAllowed = 4202;
+    #endregion
+
     #region 关注/屏蔽错误 (5000-5099)
 
     /// <summary>不能关注自己</summary>
@@ -303,6 +309,10 @@ public static class ErrorCode
             CommentCreateFailed or
             CommentUpdateFailed => (int)HttpStatusCode.BadRequest,
 
+            ReportNotFound => (int)HttpStatusCode.NotFound,
+            ReportAlreadySubmitted => (int)HttpStatusCode.Conflict,
+            ReportTargetNotAllowed => (int)HttpStatusCode.BadRequest,
+
             // 500x 关注/屏蔽
             CannotFollowSelf or
             CannotBlockSelf => (int)HttpStatusCode.BadRequest,
@@ -412,6 +422,10 @@ public static class ErrorCode
             ParentCommentNotFound => nameof(ParentCommentNotFound),
             CommentCreateFailed => nameof(CommentCreateFailed),
             CommentUpdateFailed => nameof(CommentUpdateFailed),
+
+            ReportNotFound => nameof(ReportNotFound),
+            ReportAlreadySubmitted => nameof(ReportAlreadySubmitted),
+            ReportTargetNotAllowed => nameof(ReportTargetNotAllowed),
 
             CannotFollowSelf => nameof(CannotFollowSelf),
             CannotBlockSelf => nameof(CannotBlockSelf),

@@ -18,6 +18,7 @@ const AdminTagsPage = lazy(() => import("./pages/admin/tags"))
 const AdminCommentsPage = lazy(() => import("./pages/admin/comments"))
 const AdminLogsPage = lazy(() => import("./pages/admin/logs"))
 const AdminBlacklistPage = lazy(() => import("./pages/admin/blacklist"))
+const AdminReportsPage = lazy(() => import("./pages/admin/reports"))
 const LoginPage = lazy(() => import("./pages/login"))
 const LoginCallbackPage = lazy(() => import("./pages/login/callback"))
 const RegisterPage = lazy(() => import("./pages/register"))
@@ -112,6 +113,7 @@ export function App() {
             <Route path="comments" element={<AdminCommentsPage />} />
             <Route path="logs" element={<AdminLogsPage />} />
             <Route path="blacklist" element={<AdminBlacklistPage />} />
+            <Route path="reports" element={<AdminReportsPage />} />
           </Route>
         </Routes>
         </Suspense>

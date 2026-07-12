@@ -22,9 +22,17 @@ import type {
   UserCreateDto,
   UserDto,
   UserUpdateDto,
+  ReportDto,
 } from '../types';
 
 export const adminService = {
+  getReports: (pageIndex = 1, pageSize = 10, status?: number, targetType?: number) => {
+    const params = new URLSearchParams({ PageIndex: String(pageIndex), PageSize: String(pageSize) });
+    if (status !== undefined) params.append('status', String(status));
+    if (targetType !== undefined) params.append('targetType', String(targetType));
+    return apiClient.get<PagedResult<ReportDto>>(`/Report?${params}`);
+  },
+  updateReportStatus: (id: string, data: { status: number; resolutionNote?: string }) => apiClient.put<ReportDto>(`/Report/${id}/status`, data),
   getLogs: (
     pageIndex: number = 1,
     pageSize: number = 10,

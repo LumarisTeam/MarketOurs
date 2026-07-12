@@ -23,6 +23,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<INotificationRepo, NotificationRepo>();
         services.AddScoped<IAdminRepo, AdminRepo>();
         services.AddScoped<ISensitiveWordRepo, SensitiveWordRepo>();
+        services.AddScoped<IReportRepo, ReportRepo>();
 
         // Background queue for async DB sync
         services.AddSingleton<LikeMessageQueue>();
@@ -53,6 +54,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IReviewService, ReviewService>();
         services.AddScoped<IAdminService, AdminService>();
         services.AddScoped<ISensitiveWordService, SensitiveWordService>();
+        services.AddScoped<IReportService, ReportService>();
 
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<ICaptchaService, CaptchaService>();
