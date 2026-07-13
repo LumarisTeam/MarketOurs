@@ -13,6 +13,8 @@ import type { RootState } from "../../stores";
 import type { PagedResult, PostDto, PublicUserProfileDto } from "../../types";
 import { PostTagBadge } from "../../components/post/PostTagBadge";
 import { formatLocalDate } from "../../lib/dateTime";
+import { ReportDialog } from "../../components/report/ReportDialog";
+import type { ReportTargetType } from "../../services/reportService";
 
 const RECENT_POST_FETCH_SIZE = 10;
 
@@ -29,6 +31,7 @@ export default function PublicProfilePage() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reportTarget, setReportTarget] = useState<{ type: ReportTargetType; id: string; label: string } | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const pageIndexRef = useRef(1);
   const totalCountRef = useRef(0);
@@ -310,6 +313,9 @@ export default function PublicProfilePage() {
                   {isFollowing ? <UserMinus size={18} /> : <UserPlus size={18} />}
                   {isFollowing ? t("profile.following") : t("profile.follow")}
                 </button>
+                <button onClick={() => id && setReportTarget({ type: 2, id, label: "用户" })} disabled={followLoading} className="inline-flex items-center gap-2 rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 font-semibold text-destructive transition-all hover:bg-destructive/20 disabled:opacity-50">
+                  <Ban size={18} /> 举报
+                </button>
                 <button
                   onClick={handleToggleBlock}
                   disabled={followLoading}
@@ -425,6 +431,7 @@ export default function PublicProfilePage() {
           </div>
         )}
       </section>
+      <ReportDialog target={reportTarget} onClose={() => setReportTarget(null)} />
     </div>
   );
 }

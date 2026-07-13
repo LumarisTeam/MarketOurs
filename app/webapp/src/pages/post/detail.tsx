@@ -1,7 +1,8 @@
 import { Link, useParams, useNavigate } from "react-router"
-import { Heart, Share2, ArrowLeft, MoreHorizontal, Send, Loader2, ChevronLeft, ChevronRight, X, ImagePlus } from "lucide-react"
+import { Heart, Share2, ArrowLeft, MoreHorizontal, Send, Loader2, ChevronLeft, ChevronRight, X, ImagePlus, Ban, Flag } from "lucide-react"
 import { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import { postService } from "@/services/postService"
+import { followService } from "@/services/followService"
 import { commentService } from "@/services/commentService"
 import { fileService } from "@/services/fileService"
 import { compressImages } from "@/services/imageCompression"
@@ -18,7 +19,10 @@ import { PostTagBadge } from "@/components/post/PostTagBadge"
 import { formatEditedRelativeTime } from "@/lib/dateTime"
 import SortableImageGrid, { type ImageItem } from "@/components/ui/sortable-image-grid"
 import { OptimizedImage } from "@/components/ui/optimized-image"
+import { ReportDialog } from "@/components/report/ReportDialog"
+import type { ReportTargetType } from "@/services/reportService"
 import { arrayMove } from "@dnd-kit/sortable"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -301,6 +305,7 @@ function CommentItem({
   onReply,
   onDelete,
   onLike,
+  onReport,
   likedComments,
 }: {
   comment: CommentDto;
@@ -315,6 +320,7 @@ function CommentItem({
   onReply: (parentId: string, content: string, images: string[]) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
   onLike: (id: string) => Promise<void>;
+  onReport: (id: string) => void;
   likedComments: Set<string>;
 }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -608,6 +614,7 @@ function CommentItem({
               {t("post.reply")}
             </button>
           )}
+          {user && !isMe && !isAdmin && <button onClick={() => onReport(comment.id)} className="text-xs font-bold text-muted-foreground hover:text-destructive">举报</button>}
           
           {(isMe || isAdmin) && !isEditing && (
             <div className="flex gap-4">
@@ -725,6 +732,7 @@ function CommentItem({
                 onReply={onReply}
                 onDelete={onDelete}
                 onLike={onLike}
+                onReport={onReport}
                 likedComments={likedComments}
               />
             ))}
@@ -758,6 +766,8 @@ export default function PostDetailPage() {
   const [shareFeedback, setShareFeedback] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
   const [showPostDeleteDialog, setShowPostDeleteDialog] = useState(false)
+  const [showBlockDialog, setShowBlockDialog] = useState(false)
+  const [reportTarget, setReportTarget] = useState<{ type: ReportTargetType; id: string; label: string } | null>(null)
 
   // Editing state for post
   const [isEditingPost, setIsEditingPost] = useState(false)
@@ -983,6 +993,16 @@ export default function PostDetailPage() {
       setActionError(extractUserMessage(err, t("common.error")));
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  const handleBlockAuthor = async () => {
+    if (!post) return
+    try {
+      await followService.blockUser(post.userId)
+      setShowBlockDialog(false)
+    } catch (error) {
+      setActionError(extractUserMessage(error, "屏蔽失败"))
     }
   }
 
@@ -1249,9 +1269,13 @@ export default function PostDetailPage() {
                 </button>
               </div>
             )}
-            <button className="p-2 rounded-full hover:bg-muted transition-colors">
-              <MoreHorizontal size={20} />
-            </button>
+            {user && !isMe && !isAdmin && <DropdownMenu>
+              <DropdownMenuTrigger render={<button className="p-2 rounded-full hover:bg-muted text-muted-foreground transition-colors" aria-label="更多操作"><MoreHorizontal size={20} /></button>} />
+              <DropdownMenuContent align="end" className="w-36">
+                <DropdownMenuItem variant="destructive" onClick={() => setShowBlockDialog(true)}><Ban size={15} className="mr-2" />屏蔽</DropdownMenuItem>
+                <DropdownMenuItem variant="destructive" onClick={() => setReportTarget({ type: 0, id: post.id, label: "帖子" })}><Flag size={15} className="mr-2" />举报</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>}
           </div>
         </header>
 
@@ -1268,6 +1292,9 @@ export default function PostDetailPage() {
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
+        </AlertDialog>
+        <AlertDialog open={showBlockDialog} onOpenChange={setShowBlockDialog}>
+          <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>屏蔽用户</AlertDialogTitle><AlertDialogDescription>屏蔽后将不再看到该用户发布的内容。</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>取消</AlertDialogCancel><AlertDialogAction variant="destructive" onClick={handleBlockAuthor}>屏蔽</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
         </AlertDialog>
 
         {!isEditingPost && post.images && post.images.length > 0 && (
@@ -1482,6 +1509,7 @@ export default function PostDetailPage() {
               onReply={handleCommentReply}
               onDelete={handleCommentDelete}
               onLike={handleCommentLike}
+              onReport={(commentId) => setReportTarget({ type: 1, id: commentId, label: "评论" })}
               likedComments={likedComments}
             />
           ))}
@@ -1489,6 +1517,7 @@ export default function PostDetailPage() {
             <p className="text-center text-muted-foreground py-8">{t("post.no_comments")}</p>
           )}
         </div>
+        <ReportDialog target={reportTarget} onClose={() => setReportTarget(null)} />
       </section>
     </div>
   )
