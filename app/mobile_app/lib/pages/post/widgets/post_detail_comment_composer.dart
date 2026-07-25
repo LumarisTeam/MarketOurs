@@ -9,6 +9,27 @@ import '../../../ui/app_responsive.dart';
 import '../../../ui/app_theme.dart';
 import '../../../utils/dto_validation.dart';
 
+const List<String> _commentComposerEmojis = <String>[
+  '😀',
+  '😁',
+  '😂',
+  '🤣',
+  '😊',
+  '😍',
+  '🥰',
+  '😎',
+  '🤔',
+  '😭',
+  '😡',
+  '👍',
+  '👏',
+  '🙏',
+  '🎉',
+  '❤️',
+  '🔥',
+  '✨',
+];
+
 class PostDetailCommentComposer extends StatefulWidget {
   const PostDetailCommentComposer({
     super.key,
@@ -45,17 +66,31 @@ class PostDetailCommentComposer extends StatefulWidget {
 
 class _PostDetailCommentComposerState extends State<PostDetailCommentComposer> {
   late final FocusNode _focusNode;
+  bool _showEmojiPanel = false;
 
   @override
   void initState() {
     super.initState();
     _focusNode = FocusNode();
+    _focusNode.addListener(_handleFocusChanged);
   }
 
   @override
   void dispose() {
+    _focusNode.removeListener(_handleFocusChanged);
     _focusNode.dispose();
     super.dispose();
+  }
+
+  void _handleFocusChanged() {
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      if (_focusNode.hasFocus) {
+        _showEmojiPanel = false;
+      }
+    });
   }
 
   void _handleSubmit() {
@@ -66,6 +101,78 @@ class _PostDetailCommentComposerState extends State<PostDetailCommentComposer> {
       return;
     }
     widget.onSubmit();
+  }
+
+  void _toggleEmojiPanel() {
+    if (_showEmojiPanel) {
+      _focusNode.requestFocus();
+      return;
+    }
+    _focusNode.unfocus();
+    setState(() => _showEmojiPanel = true);
+  }
+
+  void _insertEmoji(String emoji) {
+    final value = widget.controller.value;
+    final selection = value.selection;
+    final start = selection.isValid ? selection.start : value.text.length;
+    final end = selection.isValid ? selection.end : value.text.length;
+    final newText = value.text.replaceRange(start, end, emoji);
+    final nextOffset = start + emoji.length;
+
+    widget.controller.value = value.copyWith(
+      text: newText,
+      selection: TextSelection.collapsed(offset: nextOffset),
+      composing: TextRange.empty,
+    );
+  }
+
+  void _deleteBackward() {
+    final value = widget.controller.value;
+    final selection = value.selection;
+    if (!selection.isValid) {
+      return;
+    }
+
+    if (!selection.isCollapsed) {
+      final newText = value.text.replaceRange(
+        selection.start,
+        selection.end,
+        '',
+      );
+      widget.controller.value = value.copyWith(
+        text: newText,
+        selection: TextSelection.collapsed(offset: selection.start),
+        composing: TextRange.empty,
+      );
+      return;
+    }
+
+    if (selection.start <= 0) {
+      return;
+    }
+
+    final previousCharacter = value.text.characters.getRange(
+      0,
+      value.text.characters.length,
+    );
+    final characters = value.text.characters.toList();
+    var utf16Offset = 0;
+    for (var index = 0; index < characters.length; index++) {
+      final char = characters[index];
+      final nextOffset = utf16Offset + char.length;
+      if (nextOffset == selection.start) {
+        final newText = value.text.replaceRange(utf16Offset, nextOffset, '');
+        widget.controller.value = value.copyWith(
+          text: newText,
+          selection: TextSelection.collapsed(offset: utf16Offset),
+          composing: TextRange.empty,
+        );
+        return;
+      }
+      utf16Offset = nextOffset;
+    }
+    previousCharacter;
   }
 
   @override
@@ -227,12 +334,21 @@ class _PostDetailCommentComposerState extends State<PostDetailCommentComposer> {
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              Icon(
-                                CupertinoIcons.smiley,
-                                size: 20,
-                                color: CupertinoDynamicColor.resolve(
-                                  AppColors.mutedForeground,
-                                  context,
+                              CupertinoButton(
+                                padding: EdgeInsets.zero,
+                                minimumSize: const Size(28, 28),
+                                onPressed: _toggleEmojiPanel,
+                                child: Icon(
+                                  _showEmojiPanel
+                                      ? CupertinoIcons.keyboard
+                                      : CupertinoIcons.smiley,
+                                  size: 20,
+                                  color: CupertinoDynamicColor.resolve(
+                                    _showEmojiPanel
+                                        ? AppColors.primary
+                                        : AppColors.mutedForeground,
+                                    context,
+                                  ),
                                 ),
                               ),
                             ],
@@ -241,6 +357,83 @@ class _PostDetailCommentComposerState extends State<PostDetailCommentComposer> {
                       ),
                     ],
                   ),
+                  if (_showEmojiPanel) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
+                      decoration: BoxDecoration(
+                        color: CupertinoDynamicColor.resolve(
+                          AppColors.secondary,
+                          context,
+                        ),
+                        borderRadius: BorderRadius.circular(AppRadii.lg),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
+                            children: _commentComposerEmojis
+                                .map(
+                                  (emoji) => CupertinoButton(
+                                    padding: EdgeInsets.zero,
+                                    minimumSize: const Size(40, 40),
+                                    onPressed: () => _insertEmoji(emoji),
+                                    child: Text(
+                                      emoji,
+                                      style: const TextStyle(fontSize: 24),
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              CupertinoButton(
+                                padding: EdgeInsets.zero,
+                                onPressed: _deleteBackward,
+                                child: Icon(
+                                  CupertinoIcons.delete_left,
+                                  size: 20,
+                                  color: CupertinoDynamicColor.resolve(
+                                    AppColors.mutedForeground,
+                                    context,
+                                  ),
+                                ),
+                              ),
+                              const Spacer(),
+                              CupertinoButton(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 8,
+                                ),
+                                color: AppColors.primary,
+                                borderRadius: BorderRadius.circular(
+                                  AppRadii.pill,
+                                ),
+                                onPressed: widget.isWorking
+                                    ? null
+                                    : _handleSubmit,
+                                child: Text(
+                                  AppLocalizations.of(
+                                    context,
+                                  ).postCreatePublish,
+                                  style: const TextStyle(
+                                    color: AppColors.primaryForeground,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
