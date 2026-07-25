@@ -9,7 +9,7 @@ import '../../../ui/app_responsive.dart';
 import '../../../ui/app_theme.dart';
 import '../../../utils/dto_validation.dart';
 
-class PostDetailCommentComposer extends StatelessWidget {
+class PostDetailCommentComposer extends StatefulWidget {
   const PostDetailCommentComposer({
     super.key,
     required this.controller,
@@ -39,11 +39,41 @@ class PostDetailCommentComposer extends StatelessWidget {
   final ValueChanged<String>? onRemoveImageEntry;
 
   @override
+  State<PostDetailCommentComposer> createState() =>
+      _PostDetailCommentComposerState();
+}
+
+class _PostDetailCommentComposerState extends State<PostDetailCommentComposer> {
+  late final FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode();
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  void _handleSubmit() {
+    final hasText = widget.controller.text.trim().isNotEmpty;
+    final hasImages =
+        widget.reorderableEntries?.isNotEmpty ?? widget.localImages.isNotEmpty;
+    if (widget.isWorking || (!hasText && !hasImages)) {
+      return;
+    }
+    widget.onSubmit();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final useReorderable = reorderableEntries != null;
+    final useReorderable = widget.reorderableEntries != null;
     final hasImages = useReorderable
-        ? reorderableEntries!.isNotEmpty
-        : localImages.isNotEmpty;
+        ? widget.reorderableEntries!.isNotEmpty
+        : widget.localImages.isNotEmpty;
 
     return Align(
       alignment: Alignment.bottomCenter,
@@ -61,7 +91,7 @@ class PostDetailCommentComposer extends StatelessWidget {
                 color: CupertinoDynamicColor.resolve(
                   AppColors.background,
                   context,
-                ).withValues(alpha: 0.8),
+                ).withValues(alpha: 0.82),
                 border: Border.all(
                   color: CupertinoDynamicColor.resolve(
                     AppColors.border,
@@ -76,19 +106,19 @@ class PostDetailCommentComposer extends StatelessWidget {
                   if (useReorderable)
                     EditableImageWrap(
                       reorderable: true,
-                      entries: reorderableEntries,
-                      onReorder: onReorderImages,
-                      onRemoveEntry: onRemoveImageEntry,
+                      entries: widget.reorderableEntries,
+                      onReorder: widget.onReorderImages,
+                      onRemoveEntry: widget.onRemoveImageEntry,
                       tileSize: 72,
                     )
                   else
                     EditableImageWrap(
-                      localImages: localImages.cast(),
-                      onRemoveLocal: onRemoveLocal,
+                      localImages: widget.localImages.cast(),
+                      onRemoveLocal: widget.onRemoveLocal,
                       tileSize: 72,
                     ),
                   if (hasImages) const SizedBox(height: 10),
-                  if (uploadProgress != null) ...[
+                  if (widget.uploadProgress != null) ...[
                     ClipRRect(
                       borderRadius: BorderRadius.circular(AppRadii.sm),
                       child: Container(
@@ -96,7 +126,7 @@ class PostDetailCommentComposer extends StatelessWidget {
                         color: AppColors.secondary,
                         alignment: Alignment.centerLeft,
                         child: FractionallySizedBox(
-                          widthFactor: uploadProgress!.clamp(0.0, 1.0),
+                          widthFactor: widget.uploadProgress!.clamp(0.0, 1.0),
                           child: Container(height: 5, color: AppColors.primary),
                         ),
                       ),
@@ -106,63 +136,106 @@ class PostDetailCommentComposer extends StatelessWidget {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      CupertinoButton(
-                        padding: EdgeInsets.zero,
-                        onPressed: onPickImages,
-                        child: const Icon(CupertinoIcons.photo, size: 22),
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: CupertinoDynamicColor.resolve(
+                            AppColors.secondary,
+                            context,
+                          ),
+                          borderRadius: BorderRadius.circular(AppRadii.pill),
+                        ),
+                        child: CupertinoButton(
+                          padding: EdgeInsets.zero,
+                          onPressed: widget.onPickImages,
+                          child: Icon(
+                            CupertinoIcons.add,
+                            size: 20,
+                            color:
+                                CupertinoDynamicColor.resolve(
+                                  AppColors.foreground,
+                                  context,
+                                ).withValues(
+                                  alpha: widget.onPickImages == null
+                                      ? 0.35
+                                      : 0.85,
+                                ),
+                          ),
+                        ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 10),
                       Expanded(
-                        child: Container(
-                          height: 44,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          curve: Curves.easeOut,
+                          constraints: const BoxConstraints(minHeight: 44),
                           decoration: BoxDecoration(
                             color: CupertinoDynamicColor.resolve(
                               AppColors.secondary,
                               context,
                             ),
                             borderRadius: BorderRadius.circular(AppRadii.pill),
+                            border: Border.all(
+                              color:
+                                  CupertinoDynamicColor.resolve(
+                                    _focusNode.hasFocus
+                                        ? AppColors.primary
+                                        : AppColors.border,
+                                    context,
+                                  ).withValues(
+                                    alpha: _focusNode.hasFocus ? 0.35 : 0.45,
+                                  ),
+                            ),
                           ),
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          alignment: Alignment.centerLeft,
-                          child: CupertinoTextField(
-                            controller: controller,
-                            placeholder: AppLocalizations.of(context).postWriteComment,
-                            placeholderStyle: TextStyle(
-                              fontSize: 14,
-                              color: CupertinoDynamicColor.resolve(
-                                AppColors.mutedForeground,
-                                context,
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: CupertinoTextField(
+                                  controller: widget.controller,
+                                  focusNode: _focusNode,
+                                  placeholder: AppLocalizations.of(
+                                    context,
+                                  ).postWriteComment,
+                                  placeholderStyle: TextStyle(
+                                    fontSize: 14,
+                                    color: CupertinoDynamicColor.resolve(
+                                      AppColors.mutedForeground,
+                                      context,
+                                    ),
+                                  ),
+                                  decoration: null,
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    color: CupertinoDynamicColor.resolve(
+                                      AppColors.foreground,
+                                      context,
+                                    ),
+                                  ),
+                                  textInputAction: TextInputAction.send,
+                                  onSubmitted: (_) => _handleSubmit(),
+                                  cursorColor: AppColors.primary,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 11,
+                                  ),
+                                  inputFormatters: [
+                                    LengthLimitingTextInputFormatter(
+                                      DtoLimits.commentContentMax,
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                            decoration: null,
-                            style: TextStyle(
-                              fontSize: 15,
-                              color: CupertinoDynamicColor.resolve(
-                                AppColors.foreground,
-                                context,
-                              ),
-                            ),
-                            cursorColor: AppColors.primary,
-                            inputFormatters: [
-                              LengthLimitingTextInputFormatter(
-                                DtoLimits.commentContentMax,
+                              const SizedBox(width: 8),
+                              Icon(
+                                CupertinoIcons.smiley,
+                                size: 20,
+                                color: CupertinoDynamicColor.resolve(
+                                  AppColors.mutedForeground,
+                                  context,
+                                ),
                               ),
                             ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      CupertinoButton(
-                        padding: EdgeInsets.zero,
-                        onPressed: isWorking ? null : onSubmit,
-                        child: Text(
-                          AppLocalizations.of(context).postCreatePublish,
-                          style: TextStyle(
-                            color: AppColors.primary.withValues(
-                              alpha: isWorking ? 0.5 : 1.0,
-                            ),
-                            fontWeight: FontWeight.w700,
-                            fontSize: 16,
                           ),
                         ),
                       ),
