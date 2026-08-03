@@ -13,7 +13,7 @@ import '../../ui/app_feedback.dart';
 import '../../ui/app_fields.dart';
 import '../../ui/app_theme.dart';
 import '../../ui/app_widgets.dart';
-import '../../widgets/slider_captcha.dart';
+import '../../components/slider_captcha.dart';
 import 'auth_scaffold.dart';
 import 'password_form_field.dart';
 
