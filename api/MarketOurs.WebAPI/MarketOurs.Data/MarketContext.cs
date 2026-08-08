@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using MarketOurs.Data.DataModels;
@@ -16,6 +16,7 @@ public class MarketContext(DbContextOptions<MarketContext> options) : DbContext(
     public DbSet<SensitiveWordModel> SensitiveWords { get; set; }
     public DbSet<PostTagModel> PostTags { get; set; }
     public DbSet<ReportModel> Reports { get; set; }
+    public DbSet<TeacherCommentModel> TeacherComments { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -135,6 +136,19 @@ public class MarketContext(DbContextOptions<MarketContext> options) : DbContext(
             .IsUnique();
         modelBuilder.Entity<ReportModel>()
             .HasIndex(x => new { x.Status, x.CreatedAt });
+
+        // 教师评价（校园集市）
+        modelBuilder.Entity<TeacherCommentModel>(entity =>
+        {
+            entity.HasIndex(e => e.StudentId);
+            entity.HasIndex(e => e.TeacherName);
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => new { e.TeacherName, e.Status });
+            entity.Property(e => e.CreatedOn).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.Star).HasDefaultValue(5);
+            entity.Property(e => e.Status).HasDefaultValue(CommentReviewStatus.Pending);
+            entity.Property(e => e.AiVerdict).HasDefaultValue(AiReviewVerdict.None);
+        });
     }
 }
 
