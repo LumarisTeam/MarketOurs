@@ -350,6 +350,7 @@ export interface TeacherCommentItem {
   teacherName: string;
   courseName: string;
   userId: string;
+  author?: UserSimpleDto | null;
   comment?: string | null;
   star: number;
   isReview: boolean;

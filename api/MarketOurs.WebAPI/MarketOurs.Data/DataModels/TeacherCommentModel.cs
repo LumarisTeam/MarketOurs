@@ -30,6 +30,11 @@ public class TeacherCommentModel : DataModel
     [MaxLength(64)]
     public string UserId { get; set; } = "";
 
+    /// <summary>
+    /// 评论者用户信息
+    /// </summary>
+    public UserModel User { get; set; } = null!;
+
     /// <summary>评价内容</summary>
     [MaxLength(2000)]
     public string? Comment { get; set; }

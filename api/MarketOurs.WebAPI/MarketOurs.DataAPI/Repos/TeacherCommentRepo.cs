@@ -39,7 +39,9 @@ public class TeacherCommentRepo(IDbContextFactory<MarketContext> factory) : ITea
     {
         await using var context = await factory.CreateDbContextAsync();
 
-        var query = context.TeacherComments.AsNoTracking().AsQueryable();
+        var query = context.TeacherComments.AsNoTracking()
+            .Include(c => c.User)
+            .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(teacherName))
             query = query.Where(c => c.TeacherName.Contains(teacherName));
@@ -74,6 +76,7 @@ public class TeacherCommentRepo(IDbContextFactory<MarketContext> factory) : ITea
             {
                 // ParadeDB BM25 全文检索教师姓名/课程名；无 ParadeDB 时回退到 Contains
                 IQueryable<TeacherCommentModel> query = context.TeacherComments.AsNoTracking()
+                    .Include(c => c.User)
                     .Where(c => c.IsReview);
 
                 if (!string.IsNullOrWhiteSpace(keyword))
@@ -106,6 +109,7 @@ public class TeacherCommentRepo(IDbContextFactory<MarketContext> factory) : ITea
         MarketContext context, string? keyword, int page, int pageSize)
     {
         var query = context.TeacherComments.AsNoTracking()
+            .Include(c => c.User)
             .Where(c => c.IsReview);
 
         if (!string.IsNullOrWhiteSpace(keyword))
@@ -130,6 +134,7 @@ public class TeacherCommentRepo(IDbContextFactory<MarketContext> factory) : ITea
     {
         await using var context = await factory.CreateDbContextAsync();
         return await context.TeacherComments.AsNoTracking()
+            .Include(c => c.User)
             .Where(c => c.UserId == userId)
             .OrderByDescending(c => c.CreatedOn)
             .ToListAsync();
@@ -139,6 +144,7 @@ public class TeacherCommentRepo(IDbContextFactory<MarketContext> factory) : ITea
     {
         await using var context = await factory.CreateDbContextAsync();
         return await context.TeacherComments.AsNoTracking()
+            .Include(c => c.User)
             .Where(c => c.TeacherName.Contains(teacherName) && c.IsReview)
             .OrderByDescending(c => c.CreatedOn)
             .ToListAsync();
@@ -148,6 +154,7 @@ public class TeacherCommentRepo(IDbContextFactory<MarketContext> factory) : ITea
     {
         await using var context = await factory.CreateDbContextAsync();
         return await context.TeacherComments.AsNoTracking()
+            .Include(c => c.User)
             .Where(c => !c.IsReview)
             .OrderByDescending(c => c.CreatedOn)
             .ToListAsync();
@@ -156,7 +163,7 @@ public class TeacherCommentRepo(IDbContextFactory<MarketContext> factory) : ITea
     public async Task<TeacherCommentModel?> GetByKeyAsync(string key)
     {
         await using var context = await factory.CreateDbContextAsync();
-        return await context.TeacherComments.FirstOrDefaultAsync(c => c.Key == key);
+        return await context.TeacherComments.Include(c => c.User).FirstOrDefaultAsync(c => c.Key == key);
     }
 
     public async Task CreateAsync(TeacherCommentModel comment)

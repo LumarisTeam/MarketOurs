@@ -171,6 +171,14 @@ public class TeacherCommentService(
         TeacherName = model.TeacherName,
         CourseName = model.CourseName,
         UserId = model.UserId,
+        Author = model.User is not null
+            ? new UserSimpleDto
+            {
+                Id = model.User.Id,
+                Name = model.User.Name,
+                Avatar = model.User.Avatar
+            }
+            : null,
         Comment = model.Comment,
         Star = model.Star,
         IsReview = model.IsReview,

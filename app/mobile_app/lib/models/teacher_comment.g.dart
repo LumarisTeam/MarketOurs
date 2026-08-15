@@ -44,6 +44,9 @@ TeacherCommentItem _$TeacherCommentItemFromJson(Map<String, dynamic> json) =>
       teacherName: json['teacherName'] as String,
       courseName: json['courseName'] as String,
       userId: json['userId'] as String,
+      author: json['author'] == null
+          ? null
+          : UserSimpleDto.fromJson(json['author'] as Map<String, dynamic>),
       comment: json['comment'] as String?,
       star: (json['star'] as num).toInt(),
       isReview: json['isReview'] as bool,
@@ -64,6 +67,7 @@ Map<String, dynamic> _$TeacherCommentItemToJson(TeacherCommentItem instance) =>
       'teacherName': instance.teacherName,
       'courseName': instance.courseName,
       'userId': instance.userId,
+      'author': instance.author,
       'comment': instance.comment,
       'star': instance.star,
       'isReview': instance.isReview,

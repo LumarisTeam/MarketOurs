@@ -509,6 +509,9 @@ class _CommentCard extends StatelessWidget {
     final commentText = comment.comment?.trim().isNotEmpty == true
         ? comment.comment!.trim()
         : l10n.teacherCommentsNoComment;
+    final authorName = comment.author?.name?.trim().isNotEmpty == true
+        ? comment.author!.name!.trim()
+        : comment.userId;
 
     return AppTappableCard(
       padding: EdgeInsets.zero,
@@ -520,7 +523,11 @@ class _CommentCard extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
             child: Row(
               children: [
-                AppAvatar(name: comment.teacherName, size: 32),
+                AppAvatar(
+                  url: comment.author?.avatar,
+                  name: authorName,
+                  size: 32,
+                ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
@@ -534,8 +541,10 @@ class _CommentCard extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        formatRelativeDateTime(comment.createdOn, l10n),
+                        '$authorName · ${formatRelativeDateTime(comment.createdOn, l10n)}',
                         style: AppTextStyles.label(context),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
@@ -567,11 +576,7 @@ class _CommentCard extends StatelessWidget {
                 ),
               ),
             ),
-            child: Row(
-              children: [
-                _StarRating(value: comment.star),
-              ],
-            ),
+            child: Row(children: [_StarRating(value: comment.star)]),
           ),
         ],
       ),

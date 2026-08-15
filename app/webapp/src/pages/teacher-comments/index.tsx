@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import type { FormEvent } from "react"
-import { GraduationCap, Loader2, Plus, Search, Send, Star } from "lucide-react"
+import { GraduationCap, Loader2, Plus, Search, Send, Star, UserRound } from "lucide-react"
 import { Link } from "react-router"
 import { useSelector } from "react-redux"
 import { useTranslation } from "react-i18next"
@@ -289,6 +289,8 @@ function TeacherCommentCard({
   noCommentText: string
   dateText: string
 }) {
+  const authorName = comment.author?.name?.trim() || comment.userId
+
   return (
     <article className="group rounded-3xl border border-border/40 bg-card p-5 sm:p-6 transition-all duration-300 hover:border-primary/20 hover:shadow-md hover:shadow-primary/5 hover:-translate-y-0.5">
       <div className="mb-4 flex items-center gap-3">
@@ -297,7 +299,14 @@ function TeacherCommentCard({
         </div>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold">{comment.teacherName}</p>
-          <p className="text-xs text-muted-foreground">{dateText}</p>
+          <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+            <span className="inline-flex min-w-0 items-center gap-1">
+              <UserRound size={12} />
+              <span className="truncate">{authorName}</span>
+            </span>
+            <span aria-hidden="true">·</span>
+            <span>{dateText}</span>
+          </div>
         </div>
       </div>
 

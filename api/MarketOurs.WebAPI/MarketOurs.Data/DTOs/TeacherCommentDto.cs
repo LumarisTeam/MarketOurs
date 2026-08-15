@@ -71,6 +71,9 @@ public class TeacherCommentItem
     /// <summary>评论者用户 ID</summary>
     public string UserId { get; set; } = "";
 
+    /// <summary>评论者信息</summary>
+    public UserSimpleDto? Author { get; set; }
+
     /// <summary>评价内容</summary>
     public string? Comment { get; set; }
 

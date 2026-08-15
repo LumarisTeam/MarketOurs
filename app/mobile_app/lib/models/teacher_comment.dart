@@ -1,5 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 
+import 'user.dart';
+
 part 'teacher_comment.g.dart';
 
 @JsonSerializable(includeIfNull: false)
@@ -39,6 +41,7 @@ class TeacherCommentItem {
   final String teacherName;
   final String courseName;
   final String userId;
+  final UserSimpleDto? author;
   final String? comment;
   final int star;
   final bool isReview;
@@ -53,6 +56,7 @@ class TeacherCommentItem {
     required this.teacherName,
     required this.courseName,
     required this.userId,
+    this.author,
     this.comment,
     required this.star,
     required this.isReview,

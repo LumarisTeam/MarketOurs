@@ -34,7 +34,7 @@ public class MarketContext(DbContextOptions<MarketContext> options) : DbContext(
 
         modelBuilder.Entity<UserModel>()
             .HasMany(u => u.TeacherComments)
-            .WithOne()
+            .WithOne(c => c.User)
             .HasForeignKey(c => c.UserId);
 
         modelBuilder.Entity<PostModel>()

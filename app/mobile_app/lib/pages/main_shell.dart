@@ -269,14 +269,14 @@ List<_MainNavigationItem> _navigationItems(BuildContext context) {
       label: l10n.tabHome,
     ),
     _MainNavigationItem(
-      icon: CupertinoIcons.flame,
-      activeIcon: CupertinoIcons.flame_fill,
-      label: l10n.tabHot,
-    ),
-    _MainNavigationItem(
       icon: CupertinoIcons.book,
       activeIcon: CupertinoIcons.book_fill,
       label: l10n.tabTeacherComments,
+    ),
+    _MainNavigationItem(
+      icon: CupertinoIcons.flame,
+      activeIcon: CupertinoIcons.flame_fill,
+      label: l10n.tabHot,
     ),
     _MainNavigationItem(
       icon: CupertinoIcons.bell,
