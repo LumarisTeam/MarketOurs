@@ -52,6 +52,15 @@ public class TeacherCommentController(ITeacherCommentService commentService) : C
             await commentService.GetMyCommentsAsync(this.GetRequiredUserId()));
 
     /// <summary>
+    /// 搜索已通过评价（公开接口，可按教师或课程搜索）
+    /// </summary>
+    [HttpGet("search")]
+    public async Task<ApiResponse<PagedResultDto<TeacherCommentItem>>> SearchApproved(
+        [FromQuery] string? keyword, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) =>
+        ApiResponse<PagedResultDto<TeacherCommentItem>>.Success(
+            await commentService.SearchApprovedAsync(keyword, page, pageSize));
+
+    /// <summary>
     /// 删除我的评价
     /// </summary>
     [HttpDelete("{key}"), Authorize]

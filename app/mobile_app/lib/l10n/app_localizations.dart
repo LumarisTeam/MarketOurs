@@ -303,13 +303,13 @@ abstract class AppLocalizations {
   /// No description provided for @teacherCommentsSubtitle.
   ///
   /// In zh, this message translates to:
-  /// **'搜索教师查看课程评分，也可以提交自己的课程体验。'**
+  /// **'搜索教师或课程查看评价，也可以提交自己的课程体验。'**
   String get teacherCommentsSubtitle;
 
   /// No description provided for @teacherCommentsSearchPlaceholder.
   ///
   /// In zh, this message translates to:
-  /// **'输入教师姓名'**
+  /// **'搜索教师或课程'**
   String get teacherCommentsSearchPlaceholder;
 
   /// No description provided for @teacherCommentsSearch.
@@ -351,7 +351,7 @@ abstract class AppLocalizations {
   /// No description provided for @teacherCommentsSearchFirst.
   ///
   /// In zh, this message translates to:
-  /// **'先搜索教师姓名来查看评价。'**
+  /// **'搜索教师或课程来查看评价。'**
   String get teacherCommentsSearchFirst;
 
   /// No description provided for @teacherCommentsNoApprovedComments.
@@ -359,6 +359,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'暂时没有已通过的评价。'**
   String get teacherCommentsNoApprovedComments;
+
+  /// No description provided for @teacherCommentsEmptyList.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无已通过的教师课程评价。'**
+  String get teacherCommentsEmptyList;
 
   /// No description provided for @teacherCommentsCreateTitle.
   ///

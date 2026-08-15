@@ -106,10 +106,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get teacherCommentsSubtitle =>
-      'Search teachers to view course ratings, or submit your own experience.';
+      'Search teachers or courses to view reviews, or submit your own course experience.';
 
   @override
-  String get teacherCommentsSearchPlaceholder => 'Enter a teacher name';
+  String get teacherCommentsSearchPlaceholder => 'Search teacher or course';
 
   @override
   String get teacherCommentsSearch => 'Search';
@@ -131,10 +131,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get teacherCommentsSearchFirst =>
-      'Search a teacher name to view reviews.';
+      'Search a teacher or course to view reviews.';
 
   @override
   String get teacherCommentsNoApprovedComments => 'No approved reviews yet.';
+
+  @override
+  String get teacherCommentsEmptyList =>
+      'No approved teacher course reviews yet.';
 
   @override
   String get teacherCommentsCreateTitle => 'Submit Review';

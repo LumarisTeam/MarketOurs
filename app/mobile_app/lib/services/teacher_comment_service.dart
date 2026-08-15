@@ -43,6 +43,25 @@ class TeacherCommentService {
     );
   }
 
+  Future<ApiResponse<PagedResult<TeacherCommentItem>>> searchApprovedComments({
+    String? keyword,
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    final response = await _api.get(
+      '/TeacherComment/search',
+      queryParameters: {'keyword': keyword, 'page': page, 'pageSize': pageSize}
+        ..removeWhere((_, value) => value == null),
+    );
+    return ApiResponse<PagedResult<TeacherCommentItem>>.fromJson(
+      response.data,
+      (json) => PagedResult<TeacherCommentItem>.fromJson(
+        json as Map<String, dynamic>,
+        (item) => TeacherCommentItem.fromJson(item as Map<String, dynamic>),
+      ),
+    );
+  }
+
   Future<ApiResponse<TeacherCommentSummary>> getSummary(
     String teacherName,
   ) async {

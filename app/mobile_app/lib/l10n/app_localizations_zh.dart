@@ -105,10 +105,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get teacherCommentsTitle => '教师课程评价';
 
   @override
-  String get teacherCommentsSubtitle => '搜索教师查看课程评分，也可以提交自己的课程体验。';
+  String get teacherCommentsSubtitle => '搜索教师或课程查看评价，也可以提交自己的课程体验。';
 
   @override
-  String get teacherCommentsSearchPlaceholder => '输入教师姓名';
+  String get teacherCommentsSearchPlaceholder => '搜索教师或课程';
 
   @override
   String get teacherCommentsSearch => '搜索';
@@ -129,10 +129,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get teacherCommentsApprovedComments => '已通过评价';
 
   @override
-  String get teacherCommentsSearchFirst => '先搜索教师姓名来查看评价。';
+  String get teacherCommentsSearchFirst => '搜索教师或课程来查看评价。';
 
   @override
   String get teacherCommentsNoApprovedComments => '暂时没有已通过的评价。';
+
+  @override
+  String get teacherCommentsEmptyList => '暂无已通过的教师课程评价。';
 
   @override
   String get teacherCommentsCreateTitle => '提交评价';

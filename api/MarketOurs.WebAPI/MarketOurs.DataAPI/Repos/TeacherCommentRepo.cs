@@ -10,6 +10,9 @@ public interface ITeacherCommentRepo
         string? teacherName, string? courseName, bool? isReview,
         int? minStar, int page, int pageSize);
 
+    Task<(List<TeacherCommentModel> Items, int Total)> SearchApprovedAsync(
+        string? keyword, int page, int pageSize);
+
     Task<List<TeacherCommentModel>> GetByUserIdAsync(string userId);
 
     Task<List<TeacherCommentModel>> GetApprovedByTeacherNameAsync(string teacherName);
@@ -48,6 +51,32 @@ public class TeacherCommentRepo(IDbContextFactory<MarketContext> factory) : ITea
 
         if (minStar.HasValue)
             query = query.Where(c => c.Star >= minStar.Value);
+
+        var total = await query.CountAsync();
+        var items = await query
+            .OrderByDescending(c => c.CreatedOn)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (items, total);
+    }
+
+    public async Task<(List<TeacherCommentModel> Items, int Total)> SearchApprovedAsync(
+        string? keyword, int page, int pageSize)
+    {
+        await using var context = await factory.CreateDbContextAsync();
+
+        var query = context.TeacherComments.AsNoTracking()
+            .Where(c => c.IsReview);
+
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            var trimmedKeyword = keyword.Trim();
+            query = query.Where(c =>
+                c.TeacherName.Contains(trimmedKeyword) ||
+                c.CourseName.Contains(trimmedKeyword));
+        }
 
         var total = await query.CountAsync();
         var items = await query
