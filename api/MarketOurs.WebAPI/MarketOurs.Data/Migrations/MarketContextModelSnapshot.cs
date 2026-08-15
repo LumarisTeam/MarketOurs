@@ -354,14 +354,6 @@ namespace MarketOurs.Data.Migrations
                     b.Property<DateTime?>("AiReviewedOn")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int?>("AiScore")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("AiVerdict")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0);
-
                     b.Property<string>("Comment")
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)");
@@ -393,33 +385,25 @@ namespace MarketOurs.Data.Migrations
                         .HasColumnType("integer")
                         .HasDefaultValue(0);
 
-                    b.Property<string>("StudentId")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.Property<string>("StudentName")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.Property<string>("TeacherId")
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
                     b.Property<string>("TeacherName")
                         .IsRequired()
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)");
 
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
                     b.HasKey("Key");
 
                     b.HasIndex("Status");
 
-                    b.HasIndex("StudentId");
-
                     b.HasIndex("TeacherName");
 
                     b.HasIndex("TeacherName", "Status");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("teacher_comments");
                 });
@@ -671,6 +655,15 @@ namespace MarketOurs.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("MarketOurs.Data.DataModels.TeacherCommentModel", b =>
+                {
+                    b.HasOne("MarketOurs.Data.DataModels.UserModel", null)
+                        .WithMany("TeacherComments")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("PostModelUserModel", b =>
                 {
                     b.HasOne("MarketOurs.Data.DataModels.PostModel", null)
@@ -746,6 +739,8 @@ namespace MarketOurs.Data.Migrations
                     b.Navigation("Comments");
 
                     b.Navigation("Posts");
+
+                    b.Navigation("TeacherComments");
                 });
 #pragma warning restore 612, 618
         }

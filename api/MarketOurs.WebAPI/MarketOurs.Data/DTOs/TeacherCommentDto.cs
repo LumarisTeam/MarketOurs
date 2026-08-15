@@ -10,9 +10,6 @@ public class CreateTeacherCommentRequest
     /// <summary>教师姓名</summary>
     public string TeacherName { get; set; } = "";
 
-    /// <summary>教师工号（可选）</summary>
-    public string? TeacherId { get; set; }
-
     /// <summary>课程名称</summary>
     public string CourseName { get; set; } = "";
 
@@ -70,14 +67,11 @@ public class TeacherCommentItem
     /// <summary>教师姓名</summary>
     public string TeacherName { get; set; } = "";
 
-    /// <summary>教师工号</summary>
-    public string? TeacherId { get; set; }
-
     /// <summary>课程名称</summary>
     public string CourseName { get; set; } = "";
 
-    /// <summary>学生昵称</summary>
-    public string? StudentName { get; set; }
+    /// <summary>评论者用户 ID</summary>
+    public string UserId { get; set; } = "";
 
     /// <summary>评价内容</summary>
     public string? Comment { get; set; }
@@ -88,14 +82,8 @@ public class TeacherCommentItem
     /// <summary>审核状态</summary>
     public CommentReviewStatus Status { get; set; }
 
-    /// <summary>AI 审核结论</summary>
-    public AiReviewVerdict AiVerdict { get; set; }
-
     /// <summary>AI 审核原因</summary>
     public string? AiReason { get; set; }
-
-    /// <summary>AI 审核置信度</summary>
-    public int? AiScore { get; set; }
 
     /// <summary>AI 审核时间</summary>
     public DateTime? AiReviewedOn { get; set; }
@@ -117,9 +105,6 @@ public class TeacherCommentSummary
 {
     /// <summary>教师姓名</summary>
     public string TeacherName { get; set; } = "";
-
-    /// <summary>教师工号</summary>
-    public string? TeacherId { get; set; }
 
     /// <summary>评价总数</summary>
     public int TotalCount { get; set; }

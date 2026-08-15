@@ -27,52 +27,84 @@ public class ReviewBackgroundService(
             try
             {
                 using var scope = scopeFactory.CreateScope();
-                var postRepo = scope.ServiceProvider.GetRequiredService<IPostRepo>();
-                var commentRepo = scope.ServiceProvider.GetRequiredService<ICommentRepo>();
                 var reviewService = scope.ServiceProvider.GetRequiredService<IReviewService>();
 
                 string messageStr;
                 string userId;
                 string targetId;
                 string notificationTargetId;
-                string relatedPostId;
-
-                var isPost = message.Type == ReviewType.Post;
+                string? relatedPostId = null;
+                string entityLabel;
+                string entityType;
                 string name;
 
-                if (isPost)
+                switch (message.Type)
                 {
-                    var post = await postRepo.GetByIdAsync(message.TargetId);
-                    if (post == null)
+                    case ReviewType.Post:
                     {
-                        logger.LogWarning("Post {TargetId} not found when processing review queue", message.TargetId);
-                        continue;
-                    }
+                        var postRepo = scope.ServiceProvider.GetRequiredService<IPostRepo>();
+                        var post = await postRepo.GetByIdAsync(message.TargetId);
+                        if (post == null)
+                        {
+                            logger.LogWarning("Post {TargetId} not found when processing review queue", message.TargetId);
+                            continue;
+                        }
 
-                    messageStr = $"title: {post.Title}, content: {post.Content}";
-                    userId = post.UserId;
-                    targetId = post.Id;
-                    notificationTargetId = post.Id;
-                    relatedPostId = post.Id;
-                    
-                    name = post.Title;
-                }
-                else
-                {
-                    var comment = await commentRepo.GetByIdAsync(message.TargetId);
-                    if (comment == null)
+                        messageStr = $"title: {post.Title}, content: {post.Content}";
+                        userId = post.UserId;
+                        targetId = post.Id;
+                        notificationTargetId = post.Id;
+                        relatedPostId = post.Id;
+                        entityLabel = "帖子";
+                        entityType = "post";
+                        name = post.Title;
+                        break;
+                    }
+                    case ReviewType.Comment:
                     {
-                        logger.LogWarning("Comment {TargetId} not found when processing review queue", message.TargetId);
-                        continue;
-                    }
+                        var commentRepo = scope.ServiceProvider.GetRequiredService<ICommentRepo>();
+                        var comment = await commentRepo.GetByIdAsync(message.TargetId);
+                        if (comment == null)
+                        {
+                            logger.LogWarning("Comment {TargetId} not found when processing review queue", message.TargetId);
+                            continue;
+                        }
 
-                    messageStr = $"content: {comment.Content}";
-                    userId = comment.UserId;
-                    targetId = comment.Id;
-                    notificationTargetId = comment.PostId;
-                    relatedPostId = comment.PostId;
-                    
-                    name = comment.Content;
+                        messageStr = $"content: {comment.Content}";
+                        userId = comment.UserId;
+                        targetId = comment.Id;
+                        notificationTargetId = comment.PostId;
+                        relatedPostId = comment.PostId;
+                        entityLabel = "评论";
+                        entityType = "comment";
+                        name = comment.Content;
+                        break;
+                    }
+                    case ReviewType.TeacherComment:
+                    {
+                        var teacherCommentRepo = scope.ServiceProvider.GetRequiredService<ITeacherCommentRepo>();
+                        var teacherComment = await teacherCommentRepo.GetByKeyAsync(message.TargetId);
+                        if (teacherComment == null)
+                        {
+                            logger.LogWarning(
+                                "Teacher comment {TargetId} not found when processing review queue",
+                                message.TargetId);
+                            continue;
+                        }
+
+                        messageStr =
+                            $"teacher: {teacherComment.TeacherName}, course: {teacherComment.CourseName}, star: {teacherComment.Star}, comment: {teacherComment.Comment}";
+                        userId = teacherComment.UserId;
+                        targetId = teacherComment.Key;
+                        notificationTargetId = teacherComment.Key;
+                        entityLabel = "教师评价";
+                        entityType = "teacherComment";
+                        name = $"{teacherComment.TeacherName} / {teacherComment.CourseName}";
+                        break;
+                    }
+                    default:
+                        logger.LogWarning("Unsupported review type {ReviewType}", message.Type);
+                        continue;
                 }
 
                 var reviewResult = await reviewService.Review(messageStr);
@@ -80,6 +112,7 @@ public class ReviewBackgroundService(
 
                 if (message.Type == ReviewType.Post)
                 {
+                    var postRepo = scope.ServiceProvider.GetRequiredService<IPostRepo>();
                     await postRepo.SetReviewStatusAsync(message.TargetId, isApproved);
                     InvalidatePostCaches(targetId);
 
@@ -90,23 +123,30 @@ public class ReviewBackgroundService(
                         await DeletePostImagesAsync(postRepo, storageService, message.TargetId);
                     }
                 }
+                else if (message.Type == ReviewType.Comment)
+                {
+                    var commentRepo = scope.ServiceProvider.GetRequiredService<ICommentRepo>();
+                    await commentRepo.SetReviewStatusAsync(message.TargetId, isApproved);
+                    InvalidateCommentCaches(targetId, relatedPostId!);
+                }
                 else
                 {
-                    await commentRepo.SetReviewStatusAsync(message.TargetId, isApproved);
-                    InvalidateCommentCaches(targetId, relatedPostId);
+                    var teacherCommentRepo = scope.ServiceProvider.GetRequiredService<ITeacherCommentRepo>();
+                    await teacherCommentRepo.SetReviewStatusAsync(
+                        message.TargetId,
+                        isApproved,
+                        isApproved ? null : reviewResult);
                 }
-
-                var a = isPost ? "帖子" : "评论";
 
                 notificationQueue.Enqueue(new NotificationMessage()
                 {
                     UserId = userId,
                     Type = NotificationType.Review,
-                    Content = isApproved ? $"您的{a}: {name} 已通过" : reviewResult,
+                    Content = isApproved ? $"您的{entityLabel}: {name} 已通过" : reviewResult,
                     TargetId = notificationTargetId,
                     Title = "审核信息",
                     Params = new ReviewParams(
-                        isPost ? "post" : "comment",
+                        entityType,
                         name,
                         isApproved,
                         isApproved ? null : reviewResult)

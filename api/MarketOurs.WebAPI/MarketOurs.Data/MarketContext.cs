@@ -30,6 +30,11 @@ public class MarketContext(DbContextOptions<MarketContext> options) : DbContext(
             .WithOne(c => c.User)
             .HasForeignKey(c => c.UserId);
 
+        modelBuilder.Entity<UserModel>()
+            .HasMany(u => u.TeacherComments)
+            .WithOne()
+            .HasForeignKey(c => c.UserId);
+
         modelBuilder.Entity<PostModel>()
             .HasMany(x => x.Comments)
             .WithOne(x => x.Post)
@@ -140,14 +145,13 @@ public class MarketContext(DbContextOptions<MarketContext> options) : DbContext(
         // 教师评价（校园集市）
         modelBuilder.Entity<TeacherCommentModel>(entity =>
         {
-            entity.HasIndex(e => e.StudentId);
+            entity.HasIndex(e => e.UserId);
             entity.HasIndex(e => e.TeacherName);
             entity.HasIndex(e => e.Status);
             entity.HasIndex(e => new { e.TeacherName, e.Status });
             entity.Property(e => e.CreatedOn).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.Star).HasDefaultValue(5);
             entity.Property(e => e.Status).HasDefaultValue(CommentReviewStatus.Pending);
-            entity.Property(e => e.AiVerdict).HasDefaultValue(AiReviewVerdict.None);
         });
     }
 }

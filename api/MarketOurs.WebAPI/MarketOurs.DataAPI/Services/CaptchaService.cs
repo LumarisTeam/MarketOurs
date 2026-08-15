@@ -17,6 +17,7 @@ public interface ICaptchaService
     Task<bool> ValidateCaptchaTokenAsync(string captchaToken);
 }
 
+[Serializable]
 public class CaptchaChallengeDto
 {
     public string Token { get; set; } = string.Empty;
@@ -27,13 +28,16 @@ public class CaptchaChallengeDto
     public int PuzzleY { get; set; }
 }
 
-public class CaptchaService : ICaptchaService
+public class CaptchaService(
+    IEnumerable<IConnectionMultiplexer> redisEnumerable,
+    IHostEnvironment hostEnvironment,
+    ILogger<CaptchaService> logger)
+    : ICaptchaService
 {
-    private readonly IConnectionMultiplexer? _redis;
-    private readonly ILogger<CaptchaService> _logger;
+    private readonly IConnectionMultiplexer? _redis = redisEnumerable.FirstOrDefault();
     private readonly List<Image<Rgba32>> _sourceImages = [];
-    private readonly string _imagesDir;
-    private static readonly object _initLock = new();
+    private readonly string _imagesDir = Path.Combine(hostEnvironment.ContentRootPath, "wwwroot", "captcha-images");
+    private static readonly Lock InitLock = new();
     private bool _initialized;
 
     private const int BgWidth = 300;
@@ -50,20 +54,10 @@ public class CaptchaService : ICaptchaService
 
     private static readonly PngEncoder PngEncoder = new();
 
-    public CaptchaService(
-        IEnumerable<IConnectionMultiplexer> redisEnumerable,
-        IHostEnvironment hostEnvironment,
-        ILogger<CaptchaService> logger)
-    {
-        _redis = redisEnumerable.FirstOrDefault();
-        _logger = logger;
-        _imagesDir = Path.Combine(hostEnvironment.ContentRootPath, "wwwroot", "captcha-images");
-    }
-
     private void EnsureInitialized()
     {
         if (_initialized) return;
-        lock (_initLock)
+        lock (InitLock)
         {
             if (_initialized) return;
             LoadImages();
@@ -75,7 +69,7 @@ public class CaptchaService : ICaptchaService
     {
         if (!Directory.Exists(_imagesDir))
         {
-            _logger.LogInformation("Captcha images directory not found: {Dir}, will use generated images", _imagesDir);
+            logger.LogInformation("Captcha images directory not found: {Dir}, will use generated images", _imagesDir);
             return;
         }
 
@@ -93,15 +87,15 @@ public class CaptchaService : ICaptchaService
                 var img = Image.Load<Rgba32>(file);
                 img.Mutate(ctx => ctx.Resize(BgWidth, BgHeight));
                 _sourceImages.Add(img);
-                _logger.LogInformation("Loaded captcha image: {File}", Path.GetFileName(file));
+                logger.LogInformation("Loaded captcha image: {File}", Path.GetFileName(file));
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to load captcha image: {File}", file);
+                logger.LogWarning(ex, "Failed to load captcha image: {File}", file);
             }
         }
 
-        _logger.LogInformation("Loaded {Count} captcha images from {Dir}", _sourceImages.Count, _imagesDir);
+        logger.LogInformation("Loaded {Count} captcha images from {Dir}", _sourceImages.Count, _imagesDir);
     }
 
     public async Task<CaptchaChallengeDto> GenerateChallengeAsync()
@@ -214,6 +208,7 @@ public class CaptchaService : ICaptchaService
             if (cutoutY < BgHeight) bg[x, cutoutY] = borderColor;
             if (cutoutY + PuzzleHeight - 1 < BgHeight) bg[x, cutoutY + PuzzleHeight - 1] = borderColor;
         }
+
         for (var y = cutoutY; y < cutoutY + PuzzleHeight && y < BgHeight; y++)
         {
             if (cutoutX < BgWidth) bg[cutoutX, y] = borderColor;

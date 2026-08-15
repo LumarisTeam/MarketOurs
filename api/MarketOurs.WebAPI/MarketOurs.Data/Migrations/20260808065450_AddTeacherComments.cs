@@ -17,16 +17,12 @@ namespace MarketOurs.Data.Migrations
                 {
                     Key = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
                     TeacherName = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
-                    TeacherId = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
                     CourseName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
-                    StudentId = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
-                    StudentName = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: true),
+                    UserId = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
                     Comment = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
                     Star = table.Column<int>(type: "integer", nullable: false, defaultValue: 5),
                     Status = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
-                    AiVerdict = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     AiReason = table.Column<string>(type: "character varying(1024)", maxLength: 1024, nullable: true),
-                    AiScore = table.Column<int>(type: "integer", nullable: true),
                     AiReviewedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     ReviewedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     ReviewedBy = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
@@ -35,6 +31,12 @@ namespace MarketOurs.Data.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_teacher_comments", x => x.Key);
+                    table.ForeignKey(
+                        name: "FK_teacher_comments_users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "users",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -43,9 +45,9 @@ namespace MarketOurs.Data.Migrations
                 column: "Status");
 
             migrationBuilder.CreateIndex(
-                name: "IX_teacher_comments_StudentId",
+                name: "IX_teacher_comments_UserId",
                 table: "teacher_comments",
-                column: "StudentId");
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_teacher_comments_TeacherName",

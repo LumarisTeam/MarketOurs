@@ -44,7 +44,7 @@ public class TeacherCommentControllerTests : ControllerTestBase
         var item = new TeacherCommentItem { Key = "k1", TeacherName = "张老师", Star = 5 };
 
         _mockService
-            .Setup(s => s.CreateAsync(UserId, null, It.Is<CreateTeacherCommentRequest>(r => r.TeacherName == "张老师")))
+            .Setup(s => s.CreateAsync(UserId, It.Is<CreateTeacherCommentRequest>(r => r.TeacherName == "张老师")))
             .ReturnsAsync(item);
 
         var result = await _controller.Create(request);
@@ -55,7 +55,7 @@ public class TeacherCommentControllerTests : ControllerTestBase
             Assert.That(result.Data!.Key, Is.EqualTo("k1"));
             Assert.That(result.Message, Is.EqualTo("评价已提交"));
         });
-        _mockService.Verify(s => s.CreateAsync(UserId, null, request), Times.Once);
+        _mockService.Verify(s => s.CreateAsync(UserId, request), Times.Once);
     }
 
     [Test]
@@ -71,7 +71,7 @@ public class TeacherCommentControllerTests : ControllerTestBase
             await _controller.Create(new CreateTeacherCommentRequest { TeacherName = "张老师", CourseName = "数学" }));
 
         Assert.That(ex!.ErrorCode, Is.EqualTo(ErrorCode.Unauthorized));
-        _mockService.Verify(s => s.CreateAsync(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CreateTeacherCommentRequest>()), Times.Never);
+        _mockService.Verify(s => s.CreateAsync(It.IsAny<string>(), It.IsAny<CreateTeacherCommentRequest>()), Times.Never);
     }
 
     // ---------- AdminList ----------
@@ -209,20 +209,19 @@ public class TeacherCommentControllerTests : ControllerTestBase
     // ---------- GetSummary (公开) ----------
 
     [Test]
-    public async Task GetSummary_ShouldReturnSummaryWithTeacherNameAndId()
+    public async Task GetSummary_ShouldReturnSummary()
     {
         var summary = new TeacherCommentSummary
         {
             TeacherName = "张老师",
-            TeacherId = "T001",
             TotalCount = 10,
             AverageStar = 4.5,
             Courses = new List<string> { "高数", "线代" }
         };
 
-        _mockService.Setup(s => s.GetSummaryAsync("张老师", "T001")).ReturnsAsync(summary);
+        _mockService.Setup(s => s.GetSummaryAsync("张老师")).ReturnsAsync(summary);
 
-        var result = await _controller.GetSummary("张老师", "T001");
+        var result = await _controller.GetSummary("张老师");
 
         Assert.Multiple(() =>
         {
@@ -230,18 +229,7 @@ public class TeacherCommentControllerTests : ControllerTestBase
             Assert.That(result.Data!.TotalCount, Is.EqualTo(10));
             Assert.That(result.Data.AverageStar, Is.EqualTo(4.5));
         });
-    }
 
-    [Test]
-    public async Task GetSummary_WithoutTeacherId_ShouldPassNull()
-    {
-        var summary = new TeacherCommentSummary { TeacherName = "张老师" };
-
-        _mockService.Setup(s => s.GetSummaryAsync("张老师", null)).ReturnsAsync(summary);
-
-        var result = await _controller.GetSummary("张老师");
-
-        Assert.That(result.Code, Is.EqualTo(200));
-        _mockService.Verify(s => s.GetSummaryAsync("张老师", null), Times.Once);
+        _mockService.Verify(s => s.GetSummaryAsync("张老师"), Times.Once);
     }
 }

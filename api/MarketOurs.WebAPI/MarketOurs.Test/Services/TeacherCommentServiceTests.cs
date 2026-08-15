@@ -3,6 +3,7 @@ using MarketOurs.Data.DTOs;
 using MarketOurs.DataAPI.Exceptions;
 using MarketOurs.DataAPI.Repos;
 using MarketOurs.DataAPI.Services;
+using MarketOurs.DataAPI.Services.Background;
 using Microsoft.Extensions.Logging;
 using Moq;
 
@@ -17,9 +18,10 @@ public class TeacherCommentServiceTests
 {
     private Mock<ITeacherCommentRepo> _mockRepo = null!;
     private Mock<ILogger<TeacherCommentService>> _mockLogger = null!;
+    private ReviewMessageQueue _reviewQueue = null!;
     private TeacherCommentService _service = null!;
 
-    private const string StudentId = "student_001";
+    private const string UserId = "user_001";
     private const string AdminId = "admin_001";
 
     [SetUp]
@@ -27,7 +29,8 @@ public class TeacherCommentServiceTests
     {
         _mockRepo = new Mock<ITeacherCommentRepo>();
         _mockLogger = new Mock<ILogger<TeacherCommentService>>();
-        _service = new TeacherCommentService(_mockRepo.Object, _mockLogger.Object);
+        _reviewQueue = new ReviewMessageQueue();
+        _service = new TeacherCommentService(_mockRepo.Object, _mockLogger.Object, _reviewQueue);
     }
 
     // ==================== CreateAsync ====================
@@ -38,7 +41,6 @@ public class TeacherCommentServiceTests
         var request = new CreateTeacherCommentRequest
         {
             TeacherName = " 张老师 ",
-            TeacherId = "T001",
             CourseName = " 高等数学 ",
             Star = 4,
             Comment = " 讲课很清晰 "
@@ -50,7 +52,7 @@ public class TeacherCommentServiceTests
             .Callback<TeacherCommentModel>(m => captured = m)
             .Returns(Task.CompletedTask);
 
-        var result = await _service.CreateAsync(StudentId, "小明", request);
+        var result = await _service.CreateAsync(UserId, request);
 
         Assert.Multiple(() =>
         {
@@ -59,17 +61,23 @@ public class TeacherCommentServiceTests
             Assert.That(result.Comment, Is.EqualTo("讲课很清晰"));
             Assert.That(result.Star, Is.EqualTo(4));
             Assert.That(result.Status, Is.EqualTo(CommentReviewStatus.Pending));
-            Assert.That(result.AiVerdict, Is.EqualTo(AiReviewVerdict.None));
+            Assert.That(result.UserId, Is.EqualTo(UserId));
         });
         // 验证传入仓库的模型字段
         Assert.Multiple(() =>
         {
-            Assert.That(captured!.StudentId, Is.EqualTo(StudentId));
-            Assert.That(captured.StudentName, Is.EqualTo("小明"));
-            Assert.That(captured.TeacherId, Is.EqualTo("T001"));
+            Assert.That(captured!.UserId, Is.EqualTo(UserId));
             Assert.That(captured.Status, Is.EqualTo(CommentReviewStatus.Pending));
         });
         _mockRepo.Verify(r => r.CreateAsync(It.IsAny<TeacherCommentModel>()), Times.Once);
+
+        await using var enumerator = _reviewQueue.DequeueAllAsync(CancellationToken.None).GetAsyncEnumerator();
+        Assert.That(await enumerator.MoveNextAsync(), Is.True);
+        Assert.Multiple(() =>
+        {
+            Assert.That(enumerator.Current.TargetId, Is.EqualTo(result.Key));
+            Assert.That(enumerator.Current.Type, Is.EqualTo(ReviewType.TeacherComment));
+        });
     }
 
     [TestCase("", "高数", 5, Description = "教师姓名为空")]
@@ -79,7 +87,7 @@ public class TeacherCommentServiceTests
         var request = new CreateTeacherCommentRequest { TeacherName = teacherName, CourseName = courseName, Star = star };
 
         var ex = Assert.ThrowsAsync<BusinessException>(async () =>
-            await _service.CreateAsync(StudentId, null, request));
+            await _service.CreateAsync(UserId, request));
 
         Assert.Multiple(() =>
         {
@@ -95,7 +103,7 @@ public class TeacherCommentServiceTests
         var request = new CreateTeacherCommentRequest { TeacherName = "张老师", CourseName = "", Star = 5 };
 
         var ex = Assert.ThrowsAsync<BusinessException>(async () =>
-            await _service.CreateAsync(StudentId, null, request));
+            await _service.CreateAsync(UserId, request));
 
         Assert.Multiple(() =>
         {
@@ -111,7 +119,7 @@ public class TeacherCommentServiceTests
         var request = new CreateTeacherCommentRequest { TeacherName = "张老师", CourseName = "高数", Star = star };
 
         var ex = Assert.ThrowsAsync<BusinessException>(async () =>
-            await _service.CreateAsync(StudentId, null, request));
+            await _service.CreateAsync(UserId, request));
 
         Assert.That(ex!.ErrorCode, Is.EqualTo(ErrorCode.ParameterOutOfRange));
     }
@@ -128,7 +136,7 @@ public class TeacherCommentServiceTests
         };
 
         var ex = Assert.ThrowsAsync<BusinessException>(async () =>
-            await _service.CreateAsync(StudentId, null, request));
+            await _service.CreateAsync(UserId, request));
 
         Assert.Multiple(() =>
         {
@@ -150,7 +158,7 @@ public class TeacherCommentServiceTests
 
         _mockRepo.Setup(r => r.CreateAsync(It.IsAny<TeacherCommentModel>())).Returns(Task.CompletedTask);
 
-        var result = await _service.CreateAsync(StudentId, null, request);
+        var result = await _service.CreateAsync(UserId, request);
 
         Assert.That(result.Comment!.Length, Is.EqualTo(2000));
     }
@@ -275,10 +283,10 @@ public class TeacherCommentServiceTests
     [Test]
     public async Task DeleteAsync_WhenOwner_ShouldDelete()
     {
-        var model = new TeacherCommentModel { Key = "k1", StudentId = StudentId };
+        var model = new TeacherCommentModel { Key = "k1", UserId = UserId };
         _mockRepo.Setup(r => r.GetByKeyAsync("k1")).ReturnsAsync(model);
 
-        await _service.DeleteAsync("k1", StudentId);
+        await _service.DeleteAsync("k1", UserId);
 
         _mockRepo.Verify(r => r.DeleteAsync(model), Times.Once);
     }
@@ -286,11 +294,11 @@ public class TeacherCommentServiceTests
     [Test]
     public void DeleteAsync_WhenNotOwner_ShouldThrowPermissionError()
     {
-        var model = new TeacherCommentModel { Key = "k1", StudentId = "other_user" };
+        var model = new TeacherCommentModel { Key = "k1", UserId = "other_user" };
         _mockRepo.Setup(r => r.GetByKeyAsync("k1")).ReturnsAsync(model);
 
         var ex = Assert.ThrowsAsync<BusinessException>(async () =>
-            await _service.DeleteAsync("k1", StudentId));
+            await _service.DeleteAsync("k1", UserId));
 
         Assert.Multiple(() =>
         {
@@ -306,7 +314,7 @@ public class TeacherCommentServiceTests
         _mockRepo.Setup(r => r.GetByKeyAsync("missing")).ReturnsAsync((TeacherCommentModel?)null);
 
         var ex = Assert.ThrowsAsync<ResourceAccessException>(async () =>
-            await _service.DeleteAsync("missing", StudentId));
+            await _service.DeleteAsync("missing", UserId));
 
         Assert.That(ex!.ErrorCode, Is.EqualTo(ErrorCode.CommentNotFound));
     }
@@ -318,9 +326,9 @@ public class TeacherCommentServiceTests
     {
         var comments = new List<TeacherCommentModel>
         {
-            new() { TeacherName = "张老师", TeacherId = "T001", CourseName = "高数", Star = 4, Status = CommentReviewStatus.Approved },
-            new() { TeacherName = "张老师", TeacherId = "T001", CourseName = "线代", Star = 5, Status = CommentReviewStatus.Approved },
-            new() { TeacherName = "张老师", TeacherId = "T001", CourseName = "高数", Star = 3, Status = CommentReviewStatus.Approved }
+            new() { TeacherName = "张老师", CourseName = "高数", Star = 4, Status = CommentReviewStatus.Approved },
+            new() { TeacherName = "张老师", CourseName = "线代", Star = 5, Status = CommentReviewStatus.Approved },
+            new() { TeacherName = "张老师", CourseName = "高数", Star = 3, Status = CommentReviewStatus.Approved }
         };
         _mockRepo.Setup(r => r.GetApprovedByTeacherNameAsync("张老师")).ReturnsAsync(comments);
 
@@ -333,26 +341,6 @@ public class TeacherCommentServiceTests
             Assert.That(summary.Courses.Count, Is.EqualTo(2));
             Assert.That(summary.Courses, Does.Contain("高数"));
             Assert.That(summary.Courses, Does.Contain("线代"));
-        });
-    }
-
-    [Test]
-    public async Task GetSummaryAsync_WithTeacherId_ShouldFilterByTeacherId()
-    {
-        var comments = new List<TeacherCommentModel>
-        {
-            new() { TeacherName = "张老师", TeacherId = "T001", CourseName = "高数", Star = 5, Status = CommentReviewStatus.Approved },
-            new() { TeacherName = "张老师", TeacherId = "T002", CourseName = "线代", Star = 1, Status = CommentReviewStatus.Approved }
-        };
-        _mockRepo.Setup(r => r.GetApprovedByTeacherNameAsync("张老师")).ReturnsAsync(comments);
-
-        var summary = await _service.GetSummaryAsync("张老师", "T001");
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(summary.TotalCount, Is.EqualTo(1));
-            Assert.That(summary.AverageStar, Is.EqualTo(5.0));
-            Assert.That(summary.TeacherId, Is.EqualTo("T001"));
         });
     }
 
@@ -408,18 +396,18 @@ public class TeacherCommentServiceTests
     // ==================== GetMyCommentsAsync ====================
 
     [Test]
-    public async Task GetMyCommentsAsync_ShouldReturnStudentComments()
+    public async Task GetMyCommentsAsync_ShouldReturnUserComments()
     {
         var mine = new List<TeacherCommentModel>
         {
-            new() { Key = "k1", StudentId = StudentId },
-            new() { Key = "k2", StudentId = StudentId }
+            new() { Key = "k1", UserId = UserId },
+            new() { Key = "k2", UserId = UserId }
         };
-        _mockRepo.Setup(r => r.GetByStudentIdAsync(StudentId)).ReturnsAsync(mine);
+        _mockRepo.Setup(r => r.GetByUserIdAsync(UserId)).ReturnsAsync(mine);
 
-        var result = await _service.GetMyCommentsAsync(StudentId);
+        var result = await _service.GetMyCommentsAsync(UserId);
 
         Assert.That(result.Count, Is.EqualTo(2));
-        _mockRepo.Verify(r => r.GetByStudentIdAsync(StudentId), Times.Once);
+        _mockRepo.Verify(r => r.GetByUserIdAsync(UserId), Times.Once);
     }
 }

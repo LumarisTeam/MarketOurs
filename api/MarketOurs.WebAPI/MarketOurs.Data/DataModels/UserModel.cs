@@ -105,6 +105,11 @@ public class UserModel : DataModel
     /// 屏蔽关系：屏蔽我的用户列表
     /// </summary>
     public List<UserModel> BlockedBy { get; set; } = [];
+    
+    /// <summary>
+    /// 教师评价
+    /// </summary>
+    public List<TeacherCommentModel> TeacherComments { get; set; } = [];
 
     /// <summary>
     /// 账户创建时间

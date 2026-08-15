@@ -7,7 +7,8 @@ public record ReviewMessage(string TargetId, ReviewType Type);
 public enum ReviewType
 {
     Post,
-    Comment
+    Comment,
+    TeacherComment
 }
 
 public class ReviewMessageQueue

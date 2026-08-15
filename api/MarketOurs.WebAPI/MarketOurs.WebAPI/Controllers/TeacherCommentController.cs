@@ -17,7 +17,7 @@ public class TeacherCommentController(ITeacherCommentService commentService) : C
     [HttpPost, Authorize]
     public async Task<ApiResponse<TeacherCommentItem>> Create([FromBody] CreateTeacherCommentRequest request) =>
         ApiResponse<TeacherCommentItem>.Success(
-            await commentService.CreateAsync(this.GetRequiredUserId(), null, request), "评价已提交");
+            await commentService.CreateAsync(this.GetRequiredUserId(), request), "评价已提交");
 
     /// <summary>
     /// 分页查询评价列表（管理员接口）
@@ -73,8 +73,7 @@ public class TeacherCommentController(ITeacherCommentService commentService) : C
     /// 获取教师评价汇总（公开接口）
     /// </summary>
     [HttpGet("summary")]
-    public async Task<ApiResponse<TeacherCommentSummary>> GetSummary(
-        [FromQuery] string teacherName, [FromQuery] string? teacherId = null) =>
+    public async Task<ApiResponse<TeacherCommentSummary>> GetSummary([FromQuery] string teacherName) =>
         ApiResponse<TeacherCommentSummary>.Success(
-            await commentService.GetSummaryAsync(teacherName, teacherId));
+            await commentService.GetSummaryAsync(teacherName));
 }

@@ -10,7 +10,7 @@ public interface ITeacherCommentRepo
         string? teacherName, string? courseName, CommentReviewStatus? status,
         int? minStar, int page, int pageSize);
 
-    Task<List<TeacherCommentModel>> GetByStudentIdAsync(string studentId);
+    Task<List<TeacherCommentModel>> GetByUserIdAsync(string userId);
 
     Task<List<TeacherCommentModel>> GetApprovedByTeacherNameAsync(string teacherName);
 
@@ -21,6 +21,8 @@ public interface ITeacherCommentRepo
     Task CreateAsync(TeacherCommentModel comment);
 
     Task UpdateAsync(TeacherCommentModel comment);
+
+    Task SetReviewStatusAsync(string key, bool isReview, string? reason = null);
 
     Task DeleteAsync(TeacherCommentModel comment);
 }
@@ -57,11 +59,11 @@ public class TeacherCommentRepo(IDbContextFactory<MarketContext> factory) : ITea
         return (items, total);
     }
 
-    public async Task<List<TeacherCommentModel>> GetByStudentIdAsync(string studentId)
+    public async Task<List<TeacherCommentModel>> GetByUserIdAsync(string userId)
     {
         await using var context = await factory.CreateDbContextAsync();
         return await context.TeacherComments.AsNoTracking()
-            .Where(c => c.StudentId == studentId)
+            .Where(c => c.UserId == userId)
             .OrderByDescending(c => c.CreatedOn)
             .ToListAsync();
     }
@@ -101,6 +103,21 @@ public class TeacherCommentRepo(IDbContextFactory<MarketContext> factory) : ITea
     {
         await using var context = await factory.CreateDbContextAsync();
         context.TeacherComments.Update(comment);
+        await context.SaveChangesAsync();
+    }
+
+    public async Task SetReviewStatusAsync(string key, bool isReview, string? reason = null)
+    {
+        await using var context = await factory.CreateDbContextAsync();
+        var comment = await context.TeacherComments.FirstOrDefaultAsync(c => c.Key == key);
+        if (comment == null)
+        {
+            return;
+        }
+
+        comment.Status = isReview ? CommentReviewStatus.Approved : CommentReviewStatus.Rejected;
+        comment.AiReason = isReview ? null : reason;
+        comment.AiReviewedOn = DateTime.UtcNow;
         await context.SaveChangesAsync();
     }
 
