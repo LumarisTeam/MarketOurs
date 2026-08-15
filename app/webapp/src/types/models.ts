@@ -174,6 +174,10 @@ export interface PostDto {
   isDisliked?: boolean;
   watch: number;
   isReview: boolean;
+  aiReason?: string | null;
+  aiReviewedOn?: string | null;
+  reviewedOn?: string | null;
+  reviewedBy?: string | null;
 }
 
 export interface PostCreateDto {
@@ -213,6 +217,10 @@ export interface CommentDto {
   postId: string;
   parentCommentId: string | null;
   repliedComments?: CommentDto[];
+  aiReason?: string | null;
+  aiReviewedOn?: string | null;
+  reviewedOn?: string | null;
+  reviewedBy?: string | null;
 }
 
 export interface CommentCreateDto {
@@ -312,6 +320,53 @@ export interface UpdatePostReviewRequest {
   isReview: boolean;
 }
 
+export interface UpdateCommentReviewRequest {
+  isReview: boolean;
+}
+
+export interface CreateTeacherCommentRequest {
+  teacherName: string;
+  courseName: string;
+  comment?: string | null;
+  star: number;
+}
+
+export interface ReviewTeacherCommentRequest {
+  isReview: boolean;
+  reviewNote?: string | null;
+}
+
+export interface TeacherCommentQueryRequest {
+  teacherName?: string;
+  courseName?: string;
+  isReview?: boolean;
+  minStar?: number;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface TeacherCommentItem {
+  key: string;
+  teacherName: string;
+  courseName: string;
+  userId: string;
+  comment?: string | null;
+  star: number;
+  isReview: boolean;
+  aiReason?: string | null;
+  aiReviewedOn?: string | null;
+  reviewedOn?: string | null;
+  reviewedBy?: string | null;
+  createdOn: string;
+}
+
+export interface TeacherCommentSummary {
+  teacherName: string;
+  totalCount: number;
+  averageStar: number;
+  courses: string[];
+}
+
 export const ReportTargetType = { Post: 0, Comment: 1, User: 2 } as const;
 export const ReportStatus = { Pending: 0, Resolved: 1, Rejected: 2 } as const;
 export const ReportReason = { SpamOrAdvertising: 0, FraudOrTransactionRisk: 1, SexualOrInappropriate: 2, HateOrHarassment: 3, Other: 4 } as const;
@@ -334,7 +389,7 @@ export type NotificationParams =
   | { $type: "commentReply"; commenterName: string; bodySnippet: string }
   | { $type: "postReply"; commenterName: string; bodySnippet: string }
   | { $type: "hotList"; header: string; posts: Array<{ id: string; title: string }> }
-  | { $type: "review"; entityType: "post" | "comment"; name: string; approved: boolean; reason?: string | null }
+  | { $type: "review"; entityType: "post" | "comment" | "teacherComment"; name: string; approved: boolean; reason?: string | null }
   | { $type: "system"; message: string }
 
 export interface NotificationDto {

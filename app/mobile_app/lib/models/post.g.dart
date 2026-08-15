@@ -53,6 +53,14 @@ PostDto _$PostDtoFromJson(Map<String, dynamic> json) => PostDto(
   watch: (json['watch'] as num?)?.toInt(),
   commentsCount: (json['commentsCount'] as num?)?.toInt(),
   isReview: json['isReview'] as bool?,
+  aiReason: json['aiReason'] as String?,
+  aiReviewedOn: json['aiReviewedOn'] == null
+      ? null
+      : DateTime.parse(json['aiReviewedOn'] as String),
+  reviewedOn: json['reviewedOn'] == null
+      ? null
+      : DateTime.parse(json['reviewedOn'] as String),
+  reviewedBy: json['reviewedBy'] as String?,
 );
 
 Map<String, dynamic> _$PostDtoToJson(PostDto instance) => <String, dynamic>{
@@ -73,6 +81,10 @@ Map<String, dynamic> _$PostDtoToJson(PostDto instance) => <String, dynamic>{
   'watch': instance.watch,
   'commentsCount': instance.commentsCount,
   'isReview': instance.isReview,
+  'aiReason': instance.aiReason,
+  'aiReviewedOn': instance.aiReviewedOn?.toIso8601String(),
+  'reviewedOn': instance.reviewedOn?.toIso8601String(),
+  'reviewedBy': instance.reviewedBy,
 };
 
 PostCreateDto _$PostCreateDtoFromJson(Map<String, dynamic> json) =>

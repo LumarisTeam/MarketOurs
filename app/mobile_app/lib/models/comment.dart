@@ -20,6 +20,10 @@ class CommentDto {
   final String? parentCommentId;
   final List<CommentDto>? repliedComments;
   final bool? isReview;
+  final String? aiReason;
+  final DateTime? aiReviewedOn;
+  final DateTime? reviewedOn;
+  final String? reviewedBy;
 
   CommentDto({
     required this.id,
@@ -37,6 +41,10 @@ class CommentDto {
     this.parentCommentId,
     this.repliedComments,
     this.isReview,
+    this.aiReason,
+    this.aiReviewedOn,
+    this.reviewedOn,
+    this.reviewedBy,
   });
 
   factory CommentDto.fromJson(Map<String, dynamic> json) =>

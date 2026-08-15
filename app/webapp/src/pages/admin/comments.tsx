@@ -6,7 +6,7 @@ import { adminService } from "../../services/adminService"
 import { extractUserMessage } from "../../services/errorCodes"
 import { toast } from "../../lib/toast"
 import type { CommentDto, CommentUpdateDto, PagedResult } from "../../types"
-import { formatLocalDate } from "../../lib/dateTime"
+import { formatLocalDate, formatLocalDateTime } from "../../lib/dateTime"
 import { Button } from "../../components/ui/button"
 import {
   AlertDialog,
@@ -232,15 +232,33 @@ export default function AdminCommentsPage() {
                         </Link>
                       </td>
                       <td className="px-6 py-4">
-                        {comment.isReview ? (
-                          <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-bold text-emerald-500">
-                            {t("admin.comments.status_active")}
+                        <div className="flex flex-col gap-1.5">
+                          {comment.isReview ? (
+                            <span className="w-fit rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-bold text-emerald-500">
+                              {t("admin.comments.status_active")}
+                            </span>
+                          ) : (
+                            <span className="w-fit rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-bold text-amber-500">
+                              {t("admin.comments.status_pending")}
+                            </span>
+                          )}
+                          <span className="text-xs text-muted-foreground">
+                            {t("admin.comments.ai_reviewed")}: {comment.aiReviewedOn ? formatLocalDateTime(comment.aiReviewedOn, i18n.resolvedLanguage, { includeSeconds: false }) : t("common.null")}
                           </span>
-                        ) : (
-                          <span className="rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-bold text-amber-500">
-                            {t("admin.comments.status_pending")}
+                          <span className="text-xs text-muted-foreground">
+                            {t("admin.comments.human_reviewed")}: {comment.reviewedOn ? formatLocalDateTime(comment.reviewedOn, i18n.resolvedLanguage, { includeSeconds: false }) : t("common.null")}
                           </span>
-                        )}
+                          {comment.reviewedBy && (
+                            <span className="text-xs text-muted-foreground">
+                              {t("admin.comments.reviewed_by")}: {comment.reviewedBy}
+                            </span>
+                          )}
+                          {comment.aiReason && (
+                            <span className="line-clamp-2 max-w-xs text-xs text-destructive">
+                              {t("admin.comments.ai_reason")}: {comment.aiReason}
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4 text-muted-foreground">
                         {formatLocalDate(comment.createdAt, i18n.resolvedLanguage)}

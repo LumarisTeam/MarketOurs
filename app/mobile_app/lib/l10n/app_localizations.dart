@@ -1296,6 +1296,12 @@ abstract class AppLocalizations {
   /// **'评论'**
   String get notificationTypeReviewEntityComment;
 
+  /// No description provided for @notificationTypeReviewEntityTeacherComment.
+  ///
+  /// In zh, this message translates to:
+  /// **'教师评价'**
+  String get notificationTypeReviewEntityTeacherComment;
+
   /// No description provided for @notificationTypeReviewApproved.
   ///
   /// In zh, this message translates to:

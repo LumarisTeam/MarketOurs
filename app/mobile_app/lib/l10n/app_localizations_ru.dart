@@ -618,6 +618,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get notificationTypeReviewEntityComment => 'ваш комментарий';
 
   @override
+  String get notificationTypeReviewEntityTeacherComment =>
+      'ваш отзыв о преподавателе';
+
+  @override
   String notificationTypeReviewApproved(String entity, String name) {
     return '$entity \'$name\' одобрен(а)';
   }

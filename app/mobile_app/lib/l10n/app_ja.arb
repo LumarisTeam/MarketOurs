@@ -191,6 +191,8 @@
   "@notificationTypeReviewEntityPost": {},
   "notificationTypeReviewEntityComment": "あなたのコメント",
   "@notificationTypeReviewEntityComment": {},
+  "notificationTypeReviewEntityTeacherComment": "あなたの教員評価",
+  "@notificationTypeReviewEntityTeacherComment": {},
   "notificationTypeReviewApproved": "{entity} ''{name}'' が承認されました",
   "@notificationTypeReviewApproved": {"placeholders": {"entity": {"type": "String"}, "name": {"type": "String"}}},
   "notificationTypeReviewRejected": "{entity} ''{name}'' が却下されました: {reason}",

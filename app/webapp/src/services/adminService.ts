@@ -18,6 +18,9 @@ import type {
   PostTagUpdateDto,
   PostUpdateDto,
   RemoveIpRequest,
+  ReviewTeacherCommentRequest,
+  TeacherCommentItem,
+  TeacherCommentQueryRequest,
   UpdateUserStatusRequest,
   UserCreateDto,
   UserDto,
@@ -121,6 +124,25 @@ export const adminService = {
 
   updateComment: (id: string, data: CommentUpdateDto) =>
     apiClient.put<CommentDto>(`/Comment/${id}`, data),
+
+  getTeacherComments: (query: TeacherCommentQueryRequest = {}) => {
+    const params = new URLSearchParams({
+      Page: String(query.page ?? 1),
+      PageSize: String(query.pageSize ?? 10),
+    });
+    if (query.teacherName?.trim()) params.append('TeacherName', query.teacherName.trim());
+    if (query.courseName?.trim()) params.append('CourseName', query.courseName.trim());
+    if (query.isReview !== undefined) params.append('IsReview', String(query.isReview));
+    if (query.minStar !== undefined) params.append('MinStar', String(query.minStar));
+
+    return apiClient.get<PagedResult<TeacherCommentItem>>(`/TeacherComment/admin/list?${params.toString()}`);
+  },
+
+  getPendingTeacherComments: () =>
+    apiClient.get<TeacherCommentItem[]>('/TeacherComment/admin/pending'),
+
+  updateTeacherCommentReview: (key: string, data: ReviewTeacherCommentRequest) =>
+    apiClient.put<TeacherCommentItem>(`/TeacherComment/admin/review/${key}`, data),
 
   getUsers: (pageIndex: number = 1, pageSize: number = 10, keyword?: string) => {
     const params = new URLSearchParams({

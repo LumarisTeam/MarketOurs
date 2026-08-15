@@ -616,6 +616,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get notificationTypeReviewEntityComment => '댓글';
 
   @override
+  String get notificationTypeReviewEntityTeacherComment => '교수 평가';
+
+  @override
   String notificationTypeReviewApproved(String entity, String name) {
     return '$entity \'$name\' 승인되었습니다';
   }

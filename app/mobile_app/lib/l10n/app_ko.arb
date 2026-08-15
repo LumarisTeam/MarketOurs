@@ -191,6 +191,8 @@
   "@notificationTypeReviewEntityPost": {},
   "notificationTypeReviewEntityComment": "댓글",
   "@notificationTypeReviewEntityComment": {},
+  "notificationTypeReviewEntityTeacherComment": "교수 평가",
+  "@notificationTypeReviewEntityTeacherComment": {},
   "notificationTypeReviewApproved": "{entity} ''{name}'' 승인되었습니다",
   "@notificationTypeReviewApproved": {"placeholders": {"entity": {"type": "String"}, "name": {"type": "String"}}},
   "notificationTypeReviewRejected": "{entity} ''{name}'' 거부되었습니다: {reason}",

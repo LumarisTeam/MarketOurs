@@ -6,7 +6,7 @@ import { adminService } from "../../services/adminService"
 import { extractUserMessage } from "../../services/errorCodes"
 import { toast } from "../../lib/toast"
 import type { PagedResult, PostDto, PostTagDto, PostUpdateDto } from "../../types"
-import { formatLocalDate } from "../../lib/dateTime"
+import { formatLocalDate, formatLocalDateTime } from "../../lib/dateTime"
 import { Button } from "../../components/ui/button"
 import {
   AlertDialog,
@@ -293,15 +293,33 @@ export default function AdminPostsPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        {post.isReview ? (
-                          <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-bold text-emerald-500">
-                            {t("admin.posts.status_active")}
+                        <div className="flex flex-col gap-1.5">
+                          {post.isReview ? (
+                            <span className="w-fit rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-bold text-emerald-500">
+                              {t("admin.posts.status_active")}
+                            </span>
+                          ) : (
+                            <span className="w-fit rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-bold text-amber-500">
+                              {t("admin.posts.status_pending")}
+                            </span>
+                          )}
+                          <span className="text-xs text-muted-foreground">
+                            {t("admin.posts.ai_reviewed")}: {post.aiReviewedOn ? formatLocalDateTime(post.aiReviewedOn, i18n.resolvedLanguage, { includeSeconds: false }) : t("common.null")}
                           </span>
-                        ) : (
-                          <span className="rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-bold text-amber-500">
-                            {t("admin.posts.status_pending")}
+                          <span className="text-xs text-muted-foreground">
+                            {t("admin.posts.human_reviewed")}: {post.reviewedOn ? formatLocalDateTime(post.reviewedOn, i18n.resolvedLanguage, { includeSeconds: false }) : t("common.null")}
                           </span>
-                        )}
+                          {post.reviewedBy && (
+                            <span className="text-xs text-muted-foreground">
+                              {t("admin.posts.reviewed_by")}: {post.reviewedBy}
+                            </span>
+                          )}
+                          {post.aiReason && (
+                            <span className="line-clamp-2 max-w-xs text-xs text-destructive">
+                              {t("admin.posts.ai_reason")}: {post.aiReason}
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4 text-muted-foreground">
                         {formatLocalDate(post.createdAt, i18n.resolvedLanguage)}

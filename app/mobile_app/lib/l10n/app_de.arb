@@ -191,6 +191,8 @@
   "@notificationTypeReviewEntityPost": {},
   "notificationTypeReviewEntityComment": "dein Kommentar",
   "@notificationTypeReviewEntityComment": {},
+  "notificationTypeReviewEntityTeacherComment": "deine Lehrerbewertung",
+  "@notificationTypeReviewEntityTeacherComment": {},
   "notificationTypeReviewApproved": "{entity} ''{name}'' wurde genehmigt",
   "@notificationTypeReviewApproved": {"placeholders": {"entity": {"type": "String"}, "name": {"type": "String"}}},
   "notificationTypeReviewRejected": "{entity} ''{name}'' wurde abgelehnt: {reason}",

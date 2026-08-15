@@ -202,6 +202,8 @@
   "@notificationTypeReviewEntityPost": {},
   "notificationTypeReviewEntityComment": "your comment",
   "@notificationTypeReviewEntityComment": {},
+  "notificationTypeReviewEntityTeacherComment": "your teacher comment",
+  "@notificationTypeReviewEntityTeacherComment": {},
   "notificationTypeReviewApproved": "{entity} ''{name}'' has been approved",
   "@notificationTypeReviewApproved": {"placeholders": {"entity": {"type": "String"}, "name": {"type": "String"}}},
   "notificationTypeReviewRejected": "{entity} ''{name}'' was rejected: {reason}",

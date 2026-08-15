@@ -618,6 +618,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get notificationTypeReviewEntityComment => 'dein Kommentar';
 
   @override
+  String get notificationTypeReviewEntityTeacherComment =>
+      'deine Lehrerbewertung';
+
+  @override
   String notificationTypeReviewApproved(String entity, String name) {
     return '$entity \'$name\' wurde genehmigt';
   }

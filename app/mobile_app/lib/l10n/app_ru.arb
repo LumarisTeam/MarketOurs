@@ -191,6 +191,8 @@
   "@notificationTypeReviewEntityPost": {},
   "notificationTypeReviewEntityComment": "ваш комментарий",
   "@notificationTypeReviewEntityComment": {},
+  "notificationTypeReviewEntityTeacherComment": "ваш отзыв о преподавателе",
+  "@notificationTypeReviewEntityTeacherComment": {},
   "notificationTypeReviewApproved": "{entity} ''{name}'' одобрен(а)",
   "@notificationTypeReviewApproved": {"placeholders": {"entity": {"type": "String"}, "name": {"type": "String"}}},
   "notificationTypeReviewRejected": "{entity} ''{name}'' отклонён(а): {reason}",

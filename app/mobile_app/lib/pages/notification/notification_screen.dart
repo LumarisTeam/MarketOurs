@@ -183,8 +183,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
       return;
     }
 
+    final params = n.typedParams;
     if (n.type == NotificationType.hotList) {
       context.go(AppRoutePaths.hot);
+    } else if (params is ReviewParams &&
+        params.entityType == 'teacherComment') {
+      return;
     } else if (n.targetId?.isNotEmpty == true) {
       context.push(buildPostDetailLocation(n.targetId!));
     }
@@ -403,10 +407,7 @@ class _NotificationCard extends StatelessWidget {
 }
 
 class _NotificationTitle extends StatelessWidget {
-  const _NotificationTitle({
-    required this.type,
-    required this.isRead,
-  });
+  const _NotificationTitle({required this.type, required this.isRead});
 
   final NotificationType type;
   final bool isRead;
@@ -427,10 +428,7 @@ class _NotificationTitle extends StatelessWidget {
       style: TextStyle(
         fontSize: 16,
         fontWeight: isRead ? FontWeight.w600 : FontWeight.w800,
-        color: CupertinoDynamicColor.resolve(
-          AppColors.foreground,
-          context,
-        ),
+        color: CupertinoDynamicColor.resolve(AppColors.foreground, context),
       ),
     );
   }
@@ -458,7 +456,10 @@ class _NotificationBodyV2 extends StatelessWidget {
       case NotificationType.commentReply:
         if (p is CommentReplyParams) {
           return _plainText(
-            loc.notificationTypeCommentReplyContent(p.commenterName, p.bodySnippet),
+            loc.notificationTypeCommentReplyContent(
+              p.commenterName,
+              p.bodySnippet,
+            ),
             context,
           );
         }
@@ -467,7 +468,10 @@ class _NotificationBodyV2 extends StatelessWidget {
       case NotificationType.postReply:
         if (p is PostReplyParams) {
           return _plainText(
-            loc.notificationTypePostReplyContent(p.commenterName, p.bodySnippet),
+            loc.notificationTypePostReplyContent(
+              p.commenterName,
+              p.bodySnippet,
+            ),
             context,
           );
         }
@@ -482,10 +486,9 @@ class _NotificationBodyV2 extends StatelessWidget {
             children: [
               Text(
                 header,
-                style: AppTextStyles.muted(context).copyWith(
-                  fontSize: 14,
-                  height: 1.4,
-                ),
+                style: AppTextStyles.muted(
+                  context,
+                ).copyWith(fontSize: 14, height: 1.4),
               ),
               const SizedBox(height: 4),
               for (final post in p.posts)
@@ -500,9 +503,11 @@ class _NotificationBodyV2 extends StatelessWidget {
 
       case NotificationType.review:
         if (p is ReviewParams) {
-          final entity = p.entityType == 'post'
-              ? loc.notificationTypeReviewEntityPost
-              : loc.notificationTypeReviewEntityComment;
+          final entity = switch (p.entityType) {
+            'post' => loc.notificationTypeReviewEntityPost,
+            'teacherComment' => loc.notificationTypeReviewEntityTeacherComment,
+            _ => loc.notificationTypeReviewEntityComment,
+          };
           if (p.approved) {
             return _plainText(
               loc.notificationTypeReviewApproved(entity, p.name),
@@ -524,10 +529,7 @@ class _NotificationBodyV2 extends StatelessWidget {
   Widget _plainText(String text, BuildContext context) {
     return Text(
       text,
-      style: AppTextStyles.muted(context).copyWith(
-        fontSize: 14,
-        height: 1.4,
-      ),
+      style: AppTextStyles.muted(context).copyWith(fontSize: 14, height: 1.4),
       maxLines: 10,
       overflow: TextOverflow.ellipsis,
     );
@@ -551,10 +553,7 @@ class _HotPostLine extends StatelessWidget {
           style: TextStyle(
             fontSize: 14,
             height: 1.5,
-            color: CupertinoDynamicColor.resolve(
-              AppColors.primary,
-              context,
-            ),
+            color: CupertinoDynamicColor.resolve(AppColors.primary, context),
             fontWeight: FontWeight.w500,
           ),
         ),

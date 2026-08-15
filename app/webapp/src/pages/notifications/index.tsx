@@ -199,8 +199,11 @@ export default function NotificationsPage() {
     return ""
   }
 
-  const getTargetLink = (notification: any) => {
+  const getTargetLink = (notification: { targetId?: string | null; params?: NotificationParams }) => {
     if (!notification.targetId) return null
+    if (notification.params?.$type === "review" && notification.params.entityType === "teacherComment") {
+      return null
+    }
     return `/post/${notification.targetId}`
   }
 

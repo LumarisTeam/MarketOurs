@@ -43,6 +43,10 @@ class PostDto {
   final int? watch;
   final int? commentsCount;
   final bool? isReview;
+  final String? aiReason;
+  final DateTime? aiReviewedOn;
+  final DateTime? reviewedOn;
+  final String? reviewedBy;
 
   PostDto({
     required this.id,
@@ -62,6 +66,10 @@ class PostDto {
     this.watch,
     this.commentsCount,
     this.isReview,
+    this.aiReason,
+    this.aiReviewedOn,
+    this.reviewedOn,
+    this.reviewedBy,
   });
 
   factory PostDto.fromJson(Map<String, dynamic> json) =>

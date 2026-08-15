@@ -616,6 +616,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get notificationTypeReviewEntityComment => '评论';
 
   @override
+  String get notificationTypeReviewEntityTeacherComment => '教师评价';
+
+  @override
   String notificationTypeReviewApproved(String entity, String name) {
     return '您的$entity \'$name\' 已通过审核';
   }

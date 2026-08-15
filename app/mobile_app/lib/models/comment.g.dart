@@ -30,6 +30,14 @@ CommentDto _$CommentDtoFromJson(Map<String, dynamic> json) => CommentDto(
       ?.map((e) => CommentDto.fromJson(e as Map<String, dynamic>))
       .toList(),
   isReview: json['isReview'] as bool?,
+  aiReason: json['aiReason'] as String?,
+  aiReviewedOn: json['aiReviewedOn'] == null
+      ? null
+      : DateTime.parse(json['aiReviewedOn'] as String),
+  reviewedOn: json['reviewedOn'] == null
+      ? null
+      : DateTime.parse(json['reviewedOn'] as String),
+  reviewedBy: json['reviewedBy'] as String?,
 );
 
 Map<String, dynamic> _$CommentDtoToJson(CommentDto instance) =>
@@ -49,6 +57,10 @@ Map<String, dynamic> _$CommentDtoToJson(CommentDto instance) =>
       'parentCommentId': instance.parentCommentId,
       'repliedComments': instance.repliedComments,
       'isReview': instance.isReview,
+      'aiReason': instance.aiReason,
+      'aiReviewedOn': instance.aiReviewedOn?.toIso8601String(),
+      'reviewedOn': instance.reviewedOn?.toIso8601String(),
+      'reviewedBy': instance.reviewedBy,
     };
 
 CommentCreateDto _$CommentCreateDtoFromJson(Map<String, dynamic> json) =>
