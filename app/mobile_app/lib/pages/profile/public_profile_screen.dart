@@ -6,12 +6,15 @@ import 'package:mobile_app/ui/app_theme.dart';
 
 import '../../models/post.dart';
 import '../../models/user.dart';
+import '../../models/teacher_comment.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/post_feed_provider.dart';
 import '../../services/follow_service.dart';
 import '../../services/user_service.dart';
+import '../../services/teacher_comment_service.dart';
 import '../../services/error_messages.dart';
 import '../../components/report_sheet.dart';
+import '../../components/teacher_comment_actions.dart';
 import '../../models/report.dart';
 import '../../ui/app_responsive.dart';
 import '../../ui/app_widgets.dart';
@@ -32,10 +35,12 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
 
   final _userService = UserService();
   final _followService = FollowService();
+  final _teacherCommentService = TeacherCommentService();
   late final ScrollController _scrollController;
   int _loadVersion = 0;
   PublicUserProfileDto? _profile;
   List<PostDto> _recentPosts = const [];
+  List<TeacherCommentItem> _teacherComments = const [];
   bool _isLoading = true;
   String? _errorMessage;
   int _postsPageIndex = 1;
@@ -96,6 +101,7 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
       _errorMessage = null;
       _profile = null;
       _recentPosts = const [];
+      _teacherComments = const [];
       _postsPageIndex = 1;
       _hasNextPage = false;
       _isLoadingMore = false;
@@ -106,9 +112,12 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
       final postsFuture = ref
           .read(postServiceProvider)
           .getUserPosts(requestUserId, pageIndex: 1, pageSize: _pageSize);
+      final commentsFuture =
+          _teacherCommentService.getUserComments(requestUserId);
 
       final profileResponse = await profileFuture;
       final postsResponse = await postsFuture;
+      final commentsResponse = await commentsFuture;
       final profile = profileResponse.data;
       final postsPage = postsResponse.data;
 
@@ -125,6 +134,7 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
       setState(() {
         _profile = profile;
         _recentPosts = postsPage?.items ?? const <PostDto>[];
+        _teacherComments = commentsResponse.data ?? const <TeacherCommentItem>[];
         _postsPageIndex = postsPage?.pageIndex ?? 1;
         _hasNextPage = postsPage?.hasNextPage ?? false;
         _followerCount = profile.followerCount;
@@ -231,6 +241,31 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
 
   Future<void> _reportUser() => showReportSheet(context, targetType: ReportTargetType.user, targetId: widget.userId);
 
+  Future<void> _reloadComments() async {
+    try {
+      final response = await _teacherCommentService.getUserComments(widget.userId);
+      if (mounted) {
+        setState(() => _teacherComments = response.data ?? const []);
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _editComment(TeacherCommentItem comment) =>
+      showTeacherCommentEditDialog(
+        context,
+        _teacherCommentService,
+        comment,
+        onSaved: _reloadComments,
+      );
+
+  Future<void> _deleteComment(TeacherCommentItem comment) =>
+      confirmDeleteTeacherComment(
+        context,
+        _teacherCommentService,
+        comment,
+        onDeleted: _reloadComments,
+      );
+
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider).asData?.value;
@@ -288,11 +323,23 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
                   ],
                 ],
               ),
-              primary: _RecentPostsSection(
-                posts: _recentPosts,
-                isLoadingMore: _isLoadingMore,
-                hasNextPage: _hasNextPage,
-                isMe: isMe,
+              primary: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _RecentPostsSection(
+                    posts: _recentPosts,
+                    isLoadingMore: _isLoadingMore,
+                    hasNextPage: _hasNextPage,
+                    isMe: isMe,
+                  ),
+                  const SizedBox(height: 28),
+                  _TeacherCommentsSection(
+                    comments: _teacherComments,
+                    isMe: isMe,
+                    onEdit: _editComment,
+                    onDelete: _deleteComment,
+                  ),
+                ],
               ),
             ),
           ),
@@ -670,6 +717,194 @@ class _ErrorState extends StatelessWidget {
             AppPrimaryButton(onPressed: onRetry, child: Text(AppLocalizations.of(context).reload)),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _TeacherCommentsSection extends StatelessWidget {
+  const _TeacherCommentsSection({
+    required this.comments,
+    required this.isMe,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  final List<TeacherCommentItem> comments;
+  final bool isMe;
+  final ValueChanged<TeacherCommentItem> onEdit;
+  final ValueChanged<TeacherCommentItem> onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.teacherCommentsTitle,
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            color: CupertinoDynamicColor.resolve(AppColors.foreground, context),
+          ),
+        ),
+        const SizedBox(height: 16),
+        if (comments.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: AppDecorations.card(context),
+            child: Text(
+              isMe
+                  ? l10n.teacherCommentsMineEmpty
+                  : l10n.teacherCommentsEmptyList,
+              textAlign: TextAlign.center,
+              style: AppTextStyles.muted(context),
+            ),
+          )
+        else
+          for (final comment in comments)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _TeacherCommentCard(
+                comment: comment,
+                isMine: isMe,
+                onEdit: () => onEdit(comment),
+                onDelete: () => onDelete(comment),
+              ),
+            ),
+      ],
+    );
+  }
+}
+
+class _TeacherCommentCard extends StatelessWidget {
+  const _TeacherCommentCard({
+    required this.comment,
+    required this.isMine,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  final TeacherCommentItem comment;
+  final bool isMine;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  void _openActions(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    showCupertinoModalPopup<void>(
+      context: context,
+      builder: (ctx) => CupertinoActionSheet(
+        actions: [
+          CupertinoActionSheetAction(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              onEdit();
+            },
+            child: Text(l10n.teacherCommentsEdit),
+          ),
+          CupertinoActionSheetAction(
+            isDestructiveAction: true,
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              onDelete();
+            },
+            child: Text(l10n.teacherCommentsDelete),
+          ),
+        ],
+        cancelButton: CupertinoActionSheetAction(
+          onPressed: () => Navigator.of(ctx).pop(),
+          child: Text(l10n.cancel),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final commentText = comment.comment?.trim().isNotEmpty == true
+        ? comment.comment!.trim()
+        : l10n.teacherCommentsNoComment;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: AppDecorations.card(context),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  '${comment.teacherName} - ${comment.courseName}',
+                  style: AppTextStyles.sectionTitle(
+                    context,
+                  ).copyWith(fontSize: 17, height: 1.3),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (!comment.isReview) ...[
+                const SizedBox(width: 8),
+                _StatusBadge(label: l10n.teacherCommentsStatusPending),
+              ],
+              if (isMine) ...[
+                const SizedBox(width: 4),
+                CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size.zero,
+                  onPressed: () => _openActions(context),
+                  child: const Icon(
+                    CupertinoIcons.ellipsis,
+                    size: 20,
+                    color: AppColors.mutedForeground,
+                  ),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(commentText, style: AppTextStyles.body(context)),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              TeacherCommentStarRating(value: comment.star),
+              const SizedBox(width: 12),
+              Text(
+                formatRelativeDateTime(comment.createdOn, l10n),
+                style: AppTextStyles.label(context),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatusBadge extends StatelessWidget {
+  const _StatusBadge({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = CupertinoDynamicColor.resolve(
+      AppColors.mutedForeground,
+      context,
+    );
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(AppRadii.md),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: color),
       ),
     );
   }

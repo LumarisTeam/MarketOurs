@@ -39,6 +39,21 @@ class TeacherCommentService {
     );
   }
 
+  Future<ApiResponse<List<TeacherCommentItem>>> getUserComments(
+    String userId,
+  ) async {
+    final encodedId = Uri.encodeComponent(userId);
+    final response = await _api.get('/TeacherComment/user/$encodedId');
+    return ApiResponse<List<TeacherCommentItem>>.fromJson(
+      response.data as Map<String, dynamic>,
+      (json) => (json as List)
+          .map(
+            (item) => TeacherCommentItem.fromJson(item as Map<String, dynamic>),
+          )
+          .toList(),
+    );
+  }
+
   Future<ApiResponse<List<TeacherCommentItem>>> getTeacherComments(
     String teacherName,
   ) async {

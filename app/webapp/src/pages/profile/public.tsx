@@ -6,14 +6,31 @@ import { ArrowRight, Calendar, FileText, Loader2, Sparkles, UserPlus, UserMinus,
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { userService } from "../../services/userService";
 import { postService } from "../../services/postService";
+import { teacherCommentService } from "../../services/teacherCommentService";
 import { followService } from "../../services/followService";
 import { toast } from "../../lib/toast";
 import { extractUserMessage } from "../../services/errorCodes";
 import type { RootState } from "../../stores";
-import type { PagedResult, PostDto, PublicUserProfileDto } from "../../types";
+import type { PagedResult, PostDto, PublicUserProfileDto, TeacherCommentItem } from "../../types";
 import { PostTagBadge } from "../../components/post/PostTagBadge";
 import { formatLocalDate } from "../../lib/dateTime";
+import { formatPostRelativeDate } from "../../lib/postDisplay";
 import { ReportDialog } from "../../components/report/ReportDialog";
+import {
+  TeacherCommentCard,
+  TeacherCommentFormDialog,
+  type CommentFormValues,
+} from "../../components/teacher-comment";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../../components/ui/alert-dialog";
 import type { ReportTargetType } from "../../services/reportService";
 
 const RECENT_POST_FETCH_SIZE = 10;
@@ -32,6 +49,9 @@ export default function PublicProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reportTarget, setReportTarget] = useState<{ type: ReportTargetType; id: string; label: string } | null>(null);
+  const [teacherComments, setTeacherComments] = useState<TeacherCommentItem[]>([]);
+  const [editTarget, setEditTarget] = useState<TeacherCommentItem | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<TeacherCommentItem | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const pageIndexRef = useRef(1);
   const totalCountRef = useRef(0);
@@ -49,6 +69,7 @@ export default function PublicProfilePage() {
       setError(t("profile.public_not_found"));
       setProfile(null);
       setRecentPosts([]);
+      setTeacherComments([]);
       setPostsTotalCount(0);
       setPostsPageIndex(1);
       pageIndexRef.current = 1;
@@ -66,6 +87,7 @@ export default function PublicProfilePage() {
       setError(null);
       setProfile(null);
       setRecentPosts([]);
+      setTeacherComments([]);
       setPostsTotalCount(0);
       setPostsPageIndex(1);
       pageIndexRef.current = 1;
@@ -74,9 +96,10 @@ export default function PublicProfilePage() {
       setIsLoadingMore(false);
 
       try {
-        const [userResponse, postsResponse] = await Promise.all([
+        const [userResponse, postsResponse, commentsResponse] = await Promise.all([
           userService.getPublicProfile(id),
           postService.getUserPosts(id, 1, RECENT_POST_FETCH_SIZE),
+          teacherCommentService.getByUser(id),
         ]);
 
         if (cancelled) {
@@ -89,6 +112,7 @@ export default function PublicProfilePage() {
 
         setProfile(userData);
         setRecentPosts(posts);
+        setTeacherComments(commentsResponse.data ?? []);
         setPostsTotalCount(postsPage?.totalCount ?? posts.length);
         setPostsPageIndex(postsPage?.pageIndex ?? 1);
         pageIndexRef.current = postsPage?.pageIndex ?? 1;
@@ -230,6 +254,37 @@ export default function PublicProfilePage() {
       toast.error(extractUserMessage(err, t("profile.block_error")));
     } finally {
       setFollowLoading(false);
+    }
+  };
+
+  const reloadComments = async () => {
+    if (!id) return;
+    try {
+      const response = await teacherCommentService.getByUser(id);
+      setTeacherComments(response.data ?? []);
+    } catch (err) {
+      toast.error(extractUserMessage(err, t("profile.public_fetch_error")));
+    }
+  };
+
+  const handleEditComment = async (values: CommentFormValues) => {
+    if (!editTarget) return;
+    await teacherCommentService.update(editTarget.key, values);
+    toast.success(t("teacher_comments.updated"));
+    await reloadComments();
+  };
+
+  const handleDeleteComment = async () => {
+    if (!deleteTarget) return;
+    const target = deleteTarget;
+    setDeleteTarget(null);
+
+    try {
+      await teacherCommentService.deleteMine(target.key);
+      toast.success(t("teacher_comments.deleted"));
+      await reloadComments();
+    } catch (err) {
+      toast.error(extractUserMessage(err, t("teacher_comments.submit_error")));
     }
   };
 
@@ -431,6 +486,62 @@ export default function PublicProfilePage() {
           </div>
         )}
       </section>
+      <section className="space-y-4">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">{t("teacher_comments.title")}</h2>
+          <p className="text-sm text-muted-foreground">{t("teacher_comments.subtitle")}</p>
+        </div>
+
+        {teacherComments.length > 0 ? (
+          <div className="space-y-5">
+            {teacherComments.map((item) => (
+              <TeacherCommentCard
+                key={item.key}
+                comment={item}
+                noCommentText={t("teacher_comments.no_comment")}
+                dateText={formatPostRelativeDate(item.createdOn, i18n)}
+                isMine={isCurrentUser}
+                showStatus
+                statusApprovedText={t("teacher_comments.status_approved")}
+                statusPendingText={t("teacher_comments.status_pending")}
+                editText={t("teacher_comments.edit")}
+                deleteText={t("teacher_comments.delete")}
+                onEdit={isCurrentUser ? setEditTarget : undefined}
+                onDelete={isCurrentUser ? setDeleteTarget : undefined}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-[2rem] border border-dashed border-border bg-card px-6 py-10 text-center text-muted-foreground">
+            {isCurrentUser ? t("teacher_comments.mine_empty") : t("teacher_comments.empty_list")}
+          </div>
+        )}
+      </section>
+
+      <TeacherCommentFormDialog
+        key={editTarget?.key ?? "profile-edit"}
+        open={editTarget !== null}
+        onOpenChange={(open) => { if (!open) setEditTarget(null) }}
+        initial={editTarget}
+        isAuthenticated
+        onSubmit={handleEditComment}
+      />
+
+      <AlertDialog open={deleteTarget !== null} onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("teacher_comments.delete_title")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("teacher_comments.delete_description")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("post.cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={() => void handleDeleteComment()}>
+              {t("teacher_comments.delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <ReportDialog target={reportTarget} onClose={() => setReportTarget(null)} />
     </div>
   );

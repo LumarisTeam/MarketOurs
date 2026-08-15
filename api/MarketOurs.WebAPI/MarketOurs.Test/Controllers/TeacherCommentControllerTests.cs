@@ -246,6 +246,41 @@ public class TeacherCommentControllerTests : ControllerTestBase
         _mockService.Verify(s => s.GetApprovedByTeacherAsync("张老师"), Times.Once);
     }
 
+    // ---------- GetByUser (公开) ----------
+
+    [Test]
+    public async Task GetByUser_ShouldPassUserIdAndAdminFlag()
+    {
+        var list = new List<TeacherCommentItem> { new() { Key = "k1", UserId = "owner" } };
+
+        _mockService
+            .Setup(s => s.GetByUserAsync("owner", It.IsAny<string?>(), false))
+            .ReturnsAsync(list);
+
+        var result = await _controller.GetByUser("owner");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Code, Is.EqualTo(200));
+            Assert.That(result.Data!.Count, Is.EqualTo(1));
+        });
+        _mockService.Verify(s => s.GetByUserAsync("owner", It.IsAny<string?>(), false), Times.Once);
+    }
+
+    [Test]
+    public async Task GetByUser_WhenAdmin_ShouldPassAdminTrue()
+    {
+        SetupUser(_controller, AdminId, "Admin");
+        var list = new List<TeacherCommentItem> { new() { Key = "k1", UserId = "owner" } };
+
+        _mockService.Setup(s => s.GetByUserAsync("owner", AdminId, true)).ReturnsAsync(list);
+
+        var result = await _controller.GetByUser("owner");
+
+        Assert.That(result.Code, Is.EqualTo(200));
+        _mockService.Verify(s => s.GetByUserAsync("owner", AdminId, true), Times.Once);
+    }
+
     // ---------- GetSummary (公开) ----------
 
     [Test]

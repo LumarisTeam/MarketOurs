@@ -492,4 +492,55 @@ public class TeacherCommentServiceTests
         Assert.That(result.Count, Is.EqualTo(2));
         _mockRepo.Verify(r => r.GetByUserIdAsync(UserId), Times.Once);
     }
+
+    // ==================== GetByUserAsync ====================
+
+    [Test]
+    public async Task GetByUserAsync_WhenOwner_ShouldReturnAll()
+    {
+        var comments = new List<TeacherCommentModel>
+        {
+            new() { Key = "k1", UserId = UserId, IsReview = true },
+            new() { Key = "k2", UserId = UserId, IsReview = false }
+        };
+        _mockRepo.Setup(r => r.GetByUserIdAsync(UserId)).ReturnsAsync(comments);
+
+        var result = await _service.GetByUserAsync(UserId, UserId, false);
+
+        Assert.That(result.Count, Is.EqualTo(2));
+    }
+
+    [Test]
+    public async Task GetByUserAsync_WhenVisitor_ShouldReturnApprovedOnly()
+    {
+        var comments = new List<TeacherCommentModel>
+        {
+            new() { Key = "k1", UserId = "owner", IsReview = true },
+            new() { Key = "k2", UserId = "owner", IsReview = false }
+        };
+        _mockRepo.Setup(r => r.GetByUserIdAsync("owner")).ReturnsAsync(comments);
+
+        var result = await _service.GetByUserAsync("owner", "visitor", false);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Count, Is.EqualTo(1));
+            Assert.That(result[0].Key, Is.EqualTo("k1"));
+        });
+    }
+
+    [Test]
+    public async Task GetByUserAsync_WhenAdmin_ShouldReturnAll()
+    {
+        var comments = new List<TeacherCommentModel>
+        {
+            new() { Key = "k1", UserId = "owner", IsReview = true },
+            new() { Key = "k2", UserId = "owner", IsReview = false }
+        };
+        _mockRepo.Setup(r => r.GetByUserIdAsync("owner")).ReturnsAsync(comments);
+
+        var result = await _service.GetByUserAsync("owner", AdminId, true);
+
+        Assert.That(result.Count, Is.EqualTo(2));
+    }
 }

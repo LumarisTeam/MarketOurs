@@ -17,6 +17,9 @@ export const teacherCommentService = {
   getMine: () =>
     apiClient.get<TeacherCommentItem[]>('/TeacherComment/mine'),
 
+  getByUser: (userId: string) =>
+    apiClient.get<TeacherCommentItem[]>(`/TeacherComment/user/${encodeURIComponent(userId)}`),
+
   deleteMine: (key: string) =>
     apiClient.delete<void>(`/TeacherComment/${key}`),
 

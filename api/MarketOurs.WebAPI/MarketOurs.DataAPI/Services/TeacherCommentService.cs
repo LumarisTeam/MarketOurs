@@ -24,6 +24,9 @@ public interface ITeacherCommentService
     /// <summary>获取我的评价列表</summary>
     Task<List<TeacherCommentItem>> GetMyCommentsAsync(string userId);
 
+    /// <summary>按用户获取评价（公开：本人/管理员返回全部，否则仅已通过）</summary>
+    Task<List<TeacherCommentItem>> GetByUserAsync(string userId, string? requesterUserId, bool isAdmin);
+
     /// <summary>审核评价</summary>
     Task<TeacherCommentItem> ReviewAsync(string key, string adminId, ReviewTeacherCommentRequest request);
 
@@ -129,6 +132,19 @@ public class TeacherCommentService(
     public async Task<List<TeacherCommentItem>> GetMyCommentsAsync(string userId)
     {
         var comments = await repository.GetByUserIdAsync(userId);
+        return [.. comments.Select(ToItem)];
+    }
+
+    public async Task<List<TeacherCommentItem>> GetByUserAsync(string userId, string? requesterUserId, bool isAdmin)
+    {
+        var comments = await repository.GetByUserIdAsync(userId);
+
+        var isOwner = !string.IsNullOrEmpty(requesterUserId) && requesterUserId == userId;
+        if (!isOwner && !isAdmin)
+        {
+            comments = [.. comments.Where(c => c.IsReview)];
+        }
+
         return [.. comments.Select(ToItem)];
     }
 

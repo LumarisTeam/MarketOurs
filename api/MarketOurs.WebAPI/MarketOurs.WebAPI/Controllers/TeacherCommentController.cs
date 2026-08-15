@@ -88,6 +88,14 @@ public class TeacherCommentController(ITeacherCommentService commentService) : C
             await commentService.GetApprovedByTeacherAsync(teacherName));
 
     /// <summary>
+    /// 按用户获取评价（公开接口，本人/管理员返回全部，否则仅已通过）
+    /// </summary>
+    [HttpGet("user/{userId}"), AllowAnonymous]
+    public async Task<ApiResponse<List<TeacherCommentItem>>> GetByUser(string userId) =>
+        ApiResponse<List<TeacherCommentItem>>.Success(
+            await commentService.GetByUserAsync(userId, this.GetOptionalUserId(), User.IsInRole("Admin")));
+
+    /// <summary>
     /// 获取教师评价汇总（公开接口）
     /// </summary>
     [HttpGet("summary")]
