@@ -21,6 +21,7 @@ import type {
   ReviewTeacherCommentRequest,
   TeacherCommentItem,
   TeacherCommentQueryRequest,
+  UpdateTeacherCommentRequest,
   UpdateUserStatusRequest,
   UserCreateDto,
   UserDto,
@@ -143,6 +144,9 @@ export const adminService = {
 
   updateTeacherCommentReview: (key: string, data: ReviewTeacherCommentRequest) =>
     apiClient.put<TeacherCommentItem>(`/TeacherComment/admin/review/${key}`, data),
+
+  updateTeacherComment: (key: string, data: UpdateTeacherCommentRequest) =>
+    apiClient.put<TeacherCommentItem>(`/TeacherComment/${key}`, data),
 
   getUsers: (pageIndex: number = 1, pageSize: number = 10, keyword?: string) => {
     const params = new URLSearchParams({

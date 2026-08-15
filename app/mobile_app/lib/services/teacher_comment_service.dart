@@ -16,6 +16,17 @@ class TeacherCommentService {
     );
   }
 
+  Future<ApiResponse<TeacherCommentItem>> updateTeacherComment(
+    String key,
+    UpdateTeacherCommentRequest request,
+  ) async {
+    final response = await _api.put('/TeacherComment/$key', data: request.toJson());
+    return ApiResponse<TeacherCommentItem>.fromJson(
+      response.data,
+      (json) => TeacherCommentItem.fromJson(json as Map<String, dynamic>),
+    );
+  }
+
   Future<ApiResponse<List<TeacherCommentItem>>> getMyComments() async {
     final response = await _api.get('/TeacherComment/mine');
     return ApiResponse<List<TeacherCommentItem>>.fromJson(

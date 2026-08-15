@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { CheckCircle, RotateCcw, Search, XCircle } from "lucide-react"
+import { CheckCircle, Loader2, Pencil, RotateCcw, Search, Star, XCircle } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { adminService } from "../../services/adminService"
 import { extractUserMessage } from "../../services/errorCodes"
@@ -18,6 +18,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../../components/ui/alert-dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../../components/ui/dialog"
 
 const PAGE_SIZE = 10
 
@@ -45,6 +53,9 @@ export default function AdminTeacherCommentsPage() {
   const [error, setError] = useState<string | null>(null)
   const [activeKey, setActiveKey] = useState<string | null>(null)
   const [reviewTarget, setReviewTarget] = useState<TeacherCommentItem | null>(null)
+  const [editTarget, setEditTarget] = useState<TeacherCommentItem | null>(null)
+  const [editForm, setEditForm] = useState({ teacherName: "", courseName: "", comment: "", star: 5 })
+  const [isSaving, setIsSaving] = useState(false)
 
   const loadComments = async (nextPage = page) => {
     try {
@@ -94,6 +105,38 @@ export default function AdminTeacherCommentsPage() {
     setReviewFilter("pending")
     setMinStar("")
     setPage(1)
+  }
+
+  const openEdit = (item: TeacherCommentItem) => {
+    setEditForm({
+      teacherName: item.teacherName,
+      courseName: item.courseName,
+      comment: item.comment ?? "",
+      star: item.star,
+    })
+    setEditTarget(item)
+  }
+
+  const handleSaveEdit = async () => {
+    if (!editTarget) return
+    const target = editTarget
+
+    try {
+      setIsSaving(true)
+      await adminService.updateTeacherComment(target.key, {
+        teacherName: editForm.teacherName.trim(),
+        courseName: editForm.courseName.trim(),
+        comment: editForm.comment.trim() || null,
+        star: editForm.star,
+      })
+      setEditTarget(null)
+      await loadComments(page)
+      toast.success(t("admin.teacher_comments.edit_success"))
+    } catch (err) {
+      toast.error(extractUserMessage(err, t("admin.common.action_error")))
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   return (
@@ -223,15 +266,25 @@ export default function AdminTeacherCommentsPage() {
                         {formatLocalDateTime(item.createdOn, i18n.resolvedLanguage, { includeSeconds: false })}
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          disabled={isBusy}
-                          title={item.isReview ? t("admin.teacher_comments.action_unapprove") : t("admin.teacher_comments.action_approve")}
-                          onClick={() => setReviewTarget(item)}
-                        >
-                          {item.isReview ? <XCircle /> : <CheckCircle />}
-                        </Button>
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title={t("admin.teacher_comments.action_edit")}
+                            onClick={() => openEdit(item)}
+                          >
+                            <Pencil />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            disabled={isBusy}
+                            title={item.isReview ? t("admin.teacher_comments.action_unapprove") : t("admin.teacher_comments.action_approve")}
+                            onClick={() => setReviewTarget(item)}
+                          >
+                            {item.isReview ? <XCircle /> : <CheckCircle />}
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   )
@@ -292,6 +345,67 @@ export default function AdminTeacherCommentsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={editTarget !== null} onOpenChange={(open) => { if (!open) setEditTarget(null) }}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{t("admin.teacher_comments.edit_title")}</DialogTitle>
+            <DialogDescription>{editTarget ? `${editTarget.teacherName} - ${editTarget.courseName}` : ""}</DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium">{t("teacher_comments.teacher_label")}</label>
+              <input
+                value={editForm.teacherName}
+                onChange={(event) => setEditForm((f) => ({ ...f, teacherName: event.target.value }))}
+                className="w-full rounded-xl border border-border/50 bg-muted/50 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium">{t("teacher_comments.course_label")}</label>
+              <input
+                value={editForm.courseName}
+                onChange={(event) => setEditForm((f) => ({ ...f, courseName: event.target.value }))}
+                className="w-full rounded-xl border border-border/50 bg-muted/50 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium">{t("teacher_comments.star_label")}</label>
+              <div className="flex items-center gap-1">
+                {[1, 2, 3, 4, 5].map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setEditForm((f) => ({ ...f, star: value }))}
+                    className={value <= editForm.star ? "text-primary" : "text-muted-foreground/40"}
+                  >
+                    <Star className={value <= editForm.star ? "fill-current" : ""} size={24} />
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium">{t("teacher_comments.comment_label")}</label>
+              <textarea
+                value={editForm.comment}
+                maxLength={2000}
+                onChange={(event) => setEditForm((f) => ({ ...f, comment: event.target.value }))}
+                className="min-h-32 w-full resize-none rounded-xl border border-border/50 bg-muted/50 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+              <span className="text-right text-xs text-muted-foreground">{editForm.comment.length}/2000</span>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" type="button" onClick={() => setEditTarget(null)}>
+              {t("admin.common.cancel")}
+            </Button>
+            <Button type="button" disabled={isSaving} onClick={() => void handleSaveEdit()}>
+              {isSaving ? <Loader2 className="animate-spin" data-icon="inline-start" /> : null}
+              {t("admin.teacher_comments.edit_save")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -24,6 +24,24 @@ Map<String, dynamic> _$CreateTeacherCommentRequestToJson(
   'star': instance.star,
 };
 
+UpdateTeacherCommentRequest _$UpdateTeacherCommentRequestFromJson(
+  Map<String, dynamic> json,
+) => UpdateTeacherCommentRequest(
+  teacherName: json['teacherName'] as String,
+  courseName: json['courseName'] as String,
+  comment: json['comment'] as String?,
+  star: (json['star'] as num).toInt(),
+);
+
+Map<String, dynamic> _$UpdateTeacherCommentRequestToJson(
+  UpdateTeacherCommentRequest instance,
+) => <String, dynamic>{
+  'teacherName': instance.teacherName,
+  'courseName': instance.courseName,
+  'comment': ?instance.comment,
+  'star': instance.star,
+};
+
 ReviewTeacherCommentRequest _$ReviewTeacherCommentRequestFromJson(
   Map<String, dynamic> json,
 ) => ReviewTeacherCommentRequest(

@@ -444,6 +444,96 @@ abstract class AppLocalizations {
   /// **'该评价没有填写文字内容。'**
   String get teacherCommentsNoComment;
 
+  /// No description provided for @teacherCommentsBrowse.
+  ///
+  /// In zh, this message translates to:
+  /// **'浏览评价'**
+  String get teacherCommentsBrowse;
+
+  /// No description provided for @teacherCommentsMyComments.
+  ///
+  /// In zh, this message translates to:
+  /// **'我的评价'**
+  String get teacherCommentsMyComments;
+
+  /// No description provided for @teacherCommentsMineEmpty.
+  ///
+  /// In zh, this message translates to:
+  /// **'你还没有提交过评价。'**
+  String get teacherCommentsMineEmpty;
+
+  /// No description provided for @teacherCommentsMineLoadError.
+  ///
+  /// In zh, this message translates to:
+  /// **'我的评价加载失败，请稍后重试。'**
+  String get teacherCommentsMineLoadError;
+
+  /// No description provided for @teacherCommentsEdit.
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑'**
+  String get teacherCommentsEdit;
+
+  /// No description provided for @teacherCommentsDelete.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除'**
+  String get teacherCommentsDelete;
+
+  /// No description provided for @teacherCommentsEditTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'修改评价'**
+  String get teacherCommentsEditTitle;
+
+  /// No description provided for @teacherCommentsEditSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'修改后需重新审核，审核通过后公开展示。'**
+  String get teacherCommentsEditSubtitle;
+
+  /// No description provided for @teacherCommentsSave.
+  ///
+  /// In zh, this message translates to:
+  /// **'保存'**
+  String get teacherCommentsSave;
+
+  /// No description provided for @teacherCommentsUpdated.
+  ///
+  /// In zh, this message translates to:
+  /// **'评价已更新，重新进入审核'**
+  String get teacherCommentsUpdated;
+
+  /// No description provided for @teacherCommentsDeleted.
+  ///
+  /// In zh, this message translates to:
+  /// **'评价已删除'**
+  String get teacherCommentsDeleted;
+
+  /// No description provided for @teacherCommentsDeleteTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除评价'**
+  String get teacherCommentsDeleteTitle;
+
+  /// No description provided for @teacherCommentsDeleteDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'此操作不可撤销。确定要删除这条评价吗？'**
+  String get teacherCommentsDeleteDescription;
+
+  /// No description provided for @teacherCommentsStatusApproved.
+  ///
+  /// In zh, this message translates to:
+  /// **'已通过'**
+  String get teacherCommentsStatusApproved;
+
+  /// No description provided for @teacherCommentsStatusPending.
+  ///
+  /// In zh, this message translates to:
+  /// **'审核中'**
+  String get teacherCommentsStatusPending;
+
   /// No description provided for @authLogin.
   ///
   /// In zh, this message translates to:

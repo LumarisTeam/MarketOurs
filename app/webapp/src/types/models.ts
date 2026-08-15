@@ -331,6 +331,13 @@ export interface CreateTeacherCommentRequest {
   star: number;
 }
 
+export interface UpdateTeacherCommentRequest {
+  teacherName: string;
+  courseName: string;
+  comment?: string | null;
+  star: number;
+}
+
 export interface ReviewTeacherCommentRequest {
   isReview: boolean;
   reviewNote?: string | null;

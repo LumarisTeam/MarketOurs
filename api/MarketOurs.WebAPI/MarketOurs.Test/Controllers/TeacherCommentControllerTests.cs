@@ -187,6 +187,46 @@ public class TeacherCommentControllerTests : ControllerTestBase
         Assert.That(ex!.ErrorCode, Is.EqualTo(ErrorCode.InsufficientPermission));
     }
 
+    // ---------- Update ----------
+
+    [Test]
+    public async Task Update_ShouldPassKeyUserIdAndAdminFlag()
+    {
+        var request = new UpdateTeacherCommentRequest { TeacherName = "张老师", CourseName = "高数", Star = 4 };
+        var item = new TeacherCommentItem { Key = "k1", TeacherName = "张老师", Star = 4 };
+
+        _mockService
+            .Setup(s => s.UpdateAsync("k1", UserId, false, It.Is<UpdateTeacherCommentRequest>(r => r.TeacherName == "张老师")))
+            .ReturnsAsync(item);
+
+        var result = await _controller.Update("k1", request);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Code, Is.EqualTo(200));
+            Assert.That(result.Data!.Key, Is.EqualTo("k1"));
+            Assert.That(result.Message, Is.EqualTo("评价已更新"));
+        });
+        _mockService.Verify(s => s.UpdateAsync("k1", UserId, false, request), Times.Once);
+    }
+
+    [Test]
+    public async Task Update_WhenAdmin_ShouldPassAdminTrue()
+    {
+        SetupUser(_controller, AdminId, "Admin");
+        var request = new UpdateTeacherCommentRequest { TeacherName = "张老师", CourseName = "高数", Star = 4 };
+        var item = new TeacherCommentItem { Key = "k1", TeacherName = "张老师", Star = 4 };
+
+        _mockService
+            .Setup(s => s.UpdateAsync("k1", AdminId, true, It.IsAny<UpdateTeacherCommentRequest>()))
+            .ReturnsAsync(item);
+
+        var result = await _controller.Update("k1", request);
+
+        Assert.That(result.Code, Is.EqualTo(200));
+        _mockService.Verify(s => s.UpdateAsync("k1", AdminId, true, request), Times.Once);
+    }
+
     // ---------- GetByTeacher (公开) ----------
 
     [Test]

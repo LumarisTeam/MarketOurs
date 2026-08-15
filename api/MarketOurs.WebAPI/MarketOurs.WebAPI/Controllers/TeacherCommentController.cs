@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using MarketOurs.Data.DTOs;
 using MarketOurs.DataAPI.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -59,6 +60,14 @@ public class TeacherCommentController(ITeacherCommentService commentService) : C
         [FromQuery] string? keyword, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) =>
         ApiResponse<PagedResultDto<TeacherCommentItem>>.Success(
             await commentService.SearchApprovedAsync(keyword, page, pageSize));
+
+    /// <summary>
+    /// 修改评价（作者或管理员）
+    /// </summary>
+    [HttpPut("{key}"), Authorize]
+    public async Task<ApiResponse<TeacherCommentItem>> Update(string key, [FromBody] UpdateTeacherCommentRequest request) =>
+        ApiResponse<TeacherCommentItem>.Success(
+            await commentService.UpdateAsync(key, this.GetRequiredUserId(), User.IsInRole("Admin"), request), "评价已更新");
 
     /// <summary>
     /// 删除我的评价

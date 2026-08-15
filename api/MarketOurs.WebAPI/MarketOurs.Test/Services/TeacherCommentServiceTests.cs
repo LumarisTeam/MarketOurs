@@ -249,6 +249,117 @@ public class TeacherCommentServiceTests
         });
     }
 
+    // ==================== UpdateAsync ====================
+
+    [Test]
+    public async Task UpdateAsync_WhenOwner_ShouldUpdateAndRequireReReview()
+    {
+        var model = new TeacherCommentModel
+        {
+            Key = "k1",
+            UserId = UserId,
+            TeacherName = "旧老师",
+            CourseName = "旧课程",
+            Comment = "旧内容",
+            Star = 5,
+            IsReview = true
+        };
+        _mockRepo.Setup(r => r.GetByKeyAsync("k1")).ReturnsAsync(model);
+        _mockRepo.Setup(r => r.UpdateAsync(It.IsAny<TeacherCommentModel>())).Returns(Task.CompletedTask);
+
+        var request = new UpdateTeacherCommentRequest
+        {
+            TeacherName = " 张老师 ",
+            CourseName = " 高等数学 ",
+            Comment = " 新内容 ",
+            Star = 4
+        };
+
+        var result = await _service.UpdateAsync("k1", UserId, false, request);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(model.TeacherName, Is.EqualTo("张老师"));
+            Assert.That(model.CourseName, Is.EqualTo("高等数学"));
+            Assert.That(model.Comment, Is.EqualTo("新内容"));
+            Assert.That(model.Star, Is.EqualTo(4));
+            Assert.That(model.IsReview, Is.False); // 作者修改需重新审核
+        });
+        _mockRepo.Verify(r => r.UpdateAsync(model), Times.Once);
+
+        await using var enumerator = _reviewQueue.DequeueAllAsync(CancellationToken.None).GetAsyncEnumerator();
+        Assert.That(await enumerator.MoveNextAsync(), Is.True);
+        Assert.Multiple(() =>
+        {
+            Assert.That(enumerator.Current.TargetId, Is.EqualTo(model.Key));
+            Assert.That(enumerator.Current.Type, Is.EqualTo(ReviewType.TeacherComment));
+        });
+    }
+
+    [Test]
+    public async Task UpdateAsync_WhenAdmin_ShouldUpdateAndKeepApproved()
+    {
+        var model = new TeacherCommentModel { Key = "k1", UserId = "other_user", IsReview = false };
+        _mockRepo.Setup(r => r.GetByKeyAsync("k1")).ReturnsAsync(model);
+        _mockRepo.Setup(r => r.UpdateAsync(It.IsAny<TeacherCommentModel>())).Returns(Task.CompletedTask);
+
+        var request = new UpdateTeacherCommentRequest { TeacherName = "张老师", CourseName = "高数", Star = 3, Comment = "改" };
+
+        var result = await _service.UpdateAsync("k1", AdminId, true, request);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.IsReview, Is.True); // 管理员修改视为已通过
+            Assert.That(model.IsReview, Is.True);
+        });
+        _mockRepo.Verify(r => r.UpdateAsync(model), Times.Once);
+    }
+
+    [Test]
+    public void UpdateAsync_WhenNotOwnerNorAdmin_ShouldThrowPermissionError()
+    {
+        var model = new TeacherCommentModel { Key = "k1", UserId = "other_user" };
+        _mockRepo.Setup(r => r.GetByKeyAsync("k1")).ReturnsAsync(model);
+
+        var ex = Assert.ThrowsAsync<BusinessException>(async () =>
+            await _service.UpdateAsync("k1", UserId, false,
+                new UpdateTeacherCommentRequest { TeacherName = "张老师", CourseName = "高数", Star = 5 }));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(ex!.ErrorCode, Is.EqualTo(ErrorCode.InsufficientPermission));
+            Assert.That(ex.HttpStatusCode, Is.EqualTo(403));
+        });
+        _mockRepo.Verify(r => r.UpdateAsync(It.IsAny<TeacherCommentModel>()), Times.Never);
+    }
+
+    [Test]
+    public void UpdateAsync_WhenNotFound_ShouldThrow()
+    {
+        _mockRepo.Setup(r => r.GetByKeyAsync("missing")).ReturnsAsync((TeacherCommentModel?)null);
+
+        var ex = Assert.ThrowsAsync<ResourceAccessException>(async () =>
+            await _service.UpdateAsync("missing", UserId, false,
+                new UpdateTeacherCommentRequest { TeacherName = "张老师", CourseName = "高数", Star = 5 }));
+
+        Assert.That(ex!.ErrorCode, Is.EqualTo(ErrorCode.CommentNotFound));
+    }
+
+    [Test]
+    public void UpdateAsync_WhenTeacherNameEmpty_ShouldThrow()
+    {
+        var ex = Assert.ThrowsAsync<BusinessException>(async () =>
+            await _service.UpdateAsync("k1", UserId, false,
+                new UpdateTeacherCommentRequest { TeacherName = "", CourseName = "高数", Star = 5 }));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(ex!.ErrorCode, Is.EqualTo(ErrorCode.ParameterEmpty));
+            Assert.That(ex.Message, Does.Contain("教师姓名"));
+        });
+        _mockRepo.Verify(r => r.UpdateAsync(It.IsAny<TeacherCommentModel>()), Times.Never);
+    }
+
     // ==================== DeleteAsync ====================
 
     [Test]

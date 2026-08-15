@@ -179,6 +179,51 @@ class AppLocalizationsZh extends AppLocalizations {
   String get teacherCommentsNoComment => '该评价没有填写文字内容。';
 
   @override
+  String get teacherCommentsBrowse => '浏览评价';
+
+  @override
+  String get teacherCommentsMyComments => '我的评价';
+
+  @override
+  String get teacherCommentsMineEmpty => '你还没有提交过评价。';
+
+  @override
+  String get teacherCommentsMineLoadError => '我的评价加载失败，请稍后重试。';
+
+  @override
+  String get teacherCommentsEdit => '编辑';
+
+  @override
+  String get teacherCommentsDelete => '删除';
+
+  @override
+  String get teacherCommentsEditTitle => '修改评价';
+
+  @override
+  String get teacherCommentsEditSubtitle => '修改后需重新审核，审核通过后公开展示。';
+
+  @override
+  String get teacherCommentsSave => '保存';
+
+  @override
+  String get teacherCommentsUpdated => '评价已更新，重新进入审核';
+
+  @override
+  String get teacherCommentsDeleted => '评价已删除';
+
+  @override
+  String get teacherCommentsDeleteTitle => '删除评价';
+
+  @override
+  String get teacherCommentsDeleteDescription => '此操作不可撤销。确定要删除这条评价吗？';
+
+  @override
+  String get teacherCommentsStatusApproved => '已通过';
+
+  @override
+  String get teacherCommentsStatusPending => '审核中';
+
+  @override
   String get authLogin => '登录';
 
   @override

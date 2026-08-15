@@ -19,6 +19,24 @@ public class CreateTeacherCommentRequest
 }
 
 /// <summary>
+/// 修改教师评价请求（作者或管理员）
+/// </summary>
+public class UpdateTeacherCommentRequest
+{
+    /// <summary>教师姓名</summary>
+    public string TeacherName { get; set; } = "";
+
+    /// <summary>课程名称</summary>
+    public string CourseName { get; set; } = "";
+
+    /// <summary>评价内容</summary>
+    public string? Comment { get; set; }
+
+    /// <summary>评分（1-5）</summary>
+    public int Star { get; set; } = 5;
+}
+
+/// <summary>
 /// 管理员审核请求
 /// </summary>
 public class ReviewTeacherCommentRequest

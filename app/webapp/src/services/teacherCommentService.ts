@@ -4,11 +4,15 @@ import type {
   PagedResult,
   TeacherCommentItem,
   TeacherCommentSummary,
+  UpdateTeacherCommentRequest,
 } from '../types';
 
 export const teacherCommentService = {
   create: (data: CreateTeacherCommentRequest) =>
     apiClient.post<TeacherCommentItem>('/TeacherComment', data),
+
+  update: (key: string, data: UpdateTeacherCommentRequest) =>
+    apiClient.put<TeacherCommentItem>(`/TeacherComment/${key}`, data),
 
   getMine: () =>
     apiClient.get<TeacherCommentItem[]>('/TeacherComment/mine'),

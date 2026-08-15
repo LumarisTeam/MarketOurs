@@ -185,6 +185,56 @@ class AppLocalizationsRu extends AppLocalizations {
   String get teacherCommentsNoComment => 'This review has no written comment.';
 
   @override
+  String get teacherCommentsBrowse => 'Browse';
+
+  @override
+  String get teacherCommentsMyComments => 'My Reviews';
+
+  @override
+  String get teacherCommentsMineEmpty =>
+      'You haven\'t submitted any reviews yet.';
+
+  @override
+  String get teacherCommentsMineLoadError =>
+      'Failed to load your reviews. Please try again later.';
+
+  @override
+  String get teacherCommentsEdit => 'Edit';
+
+  @override
+  String get teacherCommentsDelete => 'Delete';
+
+  @override
+  String get teacherCommentsEditTitle => 'Edit Review';
+
+  @override
+  String get teacherCommentsEditSubtitle =>
+      'Edited reviews are re-reviewed before being shown publicly.';
+
+  @override
+  String get teacherCommentsSave => 'Save';
+
+  @override
+  String get teacherCommentsUpdated =>
+      'Review updated and re-submitted for review';
+
+  @override
+  String get teacherCommentsDeleted => 'Review deleted';
+
+  @override
+  String get teacherCommentsDeleteTitle => 'Delete Review';
+
+  @override
+  String get teacherCommentsDeleteDescription =>
+      'This action cannot be undone. Are you sure you want to delete this review?';
+
+  @override
+  String get teacherCommentsStatusApproved => 'Approved';
+
+  @override
+  String get teacherCommentsStatusPending => 'Pending';
+
+  @override
   String get authLogin => 'Войти';
 
   @override

@@ -24,6 +24,25 @@ class CreateTeacherCommentRequest {
 }
 
 @JsonSerializable(includeIfNull: false)
+class UpdateTeacherCommentRequest {
+  final String teacherName;
+  final String courseName;
+  final String? comment;
+  final int star;
+
+  const UpdateTeacherCommentRequest({
+    required this.teacherName,
+    required this.courseName,
+    this.comment,
+    required this.star,
+  });
+
+  factory UpdateTeacherCommentRequest.fromJson(Map<String, dynamic> json) =>
+      _$UpdateTeacherCommentRequestFromJson(json);
+  Map<String, dynamic> toJson() => _$UpdateTeacherCommentRequestToJson(this);
+}
+
+@JsonSerializable(includeIfNull: false)
 class ReviewTeacherCommentRequest {
   final bool isReview;
   final String? reviewNote;
