@@ -5,3 +5,4 @@ export * from './commentService';
 export * from './userService';
 export * from './fileService';
 export * from './adminService';
+export * from './teacherCommentService';

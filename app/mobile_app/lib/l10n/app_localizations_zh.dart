@@ -99,6 +99,83 @@ class AppLocalizationsZh extends AppLocalizations {
   String get tabProfile => '我的';
 
   @override
+  String get tabTeacherComments => '课程';
+
+  @override
+  String get teacherCommentsTitle => '教师课程评价';
+
+  @override
+  String get teacherCommentsSubtitle => '搜索教师查看课程评分，也可以提交自己的课程体验。';
+
+  @override
+  String get teacherCommentsSearchPlaceholder => '输入教师姓名';
+
+  @override
+  String get teacherCommentsSearch => '搜索';
+
+  @override
+  String get teacherCommentsEmptyTeacher => '尚未选择';
+
+  @override
+  String get teacherCommentsCurrentTeacher => '教师';
+
+  @override
+  String get teacherCommentsAverageStar => '评分';
+
+  @override
+  String get teacherCommentsTotalCount => '评价';
+
+  @override
+  String get teacherCommentsApprovedComments => '已通过评价';
+
+  @override
+  String get teacherCommentsSearchFirst => '先搜索教师姓名来查看评价。';
+
+  @override
+  String get teacherCommentsNoApprovedComments => '暂时没有已通过的评价。';
+
+  @override
+  String get teacherCommentsCreateTitle => '提交评价';
+
+  @override
+  String get teacherCommentsCreateSubtitle => '提交后会进入 AI 审核，通过后公开展示。';
+
+  @override
+  String get teacherCommentsLoginRequired => '登录后提交评价';
+
+  @override
+  String get teacherCommentsTeacherPlaceholder => '教师姓名';
+
+  @override
+  String get teacherCommentsCoursePlaceholder => '课程名称';
+
+  @override
+  String get teacherCommentsStarLabel => '评分';
+
+  @override
+  String get teacherCommentsCommentPlaceholder => '课程体验、授课方式、作业节奏等...';
+
+  @override
+  String get teacherCommentsSubmit => '提交评价';
+
+  @override
+  String get teacherCommentsSubmitted => '评价已提交，等待审核通过后展示';
+
+  @override
+  String get teacherCommentsTeacherRequired => '请输入教师姓名';
+
+  @override
+  String get teacherCommentsCourseRequired => '请输入课程名称';
+
+  @override
+  String teacherCommentsCommentTooLong(int max) {
+    return '评价内容不能超过 $max 字';
+  }
+
+  @override
+  String get teacherCommentsNoComment => '该评价没有填写文字内容。';
+
+  @override
   String get authLogin => '登录';
 
   @override

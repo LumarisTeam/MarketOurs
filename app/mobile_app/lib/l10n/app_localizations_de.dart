@@ -99,6 +99,88 @@ class AppLocalizationsDe extends AppLocalizations {
   String get tabProfile => 'Ich';
 
   @override
+  String get tabTeacherComments => 'Courses';
+
+  @override
+  String get teacherCommentsTitle => 'Teacher Course Reviews';
+
+  @override
+  String get teacherCommentsSubtitle =>
+      'Search teachers to view course ratings, or submit your own experience.';
+
+  @override
+  String get teacherCommentsSearchPlaceholder => 'Enter a teacher name';
+
+  @override
+  String get teacherCommentsSearch => 'Search';
+
+  @override
+  String get teacherCommentsEmptyTeacher => 'Not selected';
+
+  @override
+  String get teacherCommentsCurrentTeacher => 'Teacher';
+
+  @override
+  String get teacherCommentsAverageStar => 'Rating';
+
+  @override
+  String get teacherCommentsTotalCount => 'Reviews';
+
+  @override
+  String get teacherCommentsApprovedComments => 'Approved Reviews';
+
+  @override
+  String get teacherCommentsSearchFirst =>
+      'Search a teacher name to view reviews.';
+
+  @override
+  String get teacherCommentsNoApprovedComments => 'No approved reviews yet.';
+
+  @override
+  String get teacherCommentsCreateTitle => 'Submit Review';
+
+  @override
+  String get teacherCommentsCreateSubtitle =>
+      'Submissions enter AI review before they are shown publicly.';
+
+  @override
+  String get teacherCommentsLoginRequired => 'Log in to submit a review';
+
+  @override
+  String get teacherCommentsTeacherPlaceholder => 'Teacher name';
+
+  @override
+  String get teacherCommentsCoursePlaceholder => 'Course name';
+
+  @override
+  String get teacherCommentsStarLabel => 'Rating';
+
+  @override
+  String get teacherCommentsCommentPlaceholder =>
+      'Course experience, teaching style, workload...';
+
+  @override
+  String get teacherCommentsSubmit => 'Submit Review';
+
+  @override
+  String get teacherCommentsSubmitted =>
+      'Review submitted. It will appear after approval.';
+
+  @override
+  String get teacherCommentsTeacherRequired => 'Please enter a teacher name';
+
+  @override
+  String get teacherCommentsCourseRequired => 'Please enter a course name';
+
+  @override
+  String teacherCommentsCommentTooLong(int max) {
+    return 'Review cannot exceed $max characters';
+  }
+
+  @override
+  String get teacherCommentsNoComment => 'This review has no written comment.';
+
+  @override
   String get authLogin => 'Anmelden';
 
   @override

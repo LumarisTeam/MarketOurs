@@ -14,6 +14,7 @@ import '../pages/hot/hot_screen.dart';
 import '../pages/post/create_post_screen.dart';
 import '../pages/post/post_detail_screen.dart';
 import '../pages/tag/tag_screen.dart';
+import '../pages/teacher/teacher_comments_screen.dart';
 import '../pages/profile/change_password_screen.dart';
 import '../pages/profile/binding_screen.dart';
 import '../pages/profile/following_screen.dart';
@@ -37,6 +38,7 @@ abstract final class AppRoutePaths {
   static const home = '/';
   static const notifications = '/notifications';
   static const hot = '/hot';
+  static const teacherComments = '/teacher-comments';
   static const profile = '/profile';
   static const changePassword = '/profile/reset-password';
   static const bindings = '/profile/bindings';
@@ -60,6 +62,7 @@ abstract final class AppRouteNames {
   static const home = 'home';
   static const notifications = 'notifications';
   static const hot = 'hot';
+  static const teacherComments = 'teacher-comments';
   static const profile = 'profile';
   static const changePassword = 'change-password';
   static const bindings = 'bindings';
@@ -219,6 +222,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
+                path: AppRoutePaths.teacherComments,
+                name: AppRouteNames.teacherComments,
+                builder: (context, state) => const TeacherCommentsScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
                 path: AppRoutePaths.notifications,
                 name: AppRouteNames.notifications,
                 builder: (context, state) => NotificationScreen(
@@ -320,6 +332,7 @@ const _authRoutes = {
 bool _isPublicRoute(String path) {
   // Legal pages are publicly accessible.
   if (path == AppRoutePaths.terms || path == AppRoutePaths.privacy) return true;
+  if (path == AppRoutePaths.teacherComments) return true;
 
   // Post detail pages (e.g. /post/abc123) are publicly viewable, but NOT /post/create.
   if (path == AppRoutePaths.createPost) return false;

@@ -49,7 +49,12 @@ class _MainShellState extends ConsumerState<MainShell> {
 
     _lastExitAttemptAt = now;
     unawaited(ref.read(homeFeedProvider.notifier).refresh());
-    unawaited(AppFeedback.showInfo(context, message: AppLocalizations.of(context).nextExit));
+    unawaited(
+      AppFeedback.showInfo(
+        context,
+        message: AppLocalizations.of(context).nextExit,
+      ),
+    );
   }
 
   @override
@@ -267,6 +272,11 @@ List<_MainNavigationItem> _navigationItems(BuildContext context) {
       icon: CupertinoIcons.flame,
       activeIcon: CupertinoIcons.flame_fill,
       label: l10n.tabHot,
+    ),
+    _MainNavigationItem(
+      icon: CupertinoIcons.book,
+      activeIcon: CupertinoIcons.book_fill,
+      label: l10n.tabTeacherComments,
     ),
     _MainNavigationItem(
       icon: CupertinoIcons.bell,

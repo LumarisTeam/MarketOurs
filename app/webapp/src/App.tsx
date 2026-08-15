@@ -11,6 +11,7 @@ const AdminShell = lazy(() => import("./components/auth/AdminShell").then(m => (
 // Route-level code splitting — each page is loaded on demand
 const HomePage = lazy(() => import("./pages/home"))
 const HotPage = lazy(() => import("./pages/hot"))
+const TeacherCommentsPage = lazy(() => import("./pages/teacher-comments"))
 const AdminDashboard = lazy(() => import("./pages/admin/dashboard"))
 const AdminUsersPage = lazy(() => import("./pages/admin/users"))
 const AdminPostsPage = lazy(() => import("./pages/admin/posts"))
@@ -86,6 +87,7 @@ export function App() {
           <Route element={<MainLayout><Outlet /></MainLayout>}>
             <Route path="/" element={<HomePage />} />
             <Route path="/hot" element={<HotPage />} />
+            <Route path="/teacher-comments" element={<TeacherCommentsPage />} />
             <Route path="/post/:id" element={<PostDetailPage />} />
             <Route path="/tag/:id" element={<TagPage />} />
             <Route path="/post/create" element={<CreatePostPage />} />

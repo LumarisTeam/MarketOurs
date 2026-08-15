@@ -288,6 +288,156 @@ abstract class AppLocalizations {
   /// **'我的'**
   String get tabProfile;
 
+  /// No description provided for @tabTeacherComments.
+  ///
+  /// In zh, this message translates to:
+  /// **'课程'**
+  String get tabTeacherComments;
+
+  /// No description provided for @teacherCommentsTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'教师课程评价'**
+  String get teacherCommentsTitle;
+
+  /// No description provided for @teacherCommentsSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索教师查看课程评分，也可以提交自己的课程体验。'**
+  String get teacherCommentsSubtitle;
+
+  /// No description provided for @teacherCommentsSearchPlaceholder.
+  ///
+  /// In zh, this message translates to:
+  /// **'输入教师姓名'**
+  String get teacherCommentsSearchPlaceholder;
+
+  /// No description provided for @teacherCommentsSearch.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索'**
+  String get teacherCommentsSearch;
+
+  /// No description provided for @teacherCommentsEmptyTeacher.
+  ///
+  /// In zh, this message translates to:
+  /// **'尚未选择'**
+  String get teacherCommentsEmptyTeacher;
+
+  /// No description provided for @teacherCommentsCurrentTeacher.
+  ///
+  /// In zh, this message translates to:
+  /// **'教师'**
+  String get teacherCommentsCurrentTeacher;
+
+  /// No description provided for @teacherCommentsAverageStar.
+  ///
+  /// In zh, this message translates to:
+  /// **'评分'**
+  String get teacherCommentsAverageStar;
+
+  /// No description provided for @teacherCommentsTotalCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'评价'**
+  String get teacherCommentsTotalCount;
+
+  /// No description provided for @teacherCommentsApprovedComments.
+  ///
+  /// In zh, this message translates to:
+  /// **'已通过评价'**
+  String get teacherCommentsApprovedComments;
+
+  /// No description provided for @teacherCommentsSearchFirst.
+  ///
+  /// In zh, this message translates to:
+  /// **'先搜索教师姓名来查看评价。'**
+  String get teacherCommentsSearchFirst;
+
+  /// No description provided for @teacherCommentsNoApprovedComments.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂时没有已通过的评价。'**
+  String get teacherCommentsNoApprovedComments;
+
+  /// No description provided for @teacherCommentsCreateTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'提交评价'**
+  String get teacherCommentsCreateTitle;
+
+  /// No description provided for @teacherCommentsCreateSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'提交后会进入 AI 审核，通过后公开展示。'**
+  String get teacherCommentsCreateSubtitle;
+
+  /// No description provided for @teacherCommentsLoginRequired.
+  ///
+  /// In zh, this message translates to:
+  /// **'登录后提交评价'**
+  String get teacherCommentsLoginRequired;
+
+  /// No description provided for @teacherCommentsTeacherPlaceholder.
+  ///
+  /// In zh, this message translates to:
+  /// **'教师姓名'**
+  String get teacherCommentsTeacherPlaceholder;
+
+  /// No description provided for @teacherCommentsCoursePlaceholder.
+  ///
+  /// In zh, this message translates to:
+  /// **'课程名称'**
+  String get teacherCommentsCoursePlaceholder;
+
+  /// No description provided for @teacherCommentsStarLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'评分'**
+  String get teacherCommentsStarLabel;
+
+  /// No description provided for @teacherCommentsCommentPlaceholder.
+  ///
+  /// In zh, this message translates to:
+  /// **'课程体验、授课方式、作业节奏等...'**
+  String get teacherCommentsCommentPlaceholder;
+
+  /// No description provided for @teacherCommentsSubmit.
+  ///
+  /// In zh, this message translates to:
+  /// **'提交评价'**
+  String get teacherCommentsSubmit;
+
+  /// No description provided for @teacherCommentsSubmitted.
+  ///
+  /// In zh, this message translates to:
+  /// **'评价已提交，等待审核通过后展示'**
+  String get teacherCommentsSubmitted;
+
+  /// No description provided for @teacherCommentsTeacherRequired.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入教师姓名'**
+  String get teacherCommentsTeacherRequired;
+
+  /// No description provided for @teacherCommentsCourseRequired.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入课程名称'**
+  String get teacherCommentsCourseRequired;
+
+  /// No description provided for @teacherCommentsCommentTooLong.
+  ///
+  /// In zh, this message translates to:
+  /// **'评价内容不能超过 {max} 字'**
+  String teacherCommentsCommentTooLong(int max);
+
+  /// No description provided for @teacherCommentsNoComment.
+  ///
+  /// In zh, this message translates to:
+  /// **'该评价没有填写文字内容。'**
+  String get teacherCommentsNoComment;
+
   /// No description provided for @authLogin.
   ///
   /// In zh, this message translates to:

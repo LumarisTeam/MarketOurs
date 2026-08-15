@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils"
 import { useTheme } from "@/components/theme-provider"
 import {
   Sun, Moon, MessageSquare, User, Menu, LogIn, LogOut,
-  PlusSquare, Languages, Flame, ChevronDown
+  PlusSquare, Languages, Flame, ChevronDown, GraduationCap
 } from "lucide-react"
 import { useState } from "react"
 import { useSelector, useDispatch } from "react-redux"
@@ -41,6 +41,7 @@ export function Navbar() {
   const navItems = [
     { name: t("nav.home"), href: "/", icon: MessageSquare },
     { name: t("nav.hot"), href: "/hot", icon: Flame },
+    { name: t("nav.teacher_comments"), href: "/teacher-comments", icon: GraduationCap },
   ]
 
   const handleLogout = () => {
