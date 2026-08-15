@@ -4,6 +4,8 @@ using System.Text;
 using MarketOurs.Data.DataModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using ParadeDB.EntityFrameworkCore;
+using ParadeDB.EntityFrameworkCore.Extensions;
 
 namespace MarketOurs.Data;
 
@@ -131,6 +133,15 @@ public class MarketContext(DbContextOptions<MarketContext> options) : DbContext(
             .Property(x => x.ReviewedBy)
             .HasMaxLength(64);
 
+        // ParadeDB BM25 全文索引：标题/内容按中文分词，IsReview/TagId 用于过滤，CreatedAt 用于排序
+        modelBuilder.Entity<PostModel>()
+            .HasParadeDbIndex("posts_search_idx", e => e.Id)
+            .HasField(e => e.Title, Tokenizer.ChineseCompatible())
+            .HasField(e => e.Content, Tokenizer.ChineseCompatible())
+            .HasField(e => e.IsReview)
+            .HasField(e => e.TagId)
+            .HasField(e => e.CreatedAt);
+
         // 评论查询：WHERE PostId（详情页加载评论的热路径）
         modelBuilder.Entity<CommentModel>()
             .HasIndex(x => x.PostId);
@@ -164,6 +175,13 @@ public class MarketContext(DbContextOptions<MarketContext> options) : DbContext(
             entity.Property(e => e.CreatedOn).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.Star).HasDefaultValue(5);
             entity.Property(e => e.IsReview).HasDefaultValue(false);
+
+            // ParadeDB BM25 全文索引，教师姓名/课程名按中文分词，IsReview/CreatedOn 用于过滤与排序
+            entity.HasParadeDbIndex("teacher_comments_search_idx", e => e.Key)
+                .HasField(e => e.TeacherName, Tokenizer.ChineseCompatible())
+                .HasField(e => e.CourseName, Tokenizer.ChineseCompatible())
+                .HasField(e => e.IsReview)
+                .HasField(e => e.CreatedOn);
         });
     }
 }
@@ -174,7 +192,8 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<MarketCont
     public MarketContext CreateDbContext(string[] args)
     {
         var optionsBuilder = new DbContextOptionsBuilder<MarketContext>();
-        optionsBuilder.UseNpgsql("");
+        optionsBuilder.UseNpgsql("Host=localhost;Database=marketours_design;Username=postgres;Password=postgres",
+            o => o.UseParadeDb());
         return new MarketContext(optionsBuilder.Options);
     }
 }

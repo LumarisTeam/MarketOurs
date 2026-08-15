@@ -22,6 +22,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.IdentityModel.Tokens;
 using NpgsqlDataProtection;
+using ParadeDB.EntityFrameworkCore.Extensions;
 using Prometheus;
 using Scalar.AspNetCore;
 using Serilog;
@@ -390,7 +391,7 @@ else
     builder.Services.AddPooledDbContextFactory<MarketContext>((services, opt) =>
     {
         opt.UseNpgsql(sql,
-            o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
+            o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery).UseParadeDb());
         opt.ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
         opt.AddInterceptors(services.GetRequiredService<SlowQueryLoggingInterceptor>());
     }, poolSize: 64);

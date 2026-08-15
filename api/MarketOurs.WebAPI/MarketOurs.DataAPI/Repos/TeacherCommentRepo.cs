@@ -1,6 +1,7 @@
 using MarketOurs.Data;
 using MarketOurs.Data.DataModels;
 using Microsoft.EntityFrameworkCore;
+using ParadeDB.EntityFrameworkCore.Extensions;
 
 namespace MarketOurs.DataAPI.Repos;
 
@@ -67,6 +68,43 @@ public class TeacherCommentRepo(IDbContextFactory<MarketContext> factory) : ITea
     {
         await using var context = await factory.CreateDbContextAsync();
 
+        if (context.Database.IsNpgsql())
+        {
+            try
+            {
+                // ParadeDB BM25 全文检索教师姓名/课程名；无 ParadeDB 时回退到 Contains
+                IQueryable<TeacherCommentModel> query = context.TeacherComments.AsNoTracking()
+                    .Where(c => c.IsReview);
+
+                if (!string.IsNullOrWhiteSpace(keyword))
+                {
+                    var trimmedKeyword = keyword.Trim();
+                    query = query.Where(c =>
+                        EF.Functions.MatchAny(c.TeacherName, trimmedKeyword) ||
+                        EF.Functions.MatchAny(c.CourseName, trimmedKeyword));
+                }
+
+                var total = await query.CountAsync();
+                var items = await query
+                    .OrderByDescending(c => c.CreatedOn)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+                return (items, total);
+            }
+            catch
+            {
+                return await SearchApprovedWithContainsAsync(context, keyword, page, pageSize);
+            }
+        }
+
+        return await SearchApprovedWithContainsAsync(context, keyword, page, pageSize);
+    }
+
+    private static async Task<(List<TeacherCommentModel> Items, int Total)> SearchApprovedWithContainsAsync(
+        MarketContext context, string? keyword, int page, int pageSize)
+    {
         var query = context.TeacherComments.AsNoTracking()
             .Where(c => c.IsReview);
 

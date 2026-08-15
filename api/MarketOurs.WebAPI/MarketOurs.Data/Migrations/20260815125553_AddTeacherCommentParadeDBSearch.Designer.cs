@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using MarketOurs.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MarketOurs.Data.Migrations
 {
     [DbContext(typeof(MarketContext))]
-    partial class MarketContextModelSnapshot : ModelSnapshot
+    [Migration("20260815125553_AddTeacherCommentParadeDBSearch")]
+    partial class AddTeacherCommentParadeDBSearch
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -234,15 +237,6 @@ namespace MarketOurs.Data.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Id")
-                        .HasDatabaseName("posts_search_idx")
-                        .HasAnnotation("ParadeDB:IndexFieldAliases", new[] { "", "", "", "", "", "" })
-                        .HasAnnotation("ParadeDB:IndexFieldKinds", new[] { "property", "property", "property", "property", "property", "property" })
-                        .HasAnnotation("ParadeDB:IndexFieldOpclasses", new[] { "", "", "", "", "", "" })
-                        .HasAnnotation("ParadeDB:IndexFieldProperties", new[] { "Id", "Title", "Content", "IsReview", "TagId", "CreatedAt" })
-                        .HasAnnotation("ParadeDB:IndexFieldTokenizers", new[] { "", "pdb.chinese_compatible", "pdb.chinese_compatible", "", "", "" })
-                        .HasAnnotation("ParadeDB:IndexKeyProperty", "Id");
 
                     b.HasIndex("TagId");
 

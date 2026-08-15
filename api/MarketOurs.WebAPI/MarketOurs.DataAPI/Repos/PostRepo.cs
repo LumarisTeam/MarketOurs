@@ -2,6 +2,7 @@ using MarketOurs.Data;
 using MarketOurs.Data.DataModels;
 using MarketOurs.Data.DTOs;
 using Microsoft.EntityFrameworkCore;
+using ParadeDB.EntityFrameworkCore.Extensions;
 
 namespace MarketOurs.DataAPI.Repos;
 
@@ -256,20 +257,32 @@ public class PostRepo(IDbContextFactory<MarketContext> factory) : IPostRepo
         {
             try
             {
-                return await context.Posts
-                    .FromSqlInterpolated($"""
-                        SELECT *
-                        FROM posts
-                        WHERE "IsReview"
-                          AND ({tagId}::text IS NULL OR "TagId" = {tagId})
-                          AND ("Title" @@@ {keyword} OR "Content" @@@ {keyword})
-                        ORDER BY pdb.score("Id") DESC, "CreatedAt" DESC
-                        LIMIT {pageSize} OFFSET {offset}
-                        """)
+                // ParadeDB BM25 全文检索：先按相关性评分排序取出当前页主键，再回填完整实体
+                var pageIds = await context.Posts
+                    .Where(x => x.IsReview
+                        && (string.IsNullOrWhiteSpace(tagId) || x.TagId == tagId)
+                        && (EF.Functions.MatchAny(x.Title, keyword) || EF.Functions.MatchAny(x.Content, keyword)))
+                    .Select(x => new { x.Id, Score = EF.Functions.Score(x.Id), x.CreatedAt })
+                    .OrderByDescending(x => x.Score)
+                    .ThenByDescending(x => x.CreatedAt)
+                    .Skip(offset)
+                    .Take(pageSize)
+                    .Select(x => x.Id)
+                    .ToListAsync();
+
+                if (pageIds.Count == 0)
+                {
+                    return [];
+                }
+
+                var posts = await context.Posts
                     .AsNoTracking()
                     .Include(x => x.User)
                     .Include(x => x.Tag)
+                    .Where(x => pageIds.Contains(x.Id))
                     .ToListAsync();
+
+                return posts.OrderBy(x => pageIds.IndexOf(x.Id)).ToList();
             }
             catch
             {
@@ -305,13 +318,9 @@ public class PostRepo(IDbContextFactory<MarketContext> factory) : IPostRepo
             try
             {
                 return await context.Posts
-                    .FromSqlInterpolated($"""
-                        SELECT *
-                        FROM posts
-                        WHERE "IsReview"
-                          AND ({tagId}::text IS NULL OR "TagId" = {tagId})
-                          AND ("Title" @@@ {keyword} OR "Content" @@@ {keyword})
-                        """)
+                    .Where(x => x.IsReview
+                        && (string.IsNullOrWhiteSpace(tagId) || x.TagId == tagId)
+                        && (EF.Functions.MatchAny(x.Title, keyword) || EF.Functions.MatchAny(x.Content, keyword)))
                     .AsNoTracking()
                     .CountAsync();
             }
