@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import type { FormEvent } from "react"
-import { GraduationCap, Loader2, Plus, Search, Send, Star, UserRound } from "lucide-react"
+import { Loader2, Plus, Search, Send, Star } from "lucide-react"
 import { Link } from "react-router"
 import { useSelector } from "react-redux"
 import { useTranslation } from "react-i18next"
@@ -13,8 +13,8 @@ import { formatPostRelativeDate } from "@/lib/postDisplay"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Dialog,
   DialogContent,
@@ -290,30 +290,28 @@ function TeacherCommentCard({
   dateText: string
 }) {
   const authorName = comment.author?.name?.trim() || comment.userId
+  const authorAvatar = comment.author?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${comment.userId}`
+  const authorInitials = authorName.slice(0, 2).toUpperCase()
 
   return (
     <article className="group rounded-3xl border border-border/40 bg-card p-5 sm:p-6 transition-all duration-300 hover:border-primary/20 hover:shadow-md hover:shadow-primary/5 hover:-translate-y-0.5">
       <div className="mb-4 flex items-center gap-3">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-          <GraduationCap size={18} />
-        </div>
+        <Avatar className="h-10 w-10 rounded-full ring-2 ring-border/20">
+          <AvatarImage src={authorAvatar} alt={authorName} />
+          <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
+            {authorInitials}
+          </AvatarFallback>
+        </Avatar>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold">{comment.teacherName}</p>
-          <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-            <span className="inline-flex min-w-0 items-center gap-1">
-              <UserRound size={12} />
-              <span className="truncate">{authorName}</span>
-            </span>
-            <span aria-hidden="true">·</span>
-            <span>{dateText}</span>
-          </div>
+          <p className="truncate text-sm font-semibold">{authorName}</p>
+          <p className="text-xs text-muted-foreground">{dateText}</p>
         </div>
       </div>
 
-      <div className="mb-5 space-y-3">
-        <Badge variant="outline" className="w-fit max-w-full truncate rounded-full">
-          {comment.courseName}
-        </Badge>
+      <div className="mb-5 space-y-2">
+        <h2 className="truncate text-lg font-semibold leading-snug text-foreground">
+          {comment.teacherName} - {comment.courseName}
+        </h2>
         <p className="whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
           {comment.comment || noCommentText}
         </p>

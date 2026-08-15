@@ -213,18 +213,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: AppRoutePaths.hot,
-                name: AppRouteNames.hot,
-                builder: (context, state) => const HotScreen(),
+                path: AppRoutePaths.teacherComments,
+                name: AppRouteNames.teacherComments,
+                builder: (context, state) => const TeacherCommentsScreen(),
               ),
             ],
           ),
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: AppRoutePaths.teacherComments,
-                name: AppRouteNames.teacherComments,
-                builder: (context, state) => const TeacherCommentsScreen(),
+                path: AppRoutePaths.hot,
+                name: AppRouteNames.hot,
+                builder: (context, state) => const HotScreen(),
               ),
             ],
           ),

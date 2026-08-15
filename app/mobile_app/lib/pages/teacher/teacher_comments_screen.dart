@@ -534,14 +534,16 @@ class _CommentCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        comment.teacherName,
+                        authorName,
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       Text(
-                        '$authorName · ${formatRelativeDateTime(comment.createdOn, l10n)}',
+                        formatRelativeDateTime(comment.createdOn, l10n),
                         style: AppTextStyles.label(context),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -557,7 +559,14 @@ class _CommentCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _CoursePill(label: comment.courseName),
+                Text(
+                  '${comment.teacherName} - ${comment.courseName}',
+                  style: AppTextStyles.sectionTitle(
+                    context,
+                  ).copyWith(fontSize: 18, height: 1.3),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 const SizedBox(height: 10),
                 Text(commentText, style: AppTextStyles.body(context)),
               ],
@@ -627,23 +636,6 @@ class _StarRating extends StatelessWidget {
               ),
             ),
       ],
-    );
-  }
-}
-
-class _CoursePill extends StatelessWidget {
-  const _CoursePill({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: AppDecorations.pill(context, showBorder: true),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        child: Text(label, style: AppTextStyles.label(context)),
-      ),
     );
   }
 }
