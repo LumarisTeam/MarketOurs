@@ -1,5 +1,3 @@
-using MarketOurs.Data.DataModels;
-
 namespace MarketOurs.Data.DTOs;
 
 /// <summary>
@@ -25,8 +23,8 @@ public class CreateTeacherCommentRequest
 /// </summary>
 public class ReviewTeacherCommentRequest
 {
-    /// <summary>审核结论：Approved / Rejected</summary>
-    public CommentReviewStatus Status { get; set; }
+    /// <summary>是否通过审核</summary>
+    public bool IsReview { get; set; }
 
     /// <summary>审核备注</summary>
     public string? ReviewNote { get; set; }
@@ -44,7 +42,7 @@ public class TeacherCommentQueryRequest
     public string? CourseName { get; set; }
 
     /// <summary>审核状态筛选</summary>
-    public CommentReviewStatus? Status { get; set; }
+    public bool? IsReview { get; set; }
 
     /// <summary>最低评分</summary>
     public int? MinStar { get; set; }
@@ -79,8 +77,8 @@ public class TeacherCommentItem
     /// <summary>评分</summary>
     public int Star { get; set; }
 
-    /// <summary>审核状态</summary>
-    public CommentReviewStatus Status { get; set; }
+    /// <summary>是否通过审核</summary>
+    public bool IsReview { get; set; }
 
     /// <summary>AI 审核原因</summary>
     public string? AiReason { get; set; }

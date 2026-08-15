@@ -18,7 +18,7 @@ namespace MarketOurs.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.6")
+                .HasAnnotation("ProductVersion", "10.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -59,6 +59,13 @@ namespace MarketOurs.Data.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
 
+                    b.Property<string>("AiReason")
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
+
+                    b.Property<DateTime?>("AiReviewedOn")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasMaxLength(512)
@@ -88,6 +95,13 @@ namespace MarketOurs.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
+
+                    b.Property<string>("ReviewedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTime?>("ReviewedOn")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -163,6 +177,13 @@ namespace MarketOurs.Data.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
 
+                    b.Property<string>("AiReason")
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
+
+                    b.Property<DateTime?>("AiReviewedOn")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasMaxLength(1024)
@@ -183,6 +204,13 @@ namespace MarketOurs.Data.Migrations
 
                     b.Property<int>("Likes")
                         .HasColumnType("integer");
+
+                    b.Property<string>("ReviewedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTime?>("ReviewedOn")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("TagId")
                         .HasMaxLength(64)
@@ -368,6 +396,11 @@ namespace MarketOurs.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+                    b.Property<bool>("IsReview")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
                     b.Property<string>("ReviewedBy")
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
@@ -379,11 +412,6 @@ namespace MarketOurs.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
                         .HasDefaultValue(5);
-
-                    b.Property<int>("Status")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0);
 
                     b.Property<string>("TeacherName")
                         .IsRequired()
@@ -397,13 +425,13 @@ namespace MarketOurs.Data.Migrations
 
                     b.HasKey("Key");
 
-                    b.HasIndex("Status");
+                    b.HasIndex("IsReview");
 
                     b.HasIndex("TeacherName");
 
-                    b.HasIndex("TeacherName", "Status");
-
                     b.HasIndex("UserId");
+
+                    b.HasIndex("TeacherName", "IsReview");
 
                     b.ToTable("teacher_comments");
                 });

@@ -101,7 +101,7 @@ public class TeacherCommentControllerTests : ControllerTestBase
     public async Task AdminPending_WhenAdmin_ShouldReturnPendingList()
     {
         SetupUser(_controller, AdminId, "Admin");
-        var pending = new List<TeacherCommentItem> { new() { Key = "k1", Status = CommentReviewStatus.Pending } };
+        var pending = new List<TeacherCommentItem> { new() { Key = "k1", IsReview = false } };
 
         _mockService.Setup(s => s.GetPendingListAsync()).ReturnsAsync(pending);
 
@@ -120,22 +120,22 @@ public class TeacherCommentControllerTests : ControllerTestBase
     public async Task AdminReview_WhenAdmin_ShouldPassKeyAndAdminId()
     {
         SetupUser(_controller, AdminId, "Admin");
-        var reviewed = new TeacherCommentItem { Key = "k1", Status = CommentReviewStatus.Approved };
+        var reviewed = new TeacherCommentItem { Key = "k1", IsReview = true };
 
         _mockService
             .Setup(s => s.ReviewAsync("k1", AdminId, It.IsAny<ReviewTeacherCommentRequest>()))
             .ReturnsAsync(reviewed);
 
-        var result = await _controller.AdminReview("k1", new ReviewTeacherCommentRequest { Status = CommentReviewStatus.Approved });
+        var result = await _controller.AdminReview("k1", new ReviewTeacherCommentRequest { IsReview = true });
 
         Assert.Multiple(() =>
         {
             Assert.That(result.Code, Is.EqualTo(200));
-            Assert.That(result.Data!.Status, Is.EqualTo(CommentReviewStatus.Approved));
+            Assert.That(result.Data!.IsReview, Is.True);
             Assert.That(result.Message, Is.EqualTo("审核完成"));
         });
         _mockService.Verify(
-            s => s.ReviewAsync("k1", AdminId, It.Is<ReviewTeacherCommentRequest>(r => r.Status == CommentReviewStatus.Approved)),
+            s => s.ReviewAsync("k1", AdminId, It.Is<ReviewTeacherCommentRequest>(r => r.IsReview)),
             Times.Once);
     }
 

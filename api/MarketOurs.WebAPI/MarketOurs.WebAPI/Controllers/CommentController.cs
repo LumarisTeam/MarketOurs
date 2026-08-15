@@ -195,7 +195,7 @@ public class CommentController(ICommentService commentService, ILogger<CommentCo
     [Authorize(Roles = "Admin")]
     public async Task<ApiResponse<CommentDto>> Review(string id, [FromBody] UpdateCommentReviewRequest request)
     {
-        var comment = await commentService.UpdateReviewAsync(id, request.IsReview);
+        var comment = await commentService.UpdateReviewAsync(id, request.IsReview, this.GetRequiredUserId());
         return ApiResponse<CommentDto>.Success(comment, "审核成功");
     }
 }

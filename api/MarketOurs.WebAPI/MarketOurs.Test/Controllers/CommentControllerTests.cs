@@ -105,7 +105,7 @@ public class CommentControllerTests : ControllerTestBase
     {
         SetupUser(_controller, "admin_1", "Admin");
         _mockCommentService
-            .Setup(s => s.UpdateReviewAsync("1", true))
+            .Setup(s => s.UpdateReviewAsync("1", true, "admin_1"))
             .ReturnsAsync(new CommentDto { Id = "1", IsReview = true });
 
         var result = await _controller.Review("1", new UpdateCommentReviewRequest { IsReview = true });

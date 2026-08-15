@@ -60,7 +60,7 @@ public class TeacherCommentService(
             UserId = userId,
             Comment = request.Comment?.Trim(),
             Star = request.Star,
-            Status = CommentReviewStatus.Pending,
+            IsReview = false,
             CreatedOn = DateTime.UtcNow
         };
 
@@ -82,7 +82,7 @@ public class TeacherCommentService(
         var pageSize = Math.Clamp(request.PageSize, 1, 100);
 
         var (items, total) = await repository.QueryAsync(
-            request.TeacherName, request.CourseName, request.Status, request.MinStar, page, pageSize);
+            request.TeacherName, request.CourseName, request.IsReview, request.MinStar, page, pageSize);
 
         return PagedResultDto<TeacherCommentItem>.Success([.. items.Select(ToItem)], total, page, pageSize);
     }
@@ -95,22 +95,16 @@ public class TeacherCommentService(
 
     public async Task<TeacherCommentItem> ReviewAsync(string key, string adminId, ReviewTeacherCommentRequest request)
     {
-        if (request.Status != CommentReviewStatus.Approved && request.Status != CommentReviewStatus.Rejected)
-            throw new BusinessException(ErrorCode.InvalidStatusForOperation, "审核状态必须是 Approved 或 Rejected");
-
         var model = await repository.GetByKeyAsync(key)
                     ?? throw new ResourceAccessException(ErrorCode.CommentNotFound, "教师评价不存在", "TeacherComment", key);
 
-        if (model.Status != CommentReviewStatus.Pending)
-            throw new BusinessException(ErrorCode.InvalidStatusForOperation, "该评价已审核，不能重复审核");
-
-        model.Status = request.Status;
+        model.IsReview = request.IsReview;
         model.ReviewedOn = DateTime.UtcNow;
         model.ReviewedBy = adminId;
 
         // Note: ReviewNote 暂仅记录日志，未来可扩展为独立字段或审计表
-        logger.LogInformation("评价已人工审核，Key: {Key}, 状态: {Status}, 审核人: {AdminId}, 备注: {Note}",
-            key, request.Status, adminId, request.ReviewNote);
+        logger.LogInformation("评价已人工审核，Key: {Key}, 是否通过: {IsReview}, 审核人: {AdminId}, 备注: {Note}",
+            key, request.IsReview, adminId, request.ReviewNote);
 
         await repository.UpdateAsync(model);
         return ToItem(model);
@@ -166,7 +160,7 @@ public class TeacherCommentService(
         UserId = model.UserId,
         Comment = model.Comment,
         Star = model.Star,
-        Status = model.Status,
+        IsReview = model.IsReview,
         AiReason = model.AiReason,
         AiReviewedOn = model.AiReviewedOn,
         ReviewedOn = model.ReviewedOn,

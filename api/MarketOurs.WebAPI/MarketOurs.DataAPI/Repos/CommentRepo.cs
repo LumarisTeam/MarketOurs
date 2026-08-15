@@ -34,7 +34,7 @@ public interface ICommentRepo
     public Task UpdateAsync(UserModel user);
 
     public Task UpdateAsync(CommentModel comment);
-    public Task SetReviewStatusAsync(string id, bool isReview);
+    public Task SetReviewStatusAsync(string id, bool isReview, string? reason = null);
 
     public Task SetLikesAsync(UserModel user, string id);
     public Task SetDislikesAsync(UserModel user, string id);
@@ -256,7 +256,7 @@ public class CommentRepo(IDbContextFactory<MarketContext> factory) : ICommentRep
         await context.SaveChangesAsync();
     }
 
-    public async Task SetReviewStatusAsync(string id, bool isReview)
+    public async Task SetReviewStatusAsync(string id, bool isReview, string? reason = null)
     {
         await using var context = await factory.CreateDbContextAsync();
         var comment = await context.Commits.FirstOrDefaultAsync(c => c.Id == id);
@@ -266,6 +266,8 @@ public class CommentRepo(IDbContextFactory<MarketContext> factory) : ICommentRep
         }
 
         comment.IsReview = isReview;
+        comment.AiReason = isReview ? null : reason;
+        comment.AiReviewedOn = DateTime.UtcNow;
         comment.UpdatedAt = DateTime.UtcNow;
         await context.SaveChangesAsync();
     }

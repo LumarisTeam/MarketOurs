@@ -124,6 +124,12 @@ public class MarketContext(DbContextOptions<MarketContext> options) : DbContext(
 
         modelBuilder.Entity<PostModel>()
             .HasIndex(x => new { x.IsReview, x.TagId, x.CreatedAt });
+        modelBuilder.Entity<PostModel>()
+            .Property(x => x.AiReason)
+            .HasMaxLength(1024);
+        modelBuilder.Entity<PostModel>()
+            .Property(x => x.ReviewedBy)
+            .HasMaxLength(64);
 
         // 评论查询：WHERE PostId（详情页加载评论的热路径）
         modelBuilder.Entity<CommentModel>()
@@ -135,6 +141,12 @@ public class MarketContext(DbContextOptions<MarketContext> options) : DbContext(
         // 评论审核 + 排序辅助
         modelBuilder.Entity<CommentModel>()
             .HasIndex(x => new { x.IsReview, x.CreatedAt });
+        modelBuilder.Entity<CommentModel>()
+            .Property(x => x.AiReason)
+            .HasMaxLength(1024);
+        modelBuilder.Entity<CommentModel>()
+            .Property(x => x.ReviewedBy)
+            .HasMaxLength(64);
 
         modelBuilder.Entity<ReportModel>()
             .HasIndex(x => new { x.ReporterUserId, x.TargetType, x.TargetId })
@@ -147,11 +159,11 @@ public class MarketContext(DbContextOptions<MarketContext> options) : DbContext(
         {
             entity.HasIndex(e => e.UserId);
             entity.HasIndex(e => e.TeacherName);
-            entity.HasIndex(e => e.Status);
-            entity.HasIndex(e => new { e.TeacherName, e.Status });
+            entity.HasIndex(e => e.IsReview);
+            entity.HasIndex(e => new { e.TeacherName, e.IsReview });
             entity.Property(e => e.CreatedOn).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.Star).HasDefaultValue(5);
-            entity.Property(e => e.Status).HasDefaultValue(CommentReviewStatus.Pending);
+            entity.Property(e => e.IsReview).HasDefaultValue(false);
         });
     }
 }
@@ -174,7 +186,7 @@ public static class DataTool
     /// </summary>
     /// <param name="s">密码</param>
     /// <returns>加密后的哈希值</returns>
-    public static string StringToHash(this string s)
+    public static string StringToHash(this string? s)
     {
         return BCrypt.Net.BCrypt.HashPassword(s ?? string.Empty, workFactor: 12); // 工作因子为 12 ，可自行调整
     }

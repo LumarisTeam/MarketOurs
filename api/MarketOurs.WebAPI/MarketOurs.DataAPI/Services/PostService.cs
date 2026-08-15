@@ -117,7 +117,7 @@ public interface IPostService
     /// <param name="id">帖子 ID</param>
     /// <param name="isReview">是否审核通过</param>
     /// <returns>操作后的帖子DTO</returns>
-    Task<PostDto> UpdateReviewAsync(string id, bool isReview);
+    Task<PostDto> UpdateReviewAsync(string id, bool isReview, string reviewerId);
 
     /// <summary>
     /// 管理员单独更新帖子标签，不触发内容重新审核
@@ -426,7 +426,11 @@ public class PostService(
             IsLiked = dto.IsLiked,
             IsDisliked = dto.IsDisliked,
             Watch = dto.Watch,
-            IsReview = dto.IsReview
+            IsReview = dto.IsReview,
+            AiReason = dto.AiReason,
+            AiReviewedOn = dto.AiReviewedOn,
+            ReviewedOn = dto.ReviewedOn,
+            ReviewedBy = dto.ReviewedBy
         };
     }
 
@@ -755,13 +759,15 @@ public class PostService(
         return string.IsNullOrWhiteSpace(normalized) ? null : normalized;
     }
 
-    public async Task<PostDto> UpdateReviewAsync(string id, bool isReview)
+    public async Task<PostDto> UpdateReviewAsync(string id, bool isReview, string reviewerId)
     {
         var post = await postRepo.GetByIdAsync(id);
         if (post == null) throw new ResourceAccessException(ErrorCode.PostNotFound, "帖子不存在");
 
         post.IsReview = isReview;
         post.UpdatedAt = DateTime.UtcNow;
+        post.ReviewedOn = DateTime.UtcNow;
+        post.ReviewedBy = reviewerId;
 
         await postRepo.UpdateAsync(post);
         InvalidateCache(id);
@@ -892,6 +898,10 @@ public class PostService(
             Dislikes = post.Dislikes,
             Watch = post.Watch,
             IsReview = post.IsReview,
+            AiReason = post.AiReason,
+            AiReviewedOn = post.AiReviewedOn,
+            ReviewedOn = post.ReviewedOn,
+            ReviewedBy = post.ReviewedBy
         };
     }
 }

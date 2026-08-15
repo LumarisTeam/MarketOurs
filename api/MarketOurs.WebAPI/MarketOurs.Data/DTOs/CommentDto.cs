@@ -48,6 +48,26 @@ public class CommentDto
     public bool IsReview { get; set; }
 
     /// <summary>
+    /// AI 审核未通过原因
+    /// </summary>
+    public string? AiReason { get; set; }
+
+    /// <summary>
+    /// AI 审核时间
+    /// </summary>
+    public DateTime? AiReviewedOn { get; set; }
+
+    /// <summary>
+    /// 人工审核时间
+    /// </summary>
+    public DateTime? ReviewedOn { get; set; }
+
+    /// <summary>
+    /// 审核人
+    /// </summary>
+    public string? ReviewedBy { get; set; }
+
+    /// <summary>
     /// 创建时间
     /// </summary>
     public DateTime CreatedAt { get; set; }

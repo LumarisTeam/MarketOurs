@@ -7,7 +7,7 @@ namespace MarketOurs.DataAPI.Repos;
 public interface ITeacherCommentRepo
 {
     Task<(List<TeacherCommentModel> Items, int Total)> QueryAsync(
-        string? teacherName, string? courseName, CommentReviewStatus? status,
+        string? teacherName, string? courseName, bool? isReview,
         int? minStar, int page, int pageSize);
 
     Task<List<TeacherCommentModel>> GetByUserIdAsync(string userId);
@@ -30,7 +30,7 @@ public interface ITeacherCommentRepo
 public class TeacherCommentRepo(IDbContextFactory<MarketContext> factory) : ITeacherCommentRepo
 {
     public async Task<(List<TeacherCommentModel> Items, int Total)> QueryAsync(
-        string? teacherName, string? courseName, CommentReviewStatus? status,
+        string? teacherName, string? courseName, bool? isReview,
         int? minStar, int page, int pageSize)
     {
         await using var context = await factory.CreateDbContextAsync();
@@ -43,8 +43,8 @@ public class TeacherCommentRepo(IDbContextFactory<MarketContext> factory) : ITea
         if (!string.IsNullOrWhiteSpace(courseName))
             query = query.Where(c => c.CourseName.Contains(courseName));
 
-        if (status.HasValue)
-            query = query.Where(c => c.Status == status.Value);
+        if (isReview.HasValue)
+            query = query.Where(c => c.IsReview == isReview.Value);
 
         if (minStar.HasValue)
             query = query.Where(c => c.Star >= minStar.Value);
@@ -72,7 +72,7 @@ public class TeacherCommentRepo(IDbContextFactory<MarketContext> factory) : ITea
     {
         await using var context = await factory.CreateDbContextAsync();
         return await context.TeacherComments.AsNoTracking()
-            .Where(c => c.TeacherName.Contains(teacherName) && c.Status == CommentReviewStatus.Approved)
+            .Where(c => c.TeacherName.Contains(teacherName) && c.IsReview)
             .OrderByDescending(c => c.CreatedOn)
             .ToListAsync();
     }
@@ -81,7 +81,7 @@ public class TeacherCommentRepo(IDbContextFactory<MarketContext> factory) : ITea
     {
         await using var context = await factory.CreateDbContextAsync();
         return await context.TeacherComments.AsNoTracking()
-            .Where(c => c.Status == CommentReviewStatus.Pending)
+            .Where(c => !c.IsReview)
             .OrderByDescending(c => c.CreatedOn)
             .ToListAsync();
     }
@@ -115,7 +115,7 @@ public class TeacherCommentRepo(IDbContextFactory<MarketContext> factory) : ITea
             return;
         }
 
-        comment.Status = isReview ? CommentReviewStatus.Approved : CommentReviewStatus.Rejected;
+        comment.IsReview = isReview;
         comment.AiReason = isReview ? null : reason;
         comment.AiReviewedOn = DateTime.UtcNow;
         await context.SaveChangesAsync();

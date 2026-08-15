@@ -30,7 +30,7 @@ public interface IPostRepo
 
     Task CreateAsync(PostModel post);
     Task UpdateAsync(PostModel post);
-    Task SetReviewStatusAsync(string id, bool isReview);
+    Task SetReviewStatusAsync(string id, bool isReview, string? reason = null);
     Task SetTagAsync(string id, string? tagId);
 
     Task SetLikesAsync(UserModel user, string id);
@@ -369,6 +369,10 @@ public class PostRepo(IDbContextFactory<MarketContext> factory) : IPostRepo
             Dislikes = post.Dislikes,
             Watch = post.Watch,
             IsReview = post.IsReview,
+            AiReason = post.AiReason,
+            AiReviewedOn = post.AiReviewedOn,
+            ReviewedOn = post.ReviewedOn,
+            ReviewedBy = post.ReviewedBy,
             Author = new UserSimpleDto
             {
                 Id = post.User.Id,
@@ -415,7 +419,11 @@ public class PostRepo(IDbContextFactory<MarketContext> factory) : IPostRepo
             Likes = post.Likes,
             Dislikes = post.Dislikes,
             Watch = post.Watch,
-            IsReview = post.IsReview
+            IsReview = post.IsReview,
+            AiReason = post.AiReason,
+            AiReviewedOn = post.AiReviewedOn,
+            ReviewedOn = post.ReviewedOn,
+            ReviewedBy = post.ReviewedBy
         };
     }
 
@@ -437,7 +445,11 @@ public class PostRepo(IDbContextFactory<MarketContext> factory) : IPostRepo
             Likes = post.Likes,
             Dislikes = post.Dislikes,
             Watch = post.Watch,
-            IsReview = post.IsReview
+            IsReview = post.IsReview,
+            AiReason = post.AiReason,
+            AiReviewedOn = post.AiReviewedOn,
+            ReviewedOn = post.ReviewedOn,
+            ReviewedBy = post.ReviewedBy
         };
 
         await context.Posts.AddAsync(entity);
@@ -464,10 +476,14 @@ public class PostRepo(IDbContextFactory<MarketContext> factory) : IPostRepo
         entity.Dislikes = post.Dislikes;
         entity.Watch = post.Watch;
         entity.IsReview = post.IsReview;
+        entity.AiReason = post.AiReason;
+        entity.AiReviewedOn = post.AiReviewedOn;
+        entity.ReviewedOn = post.ReviewedOn;
+        entity.ReviewedBy = post.ReviewedBy;
         await context.SaveChangesAsync();
     }
 
-    public async Task SetReviewStatusAsync(string id, bool isReview)
+    public async Task SetReviewStatusAsync(string id, bool isReview, string? reason = null)
     {
         await using var context = await factory.CreateDbContextAsync();
         var post = await context.Posts.FirstOrDefaultAsync(x => x.Id == id);
@@ -477,6 +493,8 @@ public class PostRepo(IDbContextFactory<MarketContext> factory) : IPostRepo
         }
 
         post.IsReview = isReview;
+        post.AiReason = isReview ? null : reason;
+        post.AiReviewedOn = DateTime.UtcNow;
         await context.SaveChangesAsync();
     }
 

@@ -33,7 +33,7 @@ public class ReviewBackgroundServiceTests
             UserId = "user_1",
             Content = "test"
         });
-        commentRepo.Setup(r => r.SetReviewStatusAsync("comment_1", true)).Returns(Task.CompletedTask);
+        commentRepo.Setup(r => r.SetReviewStatusAsync("comment_1", true, null)).Returns(Task.CompletedTask);
         reviewService.Setup(r => r.Review(It.IsAny<string>())).ReturnsAsync(string.Empty);
 
         var serviceProvider = new Mock<IServiceProvider>();
@@ -69,8 +69,8 @@ public class ReviewBackgroundServiceTests
         {
         }
 
-        commentRepo.Verify(r => r.SetReviewStatusAsync("comment_1", true), Times.Once);
-        postRepo.Verify(r => r.SetReviewStatusAsync(It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
+        commentRepo.Verify(r => r.SetReviewStatusAsync("comment_1", true, null), Times.Once);
+        postRepo.Verify(r => r.SetReviewStatusAsync(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<string?>()), Times.Never);
     }
 
     [Test]
@@ -93,7 +93,7 @@ public class ReviewBackgroundServiceTests
             UserId = "user_1",
             Star = 4,
             Comment = "讲课清晰",
-            Status = CommentReviewStatus.Pending
+            IsReview = false
         });
         teacherCommentRepo
             .Setup(r => r.SetReviewStatusAsync("teacher_comment_1", false, "出现敏感词"))

@@ -113,7 +113,7 @@ public class ReviewBackgroundService(
                 if (message.Type == ReviewType.Post)
                 {
                     var postRepo = scope.ServiceProvider.GetRequiredService<IPostRepo>();
-                    await postRepo.SetReviewStatusAsync(message.TargetId, isApproved);
+                    await postRepo.SetReviewStatusAsync(message.TargetId, isApproved, isApproved ? null : reviewResult);
                     InvalidatePostCaches(targetId);
 
                     // 审核不通过时删除帖子关联的图片
@@ -126,7 +126,7 @@ public class ReviewBackgroundService(
                 else if (message.Type == ReviewType.Comment)
                 {
                     var commentRepo = scope.ServiceProvider.GetRequiredService<ICommentRepo>();
-                    await commentRepo.SetReviewStatusAsync(message.TargetId, isApproved);
+                    await commentRepo.SetReviewStatusAsync(message.TargetId, isApproved, isApproved ? null : reviewResult);
                     InvalidateCommentCaches(targetId, relatedPostId!);
                 }
                 else

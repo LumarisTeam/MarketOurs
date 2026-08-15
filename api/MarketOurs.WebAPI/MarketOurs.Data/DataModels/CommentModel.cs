@@ -45,6 +45,28 @@ public class CommentModel : DataModel
     public bool IsReview { get; set; }
 
     /// <summary>
+    /// AI 审核未通过原因
+    /// </summary>
+    [MaxLength(1024)]
+    public string? AiReason { get; set; }
+
+    /// <summary>
+    /// AI 审核时间
+    /// </summary>
+    public DateTime? AiReviewedOn { get; set; }
+
+    /// <summary>
+    /// 人工审核时间
+    /// </summary>
+    public DateTime? ReviewedOn { get; set; }
+
+    /// <summary>
+    /// 审核人 ID
+    /// </summary>
+    [MaxLength(64)]
+    public string? ReviewedBy { get; set; }
+
+    /// <summary>
     /// 子评论列表 (用于树形结构)
     /// </summary>
     public List<CommentModel> Comments { get; set; } = [];
@@ -118,5 +140,9 @@ public class CommentModel : DataModel
         Likes = commitModel.Likes;
         Dislikes = commitModel.Dislikes;
         IsReview = commitModel.IsReview;
+        AiReason = commitModel.AiReason;
+        AiReviewedOn = commitModel.AiReviewedOn;
+        ReviewedOn = commitModel.ReviewedOn;
+        ReviewedBy = commitModel.ReviewedBy;
     }
 }

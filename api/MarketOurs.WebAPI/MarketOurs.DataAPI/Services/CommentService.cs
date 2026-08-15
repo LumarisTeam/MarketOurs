@@ -54,7 +54,7 @@ public interface ICommentService
     /// <summary>
     /// 更新评论审核状态
     /// </summary>
-    Task<CommentDto> UpdateReviewAsync(string id, bool isReview);
+    Task<CommentDto> UpdateReviewAsync(string id, bool isReview, string reviewerId);
 
     /// <summary>
     /// 设置用户对评论的点赞状态，返回操作后的最新状态
@@ -295,13 +295,15 @@ public class CommentService(
         InvalidateCache(id, comment.PostId);
     }
 
-    public async Task<CommentDto> UpdateReviewAsync(string id, bool isReview)
+    public async Task<CommentDto> UpdateReviewAsync(string id, bool isReview, string reviewerId)
     {
         var comment = await commentRepo.GetByIdAsync(id);
         if (comment == null) throw new ResourceAccessException(ErrorCode.CommentNotFound, "评论不存在");
 
         comment.IsReview = isReview;
         comment.UpdatedAt = DateTime.UtcNow;
+        comment.ReviewedOn = DateTime.UtcNow;
+        comment.ReviewedBy = reviewerId;
 
         await commentRepo.UpdateAsync(comment);
         InvalidateCache(id, comment.PostId);
@@ -349,6 +351,10 @@ public class CommentService(
             Likes = comment.Likes,
             Dislikes = comment.Dislikes,
             IsReview = comment.IsReview,
+            AiReason = comment.AiReason,
+            AiReviewedOn = comment.AiReviewedOn,
+            ReviewedOn = comment.ReviewedOn,
+            ReviewedBy = comment.ReviewedBy,
             CreatedAt = comment.CreatedAt,
             UpdatedAt = comment.UpdatedAt,
             UserId = comment.UserId,

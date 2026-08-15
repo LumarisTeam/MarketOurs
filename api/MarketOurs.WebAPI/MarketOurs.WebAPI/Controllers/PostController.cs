@@ -209,7 +209,7 @@ public class PostController(IPostService postService) : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<ApiResponse<PostDto>> ReviewPost(string id, [FromBody] UpdatePostReviewRequest request)
     {
-        var post = await postService.UpdateReviewAsync(id, request.IsReview);
+        var post = await postService.UpdateReviewAsync(id, request.IsReview, this.GetRequiredUserId());
         return ApiResponse<PostDto>.Success(post, "审核成功");
     }
 

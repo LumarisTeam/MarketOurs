@@ -60,14 +60,14 @@ public class TeacherCommentServiceTests
             Assert.That(result.CourseName, Is.EqualTo("高等数学"));
             Assert.That(result.Comment, Is.EqualTo("讲课很清晰"));
             Assert.That(result.Star, Is.EqualTo(4));
-            Assert.That(result.Status, Is.EqualTo(CommentReviewStatus.Pending));
+            Assert.That(result.IsReview, Is.False);
             Assert.That(result.UserId, Is.EqualTo(UserId));
         });
         // 验证传入仓库的模型字段
         Assert.Multiple(() =>
         {
             Assert.That(captured!.UserId, Is.EqualTo(UserId));
-            Assert.That(captured.Status, Is.EqualTo(CommentReviewStatus.Pending));
+            Assert.That(captured.IsReview, Is.False);
         });
         _mockRepo.Verify(r => r.CreateAsync(It.IsAny<TeacherCommentModel>()), Times.Once);
 
@@ -189,18 +189,18 @@ public class TeacherCommentServiceTests
     public async Task QueryAsync_ShouldForwardFilters()
     {
         _mockRepo
-            .Setup(r => r.QueryAsync("张", "高数", CommentReviewStatus.Approved, 4, 1, 20))
+            .Setup(r => r.QueryAsync("张", "高数", true, 4, 1, 20))
             .ReturnsAsync((new List<TeacherCommentModel>(), 0));
 
         await _service.QueryAsync(new TeacherCommentQueryRequest
         {
             TeacherName = "张",
             CourseName = "高数",
-            Status = CommentReviewStatus.Approved,
+            IsReview = true,
             MinStar = 4
         });
 
-        _mockRepo.Verify(r => r.QueryAsync("张", "高数", CommentReviewStatus.Approved, 4, 1, 20), Times.Once);
+        _mockRepo.Verify(r => r.QueryAsync("张", "高数", true, 4, 1, 20), Times.Once);
     }
 
     // ==================== ReviewAsync ====================
@@ -208,14 +208,14 @@ public class TeacherCommentServiceTests
     [Test]
     public async Task ReviewAsync_WhenApproved_ShouldUpdateStatusAndReviewer()
     {
-        var model = new TeacherCommentModel { Key = "k1", Status = CommentReviewStatus.Pending };
+        var model = new TeacherCommentModel { Key = "k1", IsReview = false };
         _mockRepo.Setup(r => r.GetByKeyAsync("k1")).ReturnsAsync(model);
 
-        var result = await _service.ReviewAsync("k1", AdminId, new ReviewTeacherCommentRequest { Status = CommentReviewStatus.Approved, ReviewNote = "ok" });
+        var result = await _service.ReviewAsync("k1", AdminId, new ReviewTeacherCommentRequest { IsReview = true, ReviewNote = "ok" });
 
         Assert.Multiple(() =>
         {
-            Assert.That(result.Status, Is.EqualTo(CommentReviewStatus.Approved));
+            Assert.That(result.IsReview, Is.True);
             Assert.That(model.ReviewedBy, Is.EqualTo(AdminId));
             Assert.That(model.ReviewedOn, Is.Not.Null);
         });
@@ -225,24 +225,12 @@ public class TeacherCommentServiceTests
     [Test]
     public async Task ReviewAsync_WhenRejected_ShouldUpdateStatus()
     {
-        var model = new TeacherCommentModel { Key = "k1", Status = CommentReviewStatus.Pending };
+        var model = new TeacherCommentModel { Key = "k1", IsReview = true };
         _mockRepo.Setup(r => r.GetByKeyAsync("k1")).ReturnsAsync(model);
 
-        var result = await _service.ReviewAsync("k1", AdminId, new ReviewTeacherCommentRequest { Status = CommentReviewStatus.Rejected });
+        var result = await _service.ReviewAsync("k1", AdminId, new ReviewTeacherCommentRequest { IsReview = false });
 
-        Assert.That(result.Status, Is.EqualTo(CommentReviewStatus.Rejected));
-    }
-
-    [Test]
-    public void ReviewAsync_WithPendingStatus_ShouldThrow()
-    {
-        _mockRepo.Setup(r => r.GetByKeyAsync("k1")).ReturnsAsync(new TeacherCommentModel { Key = "k1" });
-
-        var ex = Assert.ThrowsAsync<BusinessException>(async () =>
-            await _service.ReviewAsync("k1", AdminId, new ReviewTeacherCommentRequest { Status = CommentReviewStatus.Pending }));
-
-        Assert.That(ex!.ErrorCode, Is.EqualTo(ErrorCode.InvalidStatusForOperation));
-        _mockRepo.Verify(r => r.UpdateAsync(It.IsAny<TeacherCommentModel>()), Times.Never);
+        Assert.That(result.IsReview, Is.False);
     }
 
     [Test]
@@ -251,7 +239,7 @@ public class TeacherCommentServiceTests
         _mockRepo.Setup(r => r.GetByKeyAsync("missing")).ReturnsAsync((TeacherCommentModel?)null);
 
         var ex = Assert.ThrowsAsync<ResourceAccessException>(async () =>
-            await _service.ReviewAsync("missing", AdminId, new ReviewTeacherCommentRequest { Status = CommentReviewStatus.Approved }));
+            await _service.ReviewAsync("missing", AdminId, new ReviewTeacherCommentRequest { IsReview = true }));
 
         Assert.Multiple(() =>
         {
@@ -259,23 +247,6 @@ public class TeacherCommentServiceTests
             Assert.That(ex.ResourceName, Is.EqualTo("TeacherComment"));
             Assert.That(ex.ResourceId, Is.EqualTo("missing"));
         });
-    }
-
-    [Test]
-    public void ReviewAsync_WhenAlreadyReviewed_ShouldThrow()
-    {
-        var model = new TeacherCommentModel { Key = "k1", Status = CommentReviewStatus.Approved };
-        _mockRepo.Setup(r => r.GetByKeyAsync("k1")).ReturnsAsync(model);
-
-        var ex = Assert.ThrowsAsync<BusinessException>(async () =>
-            await _service.ReviewAsync("k1", AdminId, new ReviewTeacherCommentRequest { Status = CommentReviewStatus.Rejected }));
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(ex!.ErrorCode, Is.EqualTo(ErrorCode.InvalidStatusForOperation));
-            Assert.That(ex.Message, Does.Contain("重复审核"));
-        });
-        _mockRepo.Verify(r => r.UpdateAsync(It.IsAny<TeacherCommentModel>()), Times.Never);
     }
 
     // ==================== DeleteAsync ====================
@@ -326,9 +297,9 @@ public class TeacherCommentServiceTests
     {
         var comments = new List<TeacherCommentModel>
         {
-            new() { TeacherName = "张老师", CourseName = "高数", Star = 4, Status = CommentReviewStatus.Approved },
-            new() { TeacherName = "张老师", CourseName = "线代", Star = 5, Status = CommentReviewStatus.Approved },
-            new() { TeacherName = "张老师", CourseName = "高数", Star = 3, Status = CommentReviewStatus.Approved }
+            new() { TeacherName = "张老师", CourseName = "高数", Star = 4, IsReview = true },
+            new() { TeacherName = "张老师", CourseName = "线代", Star = 5, IsReview = true },
+            new() { TeacherName = "张老师", CourseName = "高数", Star = 3, IsReview = true }
         };
         _mockRepo.Setup(r => r.GetApprovedByTeacherNameAsync("张老师")).ReturnsAsync(comments);
 
@@ -366,7 +337,7 @@ public class TeacherCommentServiceTests
     {
         var comments = new List<TeacherCommentModel>
         {
-            new() { Key = "k1", TeacherName = "张老师", Status = CommentReviewStatus.Approved }
+            new() { Key = "k1", TeacherName = "张老师", IsReview = true }
         };
         _mockRepo.Setup(r => r.GetApprovedByTeacherNameAsync("张老师")).ReturnsAsync(comments);
 
@@ -383,8 +354,8 @@ public class TeacherCommentServiceTests
     {
         var pending = new List<TeacherCommentModel>
         {
-            new() { Key = "k1", Status = CommentReviewStatus.Pending },
-            new() { Key = "k2", Status = CommentReviewStatus.Pending }
+            new() { Key = "k1", IsReview = false },
+            new() { Key = "k2", IsReview = false }
         };
         _mockRepo.Setup(r => r.GetPendingAsync()).ReturnsAsync(pending);
 

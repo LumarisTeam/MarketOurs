@@ -95,6 +95,28 @@ public class PostModel : DataModel
     public bool IsReview { get; set; }
 
     /// <summary>
+    /// AI 审核未通过原因
+    /// </summary>
+    [MaxLength(1024)]
+    public string? AiReason { get; set; }
+
+    /// <summary>
+    /// AI 审核时间
+    /// </summary>
+    public DateTime? AiReviewedOn { get; set; }
+
+    /// <summary>
+    /// 人工审核时间
+    /// </summary>
+    public DateTime? ReviewedOn { get; set; }
+
+    /// <summary>
+    /// 审核人 ID
+    /// </summary>
+    [MaxLength(64)]
+    public string? ReviewedBy { get; set; }
+
+    /// <summary>
     /// 更新实体属性
     /// </summary>
     /// <param name="model">源模型</param>
@@ -117,5 +139,10 @@ public class PostModel : DataModel
         Likes = postModel.Likes == 0 ? postModel.LikeUsers.Count : postModel.Likes;
         Dislikes = postModel.Dislikes == 0 ? postModel.DislikeUsers.Count : postModel.Dislikes;
         Watch = postModel.Watch;
+        IsReview = postModel.IsReview;
+        AiReason = postModel.AiReason;
+        AiReviewedOn = postModel.AiReviewedOn;
+        ReviewedOn = postModel.ReviewedOn;
+        ReviewedBy = postModel.ReviewedBy;
     }
 }

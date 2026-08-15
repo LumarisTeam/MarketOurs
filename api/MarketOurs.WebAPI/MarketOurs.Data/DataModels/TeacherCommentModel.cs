@@ -5,19 +5,6 @@ using System.Text.Json.Serialization;
 namespace MarketOurs.Data.DataModels;
 
 /// <summary>
-/// 教师评价审核状态
-/// </summary>
-public enum CommentReviewStatus
-{
-    /// <summary>待审核</summary>
-    Pending = 0,
-    /// <summary>已通过</summary>
-    Approved = 1,
-    /// <summary>已拒绝</summary>
-    Rejected = 2
-}
-
-/// <summary>
 /// 教师评价模型 —— 校园集市教师评价系统
 /// </summary>
 [Table("teacher_comments")]
@@ -50,8 +37,8 @@ public class TeacherCommentModel : DataModel
     /// <summary>评分（1-5 星，默认 5）</summary>
     public int Star { get; set; } = 5;
 
-    /// <summary>审核状态</summary>
-    public CommentReviewStatus Status { get; set; } = CommentReviewStatus.Pending;
+    /// <summary>是否通过审核</summary>
+    public bool IsReview { get; set; }
 
     /// <summary>AI 审核原因/说明</summary>
     [MaxLength(1024)]
@@ -78,7 +65,7 @@ public class TeacherCommentModel : DataModel
         CourseName = other.CourseName;
         Comment = other.Comment;
         Star = other.Star;
-        Status = other.Status;
+        IsReview = other.IsReview;
         AiReason = other.AiReason;
         AiReviewedOn = other.AiReviewedOn;
         ReviewedOn = other.ReviewedOn;
