@@ -358,8 +358,15 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
                 ],
               ),
               primary: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  if (!isMe) ...[
+                    Text(
+                      AppLocalizations.of(context).profileRecentPostsSubtitle,
+                      style: TextStyle(color: CupertinoColors.systemGrey),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
                   CupertinoSlidingSegmentedControl<int>(
                     groupValue: _contentTabIndex,
                     children: {
@@ -394,7 +401,6 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
                         posts: _recentPosts,
                         isLoadingMore: _isLoadingMore,
                         hasNextPage: _hasNextPage,
-                        isMe: isMe,
                       ),
                       _TeacherCommentsSection(
                         comments: _teacherComments,
@@ -419,26 +425,19 @@ class _RecentPostsSection extends StatelessWidget {
     required this.posts,
     required this.isLoadingMore,
     required this.hasNextPage,
-    required this.isMe,
   });
 
   final List<PostDto> posts;
   final bool isLoadingMore;
   final bool hasNextPage;
-  final bool isMe;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return ListView(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.zero,
       children: [
-        if (isMe) ...[
-          Text(
-            AppLocalizations.of(context).profileRecentPostsSubtitle,
-            style: TextStyle(color: CupertinoColors.systemGrey),
-          ),
-          const SizedBox(height: 12),
-        ],
         if (posts.isEmpty)
           AppSectionCard(
             child: Text(AppLocalizations.of(context).profileNoPublicPosts),
@@ -447,7 +446,7 @@ class _RecentPostsSection extends StatelessWidget {
           ...posts.map(
             (post) => Padding(
               padding: const EdgeInsets.only(bottom: 12),
-              child: SimplePostCard(post: post),
+              child: PostCard(post: post),
             ),
           ),
         if (isLoadingMore)
@@ -800,8 +799,10 @@ class _TeacherCommentsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return ListView(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.zero,
       children: [
         if (comments.isEmpty)
           Container(
@@ -893,9 +894,8 @@ class _TeacherCommentCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   '${comment.teacherName} - ${comment.courseName}',
-                  style: AppTextStyles.sectionTitle(
-                    context,
-                  ).copyWith(fontSize: 17, height: 1.3),
+                  style: AppTextStyles.sectionTitle(context)
+                      .copyWith(fontSize: 17, height: 1.3),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
