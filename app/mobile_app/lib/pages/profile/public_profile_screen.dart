@@ -1,5 +1,4 @@
 import 'package:cupertino_ui/cupertino_ui.dart';
-import 'package:flutter/widget_previews.dart';
 import 'package:mobile_app/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_app/components/post_card.dart';
@@ -20,13 +19,6 @@ import '../../models/report.dart';
 import '../../ui/app_responsive.dart';
 import '../../ui/app_widgets.dart';
 import '../../utils/date_formatters.dart';
-
-@Preview(name: 'Public Profile')
-Widget previewPublicProfileScreen() {
-  return const ProviderScope(
-    child: PublicProfileScreen(userId: 'preview-user-id'),
-  );
-}
 
 class PublicProfileScreen extends ConsumerStatefulWidget {
   const PublicProfileScreen({super.key, required this.userId});
