@@ -25,6 +25,7 @@ class FollowingScreen extends ConsumerStatefulWidget {
 class _FollowingScreenState extends ConsumerState<FollowingScreen> {
   final _followService = FollowService();
   late String _activeTab;
+  late final PageController _tabPageController;
   List<UserSimpleDto> _followingList = [];
   List<UserSimpleDto> _blockedList = [];
   bool _isLoading = true;
@@ -34,7 +35,16 @@ class _FollowingScreenState extends ConsumerState<FollowingScreen> {
   void initState() {
     super.initState();
     _activeTab = widget.initialTab;
+    _tabPageController = PageController(
+      initialPage: widget.initialTab == 'blocked' ? 1 : 0,
+    );
     _loadData();
+  }
+
+  @override
+  void dispose() {
+    _tabPageController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadData() async {
@@ -122,10 +132,58 @@ class _FollowingScreenState extends ConsumerState<FollowingScreen> {
     if (mounted) setState(() => _actionLoadingId = null);
   }
 
+  void _handleTabChanged(String? v) {
+    if (v != null && v != _activeTab) {
+      setState(() => _activeTab = v);
+      _tabPageController.animateToPage(
+        v == 'following' ? 0 : 1,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
+      );
+    }
+  }
+
+  Widget _buildListPage(List<UserSimpleDto> list, bool isBlocked) {
+    return Column(
+      children: [
+        if (_isLoading)
+          const Padding(
+            padding: EdgeInsets.only(top: 40),
+            child: CupertinoActivityIndicator(),
+          )
+        else if (list.isEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 40),
+            child: AppEmptyState(
+              icon: isBlocked
+                  ? CupertinoIcons.hand_raised
+                  : CupertinoIcons.person_2,
+              title: isBlocked
+                  ? AppLocalizations.of(context).profileBlockListEmptyDesc
+                  : AppLocalizations.of(context).profileNoFollows,
+              description: isBlocked
+                  ? AppLocalizations.of(context).profileBlockListEmptyDesc
+                  : AppLocalizations.of(context).profileFollowingEmptyDesc,
+            ),
+          )
+        else
+          ...list.map(
+            (user) => _UserTile(
+              user: user,
+              isBlocked: isBlocked,
+              isLoading: _actionLoadingId == user.id,
+              onAction: () => isBlocked
+                  ? _handleUnblock(user.id!)
+                  : _handleUnfollow(user.id!),
+              onTap: () => context.push(buildPublicProfileLocation(user.id!)),
+            ),
+          ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final list = _activeTab == 'following' ? _followingList : _blockedList;
-
     return AppPageScaffold(
       title: AppLocalizations.of(context).profileSocial,
       navigationBarStyle: AppNavigationBarStyle.compact,
@@ -152,44 +210,19 @@ class _FollowingScreenState extends ConsumerState<FollowingScreen> {
                       child: Text(AppLocalizations.of(context).profileBlock, style: const TextStyle(fontSize: 14)),
                     ),
                   },
-                  onValueChanged: (v) {
-                    if (v != null && v != _activeTab) {
-                      setState(() => _activeTab = v);
-                    }
-                  },
+                  onValueChanged: _handleTabChanged,
                 ),
                 const SizedBox(height: 20),
-                if (_isLoading)
-                  const Padding(
-                    padding: EdgeInsets.only(top: 40),
-                    child: CupertinoActivityIndicator(),
-                  )
-                else if (list.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 40),
-                    child: AppEmptyState(
-                      icon: _activeTab == 'following'
-                          ? CupertinoIcons.person_2
-                          : CupertinoIcons.hand_raised,
-                      title: _activeTab == 'following' ? AppLocalizations.of(context).profileNoFollows : AppLocalizations.of(context).profileBlockListEmptyDesc,
-                      description: _activeTab == 'following'
-                          ? AppLocalizations.of(context).profileFollowingEmptyDesc
-                          : AppLocalizations.of(context).profileBlockListEmptyDesc,
-                    ),
-                  )
-                else
-                  ...list.map(
-                    (user) => _UserTile(
-                      user: user,
-                      isBlocked: _activeTab == 'blocked',
-                      isLoading: _actionLoadingId == user.id,
-                      onAction: () => _activeTab == 'following'
-                          ? _handleUnfollow(user.id!)
-                          : _handleUnblock(user.id!),
-                      onTap: () =>
-                          context.push(buildPublicProfileLocation(user.id!)),
-                    ),
+                AutoSizedPageView(
+                  controller: _tabPageController,
+                  onPageChanged: (index) => setState(
+                    () => _activeTab = index == 0 ? 'following' : 'blocked',
                   ),
+                  children: [
+                    _buildListPage(_followingList, false),
+                    _buildListPage(_blockedList, true),
+                  ],
+                ),
               ],
             ),
           ),

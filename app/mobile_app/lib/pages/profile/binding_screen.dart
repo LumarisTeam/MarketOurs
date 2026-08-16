@@ -138,13 +138,18 @@ class _BindingSection extends StatelessWidget {
     }
 
     if (!_hasText(currentUser.email) && !_hasText(currentUser.phone)) {
-      await AppFeedback.showError(context, message: AppLocalizations.of(context).bindingFirstWarning);
+      await AppFeedback.showError(
+        context,
+        message: AppLocalizations.of(context).bindingFirstWarning,
+      );
       return;
     }
 
     final confirmed = await AppFeedback.confirm(
       context,
-      title: AppLocalizations.of(context).bindingUnbindCheckTitle(provider.name),
+      title: AppLocalizations.of(
+        context,
+      ).bindingUnbindCheckTitle(provider.name),
       message: AppLocalizations.of(context).bindingUnbindCheckDesc,
       confirmText: AppLocalizations.of(context).bindingContinue,
       destructive: true,
@@ -159,7 +164,12 @@ class _BindingSection extends StatelessWidget {
     );
 
     if (success == true && context.mounted) {
-      await AppFeedback.showSuccess(context, message: AppLocalizations.of(context).bindingUnboundSuccess(provider.name));
+      await AppFeedback.showSuccess(
+        context,
+        message: AppLocalizations.of(
+          context,
+        ).bindingUnboundSuccess(provider.name),
+      );
     }
   }
 
@@ -194,28 +204,20 @@ class _BindingRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final color = ColorManager.generateSoftColor(
+      provider.name,
+      isDark: CupertinoTheme.of(context).brightness == Brightness.dark,
+    );
     return AppListTile(
       padding: const EdgeInsets.symmetric(vertical: 12),
-      leading: Container(
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(
-          color: provider.isBound
-              ? const Color(0xFF34C759).withValues(alpha: 0.12)
-              : AppColors.primary.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Icon(
-          provider.icon,
-          size: 20,
-          color: provider.isBound ? const Color(0xFF34C759) : AppColors.primary,
-        ),
-      ),
+      leading: Icon(provider.icon, size: 20, color: color),
       title: Text(
         provider.name,
         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
       ),
-      subtitle: provider.isBound ? Text(AppLocalizations.of(context).bindingBound) : null,
+      subtitle: provider.isBound
+          ? Text(AppLocalizations.of(context).bindingBound)
+          : null,
       trailing: provider.isBound
           ? CupertinoButton(
               padding: EdgeInsets.zero,
@@ -330,7 +332,10 @@ class _UnbindThirdPartyDialogState
       }
       _startCountdown();
       if (mounted) {
-        await AppFeedback.showSuccess(context, message: AppLocalizations.of(context).bindingCodeSent);
+        await AppFeedback.showSuccess(
+          context,
+          message: AppLocalizations.of(context).bindingCodeSent,
+        );
       }
     } catch (error) {
       if (mounted) {
@@ -347,7 +352,9 @@ class _UnbindThirdPartyDialogState
     final channel = _selectedChannel;
     final code = _codeController.text.trim();
     if (channel == null || code.isEmpty || _isSubmitting) {
-      setState(() => _errorMessage = AppLocalizations.of(context).bindingEnterCode);
+      setState(
+        () => _errorMessage = AppLocalizations.of(context).bindingEnterCode,
+      );
       return;
     }
 
@@ -396,7 +403,9 @@ class _UnbindThirdPartyDialogState
     final channel = _selectedChannel;
 
     return CupertinoAlertDialog(
-      title: Text(AppLocalizations.of(context).bindingUnbindTitle(widget.provider)),
+      title: Text(
+        AppLocalizations.of(context).bindingUnbindTitle(widget.provider),
+      ),
       content: Padding(
         padding: const EdgeInsets.only(top: 12),
         child: Column(
@@ -496,7 +505,11 @@ class _UnbindThirdPartyDialogState
         CupertinoDialogAction(
           isDestructiveAction: true,
           onPressed: _isSubmitting ? null : _submit,
-          child: Text(_isSubmitting ? AppLocalizations.of(context).bindingUnbinding : AppLocalizations.of(context).bindingConfirmUnbind),
+          child: Text(
+            _isSubmitting
+                ? AppLocalizations.of(context).bindingUnbinding
+                : AppLocalizations.of(context).bindingConfirmUnbind,
+          ),
         ),
       ],
     );

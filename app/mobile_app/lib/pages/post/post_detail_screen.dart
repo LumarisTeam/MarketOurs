@@ -62,6 +62,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   double? _commentUploadProgress;
   String? _errorMessage;
   String _commentSort = 'recent';
+  CommentDto? _replyTarget;
   bool _postLiked = false;
   bool _postDisliked = false;
   int _commentsRequestId = 0;
@@ -239,35 +240,53 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 
     setState(() => _isWorking = true);
     try {
+      final replyTarget = _replyTarget;
       final uploadedImages = await _uploadCommentImages(
         _commentImageEntries.map((e) => e.localFile!).toList(),
         onProgress: (fraction) {
           if (mounted) setState(() => _commentUploadProgress = fraction);
         },
       );
-      final response = await _commentService.createComment(
-        CommentCreateDto(
-          content: content,
-          images: uploadedImages,
-          userId: user.id,
-          postId: widget.postId,
-        ),
-      );
+      final response = replyTarget == null
+          ? await _commentService.createComment(
+              CommentCreateDto(
+                content: content,
+                images: uploadedImages,
+                userId: user.id,
+                postId: widget.postId,
+              ),
+            )
+          : await _commentService.replyToComment(
+              replyTarget.id,
+              CommentCreateDto(
+                content: content,
+                images: uploadedImages,
+                userId: user.id,
+                postId: widget.postId,
+                parentCommentId: replyTarget.id,
+              ),
+            );
       final newComment = response.data == null
           ? null
           : _withAuthorFallback(response.data!, user);
       if (newComment != null) {
-        _insertCommentLocally(newComment);
+        if (replyTarget == null) {
+          _insertCommentLocally(newComment);
+        } else {
+          _insertReplyLocally(replyTarget.id, newComment);
+        }
         _commentController.clear();
         setState(() {
           _commentImageEntries.clear();
           _commentUploadProgress = null;
+          _replyTarget = null;
         });
-        if (mounted)
+        if (mounted) {
           await AppFeedback.showSuccess(
             context,
             message: AppLocalizations.of(context).postCommentSent,
           );
+        }
       }
     } catch (error) {
       if (!mounted) return;
@@ -305,66 +324,14 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     }
   }
 
-  Future<void> _replyComment(CommentDto comment) async {
+  void _startReply(CommentDto comment) {
     final user = ref.read(authControllerProvider).asData?.value.user;
     if (user == null) {
       context.go(AppRoutePaths.login);
       return;
     }
 
-    final draft = await _openCommentComposer(
-      title: AppLocalizations.of(context).replyComment,
-      initialValue: '',
-      hintText: AppLocalizations.of(context).replyHint,
-    );
-    if (draft == null ||
-        (draft.content.trim().isEmpty && draft.newImages.isEmpty)) {
-      return;
-    }
-    if (draft.content.trim().length > DtoLimits.commentContentMax) {
-      if (!mounted) return;
-      await AppFeedback.showError(
-        context,
-        message: AppLocalizations.of(
-          context,
-        ).postCommentTooLong(DtoLimits.commentContentMax),
-      );
-      return;
-    }
-
-    setState(() => _isWorking = true);
-    try {
-      final uploadedImages = await _uploadCommentImages(draft.newImages);
-      final response = await _commentService.replyToComment(
-        comment.id,
-        CommentCreateDto(
-          content: draft.content.trim(),
-          images: uploadedImages,
-          userId: user.id,
-          postId: widget.postId,
-          parentCommentId: comment.id,
-        ),
-      );
-      final newReply = response.data == null
-          ? null
-          : _withAuthorFallback(response.data!, user);
-      if (newReply != null) {
-        _insertReplyLocally(comment.id, newReply);
-        if (mounted)
-          await AppFeedback.showSuccess(
-            context,
-            message: AppLocalizations.of(context).replySent,
-          );
-      }
-    } catch (error) {
-      if (!mounted) return;
-      await AppFeedback.showError(
-        context,
-        message: extractErrorFromException(error),
-      );
-    } finally {
-      if (mounted) setState(() => _isWorking = false);
-    }
+    setState(() => _replyTarget = comment);
   }
 
   Future<void> _editComment(CommentDto comment) async {
@@ -400,11 +367,12 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         CommentUpdateDto(content: draft.content.trim(), images: nextImages),
       );
       _updateCommentLocally(comment.id, draft.content.trim(), nextImages);
-      if (mounted)
+      if (mounted) {
         await AppFeedback.showSuccess(
           context,
           message: AppLocalizations.of(context).commentUpdated,
         );
+      }
     } catch (error) {
       if (!mounted) return;
       await AppFeedback.showError(
@@ -534,11 +502,12 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     try {
       await _commentService.deleteComment(comment.id);
       _removeCommentLocally(comment.id);
-      if (mounted)
+      if (mounted) {
         await AppFeedback.showSuccess(
           context,
           message: AppLocalizations.of(context).commentDeleted,
         );
+      }
     } catch (error) {
       if (!mounted) return;
       await AppFeedback.showError(
@@ -1210,26 +1179,39 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     final post = _post;
     final isOwner = post != null && user != null && post.userId == user.id;
 
-    final trailing = user == null ? null : CupertinoButton(
+    final trailing = user == null
+        ? null
+        : CupertinoButton(
             padding: EdgeInsets.zero,
             onPressed: () {
               showCupertinoModalPopup<void>(
                 context: context,
                 builder: (_) => CupertinoActionSheet(
                   actions: [
-                    if (!isOwner) CupertinoActionSheetAction(
-                      isDestructiveAction: true,
-                      onPressed: () { Navigator.of(context).pop(); showReportSheet(context, targetType: ReportTargetType.post, targetId: post?.id ?? widget.postId); },
-                      child: const Text('举报帖子'),
-                    ),
+                    if (!isOwner)
+                      CupertinoActionSheetAction(
+                        isDestructiveAction: true,
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          showReportSheet(
+                            context,
+                            targetType: ReportTargetType.post,
+                            targetId: post?.id ?? widget.postId,
+                          );
+                        },
+                        child: const Text('举报帖子'),
+                      ),
                     if (isOwner) ...[
-                    if (isOwner) CupertinoActionSheetAction(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        _editPost();
-                      },
-                      child: Text(AppLocalizations.of(context).postEditTitle),
-                    ),
+                      if (isOwner)
+                        CupertinoActionSheetAction(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            _editPost();
+                          },
+                          child: Text(
+                            AppLocalizations.of(context).postEditTitle,
+                          ),
+                        ),
                     ],
                     CupertinoActionSheetAction(
                       isDestructiveAction: true,
@@ -1370,7 +1352,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             currentUserId: user?.id,
                             onAuthorTapForUser: (id) =>
                                 context.push(buildPublicProfileLocation(id)),
-                            onReply: () => _replyComment(c),
+                            onReply: () => _startReply(c),
                             onEdit: user?.id == c.userId
                                 ? () => _editComment(c)
                                 : null,
@@ -1378,7 +1360,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                 ? () => _deleteComment(c)
                                 : null,
                             onReport: user != null
-                                ? (comment) => showReportSheet(context, targetType: ReportTargetType.comment, targetId: comment.id)
+                                ? (comment) => showReportSheet(
+                                    context,
+                                    targetType: ReportTargetType.comment,
+                                    targetId: comment.id,
+                                  )
                                 : null,
                             likedComments: _likedComments,
                             dislikedComments: _dislikedComments,
@@ -1427,7 +1413,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                 }
                               }, reloadAll: false);
                             },
-                            onReplyChild: _replyComment,
+                            onReplyChild: _startReply,
                             onEditChild: _editComment,
                             onDeleteChild: _deleteComment,
                             onLikeChild: (child) {
@@ -1499,17 +1485,24 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }
 
   Widget _buildCommentComposer(BuildContext context) {
+    final replyName = _replyTarget?.author?.name?.trim();
     return PostDetailCommentComposer(
       controller: _commentController,
       localImages: const [],
       isWorking: _isWorking,
       uploadProgress: _commentUploadProgress,
+      replyTargetName:
+          _replyTarget == null ? null : (replyName ?? ''),
+      onCancelReply: _replyTarget == null
+          ? null
+          : () => setState(() => _replyTarget = null),
       onPickImages:
           _isWorking ||
               _commentImageEntries.length >= postDetailMaxCommentImages
           ? null
           : _pickCommentImages,
-      onRemoveLocal: (_) {}, // unused in reorderable mode
+      onRemoveLocal: (_) {},
+      // unused in reorderable mode
       onSubmit: _submitComment,
       reorderableEntries: _commentImageEntries,
       onReorderImages: _isWorking ? null : _reorderCommentImages,

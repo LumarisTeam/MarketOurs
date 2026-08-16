@@ -1,25 +1,23 @@
 import 'package:flutter/cupertino.dart';
 import 'package:mobile_app/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../providers/auth_provider.dart';
-import '../../router/app_router.dart';
 import '../../ui/app_feedback.dart';
-import '../../ui/app_responsive.dart';
+import '../../ui/app_theme.dart';
 import '../../ui/app_widgets.dart';
 import '../../utils/dto_validation.dart';
 import '../auth/password_form_field.dart';
 
-class ChangePasswordScreen extends ConsumerStatefulWidget {
-  const ChangePasswordScreen({super.key});
+class ChangePasswordSheet extends ConsumerStatefulWidget {
+  const ChangePasswordSheet({super.key});
 
   @override
-  ConsumerState<ChangePasswordScreen> createState() =>
-      _ChangePasswordScreenState();
+  ConsumerState<ChangePasswordSheet> createState() =>
+      _ChangePasswordSheetState();
 }
 
-class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
+class _ChangePasswordSheetState extends ConsumerState<ChangePasswordSheet> {
   final _formKey = GlobalKey<FormState>();
   final _oldPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
@@ -48,11 +46,14 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
       if (!mounted) {
         return;
       }
-      await AppFeedback.showSuccess(context, message: AppLocalizations.of(context).passwordChanged);
+      await AppFeedback.showSuccess(
+        context,
+        message: AppLocalizations.of(context).passwordChanged,
+      );
       if (!mounted) {
         return;
       }
-      context.go(AppRoutePaths.profile);
+      Navigator.of(context).pop();
     } catch (_) {
       final errorMessage = ref
           .read(authControllerProvider)
@@ -74,14 +75,23 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
     final authState = ref.watch(authControllerProvider).asData?.value;
     final isSubmitting = authState?.isSubmitting ?? false;
 
-    return AppPageScaffold(
-      title: l10n.profileChangePasswordTitle,
-      navigationBarStyle: AppNavigationBarStyle.compact,
-      maxContentWidth: AppResponsive.readableMaxWidth(context, fallback: 560),
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+      ),
       child: Form(
         key: _formKey,
-        child: Column(
+        child: ListView(
+          shrinkWrap: true,
           children: [
+            Text(
+              l10n.profileChangePasswordTitle,
+              style: AppTextStyles.sectionTitle(context),
+            ),
+            const SizedBox(height: 20),
             PasswordFormField(
               controller: _oldPasswordController,
               placeholder: l10n.currentPasswordPlaceholder,

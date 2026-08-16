@@ -17,6 +17,7 @@ import '../../ui/app_responsive.dart';
 import '../../ui/app_theme.dart';
 import '../../ui/app_widgets.dart';
 import '../../utils/dto_validation.dart';
+import 'change_password_sheet.dart';
 import 'profile_edit_controller.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -207,7 +208,7 @@ class ProfileScreen extends ConsumerWidget {
                             context,
                           ).profileChangePasswordDesc,
                           onTap: () =>
-                              context.push(AppRoutePaths.changePassword),
+                              _openChangePasswordSheet(context),
                         ),
                         _NavRow(
                           icon: CupertinoIcons.square_arrow_right,
@@ -268,6 +269,13 @@ class ProfileScreen extends ConsumerWidget {
     await showAppBottomSheet<void>(
       context: context,
       builder: (context) => _ProfileEditSheet(initialUser: user),
+    );
+  }
+
+  Future<void> _openChangePasswordSheet(BuildContext context) async {
+    await showAppBottomSheet<void>(
+      context: context,
+      builder: (context) => const ChangePasswordSheet(),
     );
   }
 

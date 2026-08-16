@@ -40,6 +40,9 @@ class PostDetailCommentComposer extends StatefulWidget {
     required this.onPickImages,
     required this.onRemoveLocal,
     required this.onSubmit,
+    // Reply mode
+    this.replyTargetName,
+    this.onCancelReply,
     // Reorderable mode
     this.reorderableEntries,
     this.onReorderImages,
@@ -53,6 +56,10 @@ class PostDetailCommentComposer extends StatefulWidget {
   final VoidCallback? onPickImages;
   final ValueChanged<int> onRemoveLocal;
   final VoidCallback onSubmit;
+
+  // Reply mode
+  final String? replyTargetName;
+  final VoidCallback? onCancelReply;
 
   // Reorderable mode
   final List<EditableImageEntry>? reorderableEntries;
@@ -80,6 +87,17 @@ class _PostDetailCommentComposerState extends State<PostDetailCommentComposer> {
     _focusNode.removeListener(_handleFocusChanged);
     _focusNode.dispose();
     super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant PostDetailCommentComposer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.replyTargetName != null &&
+        oldWidget.replyTargetName != widget.replyTargetName) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _focusNode.requestFocus();
+      });
+    }
   }
 
   void _handleFocusChanged() {
@@ -210,6 +228,56 @@ class _PostDetailCommentComposerState extends State<PostDetailCommentComposer> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  if (widget.replyTargetName != null) ...[
+                    Row(
+                      children: [
+                        Icon(
+                          CupertinoIcons.reply,
+                          size: 14,
+                          color: CupertinoDynamicColor.resolve(
+                            AppColors.primary,
+                            context,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            widget.replyTargetName!.isEmpty
+                                ? AppLocalizations.of(
+                                    context,
+                                  ).replyComment
+                                : '@${widget.replyTargetName}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: CupertinoDynamicColor.resolve(
+                                AppColors.primary,
+                                context,
+                              ),
+                            ),
+                          ),
+                        ),
+                        CupertinoButton(
+                          padding: EdgeInsets.zero,
+                          minimumSize: const Size(28, 28),
+                          onPressed: widget.isWorking
+                              ? null
+                              : widget.onCancelReply,
+                          child: Icon(
+                            CupertinoIcons.xmark_circle_fill,
+                            size: 18,
+                            color: CupertinoDynamicColor.resolve(
+                              AppColors.mutedForeground,
+                              context,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                  ],
                   if (useReorderable)
                     EditableImageWrap(
                       reorderable: true,
@@ -302,9 +370,14 @@ class _PostDetailCommentComposerState extends State<PostDetailCommentComposer> {
                                 child: CupertinoTextField(
                                   controller: widget.controller,
                                   focusNode: _focusNode,
-                                  placeholder: AppLocalizations.of(
-                                    context,
-                                  ).postWriteComment,
+                                  placeholder:
+                                      widget.replyTargetName == null
+                                      ? AppLocalizations.of(
+                                          context,
+                                        ).postWriteComment
+                                      : AppLocalizations.of(
+                                          context,
+                                        ).replyHint,
                                   placeholderStyle: TextStyle(
                                     fontSize: 14,
                                     color: CupertinoDynamicColor.resolve(

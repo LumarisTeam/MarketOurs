@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/widget_previews.dart';
 import 'package:mobile_app/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_app/components/post_card.dart';
@@ -20,6 +21,13 @@ import '../../ui/app_responsive.dart';
 import '../../ui/app_widgets.dart';
 import '../../utils/date_formatters.dart';
 
+@Preview(name: 'Public Profile')
+Widget previewPublicProfileScreen() {
+  return const ProviderScope(
+    child: PublicProfileScreen(userId: 'preview-user-id'),
+  );
+}
+
 class PublicProfileScreen extends ConsumerStatefulWidget {
   const PublicProfileScreen({super.key, required this.userId});
 
@@ -37,6 +45,8 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
   final _followService = FollowService();
   final _teacherCommentService = TeacherCommentService();
   late final ScrollController _scrollController;
+  late final PageController _tabPageController;
+  int _contentTabIndex = 0;
   int _loadVersion = 0;
   PublicUserProfileDto? _profile;
   List<PostDto> _recentPosts = const [];
@@ -57,6 +67,7 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
   void initState() {
     super.initState();
     _scrollController = ScrollController()..addListener(_handleScroll);
+    _tabPageController = PageController();
     _load();
   }
 
@@ -65,6 +76,7 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
     _scrollController
       ..removeListener(_handleScroll)
       ..dispose();
+    _tabPageController.dispose();
     super.dispose();
   }
 
@@ -112,8 +124,9 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
       final postsFuture = ref
           .read(postServiceProvider)
           .getUserPosts(requestUserId, pageIndex: 1, pageSize: _pageSize);
-      final commentsFuture =
-          _teacherCommentService.getUserComments(requestUserId);
+      final commentsFuture = _teacherCommentService.getUserComments(
+        requestUserId,
+      );
 
       final profileResponse = await profileFuture;
       final postsResponse = await postsFuture;
@@ -134,7 +147,8 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
       setState(() {
         _profile = profile;
         _recentPosts = postsPage?.items ?? const <PostDto>[];
-        _teacherComments = commentsResponse.data ?? const <TeacherCommentItem>[];
+        _teacherComments =
+            commentsResponse.data ?? const <TeacherCommentItem>[];
         _postsPageIndex = postsPage?.pageIndex ?? 1;
         _hasNextPage = postsPage?.hasNextPage ?? false;
         _followerCount = profile.followerCount;
@@ -239,11 +253,17 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
     if (mounted) setState(() => _followLoading = false);
   }
 
-  Future<void> _reportUser() => showReportSheet(context, targetType: ReportTargetType.user, targetId: widget.userId);
+  Future<void> _reportUser() => showReportSheet(
+    context,
+    targetType: ReportTargetType.user,
+    targetId: widget.userId,
+  );
 
   Future<void> _reloadComments() async {
     try {
-      final response = await _teacherCommentService.getUserComments(widget.userId);
+      final response = await _teacherCommentService.getUserComments(
+        widget.userId,
+      );
       if (mounted) {
         setState(() => _teacherComments = response.data ?? const []);
       }
@@ -266,6 +286,16 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
         onDeleted: _reloadComments,
       );
 
+  void _handleTabChanged(int? value) {
+    if (value == null) return;
+    setState(() => _contentTabIndex = value);
+    _tabPageController.animateToPage(
+      value,
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider).asData?.value;
@@ -283,7 +313,11 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
       return AppPageScaffold(
         navigationBarStyle: AppNavigationBarStyle.compact,
         title: AppLocalizations.of(context).profilePublicProfile,
-        child: _ErrorState(message: _errorMessage ?? AppLocalizations.of(context).postUserNotFound, onRetry: _load),
+        child: _ErrorState(
+          message:
+              _errorMessage ?? AppLocalizations.of(context).postUserNotFound,
+          onRetry: _load,
+        ),
       );
     }
 
@@ -326,18 +360,49 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
               primary: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _RecentPostsSection(
-                    posts: _recentPosts,
-                    isLoadingMore: _isLoadingMore,
-                    hasNextPage: _hasNextPage,
-                    isMe: isMe,
+                  CupertinoSlidingSegmentedControl<int>(
+                    groupValue: _contentTabIndex,
+                    children: {
+                      0: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 4,
+                          horizontal: 12,
+                        ),
+                        child: Text(
+                          AppLocalizations.of(context).profileRecentPosts,
+                        ),
+                      ),
+                      1: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 4,
+                          horizontal: 12,
+                        ),
+                        child: Text(
+                          AppLocalizations.of(context).teacherCommentsTitle,
+                        ),
+                      ),
+                    },
+                    onValueChanged: _handleTabChanged,
                   ),
-                  const SizedBox(height: 28),
-                  _TeacherCommentsSection(
-                    comments: _teacherComments,
-                    isMe: isMe,
-                    onEdit: _editComment,
-                    onDelete: _deleteComment,
+                  const SizedBox(height: 16),
+                  AutoSizedPageView(
+                    controller: _tabPageController,
+                    onPageChanged: (index) =>
+                        setState(() => _contentTabIndex = index),
+                    children: [
+                      _RecentPostsSection(
+                        posts: _recentPosts,
+                        isLoadingMore: _isLoadingMore,
+                        hasNextPage: _hasNextPage,
+                        isMe: isMe,
+                      ),
+                      _TeacherCommentsSection(
+                        comments: _teacherComments,
+                        isMe: isMe,
+                        onEdit: _editComment,
+                        onDelete: _deleteComment,
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -367,22 +432,13 @@ class _RecentPostsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          AppLocalizations.of(context).profileRecentPosts,
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w800,
-            color: CupertinoDynamicColor.resolve(AppColors.foreground, context),
-          ),
-        ),
         if (isMe) ...[
-          const SizedBox(height: 8),
           Text(
             AppLocalizations.of(context).profileRecentPostsSubtitle,
             style: TextStyle(color: CupertinoColors.systemGrey),
           ),
+          const SizedBox(height: 12),
         ],
-        const SizedBox(height: 16),
         if (posts.isEmpty)
           AppSectionCard(
             child: Text(AppLocalizations.of(context).profileNoPublicPosts),
@@ -685,7 +741,10 @@ class _FollowBlockButtons extends StatelessWidget {
         CupertinoButton(
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
           onPressed: isLoading ? null : onReport,
-          child: const Icon(CupertinoIcons.exclamationmark_triangle, color: CupertinoColors.systemRed),
+          child: const Icon(
+            CupertinoIcons.exclamationmark_triangle,
+            color: CupertinoColors.systemRed,
+          ),
         ),
       ],
     );
@@ -714,7 +773,10 @@ class _ErrorState extends StatelessWidget {
             const SizedBox(height: 12),
             Text(message, textAlign: TextAlign.center),
             const SizedBox(height: 12),
-            AppPrimaryButton(onPressed: onRetry, child: Text(AppLocalizations.of(context).reload)),
+            AppPrimaryButton(
+              onPressed: onRetry,
+              child: Text(AppLocalizations.of(context).reload),
+            ),
           ],
         ),
       ),
@@ -741,15 +803,6 @@ class _TeacherCommentsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          l10n.teacherCommentsTitle,
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w800,
-            color: CupertinoDynamicColor.resolve(AppColors.foreground, context),
-          ),
-        ),
-        const SizedBox(height: 16),
         if (comments.isEmpty)
           Container(
             width: double.infinity,
@@ -904,8 +957,15 @@ class _StatusBadge extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: color),
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: color,
+        ),
       ),
     );
   }
 }
+
+/// PageView that sizes itself to the natural height of the active page.
+///

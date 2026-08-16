@@ -15,7 +15,6 @@ import '../pages/post/create_post_screen.dart';
 import '../pages/post/post_detail_screen.dart';
 import '../pages/tag/tag_screen.dart';
 import '../pages/teacher/teacher_comments_screen.dart';
-import '../pages/profile/change_password_screen.dart';
 import '../pages/profile/binding_screen.dart';
 import '../pages/profile/following_screen.dart';
 import '../pages/profile/profile_screen.dart';
@@ -40,7 +39,6 @@ abstract final class AppRoutePaths {
   static const hot = '/hot';
   static const teacherComments = '/teacher-comments';
   static const profile = '/profile';
-  static const changePassword = '/profile/reset-password';
   static const bindings = '/profile/bindings';
   static const following = '/following';
   static const publicProfile = '/user/:userId';
@@ -64,7 +62,6 @@ abstract final class AppRouteNames {
   static const hot = 'hot';
   static const teacherComments = 'teacher-comments';
   static const profile = 'profile';
-  static const changePassword = 'change-password';
   static const bindings = 'bindings';
   static const following = 'following';
   static const publicProfile = 'public-profile';
@@ -254,11 +251,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: AppRoutePaths.bindings,
         name: AppRouteNames.bindings,
         builder: (context, state) => const BindingScreen(),
-      ),
-      GoRoute(
-        path: AppRoutePaths.changePassword,
-        name: AppRouteNames.changePassword,
-        builder: (context, state) => const ChangePasswordScreen(),
       ),
       GoRoute(
         path: AppRoutePaths.following,
