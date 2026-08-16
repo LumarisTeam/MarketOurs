@@ -35,11 +35,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final currentLocale = Localizations.localeOf(context);
-    if (_lastLocale != null && _lastLocale != currentLocale) {
+    if (_lastLocale == null) {
+      _lastLocale = currentLocale;
+    } else if (_lastLocale != currentLocale) {
       _lastLocale = currentLocale;
       _loadNotifications();
-    } else if (_lastLocale == null) {
-      _lastLocale = currentLocale;
     }
   }
 

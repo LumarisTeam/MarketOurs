@@ -51,7 +51,10 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         return;
       }
 
-      await AppFeedback.showSuccess(context, message: AppLocalizations.of(context).verifyCodeSentContinue);
+      await AppFeedback.showSuccess(
+        context,
+        message: AppLocalizations.of(context).verifyCodeSentContinue,
+      );
       if (!mounted) {
         return;
       }
@@ -60,6 +63,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         queryParameters: {'account': _accountController.text.trim()},
       );
     } catch (_) {
+      if (!mounted) {
+        return;
+      }
       final errorMessage = ref
           .read(authControllerProvider)
           .asData
@@ -129,7 +135,11 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             const SizedBox(height: 24),
             AppPrimaryButton(
               onPressed: isSubmitting ? null : _submit,
-              child: Text(isSubmitting ? AppLocalizations.of(context).profileSaving : AppLocalizations.of(context).authSendCode),
+              child: Text(
+                isSubmitting
+                    ? AppLocalizations.of(context).profileSaving
+                    : AppLocalizations.of(context).authSendCode,
+              ),
             ),
           ],
         ),

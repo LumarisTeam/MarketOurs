@@ -63,11 +63,13 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
 
     setState(() {
       for (final file in picked) {
-        _imageEntries.add(EditableImageEntry(
-          id: ValueKey('new-${_imageIdCounter++}'),
-          displayUrl: file.path,
-          localFile: file,
-        ));
+        _imageEntries.add(
+          EditableImageEntry(
+            id: ValueKey('new-${_imageIdCounter++}'),
+            displayUrl: file.path,
+            localFile: file,
+          ),
+        );
       }
     });
   }
@@ -170,12 +172,13 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
           );
 
       final post = response.data;
-      if (post == null)
+      if (!mounted) return;
+
+      if (post == null) {
         throw Exception(
           response.message ?? AppLocalizations.of(context).postCreateFailed,
         );
-
-      if (!mounted) return;
+      }
 
       await AppFeedback.showSuccess(
         context,
@@ -243,15 +246,23 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                 uploadProgress: _uploadProgress,
                 titleValidator: (v) => requiredMaxValidator(
                   v,
-                  emptyMessage: AppLocalizations.of(context).postCreateTitleEmpty,
+                  emptyMessage: AppLocalizations.of(
+                    context,
+                  ).postCreateTitleEmpty,
                   max: DtoLimits.postTitleMax,
-                  maxMessage: AppLocalizations.of(context).postCreateTitleTooLong(DtoLimits.postTitleMax),
+                  maxMessage: AppLocalizations.of(
+                    context,
+                  ).postCreateTitleTooLong(DtoLimits.postTitleMax),
                 ),
                 contentValidator: (v) => requiredMaxValidator(
                   v,
-                  emptyMessage: AppLocalizations.of(context).postCreateContentEmpty,
+                  emptyMessage: AppLocalizations.of(
+                    context,
+                  ).postCreateContentEmpty,
                   max: DtoLimits.postContentMax,
-                  maxMessage: AppLocalizations.of(context).postCreateContentTooLong(DtoLimits.postContentMax),
+                  maxMessage: AppLocalizations.of(
+                    context,
+                  ).postCreateContentTooLong(DtoLimits.postContentMax),
                 ),
               ),
             ],

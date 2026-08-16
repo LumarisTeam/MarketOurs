@@ -1,4 +1,6 @@
 import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -9,18 +11,51 @@ import 'package:mobile_app/models/auth_session.dart';
 import 'package:mobile_app/models/post.dart';
 import 'package:mobile_app/models/user.dart';
 import 'package:mobile_app/providers/auth_provider.dart';
+import 'package:mobile_app/providers/locale_provider.dart';
 import 'package:mobile_app/providers/post_feed_provider.dart';
 import 'package:mobile_app/services/auth_service.dart';
 import 'package:mobile_app/services/auth_storage.dart';
 import 'package:mobile_app/ui/app_responsive.dart';
 
 void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
+  final binding = TestWidgetsFlutterBinding.ensureInitialized();
+  AndroidFlutterLocalNotificationsPlugin.registerWith();
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+      .setMockMethodCallHandler(
+        const MethodChannel('dexterous.com/flutter/local_notifications'),
+        (call) async {
+          switch (call.method) {
+            case 'initialize':
+              return true;
+            case 'createNotificationChannel':
+              return null;
+          }
+          return null;
+        },
+      );
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+      .setMockMethodCallHandler(const MethodChannel('jpush'), (call) async {
+        switch (call.method) {
+          case 'getRegistrationID':
+          case 'getRegistrationId':
+            throw MissingPluginException('JPush is not available in tests.');
+        }
+        return null;
+      });
+
+  setUp(() {
+    binding.platformDispatcher.localeTestValue = const Locale('zh');
+  });
+
+  tearDown(() {
+    binding.platformDispatcher.clearLocaleTestValue();
+  });
 
   testWidgets('shows login when no local token exists', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          localeNotifierProvider.overrideWith(_TestLocaleNotifier.new),
           authStorageProvider.overrideWithValue(_TestAuthStorage()),
           authServiceProvider.overrideWithValue(_FakeAuthService()),
           homeFeedProvider.overrideWith(() => _FakeHomeFeedNotifier()),
@@ -33,7 +68,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('登录'), findsWidgets);
-    expect(find.text('没有账号？去注册'), findsOneWidget);
+    expect(find.text('还没有账号？去注册'), findsOneWidget);
   });
 
   testWidgets('shows home when token restore succeeds', (tester) async {
@@ -44,6 +79,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          localeNotifierProvider.overrideWith(_TestLocaleNotifier.new),
           authStorageProvider.overrideWithValue(storage),
           authServiceProvider.overrideWithValue(
             _FakeAuthService(user: _demoUser),
@@ -76,6 +112,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          localeNotifierProvider.overrideWith(_TestLocaleNotifier.new),
           authStorageProvider.overrideWithValue(storage),
           authServiceProvider.overrideWithValue(
             _FakeAuthService(user: _demoUser),
@@ -112,6 +149,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          localeNotifierProvider.overrideWith(_TestLocaleNotifier.new),
           authStorageProvider.overrideWithValue(storage),
           authServiceProvider.overrideWithValue(
             _FakeAuthService(user: _demoUser),
@@ -154,6 +192,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          localeNotifierProvider.overrideWith(_TestLocaleNotifier.new),
           authStorageProvider.overrideWithValue(storage),
           authServiceProvider.overrideWithValue(
             _FakeAuthService(user: _demoUser),
@@ -183,6 +222,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          localeNotifierProvider.overrideWith(_TestLocaleNotifier.new),
           authStorageProvider.overrideWithValue(storage),
           authServiceProvider.overrideWithValue(
             _FakeAuthService(user: _demoUser),
@@ -217,6 +257,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          localeNotifierProvider.overrideWith(_TestLocaleNotifier.new),
           authStorageProvider.overrideWithValue(storage),
           authServiceProvider.overrideWithValue(
             _FakeAuthService(user: _demoUser),
@@ -234,7 +275,7 @@ void main() {
     await tester.pump();
 
     expect(feed.refreshCallCount, 1);
-    expect(find.text('再按一次退出光汇'), findsOneWidget);
+    expect(find.text('再按一次退出应用'), findsOneWidget);
 
     await tester.pump(const Duration(seconds: 3));
     await tester.pumpAndSettle();
@@ -279,6 +320,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          localeNotifierProvider.overrideWith(_TestLocaleNotifier.new),
           authStorageProvider.overrideWithValue(storage),
           authServiceProvider.overrideWithValue(
             _FakeAuthService(
@@ -315,6 +357,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          localeNotifierProvider.overrideWith(_TestLocaleNotifier.new),
           authStorageProvider.overrideWithValue(storage),
           authServiceProvider.overrideWithValue(
             _FakeAuthService(getInfoError: Exception('token expired')),
@@ -391,6 +434,11 @@ void main() {
   });
 }
 
+class _TestLocaleNotifier extends LocaleNotifier {
+  @override
+  Locale? build() => const Locale('zh');
+}
+
 class _FakeAuthService extends AuthService {
   _FakeAuthService({
     this.user,
@@ -444,7 +492,10 @@ class _FakeAuthService extends AuthService {
   }
 
   @override
-  Future<ApiResponse> sendRegistrationCode(String regToken, {String? captchaToken}) async {
+  Future<ApiResponse> sendRegistrationCode(
+    String regToken, {
+    String? captchaToken,
+  }) async {
     return ApiResponse(message: 'ok');
   }
 
@@ -529,7 +580,9 @@ class _FakeHotFeedNotifier extends HotFeedNotifier {
 }
 
 class _TestAuthStorage implements AuthStorage {
-  _TestAuthStorage({AuthSession? session}) : _session = session;
+  _TestAuthStorage({AuthSession? session}) : this._(session);
+
+  _TestAuthStorage._(this._session);
 
   AuthSession? _session;
 

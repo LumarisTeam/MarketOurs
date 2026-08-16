@@ -5,7 +5,7 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.11.0
+  sdk: ^3.13.0
 
 dependencies:
   flutter:
@@ -20,7 +20,7 @@ dependencies:
   shared_preferences: ^2.5.2
   flutter_local_notifications: ^21.0.0
   flutter_secure_storage: ^10.0.0
-  jpush_flutter: ^3.4.6
+  jpush_flutter: ^3.5.1
   permission_handler: ^12.0.1
   flutter_screenutil: ^5.9.3
   flutter_riverpod: ^3.3.1

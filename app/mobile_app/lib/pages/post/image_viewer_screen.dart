@@ -180,7 +180,9 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
         final l10n = AppLocalizations.of(sheetContext);
         return CupertinoActionSheet(
           title: Text(l10n.imageActions),
-          message: Text(l10n.imageCurrentPosition(_currentIndex + 1, widget.images.length)),
+          message: Text(
+            l10n.imageCurrentPosition(_currentIndex + 1, widget.images.length),
+          ),
           actions: [
             CupertinoActionSheetAction(
               onPressed: () async {
@@ -215,7 +217,10 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
           if (!mounted) {
             return;
           }
-          await AppFeedback.showError(context, message: AppLocalizations.of(context).noPhotoPermission);
+          await AppFeedback.showError(
+            context,
+            message: AppLocalizations.of(context).noPhotoPermission,
+          );
           return;
         }
       }
@@ -230,12 +235,18 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
       if (!mounted) {
         return;
       }
-      await AppFeedback.showSuccess(context, message: AppLocalizations.of(context).postImageSaveSuccess);
+      await AppFeedback.showSuccess(
+        context,
+        message: AppLocalizations.of(context).postImageSaveSuccess,
+      );
     } catch (_) {
       if (!mounted) {
         return;
       }
-      await AppFeedback.showError(context, message: AppLocalizations.of(context).imageSaveFailed);
+      await AppFeedback.showError(
+        context,
+        message: AppLocalizations.of(context).imageSaveFailed,
+      );
     }
   }
 
@@ -243,6 +254,9 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
     try {
       final downloaded = await _downloadImageFile(imageUrl);
       try {
+        if (!mounted) {
+          return;
+        }
         await SharePlus.instance.share(
           ShareParams(
             files: [XFile(downloaded.file.path, mimeType: downloaded.mimeType)],
@@ -257,7 +271,10 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
       if (!mounted) {
         return;
       }
-      await AppFeedback.showError(context, message: AppLocalizations.of(context).shareImageFailed);
+      await AppFeedback.showError(
+        context,
+        message: AppLocalizations.of(context).shareImageFailed,
+      );
     }
   }
 

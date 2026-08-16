@@ -102,11 +102,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     try {
       final response = await postFuture;
       final post = response.data;
+      if (!mounted) return;
+
       if (post == null) {
         throw Exception(AppLocalizations.of(context).postNotFound);
       }
-
-      if (!mounted) return;
 
       setState(() {
         _post = post;
@@ -749,6 +749,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       AppLocalizations.of(context).postDeleteConfirm,
     );
     if (confirmed != true) return;
+    if (!mounted) return;
 
     await _runAction(
       () async {
@@ -1491,8 +1492,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       localImages: const [],
       isWorking: _isWorking,
       uploadProgress: _commentUploadProgress,
-      replyTargetName:
-          _replyTarget == null ? null : (replyName ?? ''),
+      replyTargetName: _replyTarget == null ? null : (replyName ?? ''),
       onCancelReply: _replyTarget == null
           ? null
           : () => setState(() => _replyTarget = null),
