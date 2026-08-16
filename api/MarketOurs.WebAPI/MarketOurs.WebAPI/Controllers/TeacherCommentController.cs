@@ -45,14 +45,6 @@ public class TeacherCommentController(ITeacherCommentService commentService) : C
             await commentService.ReviewAsync(key, this.GetRequiredUserId(), request), "审核完成");
 
     /// <summary>
-    /// 获取我的评价列表
-    /// </summary>
-    [HttpGet("mine"), Authorize]
-    public async Task<ApiResponse<List<TeacherCommentItem>>> MyComments() =>
-        ApiResponse<List<TeacherCommentItem>>.Success(
-            await commentService.GetMyCommentsAsync(this.GetRequiredUserId()));
-
-    /// <summary>
     /// 搜索已通过评价（公开接口，可按教师或课程搜索）
     /// </summary>
     [HttpGet("search")]

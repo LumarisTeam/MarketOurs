@@ -475,24 +475,6 @@ public class TeacherCommentServiceTests
         Assert.That(result.Count, Is.EqualTo(2));
     }
 
-    // ==================== GetMyCommentsAsync ====================
-
-    [Test]
-    public async Task GetMyCommentsAsync_ShouldReturnUserComments()
-    {
-        var mine = new List<TeacherCommentModel>
-        {
-            new() { Key = "k1", UserId = UserId },
-            new() { Key = "k2", UserId = UserId }
-        };
-        _mockRepo.Setup(r => r.GetByUserIdAsync(UserId)).ReturnsAsync(mine);
-
-        var result = await _service.GetMyCommentsAsync(UserId);
-
-        Assert.That(result.Count, Is.EqualTo(2));
-        _mockRepo.Verify(r => r.GetByUserIdAsync(UserId), Times.Once);
-    }
-
     // ==================== GetByUserAsync ====================
 
     [Test]

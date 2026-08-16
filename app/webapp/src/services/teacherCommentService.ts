@@ -14,9 +14,6 @@ export const teacherCommentService = {
   update: (key: string, data: UpdateTeacherCommentRequest) =>
     apiClient.put<TeacherCommentItem>(`/TeacherComment/${key}`, data),
 
-  getMine: () =>
-    apiClient.get<TeacherCommentItem[]>('/TeacherComment/mine'),
-
   getByUser: (userId: string) =>
     apiClient.get<TeacherCommentItem[]>(`/TeacherComment/user/${encodeURIComponent(userId)}`),
 

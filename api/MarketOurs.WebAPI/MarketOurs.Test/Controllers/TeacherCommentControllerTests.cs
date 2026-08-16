@@ -139,25 +139,6 @@ public class TeacherCommentControllerTests : ControllerTestBase
             Times.Once);
     }
 
-    // ---------- MyComments ----------
-
-    [Test]
-    public async Task MyComments_ShouldReturnCurrentUserComments()
-    {
-        var mine = new List<TeacherCommentItem> { new() { Key = "k1" }, new() { Key = "k2" } };
-
-        _mockService.Setup(s => s.GetMyCommentsAsync(UserId)).ReturnsAsync(mine);
-
-        var result = await _controller.MyComments();
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(result.Code, Is.EqualTo(200));
-            Assert.That(result.Data!.Count, Is.EqualTo(2));
-        });
-        _mockService.Verify(s => s.GetMyCommentsAsync(UserId), Times.Once);
-    }
-
     // ---------- Delete ----------
 
     [Test]

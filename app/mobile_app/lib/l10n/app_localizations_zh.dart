@@ -183,13 +183,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get teacherCommentsBrowse => '浏览评价';
 
   @override
-  String get teacherCommentsMyComments => '我的评价';
-
-  @override
   String get teacherCommentsMineEmpty => '你还没有提交过评价。';
-
-  @override
-  String get teacherCommentsMineLoadError => '我的评价加载失败，请稍后重试。';
 
   @override
   String get teacherCommentsEdit => '编辑';

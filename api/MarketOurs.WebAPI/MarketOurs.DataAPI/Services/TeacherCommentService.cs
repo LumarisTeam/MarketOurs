@@ -21,9 +21,6 @@ public interface ITeacherCommentService
     /// <summary>分页搜索已通过评价</summary>
     Task<PagedResultDto<TeacherCommentItem>> SearchApprovedAsync(string? keyword, int page, int pageSize);
 
-    /// <summary>获取我的评价列表</summary>
-    Task<List<TeacherCommentItem>> GetMyCommentsAsync(string userId);
-
     /// <summary>按用户获取评价（公开：本人/管理员返回全部，否则仅已通过）</summary>
     Task<List<TeacherCommentItem>> GetByUserAsync(string userId, string? requesterUserId, bool isAdmin);
 
@@ -127,12 +124,6 @@ public class TeacherCommentService(
         var (items, total) = await repository.SearchApprovedAsync(keyword, safePage, safePageSize);
 
         return PagedResultDto<TeacherCommentItem>.Success([.. items.Select(ToItem)], total, safePage, safePageSize);
-    }
-
-    public async Task<List<TeacherCommentItem>> GetMyCommentsAsync(string userId)
-    {
-        var comments = await repository.GetByUserIdAsync(userId);
-        return [.. comments.Select(ToItem)];
     }
 
     public async Task<List<TeacherCommentItem>> GetByUserAsync(string userId, string? requesterUserId, bool isAdmin)

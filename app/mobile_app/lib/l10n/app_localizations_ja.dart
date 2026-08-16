@@ -189,15 +189,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get teacherCommentsBrowse => 'Browse';
 
   @override
-  String get teacherCommentsMyComments => 'My Reviews';
-
-  @override
   String get teacherCommentsMineEmpty =>
       'You haven\'t submitted any reviews yet.';
-
-  @override
-  String get teacherCommentsMineLoadError =>
-      'Failed to load your reviews. Please try again later.';
 
   @override
   String get teacherCommentsEdit => 'Edit';

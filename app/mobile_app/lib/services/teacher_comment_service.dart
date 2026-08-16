@@ -27,18 +27,6 @@ class TeacherCommentService {
     );
   }
 
-  Future<ApiResponse<List<TeacherCommentItem>>> getMyComments() async {
-    final response = await _api.get('/TeacherComment/mine');
-    return ApiResponse<List<TeacherCommentItem>>.fromJson(
-      response.data as Map<String, dynamic>,
-      (json) => (json as List)
-          .map(
-            (item) => TeacherCommentItem.fromJson(item as Map<String, dynamic>),
-          )
-          .toList(),
-    );
-  }
-
   Future<ApiResponse<List<TeacherCommentItem>>> getUserComments(
     String userId,
   ) async {

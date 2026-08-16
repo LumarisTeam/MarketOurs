@@ -450,23 +450,11 @@ abstract class AppLocalizations {
   /// **'浏览评价'**
   String get teacherCommentsBrowse;
 
-  /// No description provided for @teacherCommentsMyComments.
-  ///
-  /// In zh, this message translates to:
-  /// **'我的评价'**
-  String get teacherCommentsMyComments;
-
   /// No description provided for @teacherCommentsMineEmpty.
   ///
   /// In zh, this message translates to:
   /// **'你还没有提交过评价。'**
   String get teacherCommentsMineEmpty;
-
-  /// No description provided for @teacherCommentsMineLoadError.
-  ///
-  /// In zh, this message translates to:
-  /// **'我的评价加载失败，请稍后重试。'**
-  String get teacherCommentsMineLoadError;
 
   /// No description provided for @teacherCommentsEdit.
   ///
