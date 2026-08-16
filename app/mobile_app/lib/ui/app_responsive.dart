@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 
 abstract final class AppBreakpoints {
   static const tablet = 768.0;

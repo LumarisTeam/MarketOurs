@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../components/app_network_image.dart';

@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:mobile_app/l10n/app_localizations.dart';
 
 import '../models/teacher_comment.dart';

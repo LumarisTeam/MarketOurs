@@ -40,6 +40,8 @@ dependencies:
   cached_network_image: ^3.4.1
   flutter_cache_manager: ^3.4.1
 
+  cupertino_ui: ^1.0.0
+  material_ui: ^1.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

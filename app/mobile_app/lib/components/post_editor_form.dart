@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'package:mobile_app/l10n/app_localizations.dart';
