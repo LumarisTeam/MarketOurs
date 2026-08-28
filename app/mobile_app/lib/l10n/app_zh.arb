@@ -568,5 +568,20 @@
   "changeActionLabel": "更改",
   "editedLabel": "已编辑",
   "lastUpdatedLabel": "最后更新：{date}",
-  "@lastUpdatedLabel": {"placeholders": {"date": {"type": "String"}}}
+  "@lastUpdatedLabel": {"placeholders": {"date": {"type": "String"}}},
+
+  "feedbackTitle": "意见反馈",
+  "feedbackSubtitle": "提交问题或建议，帮助我们改进",
+  "feedbackContentLabel": "问题描述",
+  "feedbackContentPlaceholder": "请描述你遇到的问题",
+  "feedbackContentRequired": "请填写问题描述",
+  "feedbackContactLabel": "联系方式",
+  "feedbackContactPlaceholder": "手机号 / 邮箱 / QQ 等",
+  "feedbackContactRequired": "请填写联系方式",
+  "feedbackImagesLabel": "图片（选填，最多 6 张）",
+  "feedbackAddImage": "添加图片",
+  "feedbackSubmitting": "提交中…",
+  "feedbackSubmitSuccess": "反馈已提交，感谢你的支持！",
+  "feedbackPickImageFailed": "选择图片失败，请重试",
+  "feedbackImageTooMany": "最多上传 6 张图片"
 }

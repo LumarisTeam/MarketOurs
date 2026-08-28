@@ -2955,6 +2955,90 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'最后更新：{date}'**
   String lastUpdatedLabel(String date);
+
+  /// No description provided for @feedbackTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'意见反馈'**
+  String get feedbackTitle;
+
+  /// No description provided for @feedbackSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'提交问题或建议，帮助我们改进'**
+  String get feedbackSubtitle;
+
+  /// No description provided for @feedbackContentLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'问题描述'**
+  String get feedbackContentLabel;
+
+  /// No description provided for @feedbackContentPlaceholder.
+  ///
+  /// In zh, this message translates to:
+  /// **'请描述你遇到的问题'**
+  String get feedbackContentPlaceholder;
+
+  /// No description provided for @feedbackContentRequired.
+  ///
+  /// In zh, this message translates to:
+  /// **'请填写问题描述'**
+  String get feedbackContentRequired;
+
+  /// No description provided for @feedbackContactLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'联系方式'**
+  String get feedbackContactLabel;
+
+  /// No description provided for @feedbackContactPlaceholder.
+  ///
+  /// In zh, this message translates to:
+  /// **'手机号 / 邮箱 / QQ 等'**
+  String get feedbackContactPlaceholder;
+
+  /// No description provided for @feedbackContactRequired.
+  ///
+  /// In zh, this message translates to:
+  /// **'请填写联系方式'**
+  String get feedbackContactRequired;
+
+  /// No description provided for @feedbackImagesLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'图片（选填，最多 6 张）'**
+  String get feedbackImagesLabel;
+
+  /// No description provided for @feedbackAddImage.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加图片'**
+  String get feedbackAddImage;
+
+  /// No description provided for @feedbackSubmitting.
+  ///
+  /// In zh, this message translates to:
+  /// **'提交中…'**
+  String get feedbackSubmitting;
+
+  /// No description provided for @feedbackSubmitSuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'反馈已提交，感谢你的支持！'**
+  String get feedbackSubmitSuccess;
+
+  /// No description provided for @feedbackPickImageFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择图片失败，请重试'**
+  String get feedbackPickImageFailed;
+
+  /// No description provided for @feedbackImageTooMany.
+  ///
+  /// In zh, this message translates to:
+  /// **'最多上传 6 张图片'**
+  String get feedbackImageTooMany;
 }
 
 class _AppLocalizationsDelegate

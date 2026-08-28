@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:feedback_sdk/feedback_sdk.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'l10n/app_localizations.dart';
@@ -15,6 +16,14 @@ import 'ui/app_theme.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   ApiService.setLocale(PlatformDispatcher.instance.locale.languageCode);
+
+  // 反馈 SDK 初始化（匿名反馈中心）。MarketOurs 无运行时学校概念，固定西建大 slug。
+  await FeedbackSdk.init(FeedbackConfig(
+    baseUrl: 'http://feedbackapi.luckyfishes.site', // TODO: 后端上 TLS 后换 https
+    appName: 'lumalis',
+    school: 'xauat',
+  ));
+
   runApp(const ProviderScope(child: MarketOursApp()));
 }
 

@@ -178,6 +178,14 @@ class ProfileScreen extends ConsumerWidget {
                       title: AppLocalizations.of(context).profileAbout,
                       children: [
                         _NavRow(
+                          icon: CupertinoIcons.chat_bubble_2_fill,
+                          title: AppLocalizations.of(context).feedbackTitle,
+                          subtitle: AppLocalizations.of(
+                            context,
+                          ).feedbackSubtitle,
+                          onTap: () => context.push(AppRoutePaths.feedback),
+                        ),
+                        _NavRow(
                           icon: CupertinoIcons.doc_text,
                           title: AppLocalizations.of(context).profileTerms,
                           subtitle: AppLocalizations.of(

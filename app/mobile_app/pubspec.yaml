@@ -39,6 +39,8 @@ dependencies:
   flutter_image_compress: ^2.4.0
   cached_network_image: ^3.4.1
   flutter_cache_manager: ^3.4.1
+  feedback_sdk:
+    path: C:/Users/Qu/feedback_sdk
 
 dev_dependencies:
   flutter_test:

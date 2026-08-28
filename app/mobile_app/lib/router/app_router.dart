@@ -11,6 +11,7 @@ import '../pages/auth/register_verify_screen.dart';
 import '../pages/auth/reset_password_screen.dart';
 import '../pages/home/home_screen.dart';
 import '../pages/hot/hot_screen.dart';
+import '../pages/feedback/feedback_screen.dart';
 import '../pages/post/create_post_screen.dart';
 import '../pages/post/post_detail_screen.dart';
 import '../pages/tag/tag_screen.dart';
@@ -39,6 +40,7 @@ abstract final class AppRoutePaths {
   static const hot = '/hot';
   static const teacherComments = '/teacher-comments';
   static const profile = '/profile';
+  static const feedback = '/feedback';
   static const bindings = '/profile/bindings';
   static const following = '/following';
   static const publicProfile = '/user/:userId';
@@ -62,6 +64,7 @@ abstract final class AppRouteNames {
   static const hot = 'hot';
   static const teacherComments = 'teacher-comments';
   static const profile = 'profile';
+  static const feedback = 'feedback';
   static const bindings = 'bindings';
   static const following = 'following';
   static const publicProfile = 'public-profile';
@@ -246,6 +249,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             ],
           ),
         ],
+      ),
+      GoRoute(
+        path: AppRoutePaths.feedback,
+        name: AppRouteNames.feedback,
+        builder: (context, state) => const FeedbackScreen(),
       ),
       GoRoute(
         path: AppRoutePaths.bindings,

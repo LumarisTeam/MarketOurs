@@ -1548,4 +1548,47 @@ class AppLocalizationsEn extends AppLocalizations {
   String lastUpdatedLabel(String date) {
     return 'Last updated: $date';
   }
+
+  @override
+  String get feedbackTitle => 'Feedback';
+
+  @override
+  String get feedbackSubtitle => 'Report an issue or suggest an improvement';
+
+  @override
+  String get feedbackContentLabel => 'Description';
+
+  @override
+  String get feedbackContentPlaceholder => 'Describe the issue you encountered';
+
+  @override
+  String get feedbackContentRequired => 'Please describe the issue';
+
+  @override
+  String get feedbackContactLabel => 'Contact';
+
+  @override
+  String get feedbackContactPlaceholder => 'Phone / Email / QQ, etc.';
+
+  @override
+  String get feedbackContactRequired => 'Please provide your contact';
+
+  @override
+  String get feedbackImagesLabel => 'Images (optional, up to 6)';
+
+  @override
+  String get feedbackAddImage => 'Add image';
+
+  @override
+  String get feedbackSubmitting => 'Submitting…';
+
+  @override
+  String get feedbackSubmitSuccess =>
+      'Feedback submitted. Thanks for your support!';
+
+  @override
+  String get feedbackPickImageFailed => 'Failed to pick image, please retry';
+
+  @override
+  String get feedbackImageTooMany => 'Up to 6 images';
 }

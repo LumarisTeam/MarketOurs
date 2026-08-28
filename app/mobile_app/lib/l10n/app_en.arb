@@ -531,5 +531,20 @@
 
   "changeActionLabel": "Change",
   "editedLabel": "Edited",
-  "lastUpdatedLabel": "Last updated: {date}"
+  "lastUpdatedLabel": "Last updated: {date}",
+
+  "feedbackTitle": "Feedback",
+  "feedbackSubtitle": "Report an issue or suggest an improvement",
+  "feedbackContentLabel": "Description",
+  "feedbackContentPlaceholder": "Describe the issue you encountered",
+  "feedbackContentRequired": "Please describe the issue",
+  "feedbackContactLabel": "Contact",
+  "feedbackContactPlaceholder": "Phone / Email / QQ, etc.",
+  "feedbackContactRequired": "Please provide your contact",
+  "feedbackImagesLabel": "Images (optional, up to 6)",
+  "feedbackAddImage": "Add image",
+  "feedbackSubmitting": "Submitting…",
+  "feedbackSubmitSuccess": "Feedback submitted. Thanks for your support!",
+  "feedbackPickImageFailed": "Failed to pick image, please retry",
+  "feedbackImageTooMany": "Up to 6 images"
 }
