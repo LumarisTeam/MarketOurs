@@ -56,6 +56,10 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
         _images.addAll(picked.take(remaining));
         _requestId = null;
       });
+      // 一次选超了会静默截断，这里补一句提示，避免用户困惑「怎么少了几张」。
+      if (picked.length > remaining) {
+        await AppFeedback.showError(context, message: l10n.feedbackImageTooMany);
+      }
     } catch (_) {
       if (!mounted) return;
       await AppFeedback.showError(

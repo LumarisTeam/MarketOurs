@@ -27,6 +27,8 @@ buildscript {
         }
 
     repositories {
+        maven(url = "https://maven.aliyun.com/repository/google")
+        maven(url = "https://maven.aliyun.com/repository/central")
         mavenCentral()
         google()
         maven(url = "https://developer.huawei.com/repo/")
@@ -45,6 +47,8 @@ buildscript {
 
 allprojects {
     repositories {
+        maven(url = "https://maven.aliyun.com/repository/google")
+        maven(url = "https://maven.aliyun.com/repository/central")
         mavenCentral()
         google()
         maven(url = "https://developer.huawei.com/repo/")

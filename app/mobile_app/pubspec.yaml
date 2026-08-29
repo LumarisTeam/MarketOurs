@@ -40,7 +40,9 @@ dependencies:
   cached_network_image: ^3.4.1
   flutter_cache_manager: ^3.4.1
   feedback_sdk:
-    path: C:/Users/Qu/feedback_sdk
+    git:
+      url: https://github.com/LumarisTeam/feedback_sdk.git
+      ref: main
 
 dev_dependencies:
   flutter_test:
