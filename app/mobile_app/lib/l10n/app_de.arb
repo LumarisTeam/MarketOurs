@@ -500,5 +500,19 @@
   "changeActionLabel": "Ändern",
   "editedLabel": "Bearbeitet",
   "lastUpdatedLabel": "Letzte Aktualisierung: {date}",
-  "@lastUpdatedLabel": {"placeholders": {"date": {"type": "String"}}}
+  "@lastUpdatedLabel": {"placeholders": {"date": {"type": "String"}}},
+  "feedbackTitle": "Feedback",
+  "feedbackSubtitle": "Problem melden oder Verbesserung vorschlagen",
+  "feedbackContentLabel": "Beschreibung",
+  "feedbackContentPlaceholder": "Beschreiben Sie das aufgetretene Problem",
+  "feedbackContentRequired": "Bitte beschreiben Sie das Problem",
+  "feedbackContactLabel": "Kontakt",
+  "feedbackContactPlaceholder": "Telefon / E-Mail / QQ usw.",
+  "feedbackContactRequired": "Bitte geben Sie einen Kontakt an",
+  "feedbackImagesLabel": "Bilder (optional, max. 6)",
+  "feedbackAddImage": "Bild hinzufügen",
+  "feedbackSubmitting": "Wird gesendet…",
+  "feedbackSubmitSuccess": "Feedback gesendet. Vielen Dank!",
+  "feedbackPickImageFailed": "Bildauswahl fehlgeschlagen, bitte erneut versuchen",
+  "feedbackImageTooMany": "Maximal 6 Bilder"
 }

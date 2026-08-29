@@ -499,5 +499,19 @@
   "changeActionLabel": "Modifier",
   "editedLabel": "Modifié",
   "lastUpdatedLabel": "Dernière mise à jour : {date}",
-  "@lastUpdatedLabel": {"placeholders": {"date": {"type": "String"}}}
+  "@lastUpdatedLabel": {"placeholders": {"date": {"type": "String"}}},
+  "feedbackTitle": "Commentaires",
+  "feedbackSubtitle": "Signaler un problème ou suggérer une amélioration",
+  "feedbackContentLabel": "Description",
+  "feedbackContentPlaceholder": "Décrivez le problème rencontré",
+  "feedbackContentRequired": "Veuillez décrire le problème",
+  "feedbackContactLabel": "Contact",
+  "feedbackContactPlaceholder": "Téléphone / Email / QQ, etc.",
+  "feedbackContactRequired": "Veuillez fournir un contact",
+  "feedbackImagesLabel": "Images (optionnel, max. 6)",
+  "feedbackAddImage": "Ajouter une image",
+  "feedbackSubmitting": "Envoi…",
+  "feedbackSubmitSuccess": "Commentaire envoyé. Merci de votre soutien !",
+  "feedbackPickImageFailed": "Échec de la sélection d''image, réessayez",
+  "feedbackImageTooMany": "6 images maximum"
 }

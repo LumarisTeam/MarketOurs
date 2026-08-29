@@ -499,5 +499,19 @@
   "changeActionLabel": "変更",
   "editedLabel": "編集済み",
   "lastUpdatedLabel": "最終更新: {date}",
-  "@lastUpdatedLabel": {"placeholders": {"date": {"type": "String"}}}
+  "@lastUpdatedLabel": {"placeholders": {"date": {"type": "String"}}},
+  "feedbackTitle": "フィードバック",
+  "feedbackSubtitle": "問題の報告や改善の提案",
+  "feedbackContentLabel": "問題の説明",
+  "feedbackContentPlaceholder": "発生した問題を説明してください",
+  "feedbackContentRequired": "問題の説明を入力してください",
+  "feedbackContactLabel": "連絡先",
+  "feedbackContactPlaceholder": "電話番号 / メール / QQ など",
+  "feedbackContactRequired": "連絡先を入力してください",
+  "feedbackImagesLabel": "画像（任意、最大6枚）",
+  "feedbackAddImage": "画像を追加",
+  "feedbackSubmitting": "送信中…",
+  "feedbackSubmitSuccess": "フィードバックを送信しました。ご協力ありがとうございます！",
+  "feedbackPickImageFailed": "画像の選択に失敗しました。再試行してください",
+  "feedbackImageTooMany": "画像は最大6枚までです"
 }

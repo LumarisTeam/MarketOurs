@@ -1534,44 +1534,46 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get feedbackTitle => '意见反馈';
+  String get feedbackTitle => 'Feedback';
 
   @override
-  String get feedbackSubtitle => '提交问题或建议，帮助我们改进';
+  String get feedbackSubtitle => 'Problem melden oder Verbesserung vorschlagen';
 
   @override
-  String get feedbackContentLabel => '问题描述';
+  String get feedbackContentLabel => 'Beschreibung';
 
   @override
-  String get feedbackContentPlaceholder => '请描述你遇到的问题';
+  String get feedbackContentPlaceholder =>
+      'Beschreiben Sie das aufgetretene Problem';
 
   @override
-  String get feedbackContentRequired => '请填写问题描述';
+  String get feedbackContentRequired => 'Bitte beschreiben Sie das Problem';
 
   @override
-  String get feedbackContactLabel => '联系方式';
+  String get feedbackContactLabel => 'Kontakt';
 
   @override
-  String get feedbackContactPlaceholder => '手机号 / 邮箱 / QQ 等';
+  String get feedbackContactPlaceholder => 'Telefon / E-Mail / QQ usw.';
 
   @override
-  String get feedbackContactRequired => '请填写联系方式';
+  String get feedbackContactRequired => 'Bitte geben Sie einen Kontakt an';
 
   @override
-  String get feedbackImagesLabel => '图片（选填，最多 6 张）';
+  String get feedbackImagesLabel => 'Bilder (optional, max. 6)';
 
   @override
-  String get feedbackAddImage => '添加图片';
+  String get feedbackAddImage => 'Bild hinzufügen';
 
   @override
-  String get feedbackSubmitting => '提交中…';
+  String get feedbackSubmitting => 'Wird gesendet…';
 
   @override
-  String get feedbackSubmitSuccess => '反馈已提交，感谢你的支持！';
+  String get feedbackSubmitSuccess => 'Feedback gesendet. Vielen Dank!';
 
   @override
-  String get feedbackPickImageFailed => '选择图片失败，请重试';
+  String get feedbackPickImageFailed =>
+      'Bildauswahl fehlgeschlagen, bitte erneut versuchen';
 
   @override
-  String get feedbackImageTooMany => '最多上传 6 张图片';
+  String get feedbackImageTooMany => 'Maximal 6 Bilder';
 }

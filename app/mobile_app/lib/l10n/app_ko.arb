@@ -499,5 +499,19 @@
   "changeActionLabel": "변경",
   "editedLabel": "편집됨",
   "lastUpdatedLabel": "마지막 업데이트: {date}",
-  "@lastUpdatedLabel": {"placeholders": {"date": {"type": "String"}}}
+  "@lastUpdatedLabel": {"placeholders": {"date": {"type": "String"}}},
+  "feedbackTitle": "피드백",
+  "feedbackSubtitle": "문제를 신고하거나 개선 사항을 제안하세요",
+  "feedbackContentLabel": "문제 설명",
+  "feedbackContentPlaceholder": "발생한 문제를 설명하세요",
+  "feedbackContentRequired": "문제 설명을 입력하세요",
+  "feedbackContactLabel": "연락처",
+  "feedbackContactPlaceholder": "전화번호 / 이메일 / QQ 등",
+  "feedbackContactRequired": "연락처를 입력하세요",
+  "feedbackImagesLabel": "이미지 (선택, 최대 6장)",
+  "feedbackAddImage": "이미지 추가",
+  "feedbackSubmitting": "제출 중…",
+  "feedbackSubmitSuccess": "피드백이 제출되었습니다. 감사합니다!",
+  "feedbackPickImageFailed": "이미지 선택 실패, 다시 시도하세요",
+  "feedbackImageTooMany": "이미지는 최대 6장까지입니다"
 }

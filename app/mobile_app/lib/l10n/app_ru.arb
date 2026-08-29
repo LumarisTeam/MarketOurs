@@ -499,5 +499,19 @@
   "changeActionLabel": "Изменить",
   "editedLabel": "Изменено",
   "lastUpdatedLabel": "Обновлено: {date}",
-  "@lastUpdatedLabel": {"placeholders": {"date": {"type": "String"}}}
+  "@lastUpdatedLabel": {"placeholders": {"date": {"type": "String"}}},
+  "feedbackTitle": "Обратная связь",
+  "feedbackSubtitle": "Сообщить о проблеме или предложить улучшение",
+  "feedbackContentLabel": "Описание",
+  "feedbackContentPlaceholder": "Опишите возникшую проблему",
+  "feedbackContentRequired": "Пожалуйста, опишите проблему",
+  "feedbackContactLabel": "Контакты",
+  "feedbackContactPlaceholder": "Телефон / Email / QQ и т.д.",
+  "feedbackContactRequired": "Пожалуйста, укажите контакт",
+  "feedbackImagesLabel": "Изображения (необязательно, до 6)",
+  "feedbackAddImage": "Добавить изображение",
+  "feedbackSubmitting": "Отправка…",
+  "feedbackSubmitSuccess": "Отзыв отправлен. Спасибо за поддержку!",
+  "feedbackPickImageFailed": "Не удалось выбрать изображение, повторите",
+  "feedbackImageTooMany": "Не более 6 изображений"
 }
