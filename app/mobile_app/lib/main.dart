@@ -19,7 +19,7 @@ Future<void> main() async {
 
   // 反馈 SDK 初始化（匿名反馈中心）。MarketOurs 无运行时学校概念，固定西建大 slug。
   await FeedbackSdk.init(FeedbackConfig(
-    baseUrl: 'http://feedbackapi.luckyfishes.site', // TODO: 后端上 TLS 后换 https
+    baseUrl: 'https://feedbackapi.luckyfishes.site',
     appName: 'lumalis',
     school: 'xauat',
   ));
