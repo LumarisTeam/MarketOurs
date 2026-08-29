@@ -53,6 +53,11 @@
 					<key>NSExceptionAllowsInsecureHTTPLoads</key>
 					<true/>
 				</dict>
+				<key>feedbackapi.luckyfishes.site</key>
+				<dict>
+					<key>NSExceptionAllowsInsecureHTTPLoads</key>
+					<true/>
+				</dict>
 			</dict>
 		</dict>
 		<key>NSPhotoLibraryUsageDescription</key>
