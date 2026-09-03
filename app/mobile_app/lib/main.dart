@@ -42,7 +42,11 @@ class MarketOursApp extends ConsumerWidget {
     PushNotificationService.instance.initialize(router: router);
 
     return CupertinoApp.router(
-      title: 'MarketOurs',
+      // `build` runs above the app's Localizations widget, so looking up
+      // AppLocalizations with this context would always return null during
+      // the initial build. Resolve the localized title inside CupertinoApp's
+      // localization scope instead.
+      onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
       debugShowCheckedModeBanner: false,
       routerConfig: router,
       locale: appLocale,
