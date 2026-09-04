@@ -35,6 +35,15 @@ class _MainShellState extends ConsumerState<MainShell> {
       index,
       initialLocation: index == widget.navigationShell.currentIndex,
     );
+
+    // Branches are kept alive by StatefulShellRoute, so explicitly signal
+    // the selected screen to reload its data when it becomes visible again.
+    ref.read(navigationRefreshTargetProvider.notifier).setTarget(index);
+    if (index == 0) {
+      unawaited(ref.read(homeFeedProvider.notifier).refresh());
+    } else if (index == 2) {
+      unawaited(ref.read(hotFeedProvider.notifier).refresh());
+    }
   }
 
   void _handleHomeExitAttempt() {

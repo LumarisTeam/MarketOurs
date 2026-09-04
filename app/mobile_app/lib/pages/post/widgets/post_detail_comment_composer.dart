@@ -243,9 +243,7 @@ class _PostDetailCommentComposerState extends State<PostDetailCommentComposer> {
                         Expanded(
                           child: Text(
                             widget.replyTargetName!.isEmpty
-                                ? AppLocalizations.of(
-                                    context,
-                                  ).replyComment
+                                ? AppLocalizations.of(context).replyComment
                                 : '@${widget.replyTargetName}',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -370,14 +368,12 @@ class _PostDetailCommentComposerState extends State<PostDetailCommentComposer> {
                                 child: CupertinoTextField(
                                   controller: widget.controller,
                                   focusNode: _focusNode,
-                                  placeholder:
-                                      widget.replyTargetName == null
+                                  onTapOutside: (_) => _focusNode.unfocus(),
+                                  placeholder: widget.replyTargetName == null
                                       ? AppLocalizations.of(
                                           context,
                                         ).postWriteComment
-                                      : AppLocalizations.of(
-                                          context,
-                                        ).replyHint,
+                                      : AppLocalizations.of(context).replyHint,
                                   placeholderStyle: TextStyle(
                                     fontSize: 14,
                                     color: CupertinoDynamicColor.resolve(
@@ -393,8 +389,10 @@ class _PostDetailCommentComposerState extends State<PostDetailCommentComposer> {
                                       context,
                                     ),
                                   ),
-                                  textInputAction: TextInputAction.send,
-                                  onSubmitted: (_) => _handleSubmit(),
+                                  keyboardType: TextInputType.multiline,
+                                  minLines: 1,
+                                  maxLines: 5,
+                                  textInputAction: TextInputAction.newline,
                                   cursorColor: AppColors.primary,
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 11,

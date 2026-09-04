@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:mobile_app/l10n/app_localizations.dart';
 import '../../models/notification.dart';
+import '../../providers/post_feed_provider.dart';
 import '../../router/app_router.dart';
 import '../../services/notification_service.dart';
 import '../../ui/app_responsive.dart';
@@ -11,19 +15,22 @@ import '../../ui/app_widgets.dart';
 import '../../utils/date_formatters.dart';
 import 'push_settings_screen.dart';
 
-class NotificationScreen extends StatefulWidget {
+class NotificationScreen extends ConsumerStatefulWidget {
   final NotificationService service;
 
   const NotificationScreen({super.key, required this.service});
 
   @override
-  State<NotificationScreen> createState() => _NotificationScreenState();
+  ConsumerState<NotificationScreen> createState() => _NotificationScreenState();
 }
 
-class _NotificationScreenState extends State<NotificationScreen> {
+enum _NotificationCategory { all, comments, reviews, other }
+
+class _NotificationScreenState extends ConsumerState<NotificationScreen> {
   List<NotificationDto> _notifications = [];
   bool _isLoading = true;
   Locale? _lastLocale;
+  _NotificationCategory _category = _NotificationCategory.all;
 
   @override
   void initState() {
@@ -56,6 +63,31 @@ class _NotificationScreenState extends State<NotificationScreen> {
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  List<NotificationDto> get _visibleNotifications {
+    return switch (_category) {
+      _NotificationCategory.all => _notifications,
+      _NotificationCategory.comments =>
+        _notifications
+            .where(
+              (n) =>
+                  n.type == NotificationType.commentReply ||
+                  n.type == NotificationType.postReply,
+            )
+            .toList(),
+      _NotificationCategory.reviews =>
+        _notifications.where((n) => n.type == NotificationType.review).toList(),
+      _NotificationCategory.other =>
+        _notifications
+            .where(
+              (n) =>
+                  n.type == NotificationType.hotList ||
+                  n.type == NotificationType.system ||
+                  n.type == NotificationType.unknown,
+            )
+            .toList(),
+    };
   }
 
   IconData _getIcon(NotificationType type) {
@@ -94,6 +126,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<NavigationRefreshEvent?>(navigationRefreshTargetProvider, (
+      _,
+      event,
+    ) {
+      if (event?.index == 3 && mounted) unawaited(_loadNotifications());
+    });
+    final visibleNotifications = _visibleNotifications;
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
       child: CustomScrollView(
@@ -139,16 +178,47 @@ class _NotificationScreenState extends State<NotificationScreen> {
             ),
           ),
           CupertinoSliverRefreshControl(onRefresh: _loadNotifications),
-          if (_isLoading && _notifications.isEmpty)
+          SliverToBoxAdapter(
+            child: AppResponsiveCenter(
+              padding: AppResponsive.sliverPagePadding(
+                context,
+                top: 8,
+                bottom: 8,
+              ),
+              child: CupertinoSlidingSegmentedControl<_NotificationCategory>(
+                groupValue: _category,
+                children: {
+                  _NotificationCategory.all: Text(
+                    AppLocalizations.of(context).tabNotifications,
+                  ),
+                  _NotificationCategory.comments: Text(
+                    AppLocalizations.of(context).notificationTypePostReplyTitle,
+                  ),
+                  _NotificationCategory.reviews: Text(
+                    AppLocalizations.of(context).notificationTypeReviewTitle,
+                  ),
+                  _NotificationCategory.other: Text(
+                    AppLocalizations.of(context).notificationTypeSystemTitle,
+                  ),
+                },
+                onValueChanged: (value) {
+                  if (value != null && mounted) {
+                    setState(() => _category = value);
+                  }
+                },
+              ),
+            ),
+          ),
+          if (_isLoading && visibleNotifications.isEmpty)
             const SliverFillRemaining(
               child: Center(child: CupertinoActivityIndicator(radius: 14)),
             )
-          else if (_notifications.isEmpty)
+          else if (visibleNotifications.isEmpty)
             SliverFillRemaining(child: _buildEmptyState())
           else
             AppResponsiveSliverPadding(
               child: _NotificationList(
-                notifications: _notifications,
+                notifications: visibleNotifications,
                 iconForType: _getIcon,
                 iconColorForType: _getIconColor,
                 formatDate: (date, context) => formatNotificationDateTime(
@@ -163,8 +233,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
     );
   }
 
-  Future<void> _openNotification(int index) async {
-    final n = _notifications[index];
+  Future<void> _openNotification(NotificationDto n) async {
+    final index = _notifications.indexWhere((item) => item.id == n.id);
+    if (index < 0) return;
     if (!n.isRead) {
       setState(() {
         _notifications[index] = _copyNotification(n, isRead: true);
@@ -269,7 +340,7 @@ class _NotificationList extends StatelessWidget {
   final IconData Function(NotificationType type) iconForType;
   final Color Function(NotificationType type) iconColorForType;
   final String Function(DateTime? date, BuildContext context) formatDate;
-  final Future<void> Function(int index) onOpen;
+  final Future<void> Function(NotificationDto notification) onOpen;
 
   @override
   Widget build(BuildContext context) {
@@ -287,7 +358,7 @@ class _NotificationList extends StatelessWidget {
                 iconColor: iconColorForType(entry.$2.type),
                 formattedDate: formatDate(entry.$2.createdAt, context),
                 onPressed: () {
-                  onOpen(entry.$1);
+                  onOpen(entry.$2);
                 },
               ),
             ),
@@ -313,7 +384,7 @@ class _NotificationList extends StatelessWidget {
                   iconColor: iconColorForType(entry.$2.type),
                   formattedDate: formatDate(entry.$2.createdAt, context),
                   onPressed: () {
-                    onOpen(entry.$1);
+                    onOpen(entry.$2);
                   },
                 ),
               ),

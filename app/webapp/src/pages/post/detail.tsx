@@ -578,7 +578,16 @@ function CommentItem({
               </div>
             </div>
           ) : (
-            <p className="text-muted-foreground leading-relaxed text-sm whitespace-pre-wrap">
+            <p
+              className={cn(
+                "text-muted-foreground leading-relaxed text-sm whitespace-pre-wrap",
+                user && "cursor-pointer rounded-lg transition-colors hover:bg-primary/5",
+              )}
+              onClick={(event) => {
+                if (!user || (event.target as HTMLElement).closest("a")) return
+                setIsReplying(true)
+              }}
+            >
               {replyTo && (
                 <Link
                   to={`/user/${replyTo.userId}`}

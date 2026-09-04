@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +8,7 @@ import 'package:mobile_app/l10n/app_localizations.dart';
 import '../../components/teacher_comment_actions.dart';
 import '../../models/teacher_comment.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/post_feed_provider.dart';
 import '../../router/app_router.dart';
 import '../../services/error_messages.dart';
 import '../../services/teacher_comment_service.dart';
@@ -250,8 +253,21 @@ class _TeacherCommentsScreenState extends ConsumerState<TeacherCommentsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<NavigationRefreshEvent?>(navigationRefreshTargetProvider, (
+      _,
+      event,
+    ) {
+      if (event?.index == 1 && mounted) {
+        unawaited(_loadComments(_activeKeyword));
+      }
+    });
     final l10n = AppLocalizations.of(context);
-    final currentUserId = ref.watch(authControllerProvider).asData?.value.user?.id;
+    final currentUserId = ref
+        .watch(authControllerProvider)
+        .asData
+        ?.value
+        .user
+        ?.id;
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
       child: CustomScrollView(
@@ -365,7 +381,8 @@ class _CommentListSection extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 16),
               child: _CommentCard(
                 comment: comment,
-                isMine: currentUserId != null && comment.userId == currentUserId,
+                isMine:
+                    currentUserId != null && comment.userId == currentUserId,
                 onEdit: () => onEdit(comment),
                 onDelete: () => onDelete(comment),
               ),
@@ -396,7 +413,8 @@ class _CommentListSection extends StatelessWidget {
                     child: _CommentCard(
                       comment: comment,
                       isMine:
-                          currentUserId != null && comment.userId == currentUserId,
+                          currentUserId != null &&
+                          comment.userId == currentUserId,
                       onEdit: () => onEdit(comment),
                       onDelete: () => onDelete(comment),
                     ),
