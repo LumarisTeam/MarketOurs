@@ -113,7 +113,8 @@
     "tag_none": "No tag",
     "add_images": "Add Images",
     "upload_image": "Upload Image",
-    "error_empty": "Title and content cannot be empty",
+    "error_empty": "Title cannot be empty",
+    "content_or_image_required": "Content and images cannot both be empty",
     "error_create_failed": "Failed to create post, please try again later",
     "cancel": "Cancel",
     "submit": "Submit",
@@ -242,6 +243,7 @@
     "post_title_required": "Title cannot be empty",
     "post_title_too_long": "Title cannot exceed {{max}} characters",
     "post_content_required": "Content cannot be empty",
+    "post_content_or_image_required": "Content and images cannot both be empty",
     "post_content_too_long": "Content cannot exceed {{max}} characters",
     "comment_too_long": "Comment cannot exceed {{max}} characters"
   },

@@ -563,7 +563,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get postCreateContent => 'Was gibt es Neues?';
 
   @override
-  String get postCreateContentEmpty => 'Inhalt eingeben';
+  String get postCreateContentEmpty => 'Inhalt eingeben oder Bild hinzufügen';
 
   @override
   String postCreateContentTooLong(int max) {

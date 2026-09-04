@@ -164,7 +164,7 @@
   "postCreateTitleEmpty": "Titel eingeben",
   "postCreateTitleTooLong": "Titel darf {max} Zeichen nicht überschreiten",
   "postCreateContent": "Was gibt es Neues?",
-  "postCreateContentEmpty": "Inhalt eingeben",
+  "postCreateContentEmpty": "Inhalt eingeben oder Bild hinzufügen",
   "postCreateContentTooLong": "Inhalt darf {max} Zeichen nicht überschreiten",
   "postCreateImages": "Bilder",
   "postCreateAddImages": "Bilder hinzufügen",

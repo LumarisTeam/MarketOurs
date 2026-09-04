@@ -550,7 +550,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get postCreateContent => '分享此刻的新鲜事...';
 
   @override
-  String get postCreateContentEmpty => '请输入内容';
+  String get postCreateContentEmpty => '请输入内容或添加图片';
 
   @override
   String postCreateContentTooLong(int max) {

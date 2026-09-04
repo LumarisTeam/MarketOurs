@@ -172,7 +172,7 @@
   "postCreateTitleEmpty": "Please enter a title",
   "postCreateTitleTooLong": "Title cannot exceed {max} characters",
   "postCreateContent": "Share what''s happening...",
-  "postCreateContentEmpty": "Please enter some content",
+  "postCreateContentEmpty": "Please enter content or add an image",
   "postCreateContentTooLong": "Content cannot exceed {max} characters",
   "postCreateImages": "Images",
   "postCreateAddImages": "Add Images",

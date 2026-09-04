@@ -113,7 +113,8 @@
     "tag_none": "不选择标签",
     "add_images": "添加图片",
     "upload_image": "上传图片",
-    "error_empty": "标题和内容不能为空",
+    "error_empty": "标题不能为空",
+    "content_or_image_required": "内容和图片不能同时为空",
     "error_create_failed": "创建贴子失败，请稍后重试",
     "cancel": "取消",
     "submit": "立即发布",
@@ -242,6 +243,7 @@
     "post_title_required": "标题不能为空",
     "post_title_too_long": "标题长度不能超过 {{max}} 位",
     "post_content_required": "内容不能为空",
+    "post_content_or_image_required": "内容和图片不能同时为空",
     "post_content_too_long": "内容长度不能超过 {{max}} 位",
     "comment_too_long": "评论内容长度不能超过 {{max}} 位"
   },

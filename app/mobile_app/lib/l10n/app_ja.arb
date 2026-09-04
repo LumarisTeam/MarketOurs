@@ -164,7 +164,7 @@
   "postCreateTitleEmpty": "タイトルを入力してください",
   "postCreateTitleTooLong": "タイトルは {max} 文字以内で入力してください",
   "postCreateContent": "いま何が起きている？",
-  "postCreateContentEmpty": "内容を入力してください",
+  "postCreateContentEmpty": "内容を入力するか画像を追加してください",
   "postCreateContentTooLong": "内容は {max} 文字以内で入力してください",
   "postCreateImages": "画像",
   "postCreateAddImages": "画像を追加",

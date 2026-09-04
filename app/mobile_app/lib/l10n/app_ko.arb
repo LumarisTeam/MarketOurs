@@ -164,7 +164,7 @@
   "postCreateTitleEmpty": "제목을 입력하세요",
   "postCreateTitleTooLong": "제목은 {max}자를 초과할 수 없습니다",
   "postCreateContent": "무슨 일이 있나요?",
-  "postCreateContentEmpty": "내용을 입력하세요",
+  "postCreateContentEmpty": "내용을 입력하거나 이미지를 추가하세요",
   "postCreateContentTooLong": "내용은 {max}자를 초과할 수 없습니다",
   "postCreateImages": "이미지",
   "postCreateAddImages": "이미지 추가",

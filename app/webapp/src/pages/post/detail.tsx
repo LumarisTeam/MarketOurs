@@ -14,7 +14,7 @@ import { extractUserMessage } from "@/services/errorCodes"
 import type { i18n, TFunction } from "i18next"
 import { cn } from "@/lib/utils"
 import { sharePost } from "@/lib/postShare"
-import { DTO_LIMITS, requiredMax } from "@/lib/dtoValidation"
+import { DTO_LIMITS, optionalMax, requiredMax } from "@/lib/dtoValidation"
 import { PostTagBadge } from "@/components/post/PostTagBadge"
 import { formatEditedRelativeTime } from "@/lib/dateTime"
 import SortableImageGrid, { type ImageItem } from "@/components/ui/sortable-image-grid"
@@ -921,14 +921,16 @@ export default function PostDetailPage() {
       t("validation.post_title_required"),
       t("validation.post_title_too_long", { max: DTO_LIMITS.postTitleMax }),
     );
-    const contentError = requiredMax(
+    const contentError = optionalMax(
       editContent,
       DTO_LIMITS.postContentMax,
-      t("validation.post_content_required"),
       t("validation.post_content_too_long", { max: DTO_LIMITS.postContentMax }),
     );
-    if (titleError || contentError) {
-      setActionError(titleError || contentError);
+    const bodyError = !editContent.trim() && editImageItems.length === 0
+      ? t("validation.post_content_or_image_required")
+      : null;
+    if (titleError || contentError || bodyError) {
+      setActionError(titleError || contentError || bodyError);
       return;
     }
     setSubmitting(true)

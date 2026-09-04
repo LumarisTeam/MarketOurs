@@ -195,7 +195,7 @@
   "postCreateTitleTooLong": "标题长度不能超过 {max} 位",
   "@postCreateTitleTooLong": {"placeholders": {"max": {"type": "int"}}},
   "postCreateContent": "分享此刻的新鲜事...",
-  "postCreateContentEmpty": "请输入内容",
+  "postCreateContentEmpty": "请输入内容或添加图片",
   "postCreateContentTooLong": "内容长度不能超过 {max} 位",
   "@postCreateContentTooLong": {"placeholders": {"max": {"type": "int"}}},
   "postCreateImages": "图片",

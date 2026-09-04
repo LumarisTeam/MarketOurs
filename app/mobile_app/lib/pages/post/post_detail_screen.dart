@@ -691,7 +691,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       availableTags: tags,
     );
     if (draft == null) return;
-    final validationError = _validatePostDraft(draft.title, draft.content);
+    final validationError = _validatePostDraft(
+      draft.title,
+      draft.content,
+      hasImages: draft.reorderedEntries?.isNotEmpty == true,
+    );
     if (validationError != null) {
       if (!mounted) return;
       await AppFeedback.showError(context, message: validationError);
@@ -992,7 +996,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     return result;
   }
 
-  String? _validatePostDraft(String title, String content) {
+  String? _validatePostDraft(
+    String title,
+    String content, {
+    required bool hasImages,
+  }) {
     final titleError = requiredMaxValidator(
       title,
       emptyMessage: AppLocalizations.of(context).postCreateTitleEmpty,
@@ -1003,14 +1011,18 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     );
     if (titleError != null) return titleError;
 
-    return requiredMaxValidator(
+    final contentError = optionalMaxValidator(
       content,
-      emptyMessage: AppLocalizations.of(context).postCreateContentEmpty,
       max: DtoLimits.postContentMax,
       maxMessage: AppLocalizations.of(
         context,
       ).postCreateContentTooLong(DtoLimits.postContentMax),
     );
+    if (contentError != null) return contentError;
+    if (content.trim().isEmpty && !hasImages) {
+      return AppLocalizations.of(context).postCreateContentEmpty;
+    }
+    return null;
   }
 
   Widget _buildActionBar(
