@@ -32,6 +32,7 @@ buildscript {
         mavenCentral()
         google()
         maven(url = "https://developer.huawei.com/repo/")
+        maven(url = "https://developer.honor.com/repo/")
     }
     if (enableFcm) {
         dependencies {
@@ -52,6 +53,7 @@ allprojects {
         mavenCentral()
         google()
         maven(url = "https://developer.huawei.com/repo/")
+        maven(url = "https://developer.honor.com/repo/")
     }
 }
 
