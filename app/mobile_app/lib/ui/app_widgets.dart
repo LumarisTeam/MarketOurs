@@ -152,20 +152,9 @@ class AppPageScaffold extends StatelessWidget {
               bottom: 0,
               child: SafeArea(
                 top: false,
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: contentMaxWidth),
-                    child: Padding(
-                      padding: EdgeInsets.fromLTRB(
-                        contentPadding.left,
-                        0,
-                        contentPadding.right,
-                        12 + bottomInset,
-                      ),
-                      child: bottomBar!,
-                    ),
-                  ),
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: bottomInset),
+                  child: bottomBar!,
                 ),
               ),
             ),
