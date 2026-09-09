@@ -195,6 +195,23 @@ public class PostServiceTests
     }
 
     [Test]
+    public async Task GetAllAsync_WithBlockedUsers_ShouldExcludeBeforePagination()
+    {
+        var visiblePost = new PostDto { Id = "visible-post", UserId = "visible-user" };
+        _mockPostRepo.Setup(r => r.CountVisibleToAsync("viewer", null))
+            .ReturnsAsync(1);
+        _mockPostRepo.Setup(r => r.GetAllDtosVisibleToAsync("viewer", 1, 10, null))
+            .ReturnsAsync([visiblePost]);
+
+        var result = await _postService.GetAllAsync(new PaginationParams(), "viewer");
+
+        Assert.That(result.TotalCount, Is.EqualTo(1));
+        Assert.That(result.Items.Select(post => post.Id), Is.EqualTo(new[] { "visible-post" }));
+        _mockPostRepo.Verify(r => r.GetAllDtosAsync(
+            It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>()), Times.Never);
+    }
+
+    [Test]
     public async Task GetByUserIdAsync_ShouldReturnPagedPostsWithDynamicData()
     {
         var posts = new List<PostModel>
@@ -225,6 +242,21 @@ public class PostServiceTests
         Assert.That(result.Items.All(x => x.UserId == "user-1"), Is.True);
         Assert.That(result.Items[0].Likes, Is.EqualTo(3));
         Assert.That(result.Items[0].Watch, Is.EqualTo(9));
+    }
+
+    [Test]
+    public async Task GetByUserIdAsync_WhenUsersAreBlocked_ShouldReturnEmptyPage()
+    {
+        _mockUserRepo.Setup(r => r.GetBlockedUserIdsAsync("viewer"))
+            .ReturnsAsync(["author"]);
+
+        var result = await _postService.GetByUserIdAsync(
+            "author", new PaginationParams(), "viewer");
+
+        Assert.That(result.Items, Is.Empty);
+        Assert.That(result.TotalCount, Is.EqualTo(0));
+        _mockPostRepo.Verify(r => r.GetByUserDtosAsync(
+            It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never);
     }
 
     [Test]

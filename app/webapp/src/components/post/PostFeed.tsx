@@ -35,7 +35,15 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
-export function PostCard({ post, onDelete }: { post: PostDto; onDelete?: (id: string) => void }) {
+export function PostCard({
+  post,
+  onDelete,
+  onBlock,
+}: {
+  post: PostDto
+  onDelete?: (id: string) => void
+  onBlock?: (userId: string) => void
+}) {
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
   const { user } = useSelector((state: RootState) => state.auth)
@@ -63,7 +71,8 @@ export function PostCard({ post, onDelete }: { post: PostDto; onDelete?: (id: st
     try {
       await followService.blockUser(post.userId)
       setShowBlockDialog(false)
-        toast.success(t("profile.block_success", { defaultValue: "已屏蔽该用户" }))
+      onBlock?.(post.userId)
+      toast.success(t("profile.block_success", { defaultValue: "已屏蔽该用户" }))
     } catch (err) {
       toast.error(extractUserMessage(err, t("profile.block_error")))
     }
@@ -505,6 +514,9 @@ export function PostFeed({
                       <PostCard
                         post={post}
                         onDelete={(id) => setPosts((prev) => prev.filter((p) => p.id !== id))}
+                        onBlock={(userId) => setPosts((prev) => (
+                          prev.filter((p) => p.userId.toLowerCase() !== userId.toLowerCase())
+                        ))}
                       />
                     </div>
                   </div>

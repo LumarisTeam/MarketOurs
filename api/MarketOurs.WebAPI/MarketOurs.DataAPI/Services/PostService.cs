@@ -24,6 +24,7 @@ public interface IPostService
     /// <param name="params">分页参数</param>
     /// <returns>分页结果</returns>
     Task<PagedResultDto<PostDto>> GetAllAsync(PaginationParams @params);
+    Task<PagedResultDto<PostDto>> GetAllAsync(PaginationParams @params, string requesterUserId);
 
     /// <summary>
     /// 获取热门帖子列表
@@ -31,6 +32,7 @@ public interface IPostService
     /// <param name="count">获取数量</param>
     /// <returns>帖子列表</returns>
     Task<List<PostDto>> GetHotAsync(int count = 10);
+    Task<List<PostDto>> GetHotAsync(int count, string requesterUserId);
 
     /// <summary>
     /// 分页获取指定用户发布的帖子
@@ -39,6 +41,8 @@ public interface IPostService
     /// <param name="params">分页参数</param>
     /// <returns>分页结果</returns>
     Task<PagedResultDto<PostDto>> GetByUserIdAsync(string userId, PaginationParams @params);
+    Task<PagedResultDto<PostDto>> GetByUserIdAsync(
+        string userId, PaginationParams @params, string requesterUserId);
 
     /// <summary>
     /// 根据ID获取帖子详情
@@ -110,6 +114,7 @@ public interface IPostService
     /// <param name="params">包含关键词的分页参数</param>
     /// <returns>搜索结果分页对象</returns>
     Task<PagedResultDto<PostDto>> SearchAsync(PaginationParams @params);
+    Task<PagedResultDto<PostDto>> SearchAsync(PaginationParams @params, string requesterUserId);
 
     /// <summary>
     /// 更新帖子审核状态
@@ -164,6 +169,20 @@ public class PostService(
         await FillPostsDynamicDataAsync(dtos);
 
         return PagedResultDto<PostDto>.Success(dtos, totalCount, @params.PageIndex, @params.PageSize);
+    }
+
+    public async Task<PagedResultDto<PostDto>> GetAllAsync(PaginationParams @params, string requesterUserId)
+    {
+        var tagId = NormalizeTagId(@params.TagId);
+        var totalCountTask = postRepo.CountVisibleToAsync(requesterUserId, tagId);
+        var postsTask = postRepo.GetAllDtosVisibleToAsync(
+            requesterUserId, @params.PageIndex, @params.PageSize, tagId);
+        await Task.WhenAll(totalCountTask, postsTask);
+        var dtos = postsTask.Result.ToList();
+        await FillPostsDynamicDataAsync(dtos, requesterUserId);
+
+        return PagedResultDto<PostDto>.Success(
+            dtos, totalCountTask.Result, @params.PageIndex, @params.PageSize);
     }
 
     /// <inheritdoc/>
@@ -231,6 +250,18 @@ public class PostService(
         }
     }
 
+    public async Task<List<PostDto>> GetHotAsync(int count, string requesterUserId)
+    {
+        var blockedUserIdsTask = userRepo.GetBlockedUserIdsAsync(requesterUserId);
+        var postsTask = GetHotAsync(count);
+        await Task.WhenAll(blockedUserIdsTask, postsTask);
+        var blockedUserIds = blockedUserIdsTask.Result.ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        return postsTask.Result
+            .Where(post => !blockedUserIds.Contains(post.UserId))
+            .ToList();
+    }
+
     /// <summary>
     /// 并行填充列表的动态数据。为避免污染缓存中的共享 DTO 对象，
     /// 先克隆每个 DTO 再填充（与 GetByIdAsync 中 ClonePostDto 的做法一致）。
@@ -278,6 +309,18 @@ public class PostService(
         await FillPostsDynamicDataAsync(dtos);
 
         return PagedResultDto<PostDto>.Success(dtos, totalCount, @params.PageIndex, @params.PageSize);
+    }
+
+    public async Task<PagedResultDto<PostDto>> GetByUserIdAsync(
+        string userId, PaginationParams @params, string requesterUserId)
+    {
+        var blockedUserIds = await userRepo.GetBlockedUserIdsAsync(requesterUserId);
+        if (blockedUserIds.Contains(userId, StringComparer.OrdinalIgnoreCase))
+        {
+            return PagedResultDto<PostDto>.Success([], 0, @params.PageIndex, @params.PageSize);
+        }
+
+        return await GetByUserIdAsync(userId, @params);
     }
 
     private readonly ConcurrentDictionary<string, Task<PostDto?>> _getByIdTasks = new();
@@ -777,6 +820,24 @@ public class PostService(
         await FillPostsDynamicDataAsync(dtos);
 
         return PagedResultDto<PostDto>.Success(dtos, totalCount, @params.PageIndex, @params.PageSize);
+    }
+
+    public async Task<PagedResultDto<PostDto>> SearchAsync(PaginationParams @params, string requesterUserId)
+    {
+        var keyword = @params.Keyword?.Trim();
+        if (string.IsNullOrWhiteSpace(keyword))
+            return PagedResultDto<PostDto>.Success([], 0, @params.PageIndex, @params.PageSize);
+
+        var tagId = NormalizeTagId(@params.TagId);
+        var totalCountTask = postRepo.SearchCountVisibleToAsync(keyword, requesterUserId, tagId);
+        var resultsTask = postRepo.SearchDtosVisibleToAsync(
+            keyword, requesterUserId, @params.PageIndex, @params.PageSize, tagId);
+        await Task.WhenAll(totalCountTask, resultsTask);
+        var dtos = resultsTask.Result.ToList();
+        await FillPostsDynamicDataAsync(dtos, requesterUserId);
+
+        return PagedResultDto<PostDto>.Success(
+            dtos, totalCountTask.Result, @params.PageIndex, @params.PageSize);
     }
 
     private static string? NormalizeTagId(string? tagId)

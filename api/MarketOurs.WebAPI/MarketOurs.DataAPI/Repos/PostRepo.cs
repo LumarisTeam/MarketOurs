@@ -12,6 +12,9 @@ public interface IPostRepo
     Task<List<PostModel>> GetAllAsync(int pageIndex, int pageSize, string? tagId = null);
     Task<List<PostDto>> GetAllDtosAsync(int pageIndex, int pageSize, string? tagId = null);
     Task<int> CountAsync(string? tagId = null);
+    Task<List<PostDto>> GetAllDtosVisibleToAsync(string requesterUserId,
+        int pageIndex, int pageSize, string? tagId = null);
+    Task<int> CountVisibleToAsync(string requesterUserId, string? tagId = null);
     Task<List<PostModel>> GetByUserIdAsync(string userId, int pageIndex, int pageSize);
     Task<List<PostDto>> GetByUserDtosAsync(string userId, int pageIndex, int pageSize);
     Task<int> CountByUserIdAsync(string userId);
@@ -29,6 +32,9 @@ public interface IPostRepo
     Task<List<PostModel>> SearchAsync(string keyword, int pageIndex, int pageSize, string? tagId = null);
     Task<List<PostDto>> SearchDtosAsync(string keyword, int pageIndex, int pageSize, string? tagId = null);
     Task<int> SearchCountAsync(string keyword, string? tagId = null);
+    Task<List<PostDto>> SearchDtosVisibleToAsync(string keyword,
+        string requesterUserId, int pageIndex, int pageSize, string? tagId = null);
+    Task<int> SearchCountVisibleToAsync(string keyword, string requesterUserId, string? tagId = null);
 
     Task CreateAsync(PostModel post);
     Task UpdateAsync(PostModel post);
@@ -81,6 +87,31 @@ public class PostRepo(IDbContextFactory<MarketContext> factory, HotListConfig ho
     {
         await using var context = await factory.CreateDbContextAsync();
         return await context.Posts.CountAsync(x => x.IsReview && (string.IsNullOrWhiteSpace(tagId) || x.TagId == tagId));
+    }
+
+    public async Task<List<PostDto>> GetAllDtosVisibleToAsync(string requesterUserId,
+        int pageIndex, int pageSize, string? tagId = null)
+    {
+        await using var context = await factory.CreateDbContextAsync();
+        return await ProjectPostDtos(context.Posts
+            .AsNoTracking()
+            .Where(x => x.IsReview
+                && !x.User.BlockedUsers.Any(user => user.Id == requesterUserId)
+                && !x.User.BlockedBy.Any(user => user.Id == requesterUserId)
+                && (string.IsNullOrWhiteSpace(tagId) || x.TagId == tagId))
+            .OrderByDescending(x => x.CreatedAt)
+            .Skip((pageIndex - 1) * pageSize)
+            .Take(pageSize))
+            .ToListAsync();
+    }
+
+    public async Task<int> CountVisibleToAsync(string requesterUserId, string? tagId = null)
+    {
+        await using var context = await factory.CreateDbContextAsync();
+        return await context.Posts.CountAsync(x => x.IsReview
+            && !x.User.BlockedUsers.Any(user => user.Id == requesterUserId)
+            && !x.User.BlockedBy.Any(user => user.Id == requesterUserId)
+            && (string.IsNullOrWhiteSpace(tagId) || x.TagId == tagId));
     }
 
     public async Task<List<PostModel>> GetByUserIdAsync(string userId, int pageIndex, int pageSize)
@@ -342,11 +373,107 @@ public class PostRepo(IDbContextFactory<MarketContext> factory, HotListConfig ho
             .CountAsync();
     }
 
-    private static Task<List<PostModel>> SearchWithILike(MarketContext context, string keyword, int pageIndex, int pageSize, string? tagId)
+    public async Task<List<PostDto>> SearchDtosVisibleToAsync(string keyword,
+        string requesterUserId, int pageIndex, int pageSize, string? tagId = null)
+    {
+        var posts = await SearchVisibleToAsync(keyword, requesterUserId, pageIndex, pageSize, tagId);
+        return posts.Select(MapToDto).ToList();
+    }
+
+    public async Task<int> SearchCountVisibleToAsync(string keyword, string requesterUserId,
+        string? tagId = null)
+    {
+        await using var context = await factory.CreateDbContextAsync();
+
+        if (context.Database.IsNpgsql())
+        {
+            try
+            {
+                return await context.Posts
+                    .Where(x => x.IsReview
+                        && !x.User.BlockedUsers.Any(user => user.Id == requesterUserId)
+                        && !x.User.BlockedBy.Any(user => user.Id == requesterUserId)
+                        && (string.IsNullOrWhiteSpace(tagId) || x.TagId == tagId)
+                        && (EF.Functions.MatchAny(x.Title, keyword) || EF.Functions.MatchAny(x.Content, keyword)))
+                    .CountAsync();
+            }
+            catch
+            {
+                return await SearchCountWithILike(context, keyword, tagId, requesterUserId);
+            }
+        }
+
+        return await context.Posts.CountAsync(x => x.IsReview
+            && !x.User.BlockedUsers.Any(user => user.Id == requesterUserId)
+            && !x.User.BlockedBy.Any(user => user.Id == requesterUserId)
+            && (string.IsNullOrWhiteSpace(tagId) || x.TagId == tagId)
+            && (x.Title.Contains(keyword) || x.Content.Contains(keyword)));
+    }
+
+    private async Task<List<PostModel>> SearchVisibleToAsync(string keyword,
+        string requesterUserId, int pageIndex, int pageSize, string? tagId)
+    {
+        await using var context = await factory.CreateDbContextAsync();
+        var offset = (pageIndex - 1) * pageSize;
+
+        if (context.Database.IsNpgsql())
+        {
+            try
+            {
+                var pageIds = await context.Posts
+                    .Where(x => x.IsReview
+                        && !x.User.BlockedUsers.Any(user => user.Id == requesterUserId)
+                        && !x.User.BlockedBy.Any(user => user.Id == requesterUserId)
+                        && (string.IsNullOrWhiteSpace(tagId) || x.TagId == tagId)
+                        && (EF.Functions.MatchAny(x.Title, keyword) || EF.Functions.MatchAny(x.Content, keyword)))
+                    .Select(x => new { x.Id, Score = EF.Functions.Score(x.Id), x.CreatedAt })
+                    .OrderByDescending(x => x.Score)
+                    .ThenByDescending(x => x.CreatedAt)
+                    .Skip(offset)
+                    .Take(pageSize)
+                    .Select(x => x.Id)
+                    .ToListAsync();
+
+                if (pageIds.Count == 0) return [];
+
+                var posts = await context.Posts
+                    .AsNoTracking()
+                    .Include(x => x.User)
+                    .Include(x => x.Tag)
+                    .Where(x => pageIds.Contains(x.Id))
+                    .ToListAsync();
+
+                return posts.OrderBy(x => pageIds.IndexOf(x.Id)).ToList();
+            }
+            catch
+            {
+                return await SearchWithILike(context, keyword, pageIndex, pageSize, tagId, requesterUserId);
+            }
+        }
+
+        return await context.Posts
+            .AsNoTracking()
+            .Where(x => x.IsReview
+                && !x.User.BlockedUsers.Any(user => user.Id == requesterUserId)
+                && !x.User.BlockedBy.Any(user => user.Id == requesterUserId)
+                && (string.IsNullOrWhiteSpace(tagId) || x.TagId == tagId)
+                && (x.Title.Contains(keyword) || x.Content.Contains(keyword)))
+            .Include(x => x.User)
+            .Include(x => x.Tag)
+            .OrderByDescending(x => x.CreatedAt)
+            .Skip(offset)
+            .Take(pageSize)
+            .ToListAsync();
+    }
+
+    private static Task<List<PostModel>> SearchWithILike(MarketContext context, string keyword, int pageIndex,
+        int pageSize, string? tagId, string? requesterUserId = null)
     {
         return context.Posts
             .AsNoTracking()
             .Where(x => x.IsReview
+                && (requesterUserId == null || (!x.User.BlockedUsers.Any(user => user.Id == requesterUserId)
+                    && !x.User.BlockedBy.Any(user => user.Id == requesterUserId)))
                 && (string.IsNullOrWhiteSpace(tagId) || x.TagId == tagId)
                 && EF.Functions.ILike(x.Title + " " + x.Content, $"%{keyword}%"))
             .Include(x => x.User)
@@ -357,11 +484,14 @@ public class PostRepo(IDbContextFactory<MarketContext> factory, HotListConfig ho
             .ToListAsync();
     }
 
-    private static Task<int> SearchCountWithILike(MarketContext context, string keyword, string? tagId)
+    private static Task<int> SearchCountWithILike(MarketContext context, string keyword, string? tagId,
+        string? requesterUserId = null)
     {
         return context.Posts
             .AsNoTracking()
             .Where(x => x.IsReview
+                && (requesterUserId == null || (!x.User.BlockedUsers.Any(user => user.Id == requesterUserId)
+                    && !x.User.BlockedBy.Any(user => user.Id == requesterUserId)))
                 && (string.IsNullOrWhiteSpace(tagId) || x.TagId == tagId)
                 && EF.Functions.ILike(x.Title + " " + x.Content, $"%{keyword}%"))
             .CountAsync();

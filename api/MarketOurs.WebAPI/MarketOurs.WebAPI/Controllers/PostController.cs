@@ -23,7 +23,10 @@ public class PostController(IPostService postService) : ControllerBase
     [AllowAnonymous]
     public async Task<ApiResponse<PagedResultDto<PostDto>>> GetAll([FromQuery] PaginationParams @params)
     {
-        var posts = await postService.GetAllAsync(@params);
+        var userId = this.GetOptionalUserId();
+        var posts = userId == null
+            ? await postService.GetAllAsync(@params)
+            : await postService.GetAllAsync(@params, userId);
         return ApiResponse<PagedResultDto<PostDto>>.Success(posts, "获取成功");
     }
 
@@ -38,7 +41,10 @@ public class PostController(IPostService postService) : ControllerBase
     public async Task<ApiResponse<PagedResultDto<PostDto>>> GetByUserId(string userId,
         [FromQuery] PaginationParams @params)
     {
-        var posts = await postService.GetByUserIdAsync(userId, @params);
+        var requesterUserId = this.GetOptionalUserId();
+        var posts = requesterUserId == null
+            ? await postService.GetByUserIdAsync(userId, @params)
+            : await postService.GetByUserIdAsync(userId, @params, requesterUserId);
         return ApiResponse<PagedResultDto<PostDto>>.Success(posts, "获取成功");
     }
 
@@ -51,7 +57,10 @@ public class PostController(IPostService postService) : ControllerBase
     [AllowAnonymous]
     public async Task<ApiResponse<List<PostDto>>> GetHot([FromQuery] int count = 10)
     {
-        var posts = await postService.GetHotAsync(count);
+        var userId = this.GetOptionalUserId();
+        var posts = userId == null
+            ? await postService.GetHotAsync(count)
+            : await postService.GetHotAsync(count, userId);
         return ApiResponse<List<PostDto>>.Success(posts, "获取成功");
     }
 
@@ -195,7 +204,10 @@ public class PostController(IPostService postService) : ControllerBase
                 PagedResultDto<PostDto>.Success([], 0, @params.PageIndex, @params.PageSize), "关键词不能为空");
         }
 
-        var results = await postService.SearchAsync(@params);
+        var userId = this.GetOptionalUserId();
+        var results = userId == null
+            ? await postService.SearchAsync(@params)
+            : await postService.SearchAsync(@params, userId);
         return ApiResponse<PagedResultDto<PostDto>>.Success(results, $"成功找到 {results.TotalCount} 条相关内容");
     }
 
