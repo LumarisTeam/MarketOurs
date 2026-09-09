@@ -1,6 +1,7 @@
 using MarketOurs.Data;
 using MarketOurs.Data.DataModels;
 using MarketOurs.Data.DTOs;
+using MarketOurs.DataAPI.Configs;
 using Microsoft.EntityFrameworkCore;
 using ParadeDB.EntityFrameworkCore.Extensions;
 
@@ -46,8 +47,10 @@ public interface IPostRepo
     Task DeleteDislikesAsync(string id, string userId);
 }
 
-public class PostRepo(IDbContextFactory<MarketContext> factory) : IPostRepo
+public class PostRepo(IDbContextFactory<MarketContext> factory, HotListConfig hotListConfig) : IPostRepo
 {
+    private readonly TimeSpan hotListMaxPostAge = hotListConfig.MaxPostAge;
+
     public async Task<List<PostModel>> GetAllAsync(int pageIndex, int pageSize, string? tagId = null)
     {
         await using var context = await factory.CreateDbContextAsync();
@@ -116,12 +119,13 @@ public class PostRepo(IDbContextFactory<MarketContext> factory) : IPostRepo
     {
         await using var context = await factory.CreateDbContextAsync();
         var now = DateTime.UtcNow;
+        var earliestCreatedAt = now - hotListMaxPostAge;
         const double gravity = 1.3;
         return await context.Posts
             .AsNoTracking()
             .Include(x => x.User)
             .Include(x => x.Tag)
-            .Where(x => x.IsReview)
+            .Where(x => x.IsReview && x.CreatedAt >= earliestCreatedAt)
             .OrderByDescending(x => (x.Watch + (x.Likes * 3) - (x.Dislikes * 2))
                 / Math.Pow(((now - x.CreatedAt).TotalDays + 2), gravity))
             .Take(count)
@@ -132,10 +136,11 @@ public class PostRepo(IDbContextFactory<MarketContext> factory) : IPostRepo
     {
         await using var context = await factory.CreateDbContextAsync();
         var now = DateTime.UtcNow;
+        var earliestCreatedAt = now - hotListMaxPostAge;
         const double gravity = 1.3;
         return await ProjectPostDtos(context.Posts
             .AsNoTracking()
-            .Where(x => x.IsReview)
+            .Where(x => x.IsReview && x.CreatedAt >= earliestCreatedAt)
             .OrderByDescending(x => (x.Watch + (x.Likes * 3) - (x.Dislikes * 2))
                 / Math.Pow(((now - x.CreatedAt).TotalDays + 2), gravity))
             .Take(count))

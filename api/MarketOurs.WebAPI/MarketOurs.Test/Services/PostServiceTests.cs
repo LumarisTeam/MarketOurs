@@ -167,6 +167,22 @@ public class PostServiceTests
     }
 
     [Test]
+    public async Task GetHotAsync_ShouldExcludePostsOlderThanHotListWindow()
+    {
+        var now = DateTime.UtcNow;
+        var posts = new List<PostDto>
+        {
+            new() { Id = "recent", Title = "Recent", CreatedAt = now.AddDays(-6) },
+            new() { Id = "expired", Title = "Expired", CreatedAt = now.AddDays(-8) }
+        };
+        _mockPostRepo.Setup(r => r.GetHotDtosAsync(10)).ReturnsAsync(posts);
+
+        var result = await _postService.GetHotAsync();
+
+        Assert.That(result.Select(post => post.Id), Is.EqualTo(new[] { "recent" }));
+    }
+
+    [Test]
     public async Task GetAllAsync_WithTagId_ShouldPassTrimmedFilterToRepo()
     {
         _mockPostRepo.Setup(r => r.CountAsync("tag-1")).ReturnsAsync(0);

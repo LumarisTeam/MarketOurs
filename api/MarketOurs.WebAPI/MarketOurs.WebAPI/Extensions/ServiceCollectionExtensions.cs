@@ -272,12 +272,24 @@ public static class ServiceCollectionExtensions
                 out var forcePathStyle) && forcePathStyle
         };
 
+        var raw = Environment.GetEnvironmentVariable("HOT_LIST_MAX_AGE_DAYS",
+            EnvironmentVariableTarget.Process);
+        var maxPostAge = double.TryParse(raw, System.Globalization.NumberStyles.Float,
+                System.Globalization.CultureInfo.InvariantCulture, out var days) && days > 0
+            ? TimeSpan.FromDays(days)
+            : TimeSpan.FromDays(30);
+        var hotListConfig = new HotListConfig
+        {
+            MaxPostAge = maxPostAge
+        };
+
         services.AddSingleton(jwtConfig);
         services.AddSingleton(emailConfig);
         services.AddSingleton(aiConfig);
         services.AddSingleton(smsConfig);
         services.AddSingleton(vercelBlobConfig);
         services.AddSingleton(s3Config);
+        services.AddSingleton(hotListConfig);
         services.AddSingleton<RsaKeyManager>();
 
         var kernelBuilder = services.AddKernel();

@@ -136,10 +136,12 @@ public class PostService(
     ILogger<PostService> logger,
     UploadKeyService uploadKeyService,
     IStorageService storageService,
+    HotListConfig hotListConfig,
     IPostTagService? postTagService = null,
     ReviewMessageQueue? reviewQueue = null) : IPostService
 {
     private readonly IConnectionMultiplexer? _redis = redisEnumerable.FirstOrDefault();
+    private readonly TimeSpan hotListMaxPostAge = hotListConfig.MaxPostAge;
     private static readonly SemaphoreSlim CacheLock = new(1, 1);
 
     // 缓存过期时间配置
@@ -242,8 +244,12 @@ public class PostService(
 
     private async Task<List<PostDto>> FillHotListAsync(List<PostDto> source)
     {
-        var posts = await FillListAsync(source);
         var now = DateTime.UtcNow;
+        var earliestCreatedAt = now - hotListMaxPostAge;
+        // Redis/内存缓存可能仍包含规则生效前写入的旧帖子，返回前再次过滤。
+        var posts = await FillListAsync(source
+            .Where(post => post.CreatedAt >= earliestCreatedAt)
+            .ToList());
         foreach (var post in posts)
         {
             var ageInDays = Math.Max(0, (now - post.CreatedAt).TotalDays);
