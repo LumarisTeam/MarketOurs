@@ -65,7 +65,21 @@ class PostDetailHero extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                formatEditedRelativeDateTime(post.createdAt, post.updatedAt),
+                                formatEditedRelativeDateTime(
+                                  post.createdAt,
+                                  post.updatedAt,
+                                  l10n: AppLocalizations.of(context),
+                                  //editedLabel: AppLocalizations.of(context).editedLabel,
+                                  /*
+                                  editedLabel 默认值是硬编码 'Edited'：
+                                  post_card.dart 和 post_detail_comment_widgets.dart 虽然传了 l10n 但没传 editedLabel，
+                                  帖子被编辑后中文环境会显示"5天前 (Edited)"。
+                                  建议这三处统一加上 editedLabel: l10n.editedLabel。
+                                  防复发的根治改法：把 date_formatters.dart 里
+                                  formatRelativeDateTime / formatEditedRelativeDateTime 的 AppLocalizations? l10n 改成必填参数
+                                  （去掉 ? 和英文兜底），这样以后谁漏传直接编译报错，而不是悄悄显示英文。
+                                   */
+                                ),
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: CupertinoDynamicColor.resolve(
