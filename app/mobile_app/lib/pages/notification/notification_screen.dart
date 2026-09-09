@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:mobile_app/l10n/app_localizations.dart';
 import '../../models/notification.dart';
+import '../../providers/notification_provider.dart';
 import '../../providers/post_feed_provider.dart';
 import '../../router/app_router.dart';
 import '../../services/notification_service.dart';
@@ -243,7 +244,13 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
       widget.service
           .markAsRead(n.id)
           .then((success) {
-            if (!success && mounted) _loadNotifications();
+            if (success) {
+              unawaited(
+                ref.read(unreadNotificationCountProvider.notifier).refresh(),
+              );
+            } else if (mounted) {
+              _loadNotifications();
+            }
           })
           .catchError((_) {
             if (mounted) _loadNotifications();
@@ -275,7 +282,11 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
 
     try {
       final success = await widget.service.markAllAsRead();
-      if (!success && mounted) setState(() => _notifications = previous);
+      if (success) {
+        ref.read(unreadNotificationCountProvider.notifier).clear();
+      } else if (mounted) {
+        setState(() => _notifications = previous);
+      }
     } catch (_) {
       if (mounted) setState(() => _notifications = previous);
     }
