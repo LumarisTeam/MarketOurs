@@ -192,65 +192,67 @@ class _CommentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            AppAvatar(
-              url: comment.author?.avatar,
-              name: comment.author?.name,
-              size: isReply ? 28 : 32,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    comment.author?.name ??
-                        AppLocalizations.of(context).anonymousUser,
-                    style: TextStyle(
-                      fontSize: isReply ? 13 : 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    formatEditedRelativeDateTime(
-                      comment.createdAt,
-                      comment.updatedAt,
-                      l10n: AppLocalizations.of(context),
-                    ),
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: CupertinoDynamicColor.resolve(
-                        AppColors.mutedForeground,
-                        context,
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: onReply,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              AppAvatar(
+                url: comment.author?.avatar,
+                name: comment.author?.name,
+                size: isReply ? 28 : 32,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      comment.author?.name ??
+                          AppLocalizations.of(context).anonymousUser,
+                      style: TextStyle(
+                        fontSize: isReply ? 13 : 14,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                  ),
-                ],
+                    Text(
+                      formatEditedRelativeDateTime(
+                        comment.createdAt,
+                        comment.updatedAt,
+                        l10n: AppLocalizations.of(context),
+                      ),
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: CupertinoDynamicColor.resolve(
+                          AppColors.mutedForeground,
+                          context,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            _CommentActionIcon(
-              icon: isLiked ? CupertinoIcons.heart_fill : CupertinoIcons.heart,
-              label: '${comment.likes ?? 0}',
-              onTap: onLike,
-              active: isLiked,
-              activeColor: const Color(0xFFFF5A5F),
-            ),
-          ],
-        ),
-        Padding(
-          padding: EdgeInsets.only(left: isReply ? 38 : 42, top: 4),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onTap: onReply,
-                child: Text.rich(
+              _CommentActionIcon(
+                icon: isLiked
+                    ? CupertinoIcons.heart_fill
+                    : CupertinoIcons.heart,
+                label: '${comment.likes ?? 0}',
+                onTap: onLike,
+                active: isLiked,
+                activeColor: const Color(0xFFFF5A5F),
+              ),
+            ],
+          ),
+          Padding(
+            padding: EdgeInsets.only(left: isReply ? 38 : 42, top: 4),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text.rich(
                   TextSpan(
                     children: [
                       if (replyToName != null && replyToName!.isNotEmpty)
@@ -273,54 +275,50 @@ class _CommentCard extends StatelessWidget {
                     ),
                   ),
                 ),
-              ),
-              CommentImageGrid(images: comment.images ?? const []),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  _TextAction(
-                    label: AppLocalizations.of(context).reply,
-                    onTap: onReply,
-                  ),
-                  if (onEdit != null) ...[
-                    const SizedBox(width: 16),
-                    _TextAction(
-                      label: AppLocalizations.of(context).editPostAction,
-                      onTap: onEdit!,
+                CommentImageGrid(images: comment.images ?? const []),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    if (onEdit != null) ...[
+                      const SizedBox(width: 16),
+                      _TextAction(
+                        label: AppLocalizations.of(context).editPostAction,
+                        onTap: onEdit!,
+                      ),
+                    ],
+                    if (onDelete != null) ...[
+                      const SizedBox(width: 16),
+                      _TextAction(
+                        label: AppLocalizations.of(context).deletePostAction,
+                        onTap: onDelete!,
+                        activeColor: AppColors.destructive,
+                        active: true,
+                      ),
+                    ],
+                    if (onReport != null) ...[
+                      const SizedBox(width: 16),
+                      _TextAction(
+                        label: '举报',
+                        onTap: onReport!,
+                        activeColor: AppColors.destructive,
+                        active: true,
+                      ),
+                    ],
+                    const Spacer(),
+                    _CommentActionIcon(
+                      icon: isDisliked
+                          ? CupertinoIcons.hand_thumbsdown_fill
+                          : CupertinoIcons.hand_thumbsdown,
+                      onTap: onDislike,
+                      active: isDisliked,
                     ),
                   ],
-                  if (onDelete != null) ...[
-                    const SizedBox(width: 16),
-                    _TextAction(
-                      label: AppLocalizations.of(context).deletePostAction,
-                      onTap: onDelete!,
-                      activeColor: AppColors.destructive,
-                      active: true,
-                    ),
-                  ],
-                  if (onReport != null) ...[
-                    const SizedBox(width: 16),
-                    _TextAction(
-                      label: '举报',
-                      onTap: onReport!,
-                      activeColor: AppColors.destructive,
-                      active: true,
-                    ),
-                  ],
-                  const Spacer(),
-                  _CommentActionIcon(
-                    icon: isDisliked
-                        ? CupertinoIcons.hand_thumbsdown_fill
-                        : CupertinoIcons.hand_thumbsdown,
-                    onTap: onDislike,
-                    active: isDisliked,
-                  ),
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

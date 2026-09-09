@@ -502,7 +502,17 @@ function CommentItem({
         <OptimizedImage src={authorAvatar} alt={authorName} className="w-10 h-10 rounded-full bg-muted shadow-sm" />
       </Link>
       <div className="flex-1 space-y-2">
-        <div className="p-5 rounded-[1.5rem] bg-card border border-border/40 shadow-sm group-hover:border-primary/20 transition-colors">
+        <div
+          className={cn(
+            "p-5 rounded-[1.5rem] bg-card border border-border/40 shadow-sm group-hover:border-primary/20 transition-colors",
+            user && !isEditing && "cursor-pointer",
+          )}
+          onClick={(event) => {
+            if (!user || isEditing) return
+            if ((event.target as HTMLElement).closest("a,button,input,textarea,label")) return
+            setIsReplying(true)
+          }}
+        >
           <div className="flex items-center justify-between mb-1">
             <Link to={`/user/${comment.userId}`} className="font-bold text-sm transition-colors hover:text-primary">
               {displayName}
@@ -578,16 +588,7 @@ function CommentItem({
               </div>
             </div>
           ) : (
-            <p
-              className={cn(
-                "text-muted-foreground leading-relaxed text-sm whitespace-pre-wrap",
-                user && "cursor-pointer rounded-lg transition-colors hover:bg-primary/5",
-              )}
-              onClick={(event) => {
-                if (!user || (event.target as HTMLElement).closest("a")) return
-                setIsReplying(true)
-              }}
-            >
+            <p className="text-muted-foreground leading-relaxed text-sm whitespace-pre-wrap">
               {replyTo && (
                 <Link
                   to={`/user/${replyTo.userId}`}
@@ -615,14 +616,6 @@ function CommentItem({
             {comment.likes}
           </button>
           
-          {user && (
-            <button 
-              onClick={() => setIsReplying(!isReplying)}
-              className={cn("text-xs font-bold transition-colors", isReplying ? "text-primary" : "text-muted-foreground hover:text-primary")}
-            >
-              {t("post.reply")}
-            </button>
-          )}
           {user && !isMe && !isAdmin && <button onClick={() => onReport(comment.id)} className="text-xs font-bold text-muted-foreground hover:text-destructive">举报</button>}
           
           {(isMe || isAdmin) && !isEditing && (
