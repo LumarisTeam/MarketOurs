@@ -9,6 +9,10 @@ namespace MarketOurs.WebAPI.Services;
 /// </summary>
 public class RsaKeyManager(JwtConfig jwtConfig, ILogger<RsaKeyManager> logger)
 {
+    // Rotation is synchronous and must be serialized within this process. Without
+    // this guard, concurrent requests can all observe an expired key and rotate it.
+    private readonly object _rotationLock = new();
+
     /// <summary>
     /// 生成RSA密钥对
     /// </summary>
@@ -189,15 +193,18 @@ public class RsaKeyManager(JwtConfig jwtConfig, ILogger<RsaKeyManager> logger)
             }
 
             var fileInfo = new FileInfo(keyPath);
-            var daysSinceCreation = (DateTime.UtcNow - fileInfo.CreationTimeUtc).TotalDays;
+            // Overwriting a file does not reliably reset CreationTimeUtc (notably on
+            // macOS/Linux filesystems). LastWriteTimeUtc is updated when RotateKeys
+            // stores the newly generated key and therefore reflects its age.
+            var daysSinceRotation = (DateTime.UtcNow - fileInfo.LastWriteTimeUtc).TotalDays;
 
             if (logger.IsEnabled(LogLevel.Information))
             {
-                logger.LogInformation("密钥文件创建于：{CreationTime}，已使用：{DaysSinceCreation}天，轮换周期：{RotationDays}天",
-                    fileInfo.CreationTimeUtc, daysSinceCreation, jwtConfig.KeyRotationDays);
+                logger.LogInformation("密钥文件最后写入于：{LastWriteTime}，已使用：{DaysSinceRotation}天，轮换周期：{RotationDays}天",
+                    fileInfo.LastWriteTimeUtc, daysSinceRotation, jwtConfig.KeyRotationDays);
             }
 
-            return daysSinceCreation >= jwtConfig.KeyRotationDays;
+            return daysSinceRotation >= jwtConfig.KeyRotationDays;
         }
         catch (Exception ex)
         {
@@ -215,6 +222,14 @@ public class RsaKeyManager(JwtConfig jwtConfig, ILogger<RsaKeyManager> logger)
     /// </summary>
     public void RotateKeys()
     {
+        lock (_rotationLock)
+        {
+            RotateKeysCore();
+        }
+    }
+
+    private void RotateKeysCore()
+    {
         try
         {
             if (logger.IsEnabled(LogLevel.Information))
@@ -223,7 +238,7 @@ public class RsaKeyManager(JwtConfig jwtConfig, ILogger<RsaKeyManager> logger)
             }
 
             // 生成新的密钥对
-            var newRsa = GenerateKeyPair();
+            using var newRsa = GenerateKeyPair();
 
             // 备份旧密钥（如果存在）
             BackupOldKeys();
@@ -295,45 +310,48 @@ public class RsaKeyManager(JwtConfig jwtConfig, ILogger<RsaKeyManager> logger)
     /// </summary>
     public void EnsureKeysValid()
     {
-        try
+        lock (_rotationLock)
         {
-            if (logger.IsEnabled(LogLevel.Information))
-            {
-                logger.LogInformation("开始检查密钥有效性");
-            }
-
-            // 检查私钥是否存在且需要轮换
-            if (!File.Exists(jwtConfig.RsaPrivateKeyPath) || IsKeyRotationNeeded(jwtConfig.RsaPrivateKeyPath))
+            try
             {
                 if (logger.IsEnabled(LogLevel.Information))
                 {
-                    logger.LogInformation("私钥不存在或需要轮换，生成新密钥对");
+                    logger.LogInformation("开始检查密钥有效性");
                 }
-                RotateKeys();
-            }
 
-            // 检查公钥是否存在
-            if (!File.Exists(jwtConfig.RsaPublicKeyPath))
-            {
-                if (logger.IsEnabled(LogLevel.Warning))
+                // 检查私钥是否存在且需要轮换
+                if (!File.Exists(jwtConfig.RsaPrivateKeyPath) || IsKeyRotationNeeded(jwtConfig.RsaPrivateKeyPath))
                 {
-                    logger.LogWarning("公钥不存在，重新生成密钥对");
+                    if (logger.IsEnabled(LogLevel.Information))
+                    {
+                        logger.LogInformation("私钥不存在或需要轮换，生成新密钥对");
+                    }
+                    RotateKeysCore();
                 }
-                RotateKeys();
-            }
 
-            if (logger.IsEnabled(LogLevel.Information))
-            {
-                logger.LogInformation("密钥有效性检查完成，密钥有效");
+                // 检查公钥是否存在
+                if (!File.Exists(jwtConfig.RsaPublicKeyPath))
+                {
+                    if (logger.IsEnabled(LogLevel.Warning))
+                    {
+                        logger.LogWarning("公钥不存在，重新生成密钥对");
+                    }
+                    RotateKeysCore();
+                }
+
+                if (logger.IsEnabled(LogLevel.Information))
+                {
+                    logger.LogInformation("密钥有效性检查完成，密钥有效");
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            if (logger.IsEnabled(LogLevel.Error))
+            catch (Exception ex)
             {
-                logger.LogError(ex, "检查密钥有效性失败");
+                if (logger.IsEnabled(LogLevel.Error))
+                {
+                    logger.LogError(ex, "检查密钥有效性失败");
+                }
+                throw;
             }
-            throw;
         }
     }
 
