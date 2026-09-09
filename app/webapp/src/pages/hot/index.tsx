@@ -195,11 +195,17 @@ export default function HotPage() {
                         </span>
                       </div>
 
-                      {isTopThree && (
-                        <Badge variant="secondary" className="ml-auto shrink-0 rounded-full text-[10px] bg-amber-500/8 text-amber-600/80 dark:bg-amber-400/8 dark:text-amber-400/70">
-                          🔥 {t("hot.heat_label")}
-                        </Badge>
-                      )}
+                      <Badge
+                        variant="secondary"
+                        className={cn(
+                          "ml-auto shrink-0 rounded-full text-[10px]",
+                          isTopThree
+                            ? "bg-amber-500/8 text-amber-600/80 dark:bg-amber-400/8 dark:text-amber-400/70"
+                            : "bg-muted text-muted-foreground"
+                        )}
+                      >
+                        <Flame size={12} /> {t("hot.heat_label", { heat: post.heat ?? 0 })}
+                      </Badge>
                     </div>
 
                     {/* Content */}

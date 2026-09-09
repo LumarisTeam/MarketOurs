@@ -302,7 +302,7 @@
     "badge": "Campus Trending",
     "title": "What Everyone Is Watching",
     "subtitle": "A live ranking of the most talked-about posts on campus right now. Jump into the stories pulling the most attention, reactions, and reads.",
-    "heat_label": "High Heat",
+    "heat_label": "Heat {{heat}}",
     "rank_label": "Rank #{{rank}}",
     "refresh": "Refresh",
     "refreshing": "Refreshing...",

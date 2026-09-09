@@ -302,7 +302,7 @@
     "badge": "校园热榜",
     "title": "正在升温的话题",
     "subtitle": "这里收集了此刻校园里讨论度最高的帖子。看看哪些内容正在被围观、点赞，或者快速找到你不想错过的话题。",
-    "heat_label": "高热度",
+    "heat_label": "热度 {{heat}}",
     "rank_label": "第 {{rank}} 名",
     "refresh": "刷新榜单",
     "refreshing": "刷新中...",

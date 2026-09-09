@@ -41,6 +41,7 @@ class PostDto {
   final bool? isLiked;
   final bool? isDisliked;
   final int? watch;
+  final int? heat;
   final int? commentsCount;
   final bool? isReview;
   final String? aiReason;
@@ -64,6 +65,7 @@ class PostDto {
     this.isLiked,
     this.isDisliked,
     this.watch,
+    this.heat,
     this.commentsCount,
     this.isReview,
     this.aiReason,

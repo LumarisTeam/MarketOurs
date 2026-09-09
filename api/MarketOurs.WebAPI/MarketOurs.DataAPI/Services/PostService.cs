@@ -170,7 +170,7 @@ public class PostService(
         var memCacheKey = CacheKeys.HotPostsMem(count);
         if (memoryCache.TryGetValue<List<PostDto>>(memCacheKey, out var memCachedList) && memCachedList != null)
         {
-            return await FillListAsync(memCachedList);
+            return await FillHotListAsync(memCachedList);
         }
 
         await CacheLock.WaitAsync();
@@ -179,7 +179,7 @@ public class PostService(
             if (memoryCache.TryGetValue<List<PostDto>>(memCacheKey, out var retryMemCachedList) &&
                 retryMemCachedList != null)
             {
-                return await FillListAsync(retryMemCachedList);
+                return await FillHotListAsync(retryMemCachedList);
             }
 
             var distCacheKey = CacheKeys.HotPostsDist(count);
@@ -221,7 +221,7 @@ public class PostService(
                 Size = 1
             });
 
-            return await FillListAsync(dtos);
+            return await FillHotListAsync(dtos);
         }
         finally
         {
@@ -238,6 +238,25 @@ public class PostService(
         var clones = source.Select(ClonePostDto).ToList();
         await FillPostsDynamicDataAsync(clones, requesterUserId);
         return clones;
+    }
+
+    private async Task<List<PostDto>> FillHotListAsync(List<PostDto> source)
+    {
+        var posts = await FillListAsync(source);
+        var now = DateTime.UtcNow;
+        foreach (var post in posts)
+        {
+            var ageInDays = Math.Max(0, (now - post.CreatedAt).TotalDays);
+            var score = ((post.Watch + post.Likes * 3 - post.Dislikes * 2)
+                / Math.Pow(ageInDays + 2, 1.3)) * 10;
+            post.Heat = (int)score;
+        }
+
+        return posts
+            .OrderByDescending(post => post.Heat)
+            .ThenByDescending(post => post.CreatedAt)
+            .ThenBy(post => post.Id, StringComparer.Ordinal)
+            .ToList();
     }
 
     /// <inheritdoc/>
@@ -426,6 +445,7 @@ public class PostService(
             IsLiked = dto.IsLiked,
             IsDisliked = dto.IsDisliked,
             Watch = dto.Watch,
+            Heat = dto.Heat,
             IsReview = dto.IsReview,
             AiReason = dto.AiReason,
             AiReviewedOn = dto.AiReviewedOn,

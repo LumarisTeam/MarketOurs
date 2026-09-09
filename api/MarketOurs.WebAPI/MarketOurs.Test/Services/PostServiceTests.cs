@@ -140,6 +140,33 @@ public class PostServiceTests
     }
 
     [Test]
+    public async Task GetHotAsync_ShouldRecalculateHeatAfterDynamicCountsAndSortDescending()
+    {
+        var now = DateTime.UtcNow;
+        var posts = new List<PostDto>
+        {
+            new() { Id = "low", Title = "Low", CreatedAt = now, Watch = 1 },
+            new() { Id = "high", Title = "High", CreatedAt = now, Watch = 1 }
+        };
+        _mockPostRepo.Setup(r => r.GetHotDtosAsync(10)).ReturnsAsync(posts);
+        _mockLikeManager
+            .Setup(m => m.GetPostCountsBatchAsync(
+                It.IsAny<IReadOnlyCollection<string>>(),
+                It.IsAny<Func<string, string>>(),
+                It.IsAny<IReadOnlyDictionary<string, int>>()))
+            .ReturnsAsync((IReadOnlyCollection<string> ids, Func<string, string> keyFactory, IReadOnlyDictionary<string, int> _) =>
+            {
+                var isLikes = keyFactory("high").EndsWith(":likes", StringComparison.Ordinal);
+                return ids.ToDictionary(id => id, id => isLikes && id == "high" ? 100 : 0);
+            });
+
+        var result = await _postService.GetHotAsync();
+
+        Assert.That(result.Select(post => post.Id), Is.EqualTo(new[] { "high", "low" }));
+        Assert.That(result[0].Heat!.Value, Is.GreaterThan(result[1].Heat!.Value));
+    }
+
+    [Test]
     public async Task GetAllAsync_WithTagId_ShouldPassTrimmedFilterToRepo()
     {
         _mockPostRepo.Setup(r => r.CountAsync("tag-1")).ReturnsAsync(0);

@@ -81,6 +81,11 @@ public class PostDto
     /// 浏览量
     /// </summary>
     public int Watch { get; set; }
+
+    /// <summary>
+    /// 热榜热度分值（仅热榜接口返回）
+    /// </summary>
+    public int? Heat { get; set; }
     
     /// <summary>
     /// 是否通过审核
