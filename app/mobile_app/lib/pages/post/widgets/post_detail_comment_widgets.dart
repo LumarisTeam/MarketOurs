@@ -280,29 +280,29 @@ class _CommentCard extends StatelessWidget {
                 Row(
                   children: [
                     if (onEdit != null) ...[
-                      const SizedBox(width: 16),
                       _TextAction(
                         label: AppLocalizations.of(context).editPostAction,
                         onTap: onEdit!,
                       ),
+                      const SizedBox(width: 16),
                     ],
                     if (onDelete != null) ...[
-                      const SizedBox(width: 16),
                       _TextAction(
                         label: AppLocalizations.of(context).deletePostAction,
                         onTap: onDelete!,
                         activeColor: AppColors.destructive,
                         active: true,
                       ),
+                      const SizedBox(width: 16),
                     ],
                     if (onReport != null) ...[
-                      const SizedBox(width: 16),
                       _TextAction(
                         label: '举报',
                         onTap: onReport!,
                         activeColor: AppColors.destructive,
                         active: true,
                       ),
+                      const SizedBox(width: 16),
                     ],
                     const Spacer(),
                     _CommentActionIcon(
