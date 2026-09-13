@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 项目说明
+    url: https://github.com/lijiajunply/MarketOurs#readme
+    about: 先看看 README，了解项目结构与本地运行方式。

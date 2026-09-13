@@ -1,0 +1,57 @@
+name: '🌠 功能建议'
+description: '提出一个新功能或改进想法'
+title: '[Feature] '
+labels: ['enhancement']
+type: Feature
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢你的想法！请把「想解决什么问题」说清楚，比只描述「想要什么功能」更容易被采纳。
+
+  - type: textarea
+    attributes:
+      label: '🥰 需求背景'
+      description: 这个建议是为了解决什么问题？你现在是怎么绕过它的？
+      placeholder: 我在……的时候总是很麻烦，因为……
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: '🧐 期望的方案'
+      description: 你希望我们怎么做？如果有交互或界面上的想法，可以贴草图。
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: '🔄 考虑过的其他方案'
+      description: 你还想过哪些替代做法？为什么没有选它们？
+    validations:
+      required: false
+
+  - type: textarea
+    attributes:
+      label: '📝 补充信息'
+      description: 其他相关上下文、参考资料、竞品是怎么做的。
+    validations:
+      required: false
+
+  - type: dropdown
+    attributes:
+      label: '🛠️ 是否愿意提交 PR 实现？'
+      options:
+        - '愿意，我可以提交 PR'
+        - '不愿意，但我可以帮忙测试'
+    validations:
+      required: false
+
+  - type: checkboxes
+    attributes:
+      label: '✅ 提交前确认'
+      options:
+        - label: 我已经搜索过 [已有 Issue](https://github.com/lijiajunply/MarketOurs/issues)，确认没有重复的建议。
+          required: true
+        - label: 这个建议符合 MarketOurs 的定位（校园集市平台），而不是偏离方向的定制需求。
+          required: true
