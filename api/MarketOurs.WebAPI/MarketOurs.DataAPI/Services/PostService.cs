@@ -24,6 +24,7 @@ public interface IPostService
     /// <param name="params">分页参数</param>
     /// <returns>分页结果</returns>
     Task<PagedResultDto<PostDto>> GetAllAsync(PaginationParams @params);
+    Task<PagedResultDto<PostDto>> GetAllAsync(PaginationParams @params, string requesterUserId);
 
     /// <summary>
     /// 获取热门帖子列表
@@ -31,6 +32,7 @@ public interface IPostService
     /// <param name="count">获取数量</param>
     /// <returns>帖子列表</returns>
     Task<List<PostDto>> GetHotAsync(int count = 10);
+    Task<List<PostDto>> GetHotAsync(int count, string requesterUserId);
 
     /// <summary>
     /// 分页获取指定用户发布的帖子
@@ -39,6 +41,8 @@ public interface IPostService
     /// <param name="params">分页参数</param>
     /// <returns>分页结果</returns>
     Task<PagedResultDto<PostDto>> GetByUserIdAsync(string userId, PaginationParams @params);
+    Task<PagedResultDto<PostDto>> GetByUserIdAsync(
+        string userId, PaginationParams @params, string requesterUserId);
 
     /// <summary>
     /// 根据ID获取帖子详情
@@ -110,6 +114,7 @@ public interface IPostService
     /// <param name="params">包含关键词的分页参数</param>
     /// <returns>搜索结果分页对象</returns>
     Task<PagedResultDto<PostDto>> SearchAsync(PaginationParams @params);
+    Task<PagedResultDto<PostDto>> SearchAsync(PaginationParams @params, string requesterUserId);
 
     /// <summary>
     /// 更新帖子审核状态
@@ -136,10 +141,12 @@ public class PostService(
     ILogger<PostService> logger,
     UploadKeyService uploadKeyService,
     IStorageService storageService,
+    HotListConfig hotListConfig,
     IPostTagService? postTagService = null,
     ReviewMessageQueue? reviewQueue = null) : IPostService
 {
     private readonly IConnectionMultiplexer? _redis = redisEnumerable.FirstOrDefault();
+    private readonly TimeSpan hotListMaxPostAge = hotListConfig.MaxPostAge;
     private static readonly SemaphoreSlim CacheLock = new(1, 1);
 
     // 缓存过期时间配置
@@ -164,13 +171,27 @@ public class PostService(
         return PagedResultDto<PostDto>.Success(dtos, totalCount, @params.PageIndex, @params.PageSize);
     }
 
+    public async Task<PagedResultDto<PostDto>> GetAllAsync(PaginationParams @params, string requesterUserId)
+    {
+        var tagId = NormalizeTagId(@params.TagId);
+        var totalCountTask = postRepo.CountVisibleToAsync(requesterUserId, tagId);
+        var postsTask = postRepo.GetAllDtosVisibleToAsync(
+            requesterUserId, @params.PageIndex, @params.PageSize, tagId);
+        await Task.WhenAll(totalCountTask, postsTask);
+        var dtos = postsTask.Result.ToList();
+        await FillPostsDynamicDataAsync(dtos, requesterUserId);
+
+        return PagedResultDto<PostDto>.Success(
+            dtos, totalCountTask.Result, @params.PageIndex, @params.PageSize);
+    }
+
     /// <inheritdoc/>
     public async Task<List<PostDto>> GetHotAsync(int count = 10)
     {
         var memCacheKey = CacheKeys.HotPostsMem(count);
         if (memoryCache.TryGetValue<List<PostDto>>(memCacheKey, out var memCachedList) && memCachedList != null)
         {
-            return await FillListAsync(memCachedList);
+            return await FillHotListAsync(memCachedList);
         }
 
         await CacheLock.WaitAsync();
@@ -179,7 +200,7 @@ public class PostService(
             if (memoryCache.TryGetValue<List<PostDto>>(memCacheKey, out var retryMemCachedList) &&
                 retryMemCachedList != null)
             {
-                return await FillListAsync(retryMemCachedList);
+                return await FillHotListAsync(retryMemCachedList);
             }
 
             var distCacheKey = CacheKeys.HotPostsDist(count);
@@ -221,12 +242,24 @@ public class PostService(
                 Size = 1
             });
 
-            return await FillListAsync(dtos);
+            return await FillHotListAsync(dtos);
         }
         finally
         {
             CacheLock.Release();
         }
+    }
+
+    public async Task<List<PostDto>> GetHotAsync(int count, string requesterUserId)
+    {
+        var blockedUserIdsTask = userRepo.GetBlockedUserIdsAsync(requesterUserId);
+        var postsTask = GetHotAsync(count);
+        await Task.WhenAll(blockedUserIdsTask, postsTask);
+        var blockedUserIds = blockedUserIdsTask.Result.ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        return postsTask.Result
+            .Where(post => !blockedUserIds.Contains(post.UserId))
+            .ToList();
     }
 
     /// <summary>
@@ -238,6 +271,29 @@ public class PostService(
         var clones = source.Select(ClonePostDto).ToList();
         await FillPostsDynamicDataAsync(clones, requesterUserId);
         return clones;
+    }
+
+    private async Task<List<PostDto>> FillHotListAsync(List<PostDto> source)
+    {
+        var now = DateTime.UtcNow;
+        var earliestCreatedAt = now - hotListMaxPostAge;
+        // Redis/内存缓存可能仍包含规则生效前写入的旧帖子，返回前再次过滤。
+        var posts = await FillListAsync(source
+            .Where(post => post.CreatedAt >= earliestCreatedAt)
+            .ToList());
+        foreach (var post in posts)
+        {
+            var ageInDays = Math.Max(0, (now - post.CreatedAt).TotalDays);
+            var score = ((post.Watch + post.Likes * 3 - post.Dislikes * 2)
+                / Math.Pow(ageInDays + 2, 1.3)) * 10;
+            post.Heat = (int)score;
+        }
+
+        return posts
+            .OrderByDescending(post => post.Heat)
+            .ThenByDescending(post => post.CreatedAt)
+            .ThenBy(post => post.Id, StringComparer.Ordinal)
+            .ToList();
     }
 
     /// <inheritdoc/>
@@ -253,6 +309,18 @@ public class PostService(
         await FillPostsDynamicDataAsync(dtos);
 
         return PagedResultDto<PostDto>.Success(dtos, totalCount, @params.PageIndex, @params.PageSize);
+    }
+
+    public async Task<PagedResultDto<PostDto>> GetByUserIdAsync(
+        string userId, PaginationParams @params, string requesterUserId)
+    {
+        var blockedUserIds = await userRepo.GetBlockedUserIdsAsync(requesterUserId);
+        if (blockedUserIds.Contains(userId, StringComparer.OrdinalIgnoreCase))
+        {
+            return PagedResultDto<PostDto>.Success([], 0, @params.PageIndex, @params.PageSize);
+        }
+
+        return await GetByUserIdAsync(userId, @params);
     }
 
     private readonly ConcurrentDictionary<string, Task<PostDto?>> _getByIdTasks = new();
@@ -426,6 +494,7 @@ public class PostService(
             IsLiked = dto.IsLiked,
             IsDisliked = dto.IsDisliked,
             Watch = dto.Watch,
+            Heat = dto.Heat,
             IsReview = dto.IsReview,
             AiReason = dto.AiReason,
             AiReviewedOn = dto.AiReviewedOn,
@@ -751,6 +820,24 @@ public class PostService(
         await FillPostsDynamicDataAsync(dtos);
 
         return PagedResultDto<PostDto>.Success(dtos, totalCount, @params.PageIndex, @params.PageSize);
+    }
+
+    public async Task<PagedResultDto<PostDto>> SearchAsync(PaginationParams @params, string requesterUserId)
+    {
+        var keyword = @params.Keyword?.Trim();
+        if (string.IsNullOrWhiteSpace(keyword))
+            return PagedResultDto<PostDto>.Success([], 0, @params.PageIndex, @params.PageSize);
+
+        var tagId = NormalizeTagId(@params.TagId);
+        var totalCountTask = postRepo.SearchCountVisibleToAsync(keyword, requesterUserId, tagId);
+        var resultsTask = postRepo.SearchDtosVisibleToAsync(
+            keyword, requesterUserId, @params.PageIndex, @params.PageSize, tagId);
+        await Task.WhenAll(totalCountTask, resultsTask);
+        var dtos = resultsTask.Result.ToList();
+        await FillPostsDynamicDataAsync(dtos, requesterUserId);
+
+        return PagedResultDto<PostDto>.Success(
+            dtos, totalCountTask.Result, @params.PageIndex, @params.PageSize);
     }
 
     private static string? NormalizeTagId(string? tagId)

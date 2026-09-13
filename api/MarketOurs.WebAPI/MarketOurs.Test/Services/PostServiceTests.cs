@@ -140,6 +140,49 @@ public class PostServiceTests
     }
 
     [Test]
+    public async Task GetHotAsync_ShouldRecalculateHeatAfterDynamicCountsAndSortDescending()
+    {
+        var now = DateTime.UtcNow;
+        var posts = new List<PostDto>
+        {
+            new() { Id = "low", Title = "Low", CreatedAt = now, Watch = 1 },
+            new() { Id = "high", Title = "High", CreatedAt = now, Watch = 1 }
+        };
+        _mockPostRepo.Setup(r => r.GetHotDtosAsync(10)).ReturnsAsync(posts);
+        _mockLikeManager
+            .Setup(m => m.GetPostCountsBatchAsync(
+                It.IsAny<IReadOnlyCollection<string>>(),
+                It.IsAny<Func<string, string>>(),
+                It.IsAny<IReadOnlyDictionary<string, int>>()))
+            .ReturnsAsync((IReadOnlyCollection<string> ids, Func<string, string> keyFactory, IReadOnlyDictionary<string, int> _) =>
+            {
+                var isLikes = keyFactory("high").EndsWith(":likes", StringComparison.Ordinal);
+                return ids.ToDictionary(id => id, id => isLikes && id == "high" ? 100 : 0);
+            });
+
+        var result = await _postService.GetHotAsync();
+
+        Assert.That(result.Select(post => post.Id), Is.EqualTo(new[] { "high", "low" }));
+        Assert.That(result[0].Heat!.Value, Is.GreaterThan(result[1].Heat!.Value));
+    }
+
+    [Test]
+    public async Task GetHotAsync_ShouldExcludePostsOlderThanHotListWindow()
+    {
+        var now = DateTime.UtcNow;
+        var posts = new List<PostDto>
+        {
+            new() { Id = "recent", Title = "Recent", CreatedAt = now.AddDays(-6) },
+            new() { Id = "expired", Title = "Expired", CreatedAt = now.AddDays(-8) }
+        };
+        _mockPostRepo.Setup(r => r.GetHotDtosAsync(10)).ReturnsAsync(posts);
+
+        var result = await _postService.GetHotAsync();
+
+        Assert.That(result.Select(post => post.Id), Is.EqualTo(new[] { "recent" }));
+    }
+
+    [Test]
     public async Task GetAllAsync_WithTagId_ShouldPassTrimmedFilterToRepo()
     {
         _mockPostRepo.Setup(r => r.CountAsync("tag-1")).ReturnsAsync(0);
@@ -149,6 +192,23 @@ public class PostServiceTests
 
         _mockPostRepo.Verify(r => r.CountAsync("tag-1"), Times.Once);
         _mockPostRepo.Verify(r => r.GetAllDtosAsync(1, 10, "tag-1"), Times.Once);
+    }
+
+    [Test]
+    public async Task GetAllAsync_WithBlockedUsers_ShouldExcludeBeforePagination()
+    {
+        var visiblePost = new PostDto { Id = "visible-post", UserId = "visible-user" };
+        _mockPostRepo.Setup(r => r.CountVisibleToAsync("viewer", null))
+            .ReturnsAsync(1);
+        _mockPostRepo.Setup(r => r.GetAllDtosVisibleToAsync("viewer", 1, 10, null))
+            .ReturnsAsync([visiblePost]);
+
+        var result = await _postService.GetAllAsync(new PaginationParams(), "viewer");
+
+        Assert.That(result.TotalCount, Is.EqualTo(1));
+        Assert.That(result.Items.Select(post => post.Id), Is.EqualTo(new[] { "visible-post" }));
+        _mockPostRepo.Verify(r => r.GetAllDtosAsync(
+            It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>()), Times.Never);
     }
 
     [Test]
@@ -182,6 +242,21 @@ public class PostServiceTests
         Assert.That(result.Items.All(x => x.UserId == "user-1"), Is.True);
         Assert.That(result.Items[0].Likes, Is.EqualTo(3));
         Assert.That(result.Items[0].Watch, Is.EqualTo(9));
+    }
+
+    [Test]
+    public async Task GetByUserIdAsync_WhenUsersAreBlocked_ShouldReturnEmptyPage()
+    {
+        _mockUserRepo.Setup(r => r.GetBlockedUserIdsAsync("viewer"))
+            .ReturnsAsync(["author"]);
+
+        var result = await _postService.GetByUserIdAsync(
+            "author", new PaginationParams(), "viewer");
+
+        Assert.That(result.Items, Is.Empty);
+        Assert.That(result.TotalCount, Is.EqualTo(0));
+        _mockPostRepo.Verify(r => r.GetByUserDtosAsync(
+            It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never);
     }
 
     [Test]

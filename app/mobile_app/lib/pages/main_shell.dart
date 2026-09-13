@@ -7,6 +7,7 @@ import 'package:mobile_app/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../providers/notification_provider.dart';
 import '../providers/post_feed_provider.dart';
 import '../ui/app_feedback.dart';
 import '../ui/app_responsive.dart';
@@ -21,10 +22,35 @@ class MainShell extends ConsumerStatefulWidget {
   ConsumerState<MainShell> createState() => _MainShellState();
 }
 
-class _MainShellState extends ConsumerState<MainShell> {
+class _MainShellState extends ConsumerState<MainShell>
+    with WidgetsBindingObserver {
   static const _exitWindow = Duration(seconds: 2);
+  Timer? _unreadRefreshTimer;
 
   DateTime? _lastExitAttemptAt;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _unreadRefreshTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      unawaited(ref.read(unreadNotificationCountProvider.notifier).refresh());
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _unreadRefreshTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(ref.read(unreadNotificationCountProvider.notifier).refresh());
+    }
+  }
 
   void _onTap(BuildContext context, int index) {
     if (index != widget.navigationShell.currentIndex) {
@@ -35,6 +61,17 @@ class _MainShellState extends ConsumerState<MainShell> {
       index,
       initialLocation: index == widget.navigationShell.currentIndex,
     );
+
+    // Branches are kept alive by StatefulShellRoute, so explicitly signal
+    // the selected screen to reload its data when it becomes visible again.
+    ref.read(navigationRefreshTargetProvider.notifier).setTarget(index);
+    if (index == 0) {
+      unawaited(ref.read(homeFeedProvider.notifier).refresh());
+    } else if (index == 2) {
+      unawaited(ref.read(hotFeedProvider.notifier).refresh());
+    } else if (index == 3) {
+      unawaited(ref.read(unreadNotificationCountProvider.notifier).refresh());
+    }
   }
 
   void _handleHomeExitAttempt() {
@@ -60,6 +97,7 @@ class _MainShellState extends ConsumerState<MainShell> {
   @override
   Widget build(BuildContext context) {
     final isTablet = AppResponsive.isTablet(context);
+    final unreadCount = ref.watch(unreadNotificationCountProvider).value ?? 0;
     final shouldInterceptExit =
         !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
@@ -70,6 +108,7 @@ class _MainShellState extends ConsumerState<MainShell> {
               children: [
                 _TabletSideNavigation(
                   currentIndex: widget.navigationShell.currentIndex,
+                  hasUnreadNotifications: unreadCount > 0,
                   onTap: (index) => _onTap(context, index),
                 ),
                 Expanded(child: widget.navigationShell),
@@ -98,12 +137,18 @@ class _MainShellState extends ConsumerState<MainShell> {
                   ),
                   currentIndex: widget.navigationShell.currentIndex,
                   onTap: (index) => _onTap(context, index),
-                  items: _navigationItems(context)
+                  items: _navigationItems(context).indexed
                       .map(
-                        (item) => BottomNavigationBarItem(
-                          icon: Icon(item.icon),
-                          activeIcon: Icon(item.activeIcon),
-                          label: item.label,
+                        (entry) => BottomNavigationBarItem(
+                          icon: _navigationIcon(
+                            entry.$2.icon,
+                            hasUnread: entry.$1 == 3 && unreadCount > 0,
+                          ),
+                          activeIcon: _navigationIcon(
+                            entry.$2.activeIcon,
+                            hasUnread: entry.$1 == 3 && unreadCount > 0,
+                          ),
+                          label: entry.$2.label,
                         ),
                       )
                       .toList(),
@@ -134,10 +179,12 @@ class _MainShellState extends ConsumerState<MainShell> {
 class _TabletSideNavigation extends StatelessWidget {
   const _TabletSideNavigation({
     required this.currentIndex,
+    required this.hasUnreadNotifications,
     required this.onTap,
   });
 
   final int currentIndex;
+  final bool hasUnreadNotifications;
   final ValueChanged<int> onTap;
 
   @override
@@ -173,6 +220,7 @@ class _TabletSideNavigation extends StatelessWidget {
                 _TabletSideNavigationItem(
                   item: entry.$2,
                   isSelected: entry.$1 == currentIndex,
+                  hasUnread: entry.$1 == 3 && hasUnreadNotifications,
                   onPressed: () => onTap(entry.$1),
                 ),
             ],
@@ -187,11 +235,13 @@ class _TabletSideNavigationItem extends StatelessWidget {
   const _TabletSideNavigationItem({
     required this.item,
     required this.isSelected,
+    required this.hasUnread,
     required this.onPressed,
   });
 
   final _MainNavigationItem item;
   final bool isSelected;
+  final bool hasUnread;
   final VoidCallback onPressed;
 
   @override
@@ -223,8 +273,9 @@ class _TabletSideNavigationItem extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
+              _navigationIcon(
                 isSelected ? item.activeIcon : item.icon,
+                hasUnread: hasUnread,
                 color: foregroundColor,
                 size: 24,
               ),
@@ -246,6 +297,35 @@ class _TabletSideNavigationItem extends StatelessWidget {
       ),
     );
   }
+}
+
+Widget _navigationIcon(
+  IconData icon, {
+  required bool hasUnread,
+  Color? color,
+  double size = 24,
+}) {
+  final iconWidget = Icon(icon, color: color, size: size);
+  if (!hasUnread) return iconWidget;
+  return Stack(
+    clipBehavior: Clip.none,
+    children: [
+      iconWidget,
+      Positioned(
+        right: -4,
+        top: -3,
+        child: Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            color: CupertinoColors.systemRed,
+            shape: BoxShape.circle,
+            border: Border.all(color: AppColors.background, width: 1.5),
+          ),
+        ),
+      ),
+    ],
+  );
 }
 
 class _MainNavigationItem {

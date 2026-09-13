@@ -173,6 +173,7 @@ export interface PostDto {
   isLiked?: boolean;
   isDisliked?: boolean;
   watch: number;
+  heat?: number | null;
   isReview: boolean;
   aiReason?: string | null;
   aiReviewedOn?: string | null;

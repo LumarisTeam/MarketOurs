@@ -563,7 +563,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get postCreateContent => 'Что происходит?';
 
   @override
-  String get postCreateContentEmpty => 'Введите текст';
+  String get postCreateContentEmpty => 'Введите текст или добавьте изображение';
 
   @override
   String postCreateContentTooLong(int max) {

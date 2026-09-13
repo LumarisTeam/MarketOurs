@@ -3,16 +3,41 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/post.dart';
 import '../services/post_service.dart';
 
+/// Set to the tab index whenever a main-shell tab is selected so tab screens
+/// can refresh their own server-backed data while remaining in the indexed
+/// navigation stack.
+final navigationRefreshTargetProvider =
+    NotifierProvider<NavigationRefreshNotifier, NavigationRefreshEvent?>(
+      NavigationRefreshNotifier.new,
+    );
+
+class NavigationRefreshEvent {
+  const NavigationRefreshEvent({required this.index, required this.sequence});
+
+  final int index;
+  final int sequence;
+}
+
+class NavigationRefreshNotifier extends Notifier<NavigationRefreshEvent?> {
+  var _sequence = 0;
+
+  @override
+  NavigationRefreshEvent? build() => null;
+
+  void setTarget(int index) {
+    state = NavigationRefreshEvent(index: index, sequence: ++_sequence);
+  }
+}
+
 final postServiceProvider = Provider<PostService>((ref) => PostService());
 
 final homeFeedProvider = AsyncNotifierProvider<HomeFeedNotifier, HomeFeedState>(
   HomeFeedNotifier.new,
 );
-final tagFeedProvider = AsyncNotifierProvider.family<
-  TagFeedNotifier,
-  HomeFeedState,
-  String
->(TagFeedNotifier.new);
+final tagFeedProvider =
+    AsyncNotifierProvider.family<TagFeedNotifier, HomeFeedState, String>(
+      TagFeedNotifier.new,
+    );
 final hotFeedProvider = AsyncNotifierProvider<HotFeedNotifier, HotFeedState>(
   HotFeedNotifier.new,
 );

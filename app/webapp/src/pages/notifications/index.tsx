@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useSelector, useDispatch } from "react-redux"
 import type { RootState, AppDispatch } from "@/stores"
 import { fetchNotifications, markReadLocal, markAllReadLocal } from "@/stores/notificationSlice"
@@ -21,6 +21,7 @@ export default function NotificationsPage() {
   const dispatch = useDispatch<AppDispatch>()
   
   const [activeTab, setActiveTab] = useState<"list" | "settings">("list")
+  const [activeCategory, setActiveCategory] = useState<"all" | "comments" | "reviews" | "other">("all")
   const [settings, setSettings] = useState<PushSettingsDto>({
     enableEmailNotifications: true,
     enableHotListPush: true,
@@ -33,6 +34,19 @@ export default function NotificationsPage() {
   const [webPushSupported] = useState(() => webPushService.isSupported())
   const [webPushSubscribed, setWebPushSubscribed] = useState(false)
   const [webPushLoading, setWebPushLoading] = useState(false)
+
+  const visibleNotifications = useMemo(() => {
+    switch (activeCategory) {
+      case "comments":
+        return notifications.filter((n) => n.type === NotificationType.CommentReply || n.type === NotificationType.PostReply)
+      case "reviews":
+        return notifications.filter((n) => n.type === NotificationType.Review)
+      case "other":
+        return notifications.filter((n) => n.type === NotificationType.HotList || n.type === NotificationType.System)
+      default:
+        return notifications
+    }
+  }, [activeCategory, notifications])
 
   useEffect(() => {
     if (activeTab === "list") {
@@ -241,13 +255,21 @@ export default function NotificationsPage() {
 
       {activeTab === "list" ? (
         <>
-          {loading && notifications.length === 0 ? (
+          <Tabs value={activeCategory} onValueChange={(value) => setActiveCategory(value as typeof activeCategory)} className="mb-6">
+            <TabsList className="grid w-full grid-cols-4 rounded-2xl">
+              <TabsTrigger value="all" className="rounded-xl">{t("notifications.title")}</TabsTrigger>
+              <TabsTrigger value="comments" className="rounded-xl">{t("notifications.types.post_reply.title")}</TabsTrigger>
+              <TabsTrigger value="reviews" className="rounded-xl">{t("notifications.types.review.title")}</TabsTrigger>
+              <TabsTrigger value="other" className="rounded-xl">{t("notifications.types.system.title")}</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          {loading && visibleNotifications.length === 0 ? (
             <div className="space-y-4">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="h-24 w-full bg-muted animate-pulse rounded-2xl" />
               ))}
             </div>
-          ) : notifications.length === 0 ? (
+          ) : visibleNotifications.length === 0 ? (
             <div className="text-center py-20 glass rounded-3xl">
               <div className="h-16 w-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
                 <Bell size={32} className="text-muted-foreground" />
@@ -256,7 +278,7 @@ export default function NotificationsPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {notifications.map((n) => {
+              {visibleNotifications.map((n) => {
                 const link = getTargetLink(n)
                 return (
                   <div

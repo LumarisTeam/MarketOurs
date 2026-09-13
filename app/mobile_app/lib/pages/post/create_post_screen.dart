@@ -247,12 +247,16 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                   max: DtoLimits.postTitleMax,
                   maxMessage: AppLocalizations.of(context).postCreateTitleTooLong(DtoLimits.postTitleMax),
                 ),
-                contentValidator: (v) => requiredMaxValidator(
-                  v,
-                  emptyMessage: AppLocalizations.of(context).postCreateContentEmpty,
-                  max: DtoLimits.postContentMax,
-                  maxMessage: AppLocalizations.of(context).postCreateContentTooLong(DtoLimits.postContentMax),
-                ),
+                contentValidator: (v) {
+                  final text = v?.trim() ?? '';
+                  if (text.length > DtoLimits.postContentMax) {
+                    return AppLocalizations.of(context).postCreateContentTooLong(DtoLimits.postContentMax);
+                  }
+                  if (text.isEmpty && _imageEntries.isEmpty) {
+                    return AppLocalizations.of(context).postCreateContentEmpty;
+                  }
+                  return null;
+                },
               ),
             ],
           ),

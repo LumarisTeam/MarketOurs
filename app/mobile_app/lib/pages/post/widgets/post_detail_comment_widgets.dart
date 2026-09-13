@@ -100,7 +100,12 @@ class PostDetailCommentThread extends StatelessWidget {
                     onDelete: currentUserId == flat.comment.userId
                         ? () => onDeleteChild?.call(flat.comment)
                         : null,
-                    onReport: currentUserId != null && currentUserId != flat.comment.userId && onReport != null ? () => onReport!(flat.comment) : null,
+                    onReport:
+                        currentUserId != null &&
+                            currentUserId != flat.comment.userId &&
+                            onReport != null
+                        ? () => onReport!(flat.comment)
+                        : null,
                     onLike: () => onLikeChild(flat.comment),
                     onDislike: () => onDislikeChild(flat.comment),
                     isLiked: likedComments.contains(flat.comment.id),
@@ -187,119 +192,133 @@ class _CommentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            AppAvatar(
-              url: comment.author?.avatar,
-              name: comment.author?.name,
-              size: isReply ? 28 : 32,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    comment.author?.name ?? AppLocalizations.of(context).anonymousUser,
-                    style: TextStyle(
-                      fontSize: isReply ? 13 : 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    formatEditedRelativeDateTime(
-                      comment.createdAt,
-                      comment.updatedAt,
-                      l10n: AppLocalizations.of(context),
-                    ),
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: CupertinoDynamicColor.resolve(
-                        AppColors.mutedForeground,
-                        context,
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: onReply,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              AppAvatar(
+                url: comment.author?.avatar,
+                name: comment.author?.name,
+                size: isReply ? 28 : 32,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      comment.author?.name ??
+                          AppLocalizations.of(context).anonymousUser,
+                      style: TextStyle(
+                        fontSize: isReply ? 13 : 14,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            _CommentActionIcon(
-              icon: isLiked ? CupertinoIcons.heart_fill : CupertinoIcons.heart,
-              label: '${comment.likes ?? 0}',
-              onTap: onLike,
-              active: isLiked,
-              activeColor: const Color(0xFFFF5A5F),
-            ),
-          ],
-        ),
-        Padding(
-          padding: EdgeInsets.only(left: isReply ? 38 : 42, top: 4),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text.rich(
-                TextSpan(
-                  children: [
-                    if (replyToName != null && replyToName!.isNotEmpty)
-                      TextSpan(
-                        text: '@$replyToName ',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.primary,
+                    Text(
+                      formatEditedRelativeDateTime(
+                        comment.createdAt,
+                        comment.updatedAt,
+                        l10n: AppLocalizations.of(context),
+                      ),
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: CupertinoDynamicColor.resolve(
+                          AppColors.mutedForeground,
+                          context,
                         ),
                       ),
-                    TextSpan(text: comment.content ?? ''),
-                  ],
-                ),
-                style: TextStyle(
-                  fontSize: 15,
-                  height: 1.5,
-                  color: CupertinoDynamicColor.resolve(
-                    AppColors.foreground,
-                    context,
-                  ),
-                ),
-              ),
-              CommentImageGrid(images: comment.images ?? const []),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  _TextAction(label: AppLocalizations.of(context).reply, onTap: onReply),
-                  if (onEdit != null) ...[
-                    const SizedBox(width: 16),
-                    _TextAction(label: AppLocalizations.of(context).editPostAction, onTap: onEdit!),
-                  ],
-                  if (onDelete != null) ...[
-                    const SizedBox(width: 16),
-                    _TextAction(
-                      label: AppLocalizations.of(context).deletePostAction,
-                      onTap: onDelete!,
-                      activeColor: AppColors.destructive,
-                      active: true,
                     ),
                   ],
-                  if (onReport != null) ...[
-                    const SizedBox(width: 16),
-                    _TextAction(label: '举报', onTap: onReport!, activeColor: AppColors.destructive, active: true),
-                  ],
-                  const Spacer(),
-                  _CommentActionIcon(
-                    icon: isDisliked
-                        ? CupertinoIcons.hand_thumbsdown_fill
-                        : CupertinoIcons.hand_thumbsdown,
-                    onTap: onDislike,
-                    active: isDisliked,
-                  ),
-                ],
+                ),
+              ),
+              _CommentActionIcon(
+                icon: isLiked
+                    ? CupertinoIcons.heart_fill
+                    : CupertinoIcons.heart,
+                label: '${comment.likes ?? 0}',
+                onTap: onLike,
+                active: isLiked,
+                activeColor: const Color(0xFFFF5A5F),
               ),
             ],
           ),
-        ),
-      ],
+          Padding(
+            padding: EdgeInsets.only(left: isReply ? 38 : 42, top: 4),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text.rich(
+                  TextSpan(
+                    children: [
+                      if (replyToName != null && replyToName!.isNotEmpty)
+                        TextSpan(
+                          text: '@$replyToName ',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      TextSpan(text: comment.content ?? ''),
+                    ],
+                  ),
+                  style: TextStyle(
+                    fontSize: 15,
+                    height: 1.5,
+                    color: CupertinoDynamicColor.resolve(
+                      AppColors.foreground,
+                      context,
+                    ),
+                  ),
+                ),
+                CommentImageGrid(images: comment.images ?? const []),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    if (onEdit != null) ...[
+                      _TextAction(
+                        label: AppLocalizations.of(context).editPostAction,
+                        onTap: onEdit!,
+                      ),
+                      const SizedBox(width: 16),
+                    ],
+                    if (onDelete != null) ...[
+                      _TextAction(
+                        label: AppLocalizations.of(context).deletePostAction,
+                        onTap: onDelete!,
+                        activeColor: AppColors.destructive,
+                        active: true,
+                      ),
+                      const SizedBox(width: 16),
+                    ],
+                    if (onReport != null) ...[
+                      _TextAction(
+                        label: '举报',
+                        onTap: onReport!,
+                        activeColor: AppColors.destructive,
+                        active: true,
+                      ),
+                      const SizedBox(width: 16),
+                    ],
+                    const Spacer(),
+                    _CommentActionIcon(
+                      icon: isDisliked
+                          ? CupertinoIcons.hand_thumbsdown_fill
+                          : CupertinoIcons.hand_thumbsdown,
+                      onTap: onDislike,
+                      active: isDisliked,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -320,9 +339,11 @@ class CommentImageGrid extends StatelessWidget {
         spacing: 8,
         runSpacing: 8,
         children: [
-          for (var i = 0;
-              i < images.length && i < postDetailMaxCommentImages;
-              i++)
+          for (
+            var i = 0;
+            i < images.length && i < postDetailMaxCommentImages;
+            i++
+          )
             GestureDetector(
               onTap: () {
                 Navigator.of(context).push(

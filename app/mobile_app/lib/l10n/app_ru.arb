@@ -164,7 +164,7 @@
   "postCreateTitleEmpty": "Введите заголовок",
   "postCreateTitleTooLong": "Заголовок не должен превышать {max} симв.",
   "postCreateContent": "Что происходит?",
-  "postCreateContentEmpty": "Введите текст",
+  "postCreateContentEmpty": "Введите текст или добавьте изображение",
   "postCreateContentTooLong": "Содержимое не должно превышать {max} симв.",
   "postCreateImages": "Изображения",
   "postCreateAddImages": "Добавить фото",

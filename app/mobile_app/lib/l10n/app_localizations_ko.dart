@@ -561,7 +561,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get postCreateContent => '무슨 일이 있나요?';
 
   @override
-  String get postCreateContentEmpty => '내용을 입력하세요';
+  String get postCreateContentEmpty => '내용을 입력하거나 이미지를 추가하세요';
 
   @override
   String postCreateContentTooLong(int max) {

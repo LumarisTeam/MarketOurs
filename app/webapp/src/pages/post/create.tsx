@@ -9,7 +9,7 @@ import { compressImages } from '@/services/imageCompression';
 import { extractUserMessage } from '@/services/errorCodes';
 import { toast } from '@/lib/toast';
 import { ImagePlus, Loader2, Send } from 'lucide-react';
-import { DTO_LIMITS, requiredMax } from '@/lib/dtoValidation';
+import { DTO_LIMITS, optionalMax, requiredMax } from '@/lib/dtoValidation';
 import type { PostTagDto } from '@/types';
 import { PostTagBadge } from '@/components/post/PostTagBadge';
 import { Button } from '@/components/ui/button';
@@ -46,7 +46,7 @@ export default function CreatePostPage() {
       try {
         const response = await postService.getPostTags();
         setTags(response.data ?? []);
-      } catch (err) {
+      } catch {
         toast.error(t("post.tag_load_failed"));
       }
     };
@@ -96,14 +96,16 @@ export default function CreatePostPage() {
       t('post.error_empty'),
       `标题长度不能超过 ${DTO_LIMITS.postTitleMax} 位`,
     );
-    const contentError = requiredMax(
+    const contentError = optionalMax(
       content,
       DTO_LIMITS.postContentMax,
-      t('post.error_empty'),
       `内容长度不能超过 ${DTO_LIMITS.postContentMax} 位`,
     );
-    if (titleError || contentError) {
-      setError(titleError || contentError);
+    const bodyError = !content.trim() && images.length === 0
+      ? t('post.content_or_image_required')
+      : null;
+    if (titleError || contentError || bodyError) {
+      setError(titleError || contentError || bodyError);
       return;
     }
 
@@ -184,7 +186,6 @@ export default function CreatePostPage() {
               placeholder={t('post.content_placeholder')}
               maxLength={DTO_LIMITS.postContentMax}
               className="min-h-[200px] rounded-2xl resize-none"
-              required
             />
           </div>
 

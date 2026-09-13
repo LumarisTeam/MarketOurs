@@ -200,30 +200,34 @@ class _PostDetailCommentComposerState extends State<PostDetailCommentComposer> {
         ? widget.reorderableEntries!.isNotEmpty
         : widget.localImages.isNotEmpty;
 
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: AppResponsive.readableMaxWidth(context, fallback: 820),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppRadii.xl),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-              decoration: BoxDecoration(
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+          decoration: BoxDecoration(
+            color: CupertinoDynamicColor.resolve(
+              AppColors.background,
+              context,
+            ).withValues(alpha: 0.88),
+            border: Border(
+              top: BorderSide(
                 color: CupertinoDynamicColor.resolve(
-                  AppColors.background,
+                  AppColors.border,
                   context,
-                ).withValues(alpha: 0.82),
-                border: Border.all(
-                  color: CupertinoDynamicColor.resolve(
-                    AppColors.border,
-                    context,
-                  ).withValues(alpha: 0.3),
+                ).withValues(alpha: 0.35),
+              ),
+            ),
+          ),
+          child: Align(
+            alignment: Alignment.center,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: AppResponsive.readableMaxWidth(
+                  context,
+                  fallback: 820,
                 ),
-                borderRadius: BorderRadius.circular(AppRadii.xl),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -243,9 +247,7 @@ class _PostDetailCommentComposerState extends State<PostDetailCommentComposer> {
                         Expanded(
                           child: Text(
                             widget.replyTargetName!.isEmpty
-                                ? AppLocalizations.of(
-                                    context,
-                                  ).replyComment
+                                ? AppLocalizations.of(context).replyComment
                                 : '@${widget.replyTargetName}',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -350,7 +352,7 @@ class _PostDetailCommentComposerState extends State<PostDetailCommentComposer> {
                               AppColors.secondary,
                               context,
                             ),
-                            borderRadius: BorderRadius.circular(AppRadii.pill),
+                            borderRadius: BorderRadius.circular(8),
                             border: Border.all(
                               color:
                                   CupertinoDynamicColor.resolve(
@@ -370,14 +372,12 @@ class _PostDetailCommentComposerState extends State<PostDetailCommentComposer> {
                                 child: CupertinoTextField(
                                   controller: widget.controller,
                                   focusNode: _focusNode,
-                                  placeholder:
-                                      widget.replyTargetName == null
+                                  onTapOutside: (_) => _focusNode.unfocus(),
+                                  placeholder: widget.replyTargetName == null
                                       ? AppLocalizations.of(
                                           context,
                                         ).postWriteComment
-                                      : AppLocalizations.of(
-                                          context,
-                                        ).replyHint,
+                                      : AppLocalizations.of(context).replyHint,
                                   placeholderStyle: TextStyle(
                                     fontSize: 14,
                                     color: CupertinoDynamicColor.resolve(
@@ -393,8 +393,10 @@ class _PostDetailCommentComposerState extends State<PostDetailCommentComposer> {
                                       context,
                                     ),
                                   ),
-                                  textInputAction: TextInputAction.send,
-                                  onSubmitted: (_) => _handleSubmit(),
+                                  keyboardType: TextInputType.multiline,
+                                  minLines: 1,
+                                  maxLines: 5,
+                                  textInputAction: TextInputAction.newline,
                                   cursorColor: AppColors.primary,
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 11,
@@ -426,6 +428,21 @@ class _PostDetailCommentComposerState extends State<PostDetailCommentComposer> {
                               ),
                             ],
                           ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        minimumSize: const Size(40, 40),
+                        borderRadius: BorderRadius.circular(8),
+                        onPressed: widget.isWorking ? null : _handleSubmit,
+                        child: Icon(
+                          CupertinoIcons.paperplane_fill,
+                          size: 20,
+                          color: CupertinoDynamicColor.resolve(
+                            AppColors.primary,
+                            context,
+                          ).withValues(alpha: widget.isWorking ? 0.35 : 1),
                         ),
                       ),
                     ],

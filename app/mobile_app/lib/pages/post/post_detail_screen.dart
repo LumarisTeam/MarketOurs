@@ -691,7 +691,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       availableTags: tags,
     );
     if (draft == null) return;
-    final validationError = _validatePostDraft(draft.title, draft.content);
+    final validationError = _validatePostDraft(
+      draft.title,
+      draft.content,
+      hasImages: draft.reorderedEntries?.isNotEmpty == true,
+    );
     if (validationError != null) {
       if (!mounted) return;
       await AppFeedback.showError(context, message: validationError);
@@ -992,7 +996,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     return result;
   }
 
-  String? _validatePostDraft(String title, String content) {
+  String? _validatePostDraft(
+    String title,
+    String content, {
+    required bool hasImages,
+  }) {
     final titleError = requiredMaxValidator(
       title,
       emptyMessage: AppLocalizations.of(context).postCreateTitleEmpty,
@@ -1003,14 +1011,18 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     );
     if (titleError != null) return titleError;
 
-    return requiredMaxValidator(
+    final contentError = optionalMaxValidator(
       content,
-      emptyMessage: AppLocalizations.of(context).postCreateContentEmpty,
       max: DtoLimits.postContentMax,
       maxMessage: AppLocalizations.of(
         context,
       ).postCreateContentTooLong(DtoLimits.postContentMax),
     );
+    if (contentError != null) return contentError;
+    if (content.trim().isEmpty && !hasImages) {
+      return AppLocalizations.of(context).postCreateContentEmpty;
+    }
+    return null;
   }
 
   Widget _buildActionBar(
@@ -1262,221 +1274,231 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       slivers: [
         CupertinoSliverRefreshControl(onRefresh: _loadData),
         SliverToBoxAdapter(
-          child: AppResponsiveCenter(
-            padding: AppResponsive.sliverPagePadding(context),
-            child: Builder(
-              builder: (context) {
-                final isWide = AppResponsive.isWideTwoPane(context);
-                final actionBar = _buildActionBar(context, post, user != null);
-                final content = Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    PostDetailHero(
-                      post: post,
-                      isFollowingAuthor: _isFollowingAuthor,
-                      isMe: isOwner,
-                      onFollowToggle: _toggleFollowAuthor,
-                      onAuthorTap: post.userId == null
-                          ? null
-                          : () => context.push(
-                              buildPublicProfileLocation(post.userId!),
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () => FocusScope.of(context).unfocus(),
+            child: AppResponsiveCenter(
+              padding: AppResponsive.sliverPagePadding(context),
+              child: Builder(
+                builder: (context) {
+                  final isWide = AppResponsive.isWideTwoPane(context);
+                  final actionBar = _buildActionBar(
+                    context,
+                    post,
+                    user != null,
+                  );
+                  final content = Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      PostDetailHero(
+                        post: post,
+                        isFollowingAuthor: _isFollowingAuthor,
+                        isMe: isOwner,
+                        onFollowToggle: _toggleFollowAuthor,
+                        onAuthorTap: post.userId == null
+                            ? null
+                            : () => context.push(
+                                buildPublicProfileLocation(post.userId!),
+                              ),
+                      ),
+                      if (!isWide) ...[const SizedBox(height: 24), actionBar],
+                      const SizedBox(height: 32),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              AppLocalizations.of(
+                                context,
+                              ).postCommentCount(_comments.length),
+                              style: AppTextStyles.sectionTitle(context),
                             ),
-                    ),
-                    if (!isWide) ...[const SizedBox(height: 24), actionBar],
-                    const SizedBox(height: 32),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            AppLocalizations.of(
+                          ),
+                          CupertinoSlidingSegmentedControl<String>(
+                            groupValue: _commentSort,
+                            backgroundColor: CupertinoDynamicColor.resolve(
+                              AppColors.secondary,
                               context,
-                            ).postCommentCount(_comments.length),
-                            style: AppTextStyles.sectionTitle(context),
-                          ),
-                        ),
-                        CupertinoSlidingSegmentedControl<String>(
-                          groupValue: _commentSort,
-                          backgroundColor: CupertinoDynamicColor.resolve(
-                            AppColors.secondary,
-                            context,
-                          ),
-                          children: {
-                            'recent': Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 10),
-                              child: Text(
-                                AppLocalizations.of(
-                                  context,
-                                ).postCommentSortNewest,
-                                style: TextStyle(fontSize: 13),
-                              ),
                             ),
-                            'hot': Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 10),
-                              child: Text(
-                                AppLocalizations.of(context).postCommentSortHot,
-                                style: TextStyle(fontSize: 13),
-                              ),
-                            ),
-                          },
-                          onValueChanged: (v) {
-                            if (v != null && v != _commentSort) {
-                              setState(() => _commentSort = v);
-                              _loadComments();
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    if (_isCommentsLoading)
-                      const Padding(
-                        padding: EdgeInsets.only(bottom: 16),
-                        child: Center(
-                          child: CupertinoActivityIndicator(radius: 10),
-                        ),
-                      ),
-                    if (_comments.isEmpty && !_isCommentsLoading)
-                      AppEmptyState(
-                        icon: CupertinoIcons.chat_bubble,
-                        title: AppLocalizations.of(context).postNoComments,
-                        description: AppLocalizations.of(
-                          context,
-                        ).postEmptyCommentCTA,
-                      )
-                    else
-                      ..._comments.map(
-                        (c) => Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: PostDetailCommentThread(
-                            comment: c,
-                            currentUserId: user?.id,
-                            onAuthorTapForUser: (id) =>
-                                context.push(buildPublicProfileLocation(id)),
-                            onReply: () => _startReply(c),
-                            onEdit: user?.id == c.userId
-                                ? () => _editComment(c)
-                                : null,
-                            onDelete: user?.id == c.userId
-                                ? () => _deleteComment(c)
-                                : null,
-                            onReport: user != null
-                                ? (comment) => showReportSheet(
+                            children: {
+                              'recent': Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 10),
+                                child: Text(
+                                  AppLocalizations.of(
                                     context,
-                                    targetType: ReportTargetType.comment,
-                                    targetId: comment.id,
-                                  )
-                                : null,
-                            likedComments: _likedComments,
-                            dislikedComments: _dislikedComments,
-                            onLike: () {
-                              if (user == null) {
-                                context.go(AppRoutePaths.login);
-                                return;
-                              }
-                              _runAction(() async {
-                                final res = await _commentService.likeComment(
-                                  c.id,
-                                );
-                                final data = res.data;
-                                if (data != null) {
-                                  setState(() {
-                                    _applyCommentReaction(
-                                      c.id,
-                                      isLiked: data.isLiked,
-                                      isDisliked: data.isDisliked,
-                                      likeCount: data.likeCount,
-                                      dislikeCount: data.dislikeCount,
-                                    );
-                                  });
-                                }
-                              }, reloadAll: false);
+                                  ).postCommentSortNewest,
+                                  style: TextStyle(fontSize: 13),
+                                ),
+                              ),
+                              'hot': Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 10),
+                                child: Text(
+                                  AppLocalizations.of(
+                                    context,
+                                  ).postCommentSortHot,
+                                  style: TextStyle(fontSize: 13),
+                                ),
+                              ),
                             },
-                            onDislike: () {
-                              if (user == null) {
-                                context.go(AppRoutePaths.login);
-                                return;
+                            onValueChanged: (v) {
+                              if (v != null && v != _commentSort) {
+                                setState(() => _commentSort = v);
+                                _loadComments();
                               }
-                              _runAction(() async {
-                                final res = await _commentService
-                                    .dislikeComment(c.id);
-                                final data = res.data;
-                                if (data != null) {
-                                  setState(() {
-                                    _applyCommentReaction(
-                                      c.id,
-                                      isLiked: data.isLiked,
-                                      isDisliked: data.isDisliked,
-                                      likeCount: data.likeCount,
-                                      dislikeCount: data.dislikeCount,
-                                    );
-                                  });
-                                }
-                              }, reloadAll: false);
-                            },
-                            onReplyChild: _startReply,
-                            onEditChild: _editComment,
-                            onDeleteChild: _deleteComment,
-                            onLikeChild: (child) {
-                              if (user == null) {
-                                context.go(AppRoutePaths.login);
-                                return;
-                              }
-                              _runAction(() async {
-                                final res = await _commentService.likeComment(
-                                  child.id,
-                                );
-                                final data = res.data;
-                                if (data != null) {
-                                  setState(() {
-                                    _applyCommentReaction(
-                                      child.id,
-                                      isLiked: data.isLiked,
-                                      isDisliked: data.isDisliked,
-                                      likeCount: data.likeCount,
-                                      dislikeCount: data.dislikeCount,
-                                    );
-                                  });
-                                }
-                              }, reloadAll: false);
-                            },
-                            onDislikeChild: (child) {
-                              if (user == null) {
-                                context.go(AppRoutePaths.login);
-                                return;
-                              }
-                              _runAction(() async {
-                                final res = await _commentService
-                                    .dislikeComment(child.id);
-                                final data = res.data;
-                                if (data != null) {
-                                  setState(() {
-                                    _applyCommentReaction(
-                                      child.id,
-                                      isLiked: data.isLiked,
-                                      isDisliked: data.isDisliked,
-                                      likeCount: data.likeCount,
-                                      dislikeCount: data.dislikeCount,
-                                    );
-                                  });
-                                }
-                              }, reloadAll: false);
                             },
                           ),
-                        ),
+                        ],
                       ),
-                  ],
-                );
+                      const SizedBox(height: 16),
+                      if (_isCommentsLoading)
+                        const Padding(
+                          padding: EdgeInsets.only(bottom: 16),
+                          child: Center(
+                            child: CupertinoActivityIndicator(radius: 10),
+                          ),
+                        ),
+                      if (_comments.isEmpty && !_isCommentsLoading)
+                        AppEmptyState(
+                          icon: CupertinoIcons.chat_bubble,
+                          title: AppLocalizations.of(context).postNoComments,
+                          description: AppLocalizations.of(
+                            context,
+                          ).postEmptyCommentCTA,
+                        )
+                      else
+                        ..._comments.map(
+                          (c) => Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: PostDetailCommentThread(
+                              comment: c,
+                              currentUserId: user?.id,
+                              onAuthorTapForUser: (id) =>
+                                  context.push(buildPublicProfileLocation(id)),
+                              onReply: () => _startReply(c),
+                              onEdit: user?.id == c.userId
+                                  ? () => _editComment(c)
+                                  : null,
+                              onDelete: user?.id == c.userId
+                                  ? () => _deleteComment(c)
+                                  : null,
+                              onReport: user != null
+                                  ? (comment) => showReportSheet(
+                                      context,
+                                      targetType: ReportTargetType.comment,
+                                      targetId: comment.id,
+                                    )
+                                  : null,
+                              likedComments: _likedComments,
+                              dislikedComments: _dislikedComments,
+                              onLike: () {
+                                if (user == null) {
+                                  context.go(AppRoutePaths.login);
+                                  return;
+                                }
+                                _runAction(() async {
+                                  final res = await _commentService.likeComment(
+                                    c.id,
+                                  );
+                                  final data = res.data;
+                                  if (data != null) {
+                                    setState(() {
+                                      _applyCommentReaction(
+                                        c.id,
+                                        isLiked: data.isLiked,
+                                        isDisliked: data.isDisliked,
+                                        likeCount: data.likeCount,
+                                        dislikeCount: data.dislikeCount,
+                                      );
+                                    });
+                                  }
+                                }, reloadAll: false);
+                              },
+                              onDislike: () {
+                                if (user == null) {
+                                  context.go(AppRoutePaths.login);
+                                  return;
+                                }
+                                _runAction(() async {
+                                  final res = await _commentService
+                                      .dislikeComment(c.id);
+                                  final data = res.data;
+                                  if (data != null) {
+                                    setState(() {
+                                      _applyCommentReaction(
+                                        c.id,
+                                        isLiked: data.isLiked,
+                                        isDisliked: data.isDisliked,
+                                        likeCount: data.likeCount,
+                                        dislikeCount: data.dislikeCount,
+                                      );
+                                    });
+                                  }
+                                }, reloadAll: false);
+                              },
+                              onReplyChild: _startReply,
+                              onEditChild: _editComment,
+                              onDeleteChild: _deleteComment,
+                              onLikeChild: (child) {
+                                if (user == null) {
+                                  context.go(AppRoutePaths.login);
+                                  return;
+                                }
+                                _runAction(() async {
+                                  final res = await _commentService.likeComment(
+                                    child.id,
+                                  );
+                                  final data = res.data;
+                                  if (data != null) {
+                                    setState(() {
+                                      _applyCommentReaction(
+                                        child.id,
+                                        isLiked: data.isLiked,
+                                        isDisliked: data.isDisliked,
+                                        likeCount: data.likeCount,
+                                        dislikeCount: data.dislikeCount,
+                                      );
+                                    });
+                                  }
+                                }, reloadAll: false);
+                              },
+                              onDislikeChild: (child) {
+                                if (user == null) {
+                                  context.go(AppRoutePaths.login);
+                                  return;
+                                }
+                                _runAction(() async {
+                                  final res = await _commentService
+                                      .dislikeComment(child.id);
+                                  final data = res.data;
+                                  if (data != null) {
+                                    setState(() {
+                                      _applyCommentReaction(
+                                        child.id,
+                                        isLiked: data.isLiked,
+                                        isDisliked: data.isDisliked,
+                                        likeCount: data.likeCount,
+                                        dislikeCount: data.dislikeCount,
+                                      );
+                                    });
+                                  }
+                                }, reloadAll: false);
+                              },
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
 
-                if (!isWide) {
-                  return content;
-                }
+                  if (!isWide) {
+                    return content;
+                  }
 
-                return AppTwoPane(
-                  key: const ValueKey('post-detail-responsive-two-pane'),
-                  primary: content,
-                  secondary: actionBar,
-                );
-              },
+                  return AppTwoPane(
+                    key: const ValueKey('post-detail-responsive-two-pane'),
+                    primary: content,
+                    secondary: actionBar,
+                  );
+                },
+              ),
             ),
           ),
         ),
@@ -1491,8 +1513,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       localImages: const [],
       isWorking: _isWorking,
       uploadProgress: _commentUploadProgress,
-      replyTargetName:
-          _replyTarget == null ? null : (replyName ?? ''),
+      replyTargetName: _replyTarget == null ? null : (replyName ?? ''),
       onCancelReply: _replyTarget == null
           ? null
           : () => setState(() => _replyTarget = null),

@@ -26,7 +26,7 @@ public class PostControllerTests : ControllerTestBase
         // Arrange
         var posts = new List<PostDto> { new PostDto { Id = "1", Title = "Post 1" } };
         var pagedResult = PagedResultDto<PostDto>.Success(posts, 1, 1, 10);
-        _mockPostService.Setup(s => s.GetAllAsync(It.IsAny<PaginationParams>())).ReturnsAsync(pagedResult);
+        _mockPostService.Setup(s => s.GetAllAsync(It.IsAny<PaginationParams>(), "1")).ReturnsAsync(pagedResult);
 
         // Act
         var result = await _controller.GetAll(new PaginationParams());
@@ -42,8 +42,8 @@ public class PostControllerTests : ControllerTestBase
     {
         var pagedResult = PagedResultDto<PostDto>.Success([], 0, 1, 10);
         PaginationParams? captured = null;
-        _mockPostService.Setup(s => s.GetAllAsync(It.IsAny<PaginationParams>()))
-            .Callback<PaginationParams>(p => captured = p)
+        _mockPostService.Setup(s => s.GetAllAsync(It.IsAny<PaginationParams>(), "1"))
+            .Callback<PaginationParams, string>((p, _) => captured = p)
             .ReturnsAsync(pagedResult);
 
         await _controller.GetAll(new PaginationParams { TagId = "tag-1" });
@@ -53,11 +53,25 @@ public class PostControllerTests : ControllerTestBase
     }
 
     [Test]
+    public async Task GetAll_WhenAuthenticated_ShouldPassViewerToService()
+    {
+        var pagedResult = PagedResultDto<PostDto>.Success([], 0, 1, 10);
+        _mockPostService.Setup(s => s.GetAllAsync(It.IsAny<PaginationParams>(), "1"))
+            .ReturnsAsync(pagedResult);
+
+        await _controller.GetAll(new PaginationParams());
+
+        _mockPostService.Verify(
+            s => s.GetAllAsync(It.IsAny<PaginationParams>(), "1"), Times.Once);
+    }
+
+    [Test]
     public async Task GetByUserId_ShouldReturnPagedPosts()
     {
         var posts = new List<PostDto> { new PostDto { Id = "1", Title = "Post 1", UserId = "user-1" } };
         var pagedResult = PagedResultDto<PostDto>.Success(posts, 1, 1, 10);
-        _mockPostService.Setup(s => s.GetByUserIdAsync("user-1", It.IsAny<PaginationParams>())).ReturnsAsync(pagedResult);
+        _mockPostService.Setup(s => s.GetByUserIdAsync("user-1", It.IsAny<PaginationParams>(), "1"))
+            .ReturnsAsync(pagedResult);
 
         var result = await _controller.GetByUserId("user-1", new PaginationParams());
 
@@ -158,8 +172,8 @@ public class PostControllerTests : ControllerTestBase
     {
         var pagedResult = PagedResultDto<PostDto>.Success([], 0, 1, 10);
         PaginationParams? captured = null;
-        _mockPostService.Setup(s => s.SearchAsync(It.IsAny<PaginationParams>()))
-            .Callback<PaginationParams>(p => captured = p)
+        _mockPostService.Setup(s => s.SearchAsync(It.IsAny<PaginationParams>(), "1"))
+            .Callback<PaginationParams, string>((p, _) => captured = p)
             .ReturnsAsync(pagedResult);
 
         await _controller.Search(new PaginationParams { Keyword = "相机", TagId = "tag-2" });

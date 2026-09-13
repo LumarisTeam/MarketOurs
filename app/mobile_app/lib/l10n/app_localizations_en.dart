@@ -567,7 +567,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get postCreateContent => 'Share what\'s happening...';
 
   @override
-  String get postCreateContentEmpty => 'Please enter some content';
+  String get postCreateContentEmpty => 'Please enter content or add an image';
 
   @override
   String postCreateContentTooLong(int max) {

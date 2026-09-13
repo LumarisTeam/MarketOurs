@@ -1185,7 +1185,7 @@ abstract class AppLocalizations {
   /// No description provided for @postCreateContentEmpty.
   ///
   /// In zh, this message translates to:
-  /// **'请输入内容'**
+  /// **'请输入内容或添加图片'**
   String get postCreateContentEmpty;
 
   /// No description provided for @postCreateContentTooLong.

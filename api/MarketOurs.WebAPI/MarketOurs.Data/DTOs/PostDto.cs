@@ -81,6 +81,11 @@ public class PostDto
     /// 浏览量
     /// </summary>
     public int Watch { get; set; }
+
+    /// <summary>
+    /// 热榜热度分值（仅热榜接口返回）
+    /// </summary>
+    public int? Heat { get; set; }
     
     /// <summary>
     /// 是否通过审核
@@ -123,7 +128,6 @@ public class PostCreateDto
     /// <summary>
     /// 内容
     /// </summary>
-    [Required(ErrorMessage = "内容不能为空")] 
     [MaxLength(1024, ErrorMessage = "内容长度不能超过1024位")] 
     public string Content { get; set; } = string.Empty;
 
@@ -166,7 +170,6 @@ public class PostUpdateDto
     /// <summary>
     /// 内容
     /// </summary>
-    [Required(ErrorMessage = "内容不能为空")] 
     [MaxLength(1024, ErrorMessage = "内容长度不能超过1024位")] 
     public string Content { get; set; } = string.Empty;
 

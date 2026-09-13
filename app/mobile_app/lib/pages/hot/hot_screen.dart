@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/cupertino.dart';
 import 'package:mobile_app/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -145,8 +143,7 @@ class _HotPostCard extends StatelessWidget {
         : l10n.postUnnamed;
     final isTop3 = rank <= 3;
     final rankColor = isTop3 ? AppColors.hot : AppColors.mutedForeground;
-    final day = post.createdAt != null ? DateTime.now().difference(post.createdAt!).inDays + 1 : 0;
-    final hot = (((post.watch ?? 0) + (post.likes ?? 0) * 3 - (post.dislikes ?? 0) *2) / pow(day + 2, 1.3) * 10).toInt();
+    final hot = post.heat ?? 0;
 
     return AppTappableCard(
       padding: EdgeInsets.zero,

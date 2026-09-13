@@ -561,7 +561,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get postCreateContent => 'いま何が起きている？';
 
   @override
-  String get postCreateContentEmpty => '内容を入力してください';
+  String get postCreateContentEmpty => '内容を入力するか画像を追加してください';
 
   @override
   String postCreateContentTooLong(int max) {
