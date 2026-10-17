@@ -20,7 +20,8 @@ Future<void> main() async {
   // 反馈 SDK 初始化（匿名反馈中心）。MarketOurs 无运行时学校概念，固定西建大 slug。
   await FeedbackSdk.init(FeedbackConfig(
     baseUrl: 'https://feedbackapi.luckyfishes.site',
-    appName: 'lumalis',
+    centerId: 'fc_xxx', // TODO: 待后端提供光汇 prod 的 center_id
+    sn: 'lumalis-prod',
     school: 'xauat',
   ));
 
