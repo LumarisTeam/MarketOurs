@@ -172,12 +172,12 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
           );
 
       final post = response.data;
-      if (post == null)
+      if (!mounted) return;
+      if (post == null) {
         throw Exception(
           response.message ?? AppLocalizations.of(context).postCreateFailed,
         );
-
-      if (!mounted) return;
+      }
 
       await McFeedback.showSuccess(
         context,
@@ -206,64 +206,57 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
+      backgroundColor: context.mc.background,
       navigationBar: CupertinoNavigationBar(
         middle: Text(AppLocalizations.of(context).postCreate),
-        trailing: CupertinoButton(
+        backgroundColor: context.mc.background,
+        border: null,
+        leading: CupertinoButton(
           padding: EdgeInsets.zero,
-          onPressed: _isSubmitting ? null : _submit,
-          child: Text(
-            _isSubmitting
-                ? AppLocalizations.of(context).postCreatePublishing
-                : AppLocalizations.of(context).postCreatePublish,
-            style: const TextStyle(fontWeight: FontWeight.w700),
-          ),
+          onPressed: _isSubmitting ? null : () => context.pop(),
+          child: Icon(CupertinoIcons.xmark, color: context.mc.secondaryLabel),
         ),
       ),
       child: SafeArea(
         child: Form(
           key: _formKey,
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              PostEditorForm(
-                layout: PostEditorLayout.page,
-                titleController: _titleController,
-                contentController: _contentController,
-                selectedTag: _selectedTag,
-                existingImages: const [],
-                localImages: const [],
-                tagEmptyText: AppLocalizations.of(context).postCreateNoTag,
-                onPickTag: _isSubmitting ? null : _selectTag,
-                onPickImages: _isSubmitting ? null : _pickImages,
-                reorderableEntries: _imageEntries,
-                onReorderImages: _isSubmitting ? null : _reorderImages,
-                onRemoveImageEntry: _isSubmitting ? null : _removeImageEntry,
-                onSubmit: _isSubmitting ? null : _submit,
-                submitLabel: _isSubmitting
-                    ? AppLocalizations.of(context).postCreatePublishing
-                    : AppLocalizations.of(context).postCreatePublish,
-                uploadProgress: _uploadProgress,
-                titleValidator: (v) => requiredMaxValidator(
-                  v,
-                  emptyMessage: AppLocalizations.of(context)
-                      .postCreateTitleEmpty,
-                  max: DtoLimits.postTitleMax,
-                  maxMessage: AppLocalizations.of(context)
-                      .postCreateTitleTooLong(DtoLimits.postTitleMax),
-                ),
-                contentValidator: (v) {
-                  final text = v?.trim() ?? '';
-                  if (text.length > DtoLimits.postContentMax) {
-                    return AppLocalizations.of(context)
-                        .postCreateContentTooLong(DtoLimits.postContentMax);
-                  }
-                  if (text.isEmpty && _imageEntries.isEmpty) {
-                    return AppLocalizations.of(context).postCreateContentEmpty;
-                  }
-                  return null;
-                },
-              ),
-            ],
+          child: PostEditorForm(
+            layout: PostEditorLayout.page,
+            isSubmitting: _isSubmitting,
+            titleController: _titleController,
+            contentController: _contentController,
+            selectedTag: _selectedTag,
+            existingImages: const [],
+            localImages: const [],
+            tagEmptyText: AppLocalizations.of(context).postCreateNoTag,
+            onPickTag: _isSubmitting ? null : _selectTag,
+            onPickImages: _isSubmitting ? null : _pickImages,
+            reorderableEntries: _imageEntries,
+            onReorderImages: _isSubmitting ? null : _reorderImages,
+            onRemoveImageEntry: _isSubmitting ? null : _removeImageEntry,
+            onSubmit: _isSubmitting ? null : _submit,
+            submitLabel: _isSubmitting
+                ? AppLocalizations.of(context).postCreatePublishing
+                : AppLocalizations.of(context).postCreatePublish,
+            uploadProgress: _uploadProgress,
+            titleValidator: (v) => requiredMaxValidator(
+              v,
+              emptyMessage: AppLocalizations.of(context).postCreateTitleEmpty,
+              max: DtoLimits.postTitleMax,
+              maxMessage: AppLocalizations.of(context)
+                  .postCreateTitleTooLong(DtoLimits.postTitleMax),
+            ),
+            contentValidator: (v) {
+              final text = v?.trim() ?? '';
+              if (text.length > DtoLimits.postContentMax) {
+                return AppLocalizations.of(context)
+                    .postCreateContentTooLong(DtoLimits.postContentMax);
+              }
+              if (text.isEmpty && _imageEntries.isEmpty) {
+                return AppLocalizations.of(context).postCreateContentEmpty;
+              }
+              return null;
+            },
           ),
         ),
       ),

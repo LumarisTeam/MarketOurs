@@ -7,7 +7,6 @@ import 'package:mobile_app/utils/dto_validation.dart';
 
 import 'editable_image_wrap.dart';
 import '../models/post.dart';
-import '../ui/app_responsive.dart';
 import 'post_tag_selector.dart';
 
 enum PostEditorLayout { page, sheet }
@@ -66,27 +65,7 @@ class PostEditorForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (layout == PostEditorLayout.page) {
-      return AppResponsiveCenter(
-        maxWidth: AppResponsive.formMaxWidth(context),
-        padding: AppResponsive.pagePadding(context, narrow: 20),
-        child: AppTwoPane(
-          primary: _buildEditorCard(context),
-          secondary: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildImageCard(context),
-              const SizedBox(height: 12),
-              _buildTagCard(context),
-              if (uploadProgress != null) ...[
-                const SizedBox(height: 12),
-                _buildUploadProgress(context),
-              ],
-              const SizedBox(height: 20),
-              McButton.primary(onPressed: onSubmit, child: Text(submitLabel)),
-            ],
-          ),
-        ),
-      );
+      return _buildComposerPage(context);
     }
 
     return SingleChildScrollView(
@@ -114,10 +93,210 @@ class PostEditorForm extends StatelessWidget {
     );
   }
 
+  Widget _buildComposerPage(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final muted = context.mc.secondaryLabel;
+    final hasImages = reorderableEntries != null
+        ? reorderableEntries!.isNotEmpty
+        : existingImages.isNotEmpty || localImages.isNotEmpty;
+
+    return Align(
+      alignment: Alignment.topCenter,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 720),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: ListView(
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                children: [
+                  CupertinoTextFormFieldRow(
+                    controller: titleController,
+                    padding: EdgeInsets.zero,
+                    enabled: !isSubmitting,
+                    placeholder: l10n.postCreateTitle,
+                    placeholderStyle: TextStyle(
+                      fontSize: 23,
+                      fontWeight: FontWeight.w600,
+                      color: muted.withValues(alpha: 0.65),
+                    ),
+                    style: TextStyle(
+                      fontSize: 23,
+                      fontWeight: FontWeight.w600,
+                      color: context.mc.label,
+                    ),
+                    maxLength: DtoLimits.postTitleMax,
+                    maxLines: null,
+                    textInputAction: TextInputAction.next,
+                    validator: titleValidator,
+                  ),
+                  const SizedBox(height: 14),
+                  CupertinoTextFormFieldRow(
+                    controller: contentController,
+                    padding: EdgeInsets.zero,
+                    enabled: !isSubmitting,
+                    placeholder: l10n.postCreateContent,
+                    placeholderStyle: TextStyle(
+                      fontSize: 17,
+                      height: 1.7,
+                      color: muted.withValues(alpha: 0.65),
+                    ),
+                    style: TextStyle(
+                      fontSize: 17,
+                      height: 1.7,
+                      color: context.mc.label,
+                    ),
+                    minLines: 5,
+                    maxLines: null,
+                    maxLength: DtoLimits.postContentMax,
+                    keyboardType: TextInputType.multiline,
+                    validator: contentValidator,
+                  ),
+                  const SizedBox(height: 24),
+                  if (hasImages) ...[
+                    EditableImageWrap(
+                      existingImages: existingImages,
+                      localImages: localImages,
+                      onRemoveExisting: onRemoveExistingImage,
+                      onRemoveLocal: onRemoveLocalImage,
+                      reorderable: reorderableEntries != null,
+                      entries: reorderableEntries,
+                      onReorder: onReorderImages,
+                      onRemoveEntry: onRemoveImageEntry,
+                      tileSize: 96,
+                      spacing: 12,
+                      runSpacing: 12,
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: onPickImages,
+                      child: Container(
+                        width: 120,
+                        height: 144,
+                        decoration: BoxDecoration(
+                          color: context.mc.secondary.withValues(alpha: 0.45),
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              CupertinoIcons.plus,
+                              size: 30,
+                              color: muted.withValues(alpha: 0.65),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              l10n.postCreateAddImages,
+                              style: TextStyle(fontSize: 14, color: muted),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Container(
+                    height: 0.5,
+                    color: context.mc.separator.withValues(alpha: 0.35),
+                  ),
+                  CupertinoButton(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 16,
+                      horizontal: 4,
+                    ),
+                    onPressed: onPickTag,
+                    child: Row(
+                      children: [
+                        Icon(CupertinoIcons.tag, size: 21, color: muted),
+                        const SizedBox(width: 12),
+                        Text(
+                          l10n.postCreateTag,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: context.mc.label,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Text(
+                            selectedTag?.name ?? tagEmptyText,
+                            textAlign: TextAlign.end,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 14, color: muted),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Icon(
+                          CupertinoIcons.chevron_right,
+                          size: 14,
+                          color: muted,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (uploadProgress != null) ...[
+                    _buildUploadProgress(context),
+                    const SizedBox(height: 12),
+                  ],
+                  CupertinoButton(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 16,
+                    ),
+                    color: context.mc.primary.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(18),
+                    onPressed: onSubmit,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (isSubmitting)
+                          const CupertinoActivityIndicator()
+                        else
+                          Icon(
+                            CupertinoIcons.paperplane_fill,
+                            size: 20,
+                            color: context.mc.primary,
+                          ),
+                        const SizedBox(width: 10),
+                        Text(
+                          submitLabel,
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                            color: context.mc.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildEditorCard(BuildContext context) {
-    final contentMaxLines = layout == PostEditorLayout.page
-        ? (AppResponsive.isDesktop(context) ? 12 : 8)
-        : 6;
+    const contentMaxLines = 6;
 
     return McCard.elevated(
       padding: const EdgeInsets.all(20),
