@@ -130,7 +130,8 @@ class EditableImageWrap extends StatelessWidget {
       entries: items,
       tileSize: tileSize,
       spacing: spacing,
-      onReorder: onReorder!,
+      // May be null while a submit is in flight; the grid then renders static.
+      onReorder: onReorder,
       onRemoveEntry: onRemoveEntry,
     );
   }
@@ -145,14 +146,16 @@ class _ReorderableImageGrid extends StatefulWidget {
     required this.entries,
     required this.tileSize,
     required this.spacing,
-    required this.onReorder,
+    this.onReorder,
     this.onRemoveEntry,
   });
 
   final List<EditableImageEntry> entries;
   final double tileSize;
   final double spacing;
-  final void Function(int oldIndex, int newIndex) onReorder;
+
+  /// Null disables drag-to-reorder (e.g. while a submission is in flight).
+  final void Function(int oldIndex, int newIndex)? onReorder;
   final ValueChanged<String>? onRemoveEntry;
 
   @override
@@ -160,10 +163,37 @@ class _ReorderableImageGrid extends StatefulWidget {
 }
 
 class _ReorderableImageGridState extends State<_ReorderableImageGrid> {
+  Widget _buildEntryImage(BuildContext context, EditableImageEntry entry) {
+    if (entry.isExisting) {
+      return AppNetworkImage(
+        url: entry.displayUrl,
+        width: widget.tileSize,
+        height: widget.tileSize,
+        fit: BoxFit.cover,
+      );
+    }
+
+    final localFile = entry.localFile;
+    if (localFile == null) {
+      // Defensive: a malformed entry must not take down the whole grid.
+      return Container(
+        color: context.mc.secondary,
+        alignment: Alignment.center,
+        child: Icon(
+          CupertinoIcons.photo,
+          size: 24,
+          color: context.mc.secondaryLabel,
+        ),
+      );
+    }
+
+    return Image.file(File(localFile.path), fit: BoxFit.cover);
+  }
+
   @override
   Widget build(BuildContext context) {
     final entries = widget.entries;
-    final showHandles = entries.length > 1;
+    final onReorder = widget.onReorder;
 
     return Wrap(
       spacing: widget.spacing,
@@ -172,20 +202,15 @@ class _ReorderableImageGridState extends State<_ReorderableImageGrid> {
         final entry = entries[index];
         final tile = _EditableImageTile(
           size: widget.tileSize,
-          image: entry.isExisting
-              ? AppNetworkImage(
-                  url: entry.displayUrl,
-                  width: widget.tileSize,
-                  height: widget.tileSize,
-                  fit: BoxFit.cover,
-                )
-              : Image.file(File(entry.localFile!.path), fit: BoxFit.cover),
+          image: _buildEntryImage(context, entry),
           onRemove: widget.onRemoveEntry == null
               ? null
               : () => widget.onRemoveEntry!(entry.id.toString()),
         );
 
-        if (!showHandles) return tile;
+        // Reordering is disabled when the callback is null (e.g. while a post
+        // or comment is being submitted) or when there is nothing to reorder.
+        if (onReorder == null || entries.length <= 1) return tile;
 
         return LongPressDraggable<int>(
           data: index,
@@ -214,7 +239,7 @@ class _ReorderableImageGridState extends State<_ReorderableImageGrid> {
             onAcceptWithDetails: (details) {
               final from = details.data;
               if (from != index) {
-                widget.onReorder(from, index);
+                onReorder(from, index);
               }
             },
             builder: (context, candidateData, rejectedData) {
