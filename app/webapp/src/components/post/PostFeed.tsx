@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { OptimizedImage } from "@/components/ui/optimized-image"
+import { PostImageGrid } from "@/components/post/PostImageGrid"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -55,6 +56,7 @@ export function PostCard({
   const displayName = isMe ? `${authorName} (${t("common.me", { defaultValue: "我" })})` : authorName
   const authorAvatar = post.author?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.userId}`
   const authorInitials = authorName.slice(0, 2).toUpperCase()
+  const hasContent = post.content.trim().length > 0
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [showBlockDialog, setShowBlockDialog] = useState(false)
 
@@ -188,10 +190,20 @@ export function PostCard({
         <h2 className="text-xl font-semibold tracking-tight transition-colors group-hover:text-primary sm:text-2xl">
           {post.title}
         </h2>
-        <p className="line-clamp-3 whitespace-pre-wrap leading-relaxed text-muted-foreground text-sm sm:text-base">
-          {getPostExcerpt(post.content)}
-        </p>
-        {post.images && post.images.length > 0 && (
+        {hasContent && (
+          <p className="line-clamp-3 whitespace-pre-wrap leading-relaxed text-muted-foreground text-sm sm:text-base">
+            {getPostExcerpt(post.content)}
+          </p>
+        )}
+        {!hasContent && post.images.length > 0 ? (
+          <PostImageGrid
+            images={post.images}
+            imageLabel={`${t("nav.post")} image`}
+            enableViewer={false}
+            compact
+            className="mt-4"
+          />
+        ) : post.images && post.images.length > 0 && (
           <div className="mt-4 flex h-36 sm:h-40 gap-2 overflow-hidden rounded-2xl">
             {post.images.slice(0, 3).map((img, i) => (
               <OptimizedImage

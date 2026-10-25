@@ -200,10 +200,10 @@ class _PostDetailCommentComposerState extends State<PostDetailCommentComposer> {
         ? widget.reorderableEntries!.isNotEmpty
         : widget.localImages.isNotEmpty;
 
-    return ClipRRect(
-      borderRadius: McRadii.navigationBorder,
+    return McSmoothCorners.clip(
+      borderRadius: BorderRadius.circular(McRadii.xl),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),

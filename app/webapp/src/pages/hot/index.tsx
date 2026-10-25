@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Skeleton } from "@/components/ui/skeleton"
-import { OptimizedImage } from "@/components/ui/optimized-image"
 
 function HotPostSkeleton({ index }: { index: number }) {
   return (
@@ -19,8 +18,8 @@ function HotPostSkeleton({ index }: { index: number }) {
       "overflow-hidden rounded-4xl p-6 sm:p-8",
       index < 3 ? "glass-card-warm shadow-md shadow-amber-500/6" : "glass-card"
     )}>
-      <div className="flex flex-col-reverse sm:flex-row gap-4">
-        <div className="flex-1 space-y-4">
+      <div>
+        <div className="space-y-4">
           <div className="flex items-center gap-4">
             <Skeleton className="h-10 w-10 rounded-xl" />
             <Skeleton className="h-4 w-28" />
@@ -31,7 +30,6 @@ function HotPostSkeleton({ index }: { index: number }) {
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-2/3" />
         </div>
-        <Skeleton className="h-48 w-full sm:w-60 rounded-2xl" />
       </div>
     </div>
   )
@@ -150,7 +148,6 @@ export default function HotPage() {
           {posts.map((post, index) => {
             const isTopThree = index < 3
             const authorName = getPostAuthorName(post, t("common.user"))
-            const coverImage = post.images?.[0]
             const authorInitials = authorName.slice(0, 2).toUpperCase()
             const authorAvatar = post.author?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.userId}`
 
@@ -166,7 +163,7 @@ export default function HotPage() {
                     : "glass-card"
                 )}
               >
-                <div className="flex flex-col-reverse sm:flex-row">
+                <div>
                   {/* Content */}
                   <div className="flex min-w-0 flex-1 flex-col p-5 sm:p-7">
                     {/* Meta row */}
@@ -234,27 +231,6 @@ export default function HotPage() {
                     </div>
                   </div>
 
-                  {/* Cover image */}
-                  {coverImage ? (
-                    <div className="relative shrink-0 p-5 pb-0 sm:w-60 sm:p-4 sm:pl-0">
-                      <div className="overflow-hidden rounded-2xl sm:h-full sm:min-h-48">
-                      <OptimizedImage
-                          src={coverImage}
-                          alt={post.title}
-                          className="h-44 w-full object-cover transition duration-700 group-hover:scale-[1.05] sm:h-full"
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="shrink-0 p-5 pb-0 sm:w-60 sm:p-4 sm:pl-0">
-                      <div className="flex h-44 items-center justify-center rounded-2xl bg-muted/60 sm:h-full sm:min-h-48">
-                        <div className="space-y-2 text-center">
-                          <Flame size={18} className="mx-auto text-amber-400/40" />
-                          <p className="text-xs font-medium text-muted-foreground/50">{t("hot.cover_fallback")}</p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </article>
             )

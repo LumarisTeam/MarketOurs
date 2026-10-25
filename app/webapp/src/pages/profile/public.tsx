@@ -13,6 +13,7 @@ import { extractUserMessage } from "../../services/errorCodes";
 import type { RootState } from "../../stores";
 import type { PagedResult, PostDto, PublicUserProfileDto, TeacherCommentItem } from "../../types";
 import { PostTagBadge } from "../../components/post/PostTagBadge";
+import { PostImageGrid } from "../../components/post/PostImageGrid";
 import { formatLocalDate } from "../../lib/dateTime";
 import { formatPostRelativeDate } from "../../lib/postDisplay";
 import { ReportDialog } from "../../components/report/ReportDialog";
@@ -459,9 +460,18 @@ export default function PublicProfilePage() {
                             <div className="space-y-3">
                               <PostTagBadge tag={post.tag} />
                               <h3 className="text-xl font-bold tracking-tight">{post.title}</h3>
-                              <p className="line-clamp-2 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
-                                {post.content}
-                              </p>
+                              {post.content.trim().length > 0 ? (
+                                <p className="line-clamp-2 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
+                                  {post.content}
+                                </p>
+                              ) : post.images.length > 0 ? (
+                                <PostImageGrid
+                                  images={post.images}
+                                  imageLabel={`${t("nav.post")} image`}
+                                  enableViewer={false}
+                                  compact
+                                />
+                              ) : null}
                             </div>
                             <ArrowRight className="mt-1 shrink-0 text-muted-foreground" size={18} />
                           </div>

@@ -7,6 +7,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../components/app_avatar.dart';
 import '../../../components/app_network_image.dart';
 import '../../../components/post_tag_pill.dart';
+import '../../../components/post_image_grid.dart';
 import '../../../models/post.dart';
 import '../../../router/app_router.dart';
 import '../../../utils/date_formatters.dart';
@@ -152,72 +153,74 @@ class PostDetailHero extends StatelessWidget {
           ),
         ],
         const SizedBox(height: 16),
-        Text(
-          post.content?.trim().isNotEmpty == true
-              ? post.content!.trim()
-              : AppLocalizations.of(context).postNoDescription,
-          style: TextStyle(
-            fontSize: 17,
-            height: 1.6,
-            color: context.mc.foreground.withValues(alpha: 0.9),
+        if (post.content?.trim().isNotEmpty == true)
+          Text(
+            post.content!.trim(),
+            style: TextStyle(
+              fontSize: 17,
+              height: 1.6,
+              color: context.mc.foreground.withValues(alpha: 0.9),
+            ),
           ),
-        ),
         if (post.images?.isNotEmpty == true) ...[
           const SizedBox(height: 20),
-          CarouselSlider.builder(
-            itemCount: post.images?.length,
-            itemBuilder: (context, itemIndex, pageViewIndex) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).push(
-                      CupertinoPageRoute<void>(
-                        fullscreenDialog: true,
-                        builder: (_) => ImageViewerScreen(
-                          images: post.images!,
-                          initialIndex: itemIndex,
+          if (post.content?.trim().isNotEmpty == true)
+            CarouselSlider.builder(
+              itemCount: post.images?.length,
+              itemBuilder: (context, itemIndex, pageViewIndex) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        CupertinoPageRoute<void>(
+                          fullscreenDialog: true,
+                          builder: (_) => ImageViewerScreen(
+                            images: post.images!,
+                            initialIndex: itemIndex,
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                  child: Hero(
-                    tag: 'image_${post.images?[itemIndex]}',
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(McRadii.lg),
-                      child: ColoredBox(
-                        color: context.mc.secondary,
-                        child: AppNetworkImage(
-                          url: post.images?[itemIndex] ?? '',
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          gaplessPlayback: true,
-                          errorPlaceholder: Container(
-                            height: 200,
+                      );
+                    },
+                    child: Hero(
+                      tag: 'image_${post.images?[itemIndex]}',
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(McRadii.lg),
+                        child: ColoredBox(
+                          color: context.mc.secondary,
+                          child: AppNetworkImage(
+                            url: post.images?[itemIndex] ?? '',
                             width: double.infinity,
-                            color: context.mc.muted,
-                            child: Icon(
-                              CupertinoIcons.photo,
-                              color: context.mc.secondaryLabel,
+                            fit: BoxFit.cover,
+                            gaplessPlayback: true,
+                            errorPlaceholder: Container(
+                              height: 200,
+                              width: double.infinity,
+                              color: context.mc.muted,
+                              child: Icon(
+                                CupertinoIcons.photo,
+                                color: context.mc.secondaryLabel,
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              );
-            },
-            options: CarouselOptions(
-              aspectRatio: 16 / 9,
-              viewportFraction: 0.8,
-              initialPage: 0,
-              enableInfiniteScroll: false,
-              enlargeCenterPage: true,
-              enlargeFactor: 0.3,
-              scrollDirection: Axis.horizontal,
-            ),
-          ),
+                );
+              },
+              options: CarouselOptions(
+                aspectRatio: 16 / 9,
+                viewportFraction: 0.8,
+                initialPage: 0,
+                enableInfiniteScroll: false,
+                enlargeCenterPage: true,
+                enlargeFactor: 0.3,
+                scrollDirection: Axis.horizontal,
+              ),
+            )
+          else
+            PostImageGrid(images: post.images!),
         ],
       ],
     );

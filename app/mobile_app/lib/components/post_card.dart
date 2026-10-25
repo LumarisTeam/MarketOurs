@@ -14,6 +14,7 @@ import 'package:mobile_app/utils/date_formatters.dart';
 
 import 'app_avatar.dart';
 import 'app_network_image.dart';
+import 'post_image_grid.dart';
 
 class PostCard extends ConsumerWidget {
   const PostCard({super.key, required this.post});
@@ -144,12 +145,14 @@ class PostCard extends ConsumerWidget {
     final title = post.title?.trim().isNotEmpty == true
         ? post.title!.trim()
         : l10n.postUnnamed;
-    final content = post.content?.trim().isNotEmpty == true
-        ? post.content!.trim()
-        : l10n.postNoContent;
-    final excerpt = content.length > 100
-        ? '${content.substring(0, 100)}...'
-        : content;
+    final content = post.content?.trim();
+    final String? excerpt;
+    if (content?.isNotEmpty == true) {
+      final value = content!;
+      excerpt = value.length > 100 ? '${value.substring(0, 100)}...' : value;
+    } else {
+      excerpt = null;
+    }
 
     final authState = ref.watch(authControllerProvider).asData?.value;
     final user = authState?.user;
@@ -227,42 +230,52 @@ class PostCard extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Text(
-                    excerpt,
-                    style: context.mc.textBody.copyWith(
-                      fontSize: 15,
-                      color: context.mc.foreground.withValues(alpha: 0.8),
+          if (excerpt != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      excerpt,
+                      style: context.mc.textBody.copyWith(
+                        fontSize: 15,
+                        color: context.mc.foreground.withValues(alpha: 0.8),
+                      ),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-                if (post.images?.isNotEmpty == true) ...[
-                  const SizedBox(width: 12),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(McRadii.md),
-                    child: SizedBox(
-                      width: 88,
-                      height: 88,
-                      child: AppNetworkImage(
-                        url: post.images!.first,
+                  if (post.images?.isNotEmpty == true) ...[
+                    const SizedBox(width: 12),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(McRadii.md),
+                      child: SizedBox(
                         width: 88,
                         height: 88,
-                        fit: BoxFit.cover,
-                        gaplessPlayback: true,
+                        child: AppNetworkImage(
+                          url: post.images!.first,
+                          width: 88,
+                          height: 88,
+                          fit: BoxFit.cover,
+                          gaplessPlayback: true,
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ],
-              ],
+              ),
+            )
+          else if (post.images?.isNotEmpty == true)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: PostImageGrid(
+                images: post.images!,
+                enableViewer: false,
+                compact: true,
+              ),
             ),
-          ),
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -370,17 +383,22 @@ class SimplePostCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  post.content?.trim().isNotEmpty == true
-                      ? post.content!.trim()
-                      : l10n.postNoContentDesc,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    height: 1.5,
-                    color: context.mc.secondaryLabel,
+                if (post.content?.trim().isNotEmpty == true)
+                  Text(
+                    post.content!.trim(),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      height: 1.5,
+                      color: context.mc.secondaryLabel,
+                    ),
+                  )
+                else if (post.images?.isNotEmpty == true)
+                  PostImageGrid(
+                    images: post.images!,
+                    enableViewer: false,
+                    compact: true,
                   ),
-                ),
               ],
             ),
           ),

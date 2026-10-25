@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils"
 import { sharePost } from "@/lib/postShare"
 import { DTO_LIMITS, optionalMax, requiredMax } from "@/lib/dtoValidation"
 import { PostTagBadge } from "@/components/post/PostTagBadge"
+import { PostImageGrid } from "@/components/post/PostImageGrid"
 import { formatEditedRelativeTime } from "@/lib/dateTime"
 import SortableImageGrid, { type ImageItem } from "@/components/ui/sortable-image-grid"
 import { OptimizedImage } from "@/components/ui/optimized-image"
@@ -1308,7 +1309,16 @@ export default function PostDetailPage() {
         </AlertDialog>
 
         {!isEditingPost && post.images && post.images.length > 0 && (
-          <PostImageCarousel key={post.id} images={post.images} imageLabel={`${t("nav.post")} image`} />
+          post.content.trim().length > 0 ? (
+            <PostImageCarousel key={post.id} images={post.images} imageLabel={`${t("nav.post")} image`} />
+          ) : (
+            <PostImageGrid
+              key={post.id}
+              images={post.images}
+              imageLabel={`${t("nav.post")} image`}
+              className="my-8"
+            />
+          )
         )}
 
         <PostTagBadge tag={post.tag} />
@@ -1321,11 +1331,11 @@ export default function PostDetailPage() {
               maxLength={DTO_LIMITS.postContentMax}
               className="w-full min-h-[300px] text-lg leading-relaxed bg-transparent border border-border/50 rounded-2xl p-4 outline-none focus:border-primary transition-colors resize-none"
             />
-          ) : (
+          ) : post.content.trim().length > 0 ? (
             <div className="space-y-6 text-lg leading-relaxed text-foreground whitespace-pre-wrap">
               {post.content}
             </div>
-          )}
+          ) : null}
         </div>
 
         {isEditingPost && (
