@@ -3219,6 +3219,24 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'请稍后重试'**
   String get permissionLoadFailedDesc;
+
+  /// No description provided for @shellQuickActions.
+  ///
+  /// In zh, this message translates to:
+  /// **'快捷入口'**
+  String get shellQuickActions;
+
+  /// No description provided for @shellHotTop5.
+  ///
+  /// In zh, this message translates to:
+  /// **'热榜 Top 5'**
+  String get shellHotTop5;
+
+  /// No description provided for @shellDetailHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'从左侧列表选择一篇帖子，详情会显示在这里。'**
+  String get shellDetailHint;
 }
 
 class _AppLocalizationsDelegate

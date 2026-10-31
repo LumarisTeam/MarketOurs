@@ -1669,4 +1669,14 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get permissionLoadFailedDesc => 'Попробуйте позже';
+
+  @override
+  String get shellQuickActions => 'Быстрый доступ';
+
+  @override
+  String get shellHotTop5 => 'В тренде Top 5';
+
+  @override
+  String get shellDetailHint =>
+      'Выберите пост в списке слева — подробности появятся здесь.';
 }

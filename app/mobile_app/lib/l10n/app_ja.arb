@@ -545,5 +545,9 @@
   "permissionUnsupportedTitle": "このプラットフォームでは権限管理を利用できません",
   "permissionUnsupportedDesc": "iOS または Android 端末でアプリの権限を管理してください。",
   "permissionLoadFailed": "権限の状態を読み込めませんでした",
-  "permissionLoadFailedDesc": "後でもう一度お試しください"
+  "permissionLoadFailedDesc": "後でもう一度お試しください",
+
+  "shellQuickActions": "クイックアクセス",
+  "shellHotTop5": "トレンド Top 5",
+  "shellDetailHint": "左のリストから投稿を選ぶと、ここに詳細が表示されます。"
 }

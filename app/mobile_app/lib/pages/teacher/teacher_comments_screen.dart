@@ -16,6 +16,7 @@ import '../../services/error_messages.dart';
 import '../../services/teacher_comment_service.dart';
 import '../../ui/app_responsive.dart';
 import '../../utils/date_formatters.dart';
+import '../shell/compact_comment_tile.dart';
 
 class TeacherCommentsScreen extends ConsumerStatefulWidget {
   const TeacherCommentsScreen({super.key});
@@ -260,12 +261,85 @@ class _TeacherCommentsScreenState extends ConsumerState<TeacherCommentsScreen> {
       }
     });
     final l10n = AppLocalizations.of(context);
+    final isDesktop = AppResponsive.isDesktop(context);
     final currentUserId = ref
         .watch(authControllerProvider)
         .asData
         ?.value
         .user
         ?.id;
+
+    final searchField = CupertinoSearchTextField(
+      key: const ValueKey('teacher-comments-search-field'),
+      controller: _searchController,
+      placeholder: l10n.teacherCommentsSearchPlaceholder,
+      borderRadius: BorderRadius.circular(McRadii.md),
+      backgroundColor: context.mc.secondary,
+      onSubmitted: (value) => _loadComments(value),
+      onChanged: (value) {
+        if (value.trim().isEmpty && _activeKeyword.isNotEmpty) {
+          _loadComments('');
+        }
+      },
+    );
+
+    final Widget listSliver;
+    if (_isLoading) {
+      listSliver = const SliverFillRemaining(
+        hasScrollBody: false,
+        child: Center(child: CupertinoActivityIndicator(radius: 14)),
+      );
+    } else if (_comments.isEmpty) {
+      final emptyState = McEmpty.placeholder(
+        icon: _activeKeyword.isEmpty
+            ? CupertinoIcons.book
+            : CupertinoIcons.search,
+        title: _activeKeyword.isEmpty
+            ? l10n.teacherCommentsEmptyList
+            : l10n.teacherCommentsNoApprovedComments,
+        description: l10n.teacherCommentsSearchFirst,
+      );
+      listSliver = isDesktop
+          ? SliverFillRemaining(
+              hasScrollBody: false,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Center(child: emptyState),
+              ),
+            )
+          : AppResponsiveSliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+              child: emptyState,
+            );
+    } else if (isDesktop) {
+      // Desktop: compact single-line rows inside the 340px list column.
+      listSliver = SliverPadding(
+        padding: const EdgeInsets.fromLTRB(4, 4, 4, 24),
+        sliver: SliverList.builder(
+          itemCount: _comments.length,
+          itemBuilder: (context, index) {
+            final comment = _comments[index];
+            return CompactCommentTile(
+              comment: comment,
+              onTap: () =>
+                  unawaited(_showCommentDetail(comment, currentUserId)),
+            );
+          },
+        ),
+      );
+    } else {
+      listSliver = AppResponsiveSliverPadding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+        child: _CommentListSection(
+          comments: _comments,
+          isLoadingMore: _isLoadingMore,
+          currentUserId: currentUserId,
+          onEdit: _editComment,
+          onDelete: _deleteComment,
+        ),
+      );
+    }
+
     return CupertinoPageScaffold(
       backgroundColor: context.mc.background,
       child: CustomScrollView(
@@ -274,75 +348,133 @@ class _TeacherCommentsScreenState extends ConsumerState<TeacherCommentsScreen> {
           parent: AlwaysScrollableScrollPhysics(),
         ),
         slivers: [
-          CupertinoSliverNavigationBar(
-            largeTitle: Text(l10n.teacherCommentsTitle),
-            backgroundColor: context.mc.background.withValues(alpha: 0.94),
-            border: null,
-            trailing: CupertinoButton(
-              padding: EdgeInsets.zero,
-              onPressed: _openSubmitDialog,
-              child: Icon(
-                CupertinoIcons.plus_circle_fill,
-                size: 28,
-                color: context.mc.primary,
+          if (isDesktop)
+            SliverToBoxAdapter(
+              child: _ShellPaneHeader(
+                title: l10n.teacherCommentsTitle,
+                onAdd: _openSubmitDialog,
+              ),
+            )
+          else
+            CupertinoSliverNavigationBar(
+              largeTitle: Text(l10n.teacherCommentsTitle),
+              backgroundColor: context.mc.background.withValues(alpha: 0.94),
+              border: null,
+              trailing: CupertinoButton(
+                padding: EdgeInsets.zero,
+                onPressed: _openSubmitDialog,
+                child: Icon(
+                  CupertinoIcons.plus_circle_fill,
+                  size: 28,
+                  color: context.mc.primary,
+                ),
               ),
             ),
-          ),
           CupertinoSliverRefreshControl(
             onRefresh: () => _loadComments(_activeKeyword),
           ),
           SliverToBoxAdapter(
-            child: AppResponsiveCenter(
-              padding: AppResponsive.sliverPagePadding(
-                context,
-                top: 12,
-                bottom: 8,
-              ),
-              child: CupertinoSearchTextField(
-                key: const ValueKey('teacher-comments-search-field'),
-                controller: _searchController,
-                placeholder: l10n.teacherCommentsSearchPlaceholder,
-                borderRadius: BorderRadius.circular(McRadii.md),
-                backgroundColor: context.mc.secondary,
-                onSubmitted: (value) => _loadComments(value),
-                onChanged: (value) {
-                  if (value.trim().isEmpty && _activeKeyword.isNotEmpty) {
-                    _loadComments('');
-                  }
-                },
-              ),
-            ),
+            child: isDesktop
+                ? Padding(
+                    padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+                    child: searchField,
+                  )
+                : AppResponsiveCenter(
+                    padding: AppResponsive.sliverPagePadding(
+                      context,
+                      top: 12,
+                      bottom: 8,
+                    ),
+                    child: searchField,
+                  ),
           ),
-          if (_isLoading)
-            const SliverFillRemaining(
-              hasScrollBody: false,
-              child: Center(child: CupertinoActivityIndicator(radius: 14)),
-            )
-          else if (_comments.isEmpty)
-            AppResponsiveSliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-              child: McEmpty.placeholder(
-                icon: _activeKeyword.isEmpty
-                    ? CupertinoIcons.book
-                    : CupertinoIcons.search,
-                title: _activeKeyword.isEmpty
-                    ? l10n.teacherCommentsEmptyList
-                    : l10n.teacherCommentsNoApprovedComments,
-                description: l10n.teacherCommentsSearchFirst,
-              ),
-            )
-          else
-            AppResponsiveSliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-              child: _CommentListSection(
-                comments: _comments,
-                isLoadingMore: _isLoadingMore,
-                currentUserId: currentUserId,
-                onEdit: _editComment,
-                onDelete: _deleteComment,
+          listSliver,
+          if (isDesktop && _isLoadingMore)
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 20),
+                child: Center(child: CupertinoActivityIndicator()),
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  Future<void> _showCommentDetail(
+    TeacherCommentItem comment,
+    String? currentUserId,
+  ) async {
+    final isMine = currentUserId != null && comment.userId == currentUserId;
+    await showMcBottomSheet<void>(
+      context: context,
+      builder: (sheetContext) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
+        child: SingleChildScrollView(
+          child: _CommentCard(
+            comment: comment,
+            isMine: isMine,
+            onEdit: isMine
+                ? () {
+                    Navigator.of(sheetContext).pop();
+                    unawaited(_editComment(comment));
+                  }
+                : null,
+            onDelete: isMine
+                ? () {
+                    Navigator.of(sheetContext).pop();
+                    unawaited(_deleteComment(comment));
+                  }
+                : null,
+          ),
+        ),
+      ),
+    );
+  }
+
+}
+
+class _ShellPaneHeader extends StatelessWidget {
+  const _ShellPaneHeader({required this.title, required this.onAdd});
+
+  final String title;
+  final VoidCallback onAdd;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      bottom: false,
+      child: SizedBox(
+        height: 44,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: context.mc.foreground,
+                  ),
+                ),
+              ),
+              CupertinoButton(
+                padding: EdgeInsets.zero,
+                minimumSize: Size.zero,
+                onPressed: onAdd,
+                child: Icon(
+                  CupertinoIcons.plus_circle_fill,
+                  size: 22,
+                  color: context.mc.primary,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

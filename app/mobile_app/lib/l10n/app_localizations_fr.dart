@@ -1688,4 +1688,14 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get permissionLoadFailedDesc => 'Veuillez réessayer plus tard';
+
+  @override
+  String get shellQuickActions => 'Accès rapide';
+
+  @override
+  String get shellHotTop5 => 'Tendances top 5';
+
+  @override
+  String get shellDetailHint =>
+      'Sélectionnez un post à gauche pour voir ses détails ici.';
 }

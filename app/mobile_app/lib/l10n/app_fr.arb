@@ -545,5 +545,9 @@
   "permissionUnsupportedTitle": "Gestion des autorisations indisponible sur cette plateforme",
   "permissionUnsupportedDesc": "Gérez les autorisations de l''application sur un appareil iOS ou Android.",
   "permissionLoadFailed": "Impossible de charger l''état des autorisations",
-  "permissionLoadFailedDesc": "Veuillez réessayer plus tard"
+  "permissionLoadFailedDesc": "Veuillez réessayer plus tard",
+
+  "shellQuickActions": "Accès rapide",
+  "shellHotTop5": "Tendances top 5",
+  "shellDetailHint": "Sélectionnez un post à gauche pour voir ses détails ici."
 }

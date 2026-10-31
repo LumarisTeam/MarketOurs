@@ -1634,4 +1634,13 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get permissionLoadFailedDesc => '请稍后重试';
+
+  @override
+  String get shellQuickActions => '快捷入口';
+
+  @override
+  String get shellHotTop5 => '热榜 Top 5';
+
+  @override
+  String get shellDetailHint => '从左侧列表选择一篇帖子，详情会显示在这里。';
 }

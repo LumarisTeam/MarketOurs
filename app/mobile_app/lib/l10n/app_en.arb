@@ -577,5 +577,9 @@
   "permissionUnsupportedTitle": "Permission management isn''t available on this platform",
   "permissionUnsupportedDesc": "Manage app permissions on an iOS or Android device.",
   "permissionLoadFailed": "Could not load permission status",
-  "permissionLoadFailedDesc": "Please try again later"
+  "permissionLoadFailedDesc": "Please try again later",
+
+  "shellQuickActions": "Quick actions",
+  "shellHotTop5": "Trending top 5",
+  "shellDetailHint": "Pick a post from the list and its details will appear here."
 }

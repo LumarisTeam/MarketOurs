@@ -289,7 +289,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto py-12 px-4 space-y-8">
+    <div className="mx-auto max-w-4xl space-y-8 px-4 py-12 md:px-0 md:py-0">
       {/* Profile Header Card */}
       <div className="glass-card rounded-[2.5rem] overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-700">
         <div className="h-32 bg-linear-to-r from-primary/20 to-primary/10 relative">

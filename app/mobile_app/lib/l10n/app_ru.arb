@@ -545,5 +545,9 @@
   "permissionUnsupportedTitle": "На этой платформе управление разрешениями недоступно",
   "permissionUnsupportedDesc": "Управляйте разрешениями приложения на устройстве iOS или Android.",
   "permissionLoadFailed": "Не удалось загрузить статус разрешений",
-  "permissionLoadFailedDesc": "Попробуйте позже"
+  "permissionLoadFailedDesc": "Попробуйте позже",
+
+  "shellQuickActions": "Быстрый доступ",
+  "shellHotTop5": "В тренде Top 5",
+  "shellDetailHint": "Выберите пост в списке слева — подробности появятся здесь."
 }

@@ -3,6 +3,7 @@ import { Suspense, lazy, useEffect } from "react"
 import { ThemeProvider } from "./components/theme-provider"
 import { Toaster } from "./components/ui/sonner"
 import { MainLayout } from "./components/layout/MainLayout"
+import { PlainLayout } from "./components/layout/PlainLayout"
 import { PageLoading } from "./components/layout/PageLoading"
 
 // Admin shell (Guard + Layout) is lazy-loaded — only downloaded for admin users
@@ -83,7 +84,7 @@ export function App() {
         <Toaster richColors closeButton />
         <Suspense fallback={<PageLoading />}>
         <Routes>
-          {/* Public Routes with MainLayout */}
+          {/* Public Routes with MainLayout (phone navbar; tablet/desktop shell) */}
           <Route element={<MainLayout><Outlet /></MainLayout>}>
             <Route path="/" element={<HomePage />} />
             <Route path="/hot" element={<HotPage />} />
@@ -92,16 +93,20 @@ export function App() {
             <Route path="/tag/:id" element={<TagPage />} />
             <Route path="/post/create" element={<CreatePostPage />} />
             <Route path="/notifications" element={<NotificationsPage />} />
+            <Route path="/following" element={<FollowingPage />} />
+            <Route path="/user/:id" element={<PublicProfilePage />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+          </Route>
+
+          {/* Account / form routes — 无壳单页布局 */}
+          <Route element={<PlainLayout><Outlet /></PlainLayout>}>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/login-callback" element={<LoginCallbackPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/following" element={<FollowingPage />} />
-            <Route path="/user/:id" element={<PublicProfilePage />} />
             <Route path="/profile/reset-password" element={<ResetPasswordPage />} />
-            <Route path="/terms" element={<TermsPage />} />
-            <Route path="/privacy" element={<PrivacyPage />} />
           </Route>
 
           {/* Admin Routes — lazy-loaded AdminShell (Guard + Layout) */}

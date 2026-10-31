@@ -24,6 +24,8 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final isDesktop = AppResponsive.isDesktop(context);
     final authState = ref.watch(authControllerProvider).asData?.value;
     final user = authState?.user;
     final isSubmitting = authState?.isSubmitting ?? false;
@@ -33,26 +35,29 @@ class ProfileScreen extends ConsumerWidget {
         backgroundColor: context.mc.background,
         child: CustomScrollView(
           slivers: [
-            CupertinoSliverNavigationBar(
-              largeTitle: Text(AppLocalizations.of(context).tabProfile),
-              border: null,
-            ),
+            if (isDesktop)
+              SliverToBoxAdapter(
+                child: _ProfilePaneHeader(title: l10n.tabProfile),
+              )
+            else
+              CupertinoSliverNavigationBar(
+                largeTitle: Text(l10n.tabProfile),
+                border: null,
+              ),
             SliverFillRemaining(
               child: AppResponsiveCenter(
+                maxWidth: isDesktop ? 780 : null,
                 child: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       McEmpty.placeholder(
                         icon: CupertinoIcons.person,
-                        title: AppLocalizations.of(context).profileNotLoggedIn,
-                        description: AppLocalizations.of(context)
-                            .profileNotLoggedInDesc,
+                        title: l10n.profileNotLoggedIn,
+                        description: l10n.profileNotLoggedInDesc,
                         action: McButton.primary(
                           onPressed: () => context.go(AppRoutePaths.login),
-                          child: Text(
-                            AppLocalizations.of(context).profileGoLogin,
-                          ),
+                          child: Text(l10n.profileGoLogin),
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -67,6 +72,123 @@ class ProfileScreen extends ConsumerWidget {
       );
     }
 
+    final sections = <Widget>[
+      _ProfileSection(
+        title: l10n.profileInfo,
+        children: [
+          _InfoRow(
+            label: l10n.profileNickname,
+            value: _fallback(user.name, l10n.profileNotSet),
+          ),
+          _InfoRow(
+            label: l10n.profileBio,
+            value: _fallback(user.info, l10n.profileNoBio),
+          ),
+          _InfoRow(
+            label: l10n.profileEmail,
+            value: _fallback(user.email, l10n.profileNoEmail),
+          ),
+          _VerificationRow(
+            label: l10n.profileVerifyEmailTitle,
+            isVerified: user.isEmailVerified ?? false,
+            isBusy: isSubmitting,
+            onVerify: () => _startVerification(
+              context: context,
+              ref: ref,
+              sendCode: () =>
+                  ref.read(authControllerProvider.notifier).sendEmailCode(),
+              verifyCode: (code) => ref
+                  .read(authControllerProvider.notifier)
+                  .verifyEmailCode(code: code),
+              successMessage: l10n.profileEmailVerifySuccess,
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 16),
+      _ProfileSection(
+        title: l10n.profileSocial,
+        children: [
+          _NavRow(
+            icon: CupertinoIcons.person_2,
+            title: l10n.profileFollowBlock,
+            subtitle: l10n.profileFollowBlockDesc,
+            onTap: () => context.push(AppRoutePaths.following),
+          ),
+          _NavRow(
+            icon: CupertinoIcons.link,
+            title: l10n.profileBindings,
+            subtitle: l10n.profileManageSocialDesc,
+            onTap: () => context.push(AppRoutePaths.bindings),
+          ),
+        ],
+      ),
+      const SizedBox(height: 16),
+      const _ThemeModeSection(),
+      const SizedBox(height: 16),
+      _ProfileSection(
+        title: l10n.profileAppSettings,
+        children: [
+          _NavRow(
+            icon: CupertinoIcons.lock_shield,
+            title: l10n.permissionSettingsTitle,
+            subtitle: l10n.permissionSettingsEntryDesc,
+            onTap: () => context.push(AppRoutePaths.permissions),
+          ),
+        ],
+      ),
+      const SizedBox(height: 16),
+      _ProfileSection(
+        title: l10n.profileAbout,
+        children: [
+          _NavRow(
+            icon: CupertinoIcons.chat_bubble_2_fill,
+            title: l10n.feedbackTitle,
+            subtitle: l10n.feedbackSubtitle,
+            onTap: () => context.push(AppRoutePaths.feedback),
+          ),
+          _NavRow(
+            icon: CupertinoIcons.doc_text,
+            title: l10n.profileTerms,
+            subtitle: l10n.profileTermsDesc,
+            onTap: () => context.push(AppRoutePaths.terms),
+          ),
+          _NavRow(
+            icon: CupertinoIcons.shield_lefthalf_fill,
+            title: l10n.profilePrivacy,
+            subtitle: l10n.profilePrivacyDesc,
+            onTap: () => context.push(AppRoutePaths.privacy),
+          ),
+        ],
+      ),
+      const SizedBox(height: 16),
+      _ProfileSection(
+        title: l10n.profileSecurity,
+        children: [
+          _NavRow(
+            icon: CupertinoIcons.lock_rotation,
+            title: l10n.profileChangePasswordTitle,
+            subtitle: l10n.profileChangePasswordDesc,
+            onTap: () => _openChangePasswordSheet(context),
+          ),
+          _NavRow(
+            icon: CupertinoIcons.square_arrow_right,
+            title: l10n.authLogout,
+            subtitle: l10n.authLogoutDesc,
+            destructive: true,
+            onTap: isSubmitting ? null : () => _logout(context, ref),
+          ),
+        ],
+      ),
+    ];
+
+    final hero = _ProfileHero(
+      user: user,
+      isDesktop: isDesktop,
+      onViewPublicProfile: () =>
+          context.push(buildPublicProfileLocation(user.id)),
+    );
+
     return CupertinoPageScaffold(
       backgroundColor: context.mc.background,
       child: CustomScrollView(
@@ -74,168 +196,66 @@ class ProfileScreen extends ConsumerWidget {
           parent: AlwaysScrollableScrollPhysics(),
         ),
         slivers: [
-          CupertinoSliverNavigationBar(
-            largeTitle: Text(AppLocalizations.of(context).tabProfile),
-            backgroundColor: context.mc.background.withValues(alpha: 0.94),
-            border: null,
-            trailing: CupertinoButton(
-              padding: EdgeInsets.zero,
-              onPressed: () => _openEditSheet(context, ref, user),
-              child: const Icon(CupertinoIcons.pencil_circle, size: 24),
+          if (isDesktop)
+            SliverToBoxAdapter(
+              child: _ProfilePaneHeader(
+                title: l10n.tabProfile,
+                trailing: CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size.zero,
+                  onPressed: () => _openEditSheet(context, ref, user),
+                  child: Icon(
+                    CupertinoIcons.pencil_circle,
+                    size: 22,
+                    color: context.mc.primary,
+                  ),
+                ),
+              ),
+            )
+          else
+            CupertinoSliverNavigationBar(
+              largeTitle: Text(l10n.tabProfile),
+              backgroundColor: context.mc.background.withValues(alpha: 0.94),
+              border: null,
+              trailing: CupertinoButton(
+                padding: EdgeInsets.zero,
+                onPressed: () => _openEditSheet(context, ref, user),
+                child: const Icon(CupertinoIcons.pencil_circle, size: 24),
+              ),
             ),
-          ),
           CupertinoSliverRefreshControl(
             onRefresh: () =>
                 ref.read(authControllerProvider.notifier).refreshProfile(),
           ),
           SliverToBoxAdapter(
-            child: AppResponsiveCenter(
-              padding: AppResponsive.sliverPagePadding(context, bottom: 32),
-              child: AppTwoPane(
-                key: const ValueKey('profile-responsive-two-pane'),
-                secondaryFirstOnWide: true,
-                primary: Column(
-                  children: [
-                    _ProfileSection(
-                      title: AppLocalizations.of(context).profileInfo,
+            child: isDesktop
+                // Desktop: one centered column (hero on top, then the
+                // settings cards) instead of the old side-by-side two pane.
+                ? AppResponsiveCenter(
+                    key: const ValueKey('profile-desktop-single-column'),
+                    maxWidth: 780,
+                    padding: const EdgeInsets.fromLTRB(24, 12, 24, 40),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        _InfoRow(
-                          label: AppLocalizations.of(context).profileNickname,
-                          value: _fallback(
-                            user.name,
-                            AppLocalizations.of(context).profileNotSet,
-                          ),
-                        ),
-                        _InfoRow(
-                          label: AppLocalizations.of(context).profileBio,
-                          value: _fallback(
-                            user.info,
-                            AppLocalizations.of(context).profileNoBio,
-                          ),
-                        ),
-                        _InfoRow(
-                          label: AppLocalizations.of(context).profileEmail,
-                          value: _fallback(
-                            user.email,
-                            AppLocalizations.of(context).profileNoEmail,
-                          ),
-                        ),
-                        _VerificationRow(
-                          label: AppLocalizations.of(context)
-                              .profileVerifyEmailTitle,
-                          isVerified: user.isEmailVerified ?? false,
-                          isBusy: isSubmitting,
-                          onVerify: () => _startVerification(
-                            context: context,
-                            ref: ref,
-                            sendCode: () => ref
-                                .read(authControllerProvider.notifier)
-                                .sendEmailCode(),
-                            verifyCode: (code) => ref
-                                .read(authControllerProvider.notifier)
-                                .verifyEmailCode(code: code),
-                            successMessage: AppLocalizations.of(context)
-                                .profileEmailVerifySuccess,
-                          ),
-                        ),
+                        hero,
+                        const SizedBox(height: 24),
+                        ...sections,
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    _ProfileSection(
-                      title: AppLocalizations.of(context).profileSocial,
-                      children: [
-                        _NavRow(
-                          icon: CupertinoIcons.person_2,
-                          title: AppLocalizations.of(context)
-                              .profileFollowBlock,
-                          subtitle: AppLocalizations.of(context)
-                              .profileFollowBlockDesc,
-                          onTap: () => context.push(AppRoutePaths.following),
-                        ),
-                        _NavRow(
-                          icon: CupertinoIcons.link,
-                          title: AppLocalizations.of(context).profileBindings,
-                          subtitle: AppLocalizations.of(context)
-                              .profileManageSocialDesc,
-                          onTap: () => context.push(AppRoutePaths.bindings),
-                        ),
-                      ],
+                  )
+                : AppResponsiveCenter(
+                    padding: AppResponsive.sliverPagePadding(
+                      context,
+                      bottom: 32,
                     ),
-                    const SizedBox(height: 16),
-                    const _ThemeModeSection(),
-                    const SizedBox(height: 16),
-                    _ProfileSection(
-                      title: AppLocalizations.of(context).profileAppSettings,
-                      children: [
-                        _NavRow(
-                          icon: CupertinoIcons.lock_shield,
-                          title: AppLocalizations.of(context)
-                              .permissionSettingsTitle,
-                          subtitle: AppLocalizations.of(context)
-                              .permissionSettingsEntryDesc,
-                          onTap: () => context.push(AppRoutePaths.permissions),
-                        ),
-                      ],
+                    child: AppTwoPane(
+                      key: const ValueKey('profile-responsive-two-pane'),
+                      secondaryFirstOnWide: true,
+                      primary: Column(children: sections),
+                      secondary: hero,
                     ),
-                    const SizedBox(height: 16),
-                    _ProfileSection(
-                      title: AppLocalizations.of(context).profileAbout,
-                      children: [
-                        _NavRow(
-                          icon: CupertinoIcons.chat_bubble_2_fill,
-                          title: AppLocalizations.of(context).feedbackTitle,
-                          subtitle: AppLocalizations.of(context)
-                              .feedbackSubtitle,
-                          onTap: () => context.push(AppRoutePaths.feedback),
-                        ),
-                        _NavRow(
-                          icon: CupertinoIcons.doc_text,
-                          title: AppLocalizations.of(context).profileTerms,
-                          subtitle: AppLocalizations.of(context)
-                              .profileTermsDesc,
-                          onTap: () => context.push(AppRoutePaths.terms),
-                        ),
-                        _NavRow(
-                          icon: CupertinoIcons.shield_lefthalf_fill,
-                          title: AppLocalizations.of(context).profilePrivacy,
-                          subtitle: AppLocalizations.of(context)
-                              .profilePrivacyDesc,
-                          onTap: () => context.push(AppRoutePaths.privacy),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    _ProfileSection(
-                      title: AppLocalizations.of(context).profileSecurity,
-                      children: [
-                        _NavRow(
-                          icon: CupertinoIcons.lock_rotation,
-                          title: AppLocalizations.of(context)
-                              .profileChangePasswordTitle,
-                          subtitle: AppLocalizations.of(context)
-                              .profileChangePasswordDesc,
-                          onTap: () => _openChangePasswordSheet(context),
-                        ),
-                        _NavRow(
-                          icon: CupertinoIcons.square_arrow_right,
-                          title: AppLocalizations.of(context).authLogout,
-                          subtitle: AppLocalizations.of(context).authLogoutDesc,
-                          destructive: true,
-                          onTap: isSubmitting
-                              ? null
-                              : () => _logout(context, ref),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                secondary: _ProfileHero(
-                  user: user,
-                  onViewPublicProfile: () =>
-                      context.push(buildPublicProfileLocation(user.id)),
-                ),
-              ),
-            ),
+                  ),
           ),
         ],
       ),
@@ -398,13 +418,30 @@ class ProfileScreen extends ConsumerWidget {
 }
 
 class _ProfileHero extends StatelessWidget {
-  const _ProfileHero({required this.user, required this.onViewPublicProfile});
+  const _ProfileHero({
+    required this.user,
+    required this.onViewPublicProfile,
+    this.isDesktop = false,
+  });
 
   final UserDto user;
   final VoidCallback onViewPublicProfile;
 
+  /// Desktop keeps a single centered column, so the card gets room for the
+  /// name/bio block plus an explicit "public profile" action instead of the
+  /// narrow-screen chevron.
+  final bool isDesktop;
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final name = user.name?.trim().isNotEmpty == true
+        ? user.name!.trim()
+        : l10n.profileNoNickname;
+    final info = user.info?.trim().isNotEmpty == true
+        ? user.info!.trim()
+        : l10n.profileOwnerLowkey;
+
     return McCard.elevated(
       padding: const EdgeInsets.all(20),
       onPressed: onViewPublicProfile,
@@ -422,17 +459,10 @@ class _ProfileHero extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  user.name?.trim().isNotEmpty == true
-                      ? user.name!.trim()
-                      : AppLocalizations.of(context).profileNoNickname,
-                  style: context.mc.textSection,
-                ),
+                Text(name, style: context.mc.textSection),
                 const SizedBox(height: 4),
                 Text(
-                  user.info?.trim().isNotEmpty == true
-                      ? user.info!.trim()
-                      : AppLocalizations.of(context).profileOwnerLowkey,
+                  info,
                   style: context.mc.textMuted,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -440,12 +470,66 @@ class _ProfileHero extends StatelessWidget {
               ],
             ),
           ),
-          Icon(
-            CupertinoIcons.chevron_right,
-            size: 16,
-            color: context.mc.secondaryLabel,
-          ),
+          if (isDesktop) ...[
+            const SizedBox(width: 16),
+            McButton.secondary(
+              onPressed: onViewPublicProfile,
+              padding: const EdgeInsets.symmetric(
+                vertical: 10,
+                horizontal: 16,
+              ),
+              child: Text(
+                l10n.profilePublicProfile,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ] else
+            Icon(
+              CupertinoIcons.chevron_right,
+              size: 16,
+              color: context.mc.secondaryLabel,
+            ),
         ],
+      ),
+    );
+  }
+}
+
+class _ProfilePaneHeader extends StatelessWidget {
+  const _ProfilePaneHeader({required this.title, this.trailing});
+
+  final String title;
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      bottom: false,
+      child: SizedBox(
+        height: 44,
+        child: Padding(
+          padding: const EdgeInsets.only(left: 14, right: 6),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: context.mc.foreground,
+                  ),
+                ),
+              ),
+              ?trailing,
+            ],
+          ),
+        ),
       ),
     );
   }

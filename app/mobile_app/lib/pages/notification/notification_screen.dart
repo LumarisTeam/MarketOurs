@@ -8,6 +8,7 @@ import 'package:luamris_ui/luamris_ui.dart';
 import 'package:mobile_app/l10n/app_localizations.dart';
 
 import '../../models/notification.dart';
+import '../../providers/desktop_detail_provider.dart';
 import '../../providers/home_tab_provider.dart';
 import '../../providers/notification_provider.dart';
 import '../../providers/post_feed_provider.dart';
@@ -15,6 +16,7 @@ import '../../router/app_router.dart';
 import '../../services/notification_service.dart';
 import '../../ui/app_responsive.dart';
 import '../../utils/date_formatters.dart';
+import '../shell/compact_notification_tile.dart';
 import 'push_settings_screen.dart';
 
 class NotificationScreen extends ConsumerStatefulWidget {
@@ -92,39 +94,10 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
     };
   }
 
-  IconData _getIcon(NotificationType type) {
-    switch (type) {
-      case NotificationType.commentReply:
-        return CupertinoIcons.reply;
-      case NotificationType.postReply:
-        return CupertinoIcons.chat_bubble_2;
-      case NotificationType.hotList:
-        return CupertinoIcons.flame;
-      case NotificationType.system:
-        return CupertinoIcons.bell;
-      case NotificationType.review:
-        return CupertinoIcons.check_mark_circled;
-      case NotificationType.unknown:
-        return CupertinoIcons.bell;
-    }
-  }
+  IconData _getIcon(NotificationType type) => notificationIconForType(type);
 
-  Color _getIconColor(BuildContext context, NotificationType type) {
-    switch (type) {
-      case NotificationType.commentReply:
-        return context.mc.primary;
-      case NotificationType.postReply:
-        return context.mc.success;
-      case NotificationType.hotList:
-        return context.mc.warning;
-      case NotificationType.system:
-        return context.mc.secondaryLabel;
-      case NotificationType.review:
-        return context.mc.purple;
-      case NotificationType.unknown:
-        return context.mc.secondaryLabel;
-    }
-  }
+  Color _getIconColor(BuildContext context, NotificationType type) =>
+      notificationIconColorForType(context, type);
 
   @override
   Widget build(BuildContext context) {
@@ -134,7 +107,101 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
     ) {
       if (event?.index == 2 && mounted) unawaited(_loadNotifications());
     });
+    final l10n = AppLocalizations.of(context);
+    final isDesktop = AppResponsive.isDesktop(context);
     final visibleNotifications = _visibleNotifications;
+
+    final actions = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (_notifications.any((n) => !n.isRead)) ...[
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            minimumSize: Size.zero,
+            onPressed: () async {
+              await _markAllAsReadOptimistically();
+            },
+            child: const Icon(CupertinoIcons.trash, size: 24),
+          ),
+          const SizedBox(width: 20),
+        ],
+        CupertinoButton(
+          padding: EdgeInsets.zero,
+          minimumSize: Size.zero,
+          onPressed: () {
+            Navigator.of(context).push(
+              CupertinoPageRoute(
+                builder: (_) => PushSettingsScreen(service: widget.service),
+              ),
+            );
+          },
+          child: const Icon(CupertinoIcons.settings, size: 24),
+        ),
+      ],
+    );
+
+    final categorySelector =
+        CupertinoSlidingSegmentedControl<_NotificationCategory>(
+          groupValue: _category,
+          children: {
+            _NotificationCategory.all: Text(l10n.tabNotifications),
+            _NotificationCategory.comments: Text(
+              l10n.notificationTypePostReplyTitle,
+            ),
+            _NotificationCategory.reviews: Text(
+              l10n.notificationTypeReviewTitle,
+            ),
+            _NotificationCategory.other: Text(
+              l10n.notificationTypeSystemTitle,
+            ),
+          },
+          onValueChanged: (value) {
+            if (value != null && mounted) {
+              setState(() => _category = value);
+            }
+          },
+        );
+
+    final Widget listSliver;
+    if (_isLoading && visibleNotifications.isEmpty) {
+      listSliver = const SliverFillRemaining(
+        child: Center(child: CupertinoActivityIndicator(radius: 14)),
+      );
+    } else if (visibleNotifications.isEmpty) {
+      listSliver = SliverFillRemaining(child: _buildEmptyState());
+    } else if (isDesktop) {
+      // Desktop: compact single-line rows inside the 340px list column.
+      listSliver = SliverPadding(
+        padding: const EdgeInsets.fromLTRB(4, 4, 4, 24),
+        sliver: SliverList.builder(
+          itemCount: visibleNotifications.length,
+          itemBuilder: (context, index) {
+            final notification = visibleNotifications[index];
+            return CompactNotificationTile(
+              notification: notification,
+              onTap: () {
+                unawaited(_openNotification(notification));
+              },
+            );
+          },
+        ),
+      );
+    } else {
+      listSliver = AppResponsiveSliverPadding(
+        child: _NotificationList(
+          notifications: visibleNotifications,
+          iconForType: _getIcon,
+          iconColorForType: _getIconColor,
+          formatDate: (date, context) => formatNotificationDateTime(
+            date,
+            AppLocalizations.of(context),
+          ),
+          onOpen: _openNotification,
+          onOpenPost: _openPost,
+        ),
+      );
+    }
+
     return CupertinoPageScaffold(
       backgroundColor: context.mc.background,
       child: CustomScrollView(
@@ -142,94 +209,73 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
           parent: AlwaysScrollableScrollPhysics(),
         ),
         slivers: [
-          CupertinoSliverNavigationBar(
-            largeTitle: Text(AppLocalizations.of(context).tabNotifications),
-            backgroundColor: context.mc.background.withValues(alpha: 0.94),
-            border: null,
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (_notifications.any((n) => !n.isRead)) ...[
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    minimumSize: Size.zero,
-                    onPressed: () async {
-                      await _markAllAsReadOptimistically();
-                    },
-                    child: const Icon(CupertinoIcons.trash, size: 24),
+          if (isDesktop)
+            SliverToBoxAdapter(
+              child: SafeArea(
+                bottom: false,
+                child: SizedBox(
+                  height: 44,
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 14, right: 6),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            l10n.tabNotifications,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: context.mc.foreground,
+                            ),
+                          ),
+                        ),
+                        actions,
+                      ],
+                    ),
                   ),
-                  const SizedBox(width: 20),
-                ],
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  minimumSize: Size.zero,
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      CupertinoPageRoute(
-                        builder: (_) =>
-                            PushSettingsScreen(service: widget.service),
-                      ),
-                    );
-                  },
-                  child: const Icon(CupertinoIcons.settings, size: 24),
                 ),
-              ],
+              ),
+            )
+          else
+            CupertinoSliverNavigationBar(
+              largeTitle: Text(l10n.tabNotifications),
+              backgroundColor: context.mc.background.withValues(alpha: 0.94),
+              border: null,
+              trailing: actions,
             ),
-          ),
           CupertinoSliverRefreshControl(onRefresh: _loadNotifications),
           SliverToBoxAdapter(
-            child: AppResponsiveCenter(
-              padding: AppResponsive.sliverPagePadding(
-                context,
-                top: 8,
-                bottom: 8,
-              ),
-              child: CupertinoSlidingSegmentedControl<_NotificationCategory>(
-                groupValue: _category,
-                children: {
-                  _NotificationCategory.all: Text(
-                    AppLocalizations.of(context).tabNotifications,
+            child: isDesktop
+                ? Padding(
+                    padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: SizedBox(width: 420, child: categorySelector),
+                    ),
+                  )
+                : AppResponsiveCenter(
+                    padding: AppResponsive.sliverPagePadding(
+                      context,
+                      top: 8,
+                      bottom: 8,
+                    ),
+                    child: categorySelector,
                   ),
-                  _NotificationCategory.comments: Text(
-                    AppLocalizations.of(context).notificationTypePostReplyTitle,
-                  ),
-                  _NotificationCategory.reviews: Text(
-                    AppLocalizations.of(context).notificationTypeReviewTitle,
-                  ),
-                  _NotificationCategory.other: Text(
-                    AppLocalizations.of(context).notificationTypeSystemTitle,
-                  ),
-                },
-                onValueChanged: (value) {
-                  if (value != null && mounted) {
-                    setState(() => _category = value);
-                  }
-                },
-              ),
-            ),
           ),
-          if (_isLoading && visibleNotifications.isEmpty)
-            const SliverFillRemaining(
-              child: Center(child: CupertinoActivityIndicator(radius: 14)),
-            )
-          else if (visibleNotifications.isEmpty)
-            SliverFillRemaining(child: _buildEmptyState())
-          else
-            AppResponsiveSliverPadding(
-              child: _NotificationList(
-                notifications: visibleNotifications,
-                iconForType: _getIcon,
-                iconColorForType: _getIconColor,
-                formatDate: (date, context) => formatNotificationDateTime(
-                  date,
-                  AppLocalizations.of(context),
-                ),
-                onOpen: _openNotification,
-              ),
-            ),
+          listSliver,
         ],
       ),
     );
+  }
+
+  void _openPost(String postId) {
+    if (AppResponsive.isDesktop(context)) {
+      ref.read(desktopDetailProvider.notifier).select(postId);
+      return;
+    }
+    context.push(buildPostDetailLocation(postId));
   }
 
   Future<void> _openNotification(NotificationDto n) async {
@@ -267,7 +313,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
         params.entityType == 'teacherComment') {
       return;
     } else if (n.targetId?.isNotEmpty == true) {
-      context.push(buildPostDetailLocation(n.targetId!));
+      _openPost(n.targetId!);
     }
   }
 
@@ -344,6 +390,7 @@ class _NotificationList extends StatelessWidget {
     required this.iconColorForType,
     required this.formatDate,
     required this.onOpen,
+    required this.onOpenPost,
   });
 
   final List<NotificationDto> notifications;
@@ -352,6 +399,7 @@ class _NotificationList extends StatelessWidget {
   iconColorForType;
   final String Function(DateTime? date, BuildContext context) formatDate;
   final Future<void> Function(NotificationDto notification) onOpen;
+  final ValueChanged<String> onOpenPost;
 
   @override
   Widget build(BuildContext context) {
@@ -368,6 +416,7 @@ class _NotificationList extends StatelessWidget {
                 icon: iconForType(entry.$2.type),
                 iconColor: iconColorForType(context, entry.$2.type),
                 formattedDate: formatDate(entry.$2.createdAt, context),
+                onOpenPost: onOpenPost,
                 onPressed: () {
                   onOpen(entry.$2);
                 },
@@ -394,6 +443,7 @@ class _NotificationList extends StatelessWidget {
                   icon: iconForType(entry.$2.type),
                   iconColor: iconColorForType(context, entry.$2.type),
                   formattedDate: formatDate(entry.$2.createdAt, context),
+                  onOpenPost: onOpenPost,
                   onPressed: () {
                     onOpen(entry.$2);
                   },
@@ -413,6 +463,7 @@ class _NotificationCard extends StatelessWidget {
     required this.iconColor,
     required this.formattedDate,
     required this.onPressed,
+    required this.onOpenPost,
   });
 
   final NotificationDto notification;
@@ -420,6 +471,7 @@ class _NotificationCard extends StatelessWidget {
   final Color iconColor;
   final String formattedDate;
   final VoidCallback onPressed;
+  final ValueChanged<String> onOpenPost;
 
   @override
   Widget build(BuildContext context) {
@@ -467,9 +519,7 @@ class _NotificationCard extends StatelessWidget {
                   params: notification.typedParams,
                   content: notification.content,
                   type: notification.type,
-                  onPostTap: (postId) {
-                    context.push(buildPostDetailLocation(postId));
-                  },
+                  onPostTap: onOpenPost,
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -496,14 +546,7 @@ class _NotificationTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
-    final title = switch (type) {
-      NotificationType.commentReply => loc.notificationTypeCommentReplyTitle,
-      NotificationType.postReply => loc.notificationTypePostReplyTitle,
-      NotificationType.hotList => loc.notificationTypeHotListTitle,
-      NotificationType.review => loc.notificationTypeReviewTitle,
-      NotificationType.system => loc.notificationTypeSystemTitle,
-      _ => loc.tabNotifications,
-    };
+    final title = notificationTitleForType(loc, type);
     return Text(
       title,
       style: TextStyle(

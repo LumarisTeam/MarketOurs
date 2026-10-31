@@ -1647,4 +1647,13 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get permissionLoadFailedDesc => '後でもう一度お試しください';
+
+  @override
+  String get shellQuickActions => 'クイックアクセス';
+
+  @override
+  String get shellHotTop5 => 'トレンド Top 5';
+
+  @override
+  String get shellDetailHint => '左のリストから投稿を選ぶと、ここに詳細が表示されます。';
 }
