@@ -9,7 +9,6 @@ import 'package:mobile_app/models/auth_session.dart';
 import 'package:mobile_app/models/post.dart';
 import 'package:mobile_app/models/user.dart';
 import 'package:mobile_app/providers/auth_provider.dart';
-import 'package:mobile_app/providers/desktop_detail_provider.dart';
 import 'package:mobile_app/providers/home_tab_provider.dart';
 import 'package:mobile_app/providers/post_feed_provider.dart';
 import 'package:mobile_app/services/auth_service.dart';
@@ -251,7 +250,7 @@ void main() {
     expect(tester.getTopLeft(tabBar).dy, closeTo(44, 1));
   });
 
-  testWidgets('uses three column shell on desktop width', (tester) async {
+  testWidgets('uses two column home feed on desktop width', (tester) async {
     tester.view
       ..physicalSize = const Size(1366, 900)
       ..devicePixelRatio = 1;
@@ -281,81 +280,9 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    // Desktop keeps the rail, a compact list column and a detail column.
-    expect(find.byType(CupertinoTabBar), findsNothing);
-    expect(
-      find.byKey(const ValueKey('main-shell-desktop-rail')),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(const ValueKey('main-shell-tablet-side-navigation')),
-      findsNothing,
-    );
-    expect(
-      find.byKey(const ValueKey('desktop-feed-list-pane')),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(const ValueKey('desktop-welcome-pane')),
-      findsOneWidget,
-    );
-    // The card grid is replaced by compact single-line rows.
-    expect(find.byKey(const ValueKey('home-feed-columns-2')), findsNothing);
+    expect(find.byKey(const ValueKey('home-feed-columns-2')), findsOneWidget);
     expect(find.text('桌面响应式帖子 A'), findsOneWidget);
     expect(find.text('桌面响应式帖子 B'), findsOneWidget);
-  });
-
-  testWidgets('renders a centered single column profile on desktop width', (
-    tester,
-  ) async {
-    tester.view
-      ..physicalSize = const Size(1366, 900)
-      ..devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-
-    final storage = _TestAuthStorage(
-      session: AuthSession(accessToken: 'access', refreshToken: 'refresh'),
-    );
-
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          authStorageProvider.overrideWithValue(storage),
-          authServiceProvider.overrideWithValue(
-            _FakeAuthService(user: _demoUser),
-          ),
-          homeFeedProvider.overrideWith(() => _FakeHomeFeedNotifier()),
-          hotFeedProvider.overrideWith(() => _FakeHotFeedNotifier()),
-          postTagsProvider.overrideWith((ref) async => const <PostTagDto>[]),
-        ],
-        child: const MarketOursApp(),
-      ),
-    );
-
-    await tester.pumpAndSettle();
-
-    // Branch 3 is the desktop exception: icon rail + full-width page.
-    await tester.tap(
-      find.descendant(
-        of: find.byKey(const ValueKey('main-shell-desktop-rail')),
-        matching: find.text('我的'),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    // The page is one centered column: hero on top, no side-by-side panes and
-    // no large-title navigation bar.
-    expect(
-      find.byKey(const ValueKey('profile-desktop-single-column')),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(const ValueKey('profile-responsive-two-pane')),
-      findsNothing,
-    );
-    expect(find.byType(CupertinoSliverNavigationBar), findsNothing);
-    expect(find.text('资料信息'), findsOneWidget);
   });
 
   testWidgets('submits home search keyword to feed notifier', (tester) async {
@@ -576,25 +503,6 @@ void main() {
 
     expect(authState?.status, AuthStatus.unauthenticated);
     expect(storage.session, isNull);
-  });
-
-  test('desktop detail provider tracks the selected post', () {
-    final container = ProviderContainer();
-    addTearDown(container.dispose);
-
-    expect(container.read(desktopDetailProvider), isNull);
-
-    container.read(desktopDetailProvider.notifier).select('post-1');
-    expect(container.read(desktopDetailProvider), 'post-1');
-
-    container.read(desktopDetailProvider.notifier).select('post-1');
-    expect(container.read(desktopDetailProvider), 'post-1');
-
-    container.read(desktopDetailProvider.notifier).select('post-2');
-    expect(container.read(desktopDetailProvider), 'post-2');
-
-    container.read(desktopDetailProvider.notifier).clear();
-    expect(container.read(desktopDetailProvider), isNull);
   });
 
   test('selectTag keeps the dynamic tag tab when switching tabs', () {

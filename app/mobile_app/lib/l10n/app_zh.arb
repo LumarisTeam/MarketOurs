@@ -621,9 +621,5 @@
   "permissionUnsupportedTitle": "当前平台不支持权限管理",
   "permissionUnsupportedDesc": "请在 iOS 或 Android 设备上管理应用权限。",
   "permissionLoadFailed": "权限状态加载失败",
-  "permissionLoadFailedDesc": "请稍后重试",
-
-  "shellQuickActions": "快捷入口",
-  "shellHotTop5": "热榜 Top 5",
-  "shellDetailHint": "从左侧列表选择一篇帖子，详情会显示在这里。"
+  "permissionLoadFailedDesc": "请稍后重试"
 }

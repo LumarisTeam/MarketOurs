@@ -7,15 +7,10 @@ import type { PostTagDto } from "../../types"
 import { extractUserMessage } from "../../services/errorCodes"
 import { PostFeed, BackLink } from "../../components/post/PostFeed"
 import { PostTagBadge } from "../../components/post/PostTagBadge"
-import { WelcomePane } from "@/components/layout/shell/WelcomePane"
-import { useBreakpoint } from "@/components/layout/shell/useBreakpoint"
-import { useListContext } from "@/components/layout/shell/ListContext"
 
 export default function TagPage() {
   const { id } = useParams()
   const { t } = useTranslation()
-  const breakpoint = useBreakpoint()
-  const listContext = useListContext()
   const [tag, setTag] = useState<PostTagDto | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -56,12 +51,6 @@ export default function TagPage() {
     }
   }, [id, t])
 
-  // 桌面端把真实标签名回填到列表栏标题
-  useEffect(() => {
-    if (!id || !tag?.name) return
-    listContext?.setTagName(id, tag.name)
-  }, [id, tag?.name, listContext])
-
   if (loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
@@ -86,10 +75,6 @@ export default function TagPage() {
         </Link>
       </div>
     )
-  }
-
-  if (breakpoint === "desktop") {
-    return <WelcomePane tag={{ name: tag.name, isActive: tag.isActive }} />
   }
 
   return (

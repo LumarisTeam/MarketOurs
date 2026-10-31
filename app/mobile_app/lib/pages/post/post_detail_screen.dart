@@ -15,7 +15,6 @@ import '../../models/comment.dart';
 import '../../models/post.dart';
 import '../../models/user.dart';
 import '../../providers/auth_provider.dart';
-import '../../providers/desktop_detail_provider.dart';
 import '../../providers/post_feed_provider.dart';
 import '../../router/app_router.dart';
 import '../../services/comment_service.dart';
@@ -35,17 +34,9 @@ import 'widgets/post_detail_error_view.dart';
 import 'widgets/post_detail_hero.dart';
 
 class PostDetailScreen extends ConsumerStatefulWidget {
-  const PostDetailScreen({
-    super.key,
-    required this.postId,
-    this.embedded = false,
-  });
+  const PostDetailScreen({super.key, required this.postId});
 
   final String postId;
-
-  /// When true the screen is hosted in the desktop detail column: the back
-  /// button is hidden and the layout keeps a single column.
-  final bool embedded;
 
   @override
   ConsumerState<PostDetailScreen> createState() => _PostDetailScreenState();
@@ -762,13 +753,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     await _runAction(
       () async {
         await ref.read(postServiceProvider).deletePost(post.id);
-        if (!mounted) return;
-        if (widget.embedded) {
-          // Embedded in the desktop detail column: there is no route to pop.
-          ref.read(desktopDetailProvider.notifier).clear();
-        } else {
-          context.pop();
-        }
+        if (mounted) context.pop();
       },
       successMessage: AppLocalizations.of(context).postDeleted,
       reloadAll: false,
@@ -1197,11 +1182,6 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     );
   }
 
-  /// Embedded mode hides the back button (an empty leading disables the
-  /// automatically implied leading of [McPageScaffold]).
-  Widget? get _embeddedLeading =>
-      widget.embedded ? const SizedBox.shrink() : null;
-
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(authControllerProvider).asData?.value.user;
@@ -1265,7 +1245,6 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       return McPageScaffold(
         title: AppLocalizations.of(context).postDetail,
         navigationBarStyle: McNavigationBarStyle.compact,
-        leading: _embeddedLeading,
         trailing: trailing,
         child: const Center(child: CupertinoActivityIndicator(radius: 14)),
       );
@@ -1275,7 +1254,6 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       return McPageScaffold(
         title: AppLocalizations.of(context).postDetail,
         navigationBarStyle: McNavigationBarStyle.compact,
-        leading: _embeddedLeading,
         trailing: trailing,
         child: PostDetailErrorView(
           message:
@@ -1288,7 +1266,6 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     return McPageScaffold(
       title: AppLocalizations.of(context).postDetail,
       navigationBarStyle: McNavigationBarStyle.compact,
-      leading: _embeddedLeading,
       trailing: trailing,
       bottomBar: _buildCommentComposer(context),
       slivers: [
@@ -1298,13 +1275,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
             behavior: HitTestBehavior.translucent,
             onTap: () => FocusScope.of(context).unfocus(),
             child: AppResponsiveCenter(
-              padding: widget.embedded
-                  ? const EdgeInsets.fromLTRB(16, 12, 16, 24)
-                  : AppResponsive.sliverPagePadding(context),
+              padding: AppResponsive.sliverPagePadding(context),
               child: Builder(
                 builder: (context) {
-                  final isWide =
-                      AppResponsive.isWideTwoPane(context) && !widget.embedded;
+                  final isWide = AppResponsive.isWideTwoPane(context);
                   final actionBar = _buildActionBar(
                     context,
                     post,

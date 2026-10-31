@@ -2,8 +2,6 @@ import { Link } from "react-router"
 import { useTranslation } from "react-i18next"
 import { Navbar } from "./Navbar"
 import { PageTransition } from "./PageTransition"
-import { AppShell } from "./shell/AppShell"
-import { useBreakpoint } from "./shell/useBreakpoint"
 import { Separator } from "@/components/ui/separator"
 
 interface MainLayoutProps {
@@ -12,13 +10,7 @@ interface MainLayoutProps {
 
 export function MainLayout({ children }: MainLayoutProps) {
   const { t } = useTranslation()
-  const breakpoint = useBreakpoint()
   const year = new Date().getFullYear()
-
-  // 平板 / 桌面：微信式分栏，不再有 Navbar 与 footer
-  if (breakpoint !== "phone") {
-    return <AppShell breakpoint={breakpoint}>{children}</AppShell>
-  }
 
   return (
     <div className="relative flex min-h-screen flex-col bg-background">

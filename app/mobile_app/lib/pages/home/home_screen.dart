@@ -15,7 +15,6 @@ import '../../providers/post_feed_provider.dart';
 import '../../router/app_router.dart';
 import '../../services/error_messages.dart';
 import '../../ui/app_responsive.dart';
-import '../shell/feed_list_pane.dart';
 import 'widgets/home_tab_bar.dart';
 
 /// Home page with Zhihu-style top tabs: 最新, 热榜 and one tab per active tag.
@@ -206,12 +205,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         unawaited(_refreshActiveTab());
       }
     });
-
-    // Desktop shows the home feed inside the 340px list column of the
-    // three-column shell: no large title, no centered max width.
-    if (AppResponsive.isDesktop(context)) {
-      return const FeedListPane(key: ValueKey('desktop-feed-list-pane'));
-    }
 
     final l10n = AppLocalizations.of(context);
     final selection = ref.watch(homeTabControllerProvider);

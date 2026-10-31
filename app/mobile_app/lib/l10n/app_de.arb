@@ -546,9 +546,5 @@
   "permissionUnsupportedTitle": "Berechtigungsverwaltung auf dieser Plattform nicht verfügbar",
   "permissionUnsupportedDesc": "Verwalte die App-Berechtigungen auf einem iOS- oder Android-Gerät.",
   "permissionLoadFailed": "Berechtigungsstatus konnte nicht geladen werden",
-  "permissionLoadFailedDesc": "Bitte versuche es später erneut",
-
-  "shellQuickActions": "Schnellzugriff",
-  "shellHotTop5": "Trending Top 5",
-  "shellDetailHint": "Wähle links einen Beitrag aus, um die Details hier zu sehen."
+  "permissionLoadFailedDesc": "Bitte versuche es später erneut"
 }

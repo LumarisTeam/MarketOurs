@@ -11,8 +11,6 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Skeleton } from "@/components/ui/skeleton"
-import { WelcomePane } from "@/components/layout/shell/WelcomePane"
-import { useBreakpoint } from "@/components/layout/shell/useBreakpoint"
 
 function HotPostSkeleton({ index }: { index: number }) {
   return (
@@ -40,7 +38,6 @@ function HotPostSkeleton({ index }: { index: number }) {
 export default function HotPage() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
-  const breakpoint = useBreakpoint()
   const [posts, setPosts] = useState<PostDto[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -67,13 +64,8 @@ export default function HotPage() {
   })
 
   useEffect(() => {
-    // 桌面端右侧展示欢迎页，热榜数据由中间列表栏自行加载
-    if (breakpoint !== "desktop") void loadHotPosts()
-  }, [breakpoint])
-
-  if (breakpoint === "desktop") {
-    return <WelcomePane />
-  }
+    void loadHotPosts()
+  }, [])
 
   return (
     <div className="mx-auto max-w-4xl space-y-8 pb-24">

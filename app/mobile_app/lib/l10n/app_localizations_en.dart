@@ -1695,14 +1695,4 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get permissionLoadFailedDesc => 'Please try again later';
-
-  @override
-  String get shellQuickActions => 'Quick actions';
-
-  @override
-  String get shellHotTop5 => 'Trending top 5';
-
-  @override
-  String get shellDetailHint =>
-      'Pick a post from the list and its details will appear here.';
 }

@@ -1647,13 +1647,4 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get permissionLoadFailedDesc => '나중에 다시 시도해 주세요';
-
-  @override
-  String get shellQuickActions => '빠른 메뉴';
-
-  @override
-  String get shellHotTop5 => '인기 게시글 Top 5';
-
-  @override
-  String get shellDetailHint => '왼쪽 목록에서 게시글을 선택하면 여기에 상세 내용이 표시됩니다.';
 }

@@ -545,9 +545,5 @@
   "permissionUnsupportedTitle": "현재 플랫폼에서는 권한 관리를 지원하지 않습니다",
   "permissionUnsupportedDesc": "iOS 또는 Android 기기에서 앱 권한을 관리해 주세요.",
   "permissionLoadFailed": "권한 상태를 불러오지 못했습니다",
-  "permissionLoadFailedDesc": "나중에 다시 시도해 주세요",
-
-  "shellQuickActions": "빠른 메뉴",
-  "shellHotTop5": "인기 게시글 Top 5",
-  "shellDetailHint": "왼쪽 목록에서 게시글을 선택하면 여기에 상세 내용이 표시됩니다."
+  "permissionLoadFailedDesc": "나중에 다시 시도해 주세요"
 }
