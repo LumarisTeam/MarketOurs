@@ -19,7 +19,7 @@ Future<void> showTeacherCommentEditDialog(
   final courseController = TextEditingController(text: comment.courseName);
   final commentController = TextEditingController(text: comment.comment ?? '');
 
-  await showCupertinoModalPopup<void>(
+  await showMcBottomSheet<void>(
     context: context,
     builder: (dialogContext) {
       var localStar = comment.star;
@@ -179,90 +179,70 @@ class _EditDialogContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return SafeArea(
-      top: false,
-      child: Align(
-        alignment: Alignment.bottomCenter,
-        child: Container(
-          margin: const EdgeInsets.all(12),
-          padding: const EdgeInsets.all(16),
-          decoration: context.mc.cardDecoration(),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        l10n.teacherCommentsEditTitle,
-                        style: context.mc.textSection,
-                      ),
-                    ),
-                    CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      minimumSize: Size.zero,
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Icon(CupertinoIcons.xmark_circle_fill),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  l10n.teacherCommentsEditSubtitle,
-                  style: context.mc.textMuted,
-                ),
-                const SizedBox(height: 14),
-                McField.text(
-                  controller: teacherController,
-                  placeholder: l10n.teacherCommentsTeacherPlaceholder,
-                  prefix: const Icon(CupertinoIcons.person, size: 18),
-                ),
-                const SizedBox(height: 10),
-                McField.text(
-                  controller: courseController,
-                  placeholder: l10n.teacherCommentsCoursePlaceholder,
-                  prefix: const Icon(CupertinoIcons.book, size: 18),
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Text(
-                      l10n.teacherCommentsStarLabel,
-                      style: context.mc.textLabel,
-                    ),
-                    const SizedBox(width: 12),
-                    TeacherCommentStarRating(
-                      value: star,
-                      onChanged: onStarChanged,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                McField.text(
-                  controller: commentController,
-                  placeholder: l10n.teacherCommentsCommentPlaceholder,
-                  maxLines: 4,
-                  maxLength: kTeacherCommentMaxLength,
-                ),
-                const SizedBox(height: 14),
-                SizedBox(
-                  width: double.infinity,
-                  child: CupertinoButton.filled(
-                    borderRadius: BorderRadius.circular(McRadii.lg),
-                    onPressed: isSubmitting ? null : onSubmit,
-                    child: isSubmitting
-                        ? const CupertinoActivityIndicator(
-                            color: CupertinoColors.white,
-                          )
-                        : Text(l10n.teacherCommentsSave),
-                  ),
-                ),
-              ],
+    return SingleChildScrollView(
+      padding: EdgeInsets.fromLTRB(
+        20,
+        4,
+        20,
+        MediaQuery.viewInsetsOf(context).bottom + 20,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(l10n.teacherCommentsEditTitle, style: context.mc.textSection),
+          const SizedBox(height: 4),
+          Text(
+            l10n.teacherCommentsEditSubtitle,
+            style: context.mc.textMuted,
+          ),
+          const SizedBox(height: 14),
+          McField.text(
+            controller: teacherController,
+            placeholder: l10n.teacherCommentsTeacherPlaceholder,
+            prefix: const Icon(CupertinoIcons.person, size: 18),
+          ),
+          const SizedBox(height: 10),
+          McField.text(
+            controller: courseController,
+            placeholder: l10n.teacherCommentsCoursePlaceholder,
+            prefix: const Icon(CupertinoIcons.book, size: 18),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Text(
+                l10n.teacherCommentsStarLabel,
+                style: context.mc.textLabel,
+              ),
+              const SizedBox(width: 12),
+              TeacherCommentStarRating(
+                value: star,
+                onChanged: onStarChanged,
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          McField.text(
+            controller: commentController,
+            placeholder: l10n.teacherCommentsCommentPlaceholder,
+            maxLines: 4,
+            maxLength: kTeacherCommentMaxLength,
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            child: CupertinoButton.filled(
+              borderRadius: BorderRadius.circular(McRadii.lg),
+              onPressed: isSubmitting ? null : onSubmit,
+              child: isSubmitting
+                  ? const CupertinoActivityIndicator(
+                      color: CupertinoColors.white,
+                    )
+                  : Text(l10n.teacherCommentsSave),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
