@@ -2,9 +2,11 @@ import { Link, useLocation } from "react-router"
 import { cn } from "@/lib/utils"
 import { useTheme } from "@/components/theme-provider"
 import {
-  Sun, Moon, MessageSquare, User, Menu, LogIn, LogOut,
+  MessageSquare, User, Menu, LogIn, LogOut,
   PlusSquare, Languages, Flame, ChevronDown, GraduationCap
 } from "lucide-react"
+import { Sun, Moon } from "lucide"
+import { MorphIcon } from "morphicons/react"
 import { useState } from "react"
 import { useSelector, useDispatch } from "react-redux"
 import { useTranslation } from "react-i18next"
@@ -141,7 +143,7 @@ export function Navbar() {
               aria-label={t("nav.toggle_theme")}
               className="text-muted-foreground hover:text-foreground rounded-xl"
             >
-              {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+              <MorphIcon icon={theme === "dark" ? Sun : Moon} size={18} reducedMotion="user" />
             </Button>
 
             {/* Notification Bell */}

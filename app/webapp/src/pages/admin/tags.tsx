@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react"
-import { Pencil, Plus, Tag, ToggleLeft, ToggleRight } from "lucide-react"
+import { Pencil, Plus, Tag } from "lucide-react"
+import { ToggleLeft, ToggleRight } from "lucide"
+import { MorphIcon } from "morphicons/react"
 import { useTranslation } from "react-i18next"
 import { adminService } from "../../services/adminService"
 import { extractUserMessage } from "../../services/errorCodes"
@@ -193,7 +195,7 @@ export default function AdminTagsPage() {
                     onClick={() => setConfirmToggle(tag)}
                     className="inline-flex h-10 items-center justify-center gap-2"
                   >
-                    {tag.isActive ? <ToggleRight size={17} /> : <ToggleLeft size={17} />}
+                    <MorphIcon icon={tag.isActive ? ToggleRight : ToggleLeft} size={17} reducedMotion="user" />
                     {tag.isActive ? t("admin.tags.deactivate") : t("admin.tags.activate")}
                   </Button>
                 </div>

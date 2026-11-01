@@ -1,7 +1,8 @@
 import { useId, useState } from "react";
 import type { InputHTMLAttributes, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide";
+import { MorphIcon } from "morphicons/react";
 
 type PasswordFieldProps = Omit<
   InputHTMLAttributes<HTMLInputElement>,
@@ -44,7 +45,7 @@ export function PasswordField({
         onClick={() => setIsVisible((visible) => !visible)}
         className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 rounded-full"
       >
-        {isVisible ? <EyeOff size={18} /> : <Eye size={18} />}
+        <MorphIcon icon={isVisible ? EyeOff : Eye} size={18} reducedMotion="user" />
       </button>
     </div>
   );

@@ -1,5 +1,7 @@
 import { cn } from "@/lib/utils"
-import { Sun, Moon, LogOut } from "lucide-react"
+import { LogOut } from "lucide-react"
+import { Sun, Moon } from "lucide"
+import { MorphIcon } from "morphicons/react"
 import { useTheme } from "@/components/theme-provider"
 import { useDispatch, useSelector } from "react-redux"
 import { logout } from "@/stores/authSlice"
@@ -58,7 +60,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             className="rounded-xl text-muted-foreground hover:text-foreground"
             aria-label={t("nav.toggle_theme")}
           >
-            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+            <MorphIcon icon={theme === "dark" ? Sun : Moon} size={18} reducedMotion="user" />
           </Button>
 
           {/* User Info */}
