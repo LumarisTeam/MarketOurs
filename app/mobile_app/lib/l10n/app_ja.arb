@@ -1,5 +1,6 @@
 {
   "@@locale": "ja",
+  "toggleSidebar": "サイドバーを切り替え",
   "appTitle": "ライトハブ",
   "appSlogan": "キャンパスマーケット",
   "followSystem": "システムに従う",

@@ -1,6 +1,8 @@
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:luamris_ui/luamris_ui.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:mobile_app/main.dart';
 import 'package:mobile_app/models/api_response.dart';
@@ -283,7 +285,38 @@ void main() {
     expect(find.byKey(const ValueKey('home-feed-columns-2')), findsOneWidget);
     expect(find.text('桌面响应式帖子 A'), findsOneWidget);
     expect(find.text('桌面响应式帖子 B'), findsOneWidget);
-  });
+    expect(find.byType(McSidebar), findsOneWidget);
+    expect(find.byType(McToolBar), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('macos-titlebar-reservation')),
+      findsNothing,
+    );
+
+    final toggle = find.byKey(const ValueKey('main-shell-sidebar-toggle'));
+    await tester.tap(toggle);
+    await tester.pumpAndSettle();
+    expect(find.byType(McSidebar), findsNothing);
+    expect(tester.getTopLeft(toggle).dx, greaterThanOrEqualTo(80));
+
+    await tester.tap(toggle);
+    await tester.pumpAndSettle();
+    expect(find.byType(McSidebar), findsOneWidget);
+
+    final router = GoRouter.of(tester.element(find.byType(McSidebar)));
+    router.push('/profile/bindings');
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('macos-titlebar-reservation')),
+      findsOneWidget,
+    );
+    router.pop();
+    await tester.pumpAndSettle();
+    expect(find.byType(McSidebar), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('macos-titlebar-reservation')),
+      findsNothing,
+    );
+  }, variant: const TargetPlatformVariant({TargetPlatform.macOS}));
 
   testWidgets('submits home search keyword to feed notifier', (tester) async {
     final storage = _TestAuthStorage(

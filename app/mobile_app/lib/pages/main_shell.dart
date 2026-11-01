@@ -11,6 +11,7 @@ import 'package:go_router/go_router.dart';
 import '../providers/notification_provider.dart';
 import '../providers/post_feed_provider.dart';
 import '../ui/app_responsive.dart';
+import '../ui/macos_window.dart';
 
 class MainShell extends ConsumerStatefulWidget {
   const MainShell({super.key, required this.navigationShell});
@@ -25,6 +26,7 @@ class _MainShellState extends ConsumerState<MainShell>
     with WidgetsBindingObserver {
   static const _exitWindow = Duration(seconds: 2);
   Timer? _unreadRefreshTimer;
+  final _sidebarController = McSidebarController();
 
   DateTime? _lastExitAttemptAt;
 
@@ -41,6 +43,7 @@ class _MainShellState extends ConsumerState<MainShell>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _unreadRefreshTimer?.cancel();
+    _sidebarController.dispose();
     super.dispose();
   }
 
@@ -92,13 +95,47 @@ class _MainShellState extends ConsumerState<MainShell>
   @override
   Widget build(BuildContext context) {
     final isTablet = AppResponsive.isTablet(context);
+    final isDesktop = AppResponsive.isDesktop(context);
     final unreadCount = ref.watch(unreadNotificationCountProvider).value ?? 0;
+    final items = _navigationItems(context);
     final shouldInterceptExit =
         !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
     final scaffold = CupertinoPageScaffold(
       backgroundColor: context.mc.background,
-      child: isTablet
+      child: isDesktop
+          ? SafeArea(
+              top: !MacosWindow.isMacOS,
+              child: McSidebarShell(
+                controller: _sidebarController,
+                sidebar: McSidebar(
+                  items: [
+                    for (final entry in items.indexed)
+                      McSidebarDestination(
+                        icon: entry.$2.icon,
+                        selectedIcon: entry.$2.activeIcon,
+                        label: entry.$2.label,
+                        badge: entry.$1 == 2 && unreadCount > 0
+                            ? (unreadCount > 99 ? '99+' : '$unreadCount')
+                            : null,
+                      ),
+                  ],
+                  selectedIndex: widget.navigationShell.currentIndex,
+                  onItemSelected: (index) => _onTap(context, index),
+                  top: MacosWindow.isMacOS
+                      ? GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onPanStart: (_) => MacosWindow.startDragging(),
+                          onDoubleTap: MacosWindow.zoom,
+                          child: const SizedBox(height: 44),
+                        )
+                      : null,
+                ),
+                toolbar: _buildToolbar(context, items),
+                child: widget.navigationShell,
+              ),
+            )
+          : isTablet
           ? Row(
               children: [
                 _TabletSideNavigation(
@@ -163,6 +200,43 @@ class _MainShellState extends ConsumerState<MainShell>
         }
       },
       child: scaffold,
+    );
+  }
+
+  PreferredSizeWidget _buildToolbar(
+    BuildContext context,
+    List<_MainNavigationItem> items,
+  ) {
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(52),
+      child: ListenableBuilder(
+        listenable: _sidebarController,
+        builder: (context, _) {
+          final inset = MacosWindow.isMacOS && !_sidebarController.isVisible
+              ? 80.0
+              : 0.0;
+          return McToolBar(
+            automaticallyImplyLeading: false,
+            leadingWidth: 40 + inset,
+            leading: Padding(
+              padding: EdgeInsets.only(left: inset),
+              child: McToolBarIconButton(
+                key: const ValueKey('main-shell-sidebar-toggle'),
+                label: AppLocalizations.of(context).toggleSidebar,
+                icon: const Icon(CupertinoIcons.sidebar_left),
+                onPressed: _sidebarController.toggle,
+              ),
+            ),
+            title: Text(items[widget.navigationShell.currentIndex].label),
+            onBackgroundPanStart: MacosWindow.isMacOS
+                ? (_) => MacosWindow.startDragging()
+                : null,
+            onBackgroundDoubleTap: MacosWindow.isMacOS
+                ? MacosWindow.zoom
+                : null,
+          );
+        },
+      ),
     );
   }
 }

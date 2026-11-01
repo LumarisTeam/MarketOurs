@@ -1,5 +1,6 @@
 {
   "@@locale": "ko",
+  "toggleSidebar": "사이드바 전환",
   "appTitle": "라이트허브",
   "appSlogan": "캠퍼스 마켓",
   "followSystem": "시스템 따르기",

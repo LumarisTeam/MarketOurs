@@ -10,6 +10,9 @@ class AppLocalizationsKo extends AppLocalizations {
   AppLocalizationsKo([String locale = 'ko']) : super(locale);
 
   @override
+  String get toggleSidebar => '사이드바 전환';
+
+  @override
   String get appTitle => '라이트허브';
 
   @override

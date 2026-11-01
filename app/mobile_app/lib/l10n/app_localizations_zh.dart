@@ -10,6 +10,9 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
+  String get toggleSidebar => '切换侧边栏';
+
+  @override
   String get appTitle => '光汇';
 
   @override

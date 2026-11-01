@@ -10,6 +10,9 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get toggleSidebar => 'Toggle sidebar';
+
+  @override
   String get appTitle => 'LightHub';
 
   @override

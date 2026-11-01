@@ -10,6 +10,9 @@ class AppLocalizationsDe extends AppLocalizations {
   AppLocalizationsDe([String locale = 'de']) : super(locale);
 
   @override
+  String get toggleSidebar => 'Seitenleiste umschalten';
+
+  @override
   String get appTitle => 'LightHub';
 
   @override

@@ -1,5 +1,6 @@
 {
   "@@locale": "fr",
+  "toggleSidebar": "Afficher ou masquer la barre latérale",
   "appTitle": "LightHub",
   "appSlogan": "Marché du campus",
   "followSystem": "Suivre le système",

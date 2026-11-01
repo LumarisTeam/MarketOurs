@@ -6,6 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart'
 import 'package:feedback_sdk/feedback_sdk.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:luamris_ui/luamris_ui.dart';
+import 'package:go_router/go_router.dart';
 
 import 'l10n/app_localizations.dart';
 import 'providers/locale_provider.dart';
@@ -13,6 +14,8 @@ import 'providers/theme_provider.dart';
 import 'router/app_router.dart';
 import 'services/push_notification_service.dart';
 import 'services/api_service.dart';
+import 'ui/app_responsive.dart';
+import 'ui/macos_window.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -73,7 +76,9 @@ class MarketOursApp extends ConsumerWidget {
           child: MediaQuery(
             data: MediaQuery.of(context)
                 .copyWith(platformBrightness: brightness),
-            child: child!,
+            child: MacosWindow.isMacOS
+                ? _MacosWindowLayout(router: router, child: child!)
+                : child!,
           ),
         );
       },
@@ -91,6 +96,78 @@ class MarketOursApp extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _MacosWindowLayout extends StatefulWidget {
+  const _MacosWindowLayout({required this.router, required this.child});
+
+  final GoRouter router;
+  final Widget child;
+
+  @override
+  State<_MacosWindowLayout> createState() => _MacosWindowLayoutState();
+}
+
+class _MacosWindowLayoutState extends State<_MacosWindowLayout> {
+  @override
+  void initState() {
+    super.initState();
+    widget.router.routerDelegate.addListener(_onRouteChanged);
+  }
+
+  @override
+  void didUpdateWidget(covariant _MacosWindowLayout oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.router != widget.router) {
+      oldWidget.router.routerDelegate.removeListener(_onRouteChanged);
+      widget.router.routerDelegate.addListener(_onRouteChanged);
+    }
+  }
+
+  void _onRouteChanged() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    widget.router.routerDelegate.removeListener(_onRouteChanged);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final path = widget
+        .router
+        .routerDelegate
+        .currentConfiguration
+        .lastOrNull
+        ?.matchedLocation;
+    final isMainRoute = {
+      AppRoutePaths.home,
+      AppRoutePaths.teacherComments,
+      AppRoutePaths.notifications,
+      AppRoutePaths.profile,
+    }.contains(path);
+    if (isMainRoute && AppResponsive.isDesktop(context)) return widget.child;
+
+    return Column(
+      children: [
+        GestureDetector(
+          key: const ValueKey('macos-titlebar-reservation'),
+          behavior: HitTestBehavior.opaque,
+          onPanStart: (_) => MacosWindow.startDragging(),
+          onDoubleTap: MacosWindow.zoom,
+          child: ColoredBox(
+            color: context.mc.groupedBackground,
+            child: const SizedBox(height: 28, width: double.infinity),
+          ),
+        ),
+        Expanded(child: widget.child),
+      ],
     );
   }
 }

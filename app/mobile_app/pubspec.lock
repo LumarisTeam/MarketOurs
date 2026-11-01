@@ -906,11 +906,11 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "v0.5.0"
-      resolved-ref: "1c563f29ca4a60c30ed29c14b995dfff9a2373b1"
+      ref: "v0.5.1"
+      resolved-ref: ffe5cd48af5cf0c1ba73f235b3115c197b9a6931
       url: "https://github.com/LumarisTeam/luamris_ui.git"
     source: git
-    version: "0.5.0"
+    version: "0.5.1"
   matcher:
     dependency: transitive
     description:

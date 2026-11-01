@@ -108,6 +108,12 @@ abstract class AppLocalizations {
     Locale('zh'),
   ];
 
+  /// No description provided for @toggleSidebar.
+  ///
+  /// In zh, this message translates to:
+  /// **'切换侧边栏'**
+  String get toggleSidebar;
+
   /// App name / title
   ///
   /// In zh, this message translates to:

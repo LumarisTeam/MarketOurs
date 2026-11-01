@@ -10,6 +10,9 @@ class AppLocalizationsJa extends AppLocalizations {
   AppLocalizationsJa([String locale = 'ja']) : super(locale);
 
   @override
+  String get toggleSidebar => 'サイドバーを切り替え';
+
+  @override
   String get appTitle => 'ライトハブ';
 
   @override

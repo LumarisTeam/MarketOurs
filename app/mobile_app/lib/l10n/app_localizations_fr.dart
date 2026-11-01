@@ -10,6 +10,9 @@ class AppLocalizationsFr extends AppLocalizations {
   AppLocalizationsFr([String locale = 'fr']) : super(locale);
 
   @override
+  String get toggleSidebar => 'Afficher ou masquer la barre latérale';
+
+  @override
   String get appTitle => 'LightHub';
 
   @override

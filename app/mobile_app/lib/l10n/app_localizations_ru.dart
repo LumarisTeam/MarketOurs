@@ -10,6 +10,9 @@ class AppLocalizationsRu extends AppLocalizations {
   AppLocalizationsRu([String locale = 'ru']) : super(locale);
 
   @override
+  String get toggleSidebar => 'Показать или скрыть боковую панель';
+
+  @override
   String get appTitle => 'ЛайтХаб';
 
   @override
