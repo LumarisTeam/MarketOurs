@@ -145,116 +145,78 @@ class _SliderCaptchaState extends State<SliderCaptcha> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: widget.onCancel,
-      child: Container(
-        color: CupertinoColors.black.withValues(alpha: 0.4),
-        child: Center(
-          child: GestureDetector(
-            onTap: () {},
-            child: Container(
-              width: 340,
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: context.mc.card,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    AppLocalizations.of(context).captchaComplete,
-                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    AppLocalizations.of(context).captchaDragSlider,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: context.mc.secondaryLabel,
-                    ),
-                  ),
-                  if (_error != null) ...[
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: context.mc.destructive.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        _error!,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: context.mc.destructive,
-                        ),
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 16),
-                  if (_loading)
-                    const SizedBox(
-                      height: 80,
-                      child: Center(child: CupertinoActivityIndicator()),
-                    )
-                  else if (_challenge != null &&
-                      _bgImage != null &&
-                      _puzzleImage != null)
-                    _CaptchaCanvas(
-                      challenge: _challenge!,
-                      bgImage: _bgImage!,
-                      puzzleImage: _puzzleImage!,
-                      offset: _sliderValue,
-                    ),
-                  const SizedBox(height: 16),
-                  if (!_loading) _buildSlider(),
-                  const SizedBox(height: 12),
-                  if (!_loading)
-                    Row(
-                      children: [
-                        Expanded(
-                          child: CupertinoButton(
-                            padding: EdgeInsets.zero,
-                            onPressed: _verifying ? null : _fetchChallenge,
-                            child: Text(
-                              AppLocalizations.of(context).captchaRefreshLabel,
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: _verifying
-                                    ? context.mc.secondaryLabel.withValues(
-                                        alpha: 0.4,
-                                      )
-                                    : context.mc.secondaryLabel,
-                              ),
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: CupertinoButton(
-                            padding: EdgeInsets.zero,
-                            onPressed: widget.onCancel,
-                            child: Text(
-                              AppLocalizations.of(context).cancel,
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: context.mc.secondaryLabel,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                ],
+    // Designed to be rendered as the content of `showMcDialog`, which supplies
+    // the glass surface, title and message.
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (_error != null) ...[
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: context.mc.destructive.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              _error!,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: context.mc.destructive,
               ),
             ),
           ),
-        ),
-      ),
+          const SizedBox(height: 12),
+        ],
+        if (_loading)
+          const SizedBox(
+            height: 80,
+            child: Center(child: CupertinoActivityIndicator()),
+          )
+        else if (_challenge != null && _bgImage != null && _puzzleImage != null)
+          _CaptchaCanvas(
+            challenge: _challenge!,
+            bgImage: _bgImage!,
+            puzzleImage: _puzzleImage!,
+            offset: _sliderValue,
+          ),
+        const SizedBox(height: 16),
+        if (!_loading) _buildSlider(),
+        const SizedBox(height: 12),
+        if (!_loading)
+          Row(
+            children: [
+              Expanded(
+                child: CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: _verifying ? null : _fetchChallenge,
+                  child: Text(
+                    AppLocalizations.of(context).captchaRefreshLabel,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: _verifying
+                          ? context.mc.secondaryLabel.withValues(alpha: 0.4)
+                          : context.mc.secondaryLabel,
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: widget.onCancel,
+                  child: Text(
+                    AppLocalizations.of(context).cancel,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: context.mc.secondaryLabel,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+      ],
     );
   }
 

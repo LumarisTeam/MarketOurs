@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
@@ -164,22 +163,19 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Future<String?> _showCaptcha() {
-    final completer = Completer<String?>();
-    showCupertinoDialog(
+    final l10n = AppLocalizations.of(context);
+    return showMcDialog<String>(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => SliderCaptcha(
-        onVerify: (token) {
-          Navigator.of(ctx).pop();
-          completer.complete(token);
-        },
-        onCancel: () {
-          Navigator.of(ctx).pop();
-          completer.complete();
-        },
+      title: l10n.captchaComplete,
+      message: l10n.captchaDragSlider,
+      content: Builder(
+        builder: (dialogContext) => SliderCaptcha(
+          onVerify: (token) => Navigator.of(dialogContext).pop(token),
+          onCancel: () => Navigator.of(dialogContext).pop(),
+        ),
       ),
     );
-    return completer.future;
   }
 
   Future<void> _submit() async {

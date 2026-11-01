@@ -122,26 +122,13 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen>
   }
 
   Future<void> _showManageDialog() async {
-    final shouldOpen = await showCupertinoDialog<bool>(
+    final l10n = AppLocalizations.of(context);
+    final shouldOpen = await showMcConfirmDialog(
       context: context,
-      builder: (dialogContext) {
-        final l10n = AppLocalizations.of(dialogContext);
-        return CupertinoAlertDialog(
-          title: Text(l10n.permissionManageDialogTitle),
-          content: Text(l10n.permissionManageDialogMessage),
-          actions: [
-            CupertinoDialogAction(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: Text(l10n.cancel),
-            ),
-            CupertinoDialogAction(
-              isDefaultAction: true,
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: Text(l10n.permissionOpenSettings),
-            ),
-          ],
-        );
-      },
+      title: l10n.permissionManageDialogTitle,
+      message: l10n.permissionManageDialogMessage,
+      cancelText: l10n.cancel,
+      confirmText: l10n.permissionOpenSettings,
     );
 
     if (shouldOpen == true) {

@@ -243,23 +243,13 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   Future<void> _logout(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showCupertinoDialog<bool>(
+    final confirmed = await showMcConfirmDialog(
       context: context,
-      builder: (context) => CupertinoAlertDialog(
-        title: Text(AppLocalizations.of(context).profileConfirmLogout),
-        content: Text(AppLocalizations.of(context).profileConfirmLogoutDesc),
-        actions: [
-          CupertinoDialogAction(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(AppLocalizations.of(context).cancel),
-          ),
-          CupertinoDialogAction(
-            isDestructiveAction: true,
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(AppLocalizations.of(context).authLogout),
-          ),
-        ],
-      ),
+      title: AppLocalizations.of(context).profileConfirmLogout,
+      message: AppLocalizations.of(context).profileConfirmLogoutDesc,
+      cancelText: AppLocalizations.of(context).cancel,
+      confirmText: AppLocalizations.of(context).authLogout,
+      destructive: true,
     );
 
     if (confirmed != true) return;

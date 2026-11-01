@@ -149,11 +149,16 @@ class _BindingSection extends StatelessWidget {
     );
     if (confirmed != true || !context.mounted) return;
 
-    final success = await showCupertinoDialog<bool>(
+    final success = await showMcDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (_) =>
-          _UnbindThirdPartyDialog(provider: provider.name, user: currentUser),
+      title: AppLocalizations.of(context).bindingUnbindTitle(provider.name),
+      // Actions live inside the content so their labels and enabled state can
+      // follow the widget's submitting state.
+      content: _UnbindThirdPartyDialog(
+        provider: provider.name,
+        user: currentUser,
+      ),
     );
 
     if (success == true && context.mounted) {
@@ -394,114 +399,114 @@ class _UnbindThirdPartyDialogState
   Widget build(BuildContext context) {
     final channel = _selectedChannel;
 
-    return CupertinoAlertDialog(
-      title: Text(
-        AppLocalizations.of(context).bindingUnbindTitle(widget.provider),
-      ),
-      content: Padding(
-        padding: const EdgeInsets.only(top: 12),
-        child: Column(
-          children: [
-            Text(
-              AppLocalizations.of(context).bindingUnbindDesc,
-              style: context.mc.textMuted,
-            ),
-            const SizedBox(height: 14),
-            if (_channels.length > 1)
-              CupertinoSlidingSegmentedControl<String>(
-                groupValue: channel?.id,
-                children: {
-                  for (final item in _channels)
-                    item.id: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 6),
-                      child: Text(item.label),
-                    ),
-                },
-                onValueChanged: (value) {
-                  if (_isSubmitting || _isSending || value == null) return;
-                  final next = _channels.firstWhere(
-                    (item) => item.id == value,
-                    orElse: () => _channels.first,
-                  );
-                  setState(() {
-                    _selectedChannel = next;
-                    _errorMessage = null;
-                  });
-                },
-              ),
-            if (channel != null) ...[
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Icon(channel.icon, size: 16, color: context.mc.primary),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      channel.destination,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: context.mc.textMuted,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-            const SizedBox(height: 12),
-            McField.text(
-              controller: _codeController,
-              placeholder: AppLocalizations.of(context).authCodePlaceholder,
-              keyboardType: TextInputType.number,
-              textInputAction: TextInputAction.done,
-              onFieldSubmitted: (_) => _submit(),
-              suffix: CupertinoButton(
-                padding: EdgeInsets.zero,
-                minimumSize: Size.zero,
-                onPressed: _isSending || _countdown > 0 || channel == null
-                    ? null
-                    : _sendCode,
-                child: Text(
-                  _countdown > 0
-                      ? '${_countdown}s'
-                      : _isSending
-                      ? AppLocalizations.of(context).bindingSending
-                      : AppLocalizations.of(context).bindingSendCode,
-                  style: TextStyle(
-                    color: context.mc.primary,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ),
-            if (_errorMessage != null) ...[
-              const SizedBox(height: 10),
-              Text(
-                _errorMessage!,
-                style: TextStyle(
-                  color: context.mc.destructive,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ],
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          AppLocalizations.of(context).bindingUnbindDesc,
+          style: context.mc.textMuted,
+          textAlign: TextAlign.center,
         ),
-      ),
-      actions: [
-        CupertinoDialogAction(
-          onPressed: _isSubmitting
-              ? null
-              : () => Navigator.of(context).pop(false),
-          child: Text(AppLocalizations.of(context).cancel),
-        ),
-        CupertinoDialogAction(
-          isDestructiveAction: true,
-          onPressed: _isSubmitting ? null : _submit,
-          child: Text(
-            _isSubmitting
-                ? AppLocalizations.of(context).bindingUnbinding
-                : AppLocalizations.of(context).bindingConfirmUnbind,
+        const SizedBox(height: 14),
+        if (_channels.length > 1)
+          CupertinoSlidingSegmentedControl<String>(
+            groupValue: channel?.id,
+            children: {
+              for (final item in _channels)
+                item.id: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: Text(item.label),
+                ),
+            },
+            onValueChanged: (value) {
+              if (_isSubmitting || _isSending || value == null) return;
+              final next = _channels.firstWhere(
+                (item) => item.id == value,
+                orElse: () => _channels.first,
+              );
+              setState(() {
+                _selectedChannel = next;
+                _errorMessage = null;
+              });
+            },
           ),
+        if (channel != null) ...[
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Icon(channel.icon, size: 16, color: context.mc.primary),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  channel.destination,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.mc.textMuted,
+                ),
+              ),
+            ],
+          ),
+        ],
+        const SizedBox(height: 12),
+        McField.text(
+          controller: _codeController,
+          placeholder: AppLocalizations.of(context).authCodePlaceholder,
+          keyboardType: TextInputType.number,
+          textInputAction: TextInputAction.done,
+          onFieldSubmitted: (_) => _submit(),
+          suffix: CupertinoButton(
+            padding: EdgeInsets.zero,
+            minimumSize: Size.zero,
+            onPressed: _isSending || _countdown > 0 || channel == null
+                ? null
+                : _sendCode,
+            child: Text(
+              _countdown > 0
+                  ? '${_countdown}s'
+                  : _isSending
+                  ? AppLocalizations.of(context).bindingSending
+                  : AppLocalizations.of(context).bindingSendCode,
+              style: TextStyle(
+                color: context.mc.primary,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+        if (_errorMessage != null) ...[
+          const SizedBox(height: 10),
+          Text(
+            _errorMessage!,
+            style: TextStyle(
+              color: context.mc.destructive,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+        const SizedBox(height: 18),
+        Row(
+          children: [
+            Expanded(
+              child: _UnbindDialogAction(
+                label: AppLocalizations.of(context).cancel,
+                onPressed: _isSubmitting
+                    ? null
+                    : () => Navigator.of(context).pop(false),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _UnbindDialogAction(
+                label: _isSubmitting
+                    ? AppLocalizations.of(context).bindingUnbinding
+                    : AppLocalizations.of(context).bindingConfirmUnbind,
+                isDestructive: true,
+                onPressed: _isSubmitting ? null : _submit,
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -509,4 +514,40 @@ class _UnbindThirdPartyDialogState
 
   static bool _hasText(String? value) =>
       value != null && value.trim().isNotEmpty;
+}
+
+/// Mirrors lu_ui's dialog action button so the unbind dialog content can drive
+/// its labels and enabled state from the submitting state.
+class _UnbindDialogAction extends StatelessWidget {
+  const _UnbindDialogAction({
+    required this.label,
+    required this.onPressed,
+    this.isDestructive = false,
+  });
+
+  final String label;
+  final VoidCallback? onPressed;
+  final bool isDestructive;
+
+  @override
+  Widget build(BuildContext context) {
+    final m = context.mc;
+    return CupertinoButton(
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+      borderRadius: BorderRadius.circular(McRadii.lg),
+      color: isDestructive ? m.dangerSoft : m.secondary,
+      onPressed: onPressed,
+      child: Text(
+        label,
+        style: TextStyle(
+          color: onPressed == null
+              ? m.mutedForeground
+              : isDestructive
+              ? m.destructive
+              : m.foreground,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
 }
