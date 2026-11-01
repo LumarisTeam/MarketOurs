@@ -164,6 +164,7 @@
   "profileTermsDesc": "查看平台使用条款",
   "profilePrivacy": "隐私条款",
   "profilePrivacyDesc": "了解我们如何保护你的信息",
+  "legalOpenInBrowser": "\u5728\u6d4f\u89c8\u5668\u4e2d\u6253\u5f00",
   "profileDisplaySettings": "显示设置",
   "profileManageSocialDesc": "管理 Github、Google 等平台关联",
   "profileNavTitle": "我的",

@@ -340,6 +340,7 @@
   "profileTermsDesc": "View platform usage terms",
   "profilePrivacy": "Privacy Policy",
   "profilePrivacyDesc": "Learn how we protect your information",
+  "legalOpenInBrowser": "Open in Browser",
   "profileDisplaySettings": "Display Settings",
   "profileManageSocialDesc": "Manage Github, Google and other platform connections",
   "profileNavTitle": "Me",

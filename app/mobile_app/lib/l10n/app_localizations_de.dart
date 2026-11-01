@@ -475,6 +475,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get profilePrivacyDesc => 'So schützen wir Ihre Daten';
 
   @override
+  String get legalOpenInBrowser => 'Im Browser öffnen';
+
+  @override
   String get profileDisplaySettings => 'Anzeige';
 
   @override

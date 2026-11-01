@@ -473,6 +473,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get profilePrivacyDesc => '정보 보호 방법 알아보기';
 
   @override
+  String get legalOpenInBrowser => '브라우저에서 열기';
+
+  @override
   String get profileDisplaySettings => '디스플레이 설정';
 
   @override

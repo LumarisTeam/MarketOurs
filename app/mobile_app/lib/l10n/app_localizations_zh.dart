@@ -462,6 +462,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get profilePrivacyDesc => '了解我们如何保护你的信息';
 
   @override
+  String get legalOpenInBrowser => '在浏览器中打开';
+
+  @override
   String get profileDisplaySettings => '显示设置';
 
   @override

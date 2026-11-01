@@ -473,6 +473,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get profilePrivacyDesc => '情報の取り扱いについて';
 
   @override
+  String get legalOpenInBrowser => 'ブラウザで開く';
+
+  @override
   String get profileDisplaySettings => '表示設定';
 
   @override

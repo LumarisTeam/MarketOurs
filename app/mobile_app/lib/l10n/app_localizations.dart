@@ -1008,6 +1008,12 @@ abstract class AppLocalizations {
   /// **'了解我们如何保护你的信息'**
   String get profilePrivacyDesc;
 
+  /// No description provided for @legalOpenInBrowser.
+  ///
+  /// In zh, this message translates to:
+  /// **'在浏览器中打开'**
+  String get legalOpenInBrowser;
+
   /// No description provided for @profileDisplaySettings.
   ///
   /// In zh, this message translates to:

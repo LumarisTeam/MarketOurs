@@ -474,6 +474,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get profilePrivacyDesc => 'Как мы защищаем ваши данные';
 
   @override
+  String get legalOpenInBrowser => 'Открыть в браузере';
+
+  @override
   String get profileDisplaySettings => 'Настройки отображения';
 
   @override
