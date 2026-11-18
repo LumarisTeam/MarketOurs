@@ -18,7 +18,9 @@ import '../../ui/app_responsive.dart';
 import '../../utils/date_formatters.dart';
 
 class TeacherCommentsScreen extends ConsumerStatefulWidget {
-  const TeacherCommentsScreen({super.key});
+  const TeacherCommentsScreen({super.key, this.courseName});
+
+  final String? courseName;
 
   @override
   ConsumerState<TeacherCommentsScreen> createState() =>
@@ -29,7 +31,14 @@ class _TeacherCommentsScreenState extends ConsumerState<TeacherCommentsScreen> {
   static const _commentMaxLength = 2000;
   static const _pageSize = 20;
 
-  final _service = TeacherCommentService();
+  late final TeacherCommentService _service;
+  String? get _courseName => widget.courseName?.trim();
+  bool get _isDetail => widget.courseName != null;
+  List<CourseCommentSummary> _courses = const [];
+  CourseCommentSummary? _summary;
+  String? _loadError;
+  int _requestId = 0;
+  bool _failedAppend = false;
   late final ScrollController _scrollController;
   final _searchController = TextEditingController();
   final _teacherController = TextEditingController();
@@ -46,6 +55,7 @@ class _TeacherCommentsScreenState extends ConsumerState<TeacherCommentsScreen> {
 
   @override
   void dispose() {
+    _requestId++;
     _scrollController
       ..removeListener(_handleScroll)
       ..dispose();
@@ -59,6 +69,8 @@ class _TeacherCommentsScreenState extends ConsumerState<TeacherCommentsScreen> {
   @override
   void initState() {
     super.initState();
+    _service = ref.read(teacherCommentServiceProvider);
+    _courseController.text = _courseName ?? '';
     _scrollController = ScrollController()..addListener(_handleScroll);
     _loadComments('');
   }
@@ -75,55 +87,99 @@ class _TeacherCommentsScreenState extends ConsumerState<TeacherCommentsScreen> {
   }
 
   Future<void> _loadMore() async {
-    if (!_hasMore || _isLoading || _isLoadingMore) {
+    if (!_hasMore || _isLoading || _isLoadingMore || _loadError != null) {
       return;
     }
     await _loadComments(_activeKeyword, append: true);
   }
 
   Future<void> _loadComments(String keyword, {bool append = false}) async {
-    if (_isLoading || _isLoadingMore) {
-      return;
-    }
-
+    if (append && (_isLoading || _isLoadingMore)) return;
+    final requestId = ++_requestId;
     final nextKeyword = keyword.trim();
     final nextPage = append ? _page + 1 : 1;
     setState(() {
-      if (append) {
-        _isLoadingMore = true;
-      } else {
-        _isLoading = true;
+      if (!append && _activeKeyword != nextKeyword) {
+        _courses = const [];
+        _page = 1;
+        _hasMore = false;
       }
+      _activeKeyword = nextKeyword;
+      _loadError = null;
+      _isLoading = !append;
+      _isLoadingMore = append;
     });
     try {
-      final commentsResponse = await _service.searchApprovedComments(
-        keyword: nextKeyword.isEmpty ? null : nextKeyword,
-        page: nextPage,
-        pageSize: _pageSize,
-      );
-      if (!mounted) return;
-      final pageData = commentsResponse.data;
-      final nextItems = pageData?.items ?? const <TeacherCommentItem>[];
-      setState(() {
-        _activeKeyword = nextKeyword;
-        _page = nextPage;
-        _hasMore = pageData?.hasNextPage ?? false;
-        _comments = append ? [..._comments, ...nextItems] : nextItems;
-      });
+      if (_isDetail) {
+        if (_courseName == null || _courseName!.isEmpty) {
+          throw StateError(
+            AppLocalizations.of(context).teacherCommentsCourseRequired,
+          );
+        }
+        final reviewsFuture = _service.getCourseComments(
+          _courseName!,
+          page: nextPage,
+          pageSize: _pageSize,
+        );
+        final summaryFuture = append
+            ? Future<CourseCommentSummary?>.value(null)
+            : _service
+                  .getCourseSummary(_courseName!)
+                  .then((response) => response.data);
+        final (reviewsResponse, summary) = await (
+          reviewsFuture,
+          summaryFuture,
+        ).wait;
+        if (!mounted || requestId != _requestId) return;
+        final data = reviewsResponse.data;
+        setState(() {
+          _comments = append
+              ? [..._comments, ...?data?.items]
+              : data?.items ?? [];
+          if (!append) _summary = summary;
+          _hasMore = data?.hasNextPage ?? false;
+          _page = nextPage;
+        });
+      } else {
+        final response = await _service.getCourses(
+          keyword: nextKeyword,
+          page: nextPage,
+          pageSize: _pageSize,
+        );
+        if (!mounted || requestId != _requestId) return;
+        final data = response.data;
+        setState(() {
+          _courses = append
+              ? [..._courses, ...?data?.items]
+              : data?.items ?? [];
+          _hasMore = data?.hasNextPage ?? false;
+          _page = nextPage;
+        });
+      }
     } catch (error) {
-      if (!mounted) return;
-      await McFeedback.showError(
-        context,
-        message: extractErrorFromException(error),
-      );
+      if (!mounted || requestId != _requestId) return;
+      setState(() {
+        _loadError = extractErrorFromException(error);
+        _failedAppend = append;
+      });
     } finally {
-      if (mounted) {
+      if (mounted && requestId == _requestId) {
         setState(() {
           _isLoading = false;
           _isLoadingMore = false;
         });
       }
     }
+  }
+
+  Future<void> _openCourse(CourseCommentSummary course) async {
+    await context.push(
+      Uri(
+        path: AppRoutePaths.courseComments,
+        queryParameters: {'courseName': course.courseName},
+      ).toString(),
+    );
+    if (mounted) await _loadComments(_activeKeyword);
   }
 
   Future<bool> _submit() async {
@@ -175,9 +231,8 @@ class _TeacherCommentsScreenState extends ConsumerState<TeacherCommentsScreen> {
         ),
       );
       if (!mounted) return false;
-      _searchController.text = teacherName;
-      _teacherController.text = teacherName;
-      _courseController.clear();
+      _teacherController.clear();
+      _courseController.text = _courseName ?? '';
       _commentController.clear();
       setState(() => _star = 5);
       await McFeedback.showSuccess(
@@ -275,7 +330,20 @@ class _TeacherCommentsScreenState extends ConsumerState<TeacherCommentsScreen> {
         ),
         slivers: [
           CupertinoSliverNavigationBar(
-            largeTitle: Text(l10n.teacherCommentsTitle),
+            largeTitle: Text(
+              _isDetail ? _courseName ?? '' : l10n.teacherCommentsTitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            leading: _isDetail
+                ? CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () => context.canPop()
+                        ? context.pop()
+                        : context.go(AppRoutePaths.teacherComments),
+                    child: const Icon(CupertinoIcons.back),
+                  )
+                : null,
             backgroundColor: context.mc.background.withValues(alpha: 0.94),
             border: null,
             trailing: CupertinoButton(
@@ -291,55 +359,226 @@ class _TeacherCommentsScreenState extends ConsumerState<TeacherCommentsScreen> {
           CupertinoSliverRefreshControl(
             onRefresh: () => _loadComments(_activeKeyword),
           ),
-          SliverToBoxAdapter(
-            child: AppResponsiveCenter(
-              padding: AppResponsive.sliverPagePadding(
-                context,
-                top: 12,
-                bottom: 8,
-              ),
-              child: CupertinoSearchTextField(
-                key: const ValueKey('teacher-comments-search-field'),
-                controller: _searchController,
-                placeholder: l10n.teacherCommentsSearchPlaceholder,
-                borderRadius: BorderRadius.circular(McRadii.md),
-                backgroundColor: context.mc.secondary,
-                onSubmitted: (value) => _loadComments(value),
-                onChanged: (value) {
-                  if (value.trim().isEmpty && _activeKeyword.isNotEmpty) {
-                    _loadComments('');
-                  }
-                },
+          if (!_isDetail)
+            SliverToBoxAdapter(
+              child: AppResponsiveCenter(
+                padding: AppResponsive.sliverPagePadding(
+                  context,
+                  top: 12,
+                  bottom: 8,
+                ),
+                child: CupertinoSearchTextField(
+                  key: const ValueKey('teacher-comments-search-field'),
+                  controller: _searchController,
+                  placeholder: l10n.teacherCommentsSearchPlaceholder,
+                  borderRadius: BorderRadius.circular(McRadii.md),
+                  backgroundColor: context.mc.secondary,
+                  onSubmitted: (value) => _loadComments(value),
+                  onChanged: (value) {
+                    if (value.trim().isEmpty && _activeKeyword.isNotEmpty) {
+                      _loadComments('');
+                    }
+                  },
+                ),
               ),
             ),
-          ),
           if (_isLoading)
             const SliverFillRemaining(
               hasScrollBody: false,
               child: Center(child: CupertinoActivityIndicator(radius: 14)),
             )
-          else if (_comments.isEmpty)
-            AppResponsiveSliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-              child: McEmpty.placeholder(
-                icon: _activeKeyword.isEmpty
-                    ? CupertinoIcons.book
-                    : CupertinoIcons.search,
-                title: _activeKeyword.isEmpty
-                    ? l10n.teacherCommentsEmptyList
-                    : l10n.teacherCommentsNoApprovedComments,
-                description: l10n.teacherCommentsSearchFirst,
+          else ...[
+            if (_isDetail && _summary != null && _summary!.totalCount > 0)
+              SliverToBoxAdapter(
+                child: AppResponsiveCenter(
+                  padding: const EdgeInsets.all(16),
+                  child: CourseRatingSummary(summary: _summary!),
+                ),
               ),
-            )
-          else
-            AppResponsiveSliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-              child: _CommentListSection(
-                comments: _comments,
-                isLoadingMore: _isLoadingMore,
-                currentUserId: currentUserId,
-                onEdit: _editComment,
-                onDelete: _deleteComment,
+            if ((_isDetail ? _comments.isEmpty : _courses.isEmpty) &&
+                _loadError == null)
+              AppResponsiveSliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                child: McEmpty.placeholder(
+                  icon: CupertinoIcons.book,
+                  title: _isDetail
+                      ? l10n.teacherCommentsNoApprovedComments
+                      : l10n.courseCommentsEmpty,
+                  description: _isDetail
+                      ? l10n.courseCommentsAllTeachers
+                      : l10n.teacherCommentsSearchFirst,
+                ),
+              ),
+            if (_isDetail)
+              AppResponsiveSliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                child: _CommentListSection(
+                  comments: _comments,
+                  isLoadingMore: _isLoadingMore,
+                  currentUserId: currentUserId,
+                  onEdit: _editComment,
+                  onDelete: _deleteComment,
+                ),
+              )
+            else
+              AppResponsiveSliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                child: Column(
+                  children: [
+                    for (final course in _courses)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: CourseSummaryCard(
+                          course: course,
+                          onTap: () => _openCourse(course),
+                        ),
+                      ),
+                    if (_isLoadingMore) const CupertinoActivityIndicator(),
+                  ],
+                ),
+              ),
+            if (_loadError != null)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      Text(_loadError!, textAlign: TextAlign.center),
+                      CupertinoButton(
+                        onPressed: () => _loadComments(
+                          _activeKeyword,
+                          append: _failedAppend,
+                        ),
+                        child: Text(l10n.retry),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            if (_hasMore && !_isLoadingMore && _loadError == null)
+              SliverToBoxAdapter(
+                child: CupertinoButton(
+                  onPressed: _loadMore,
+                  child: Text(l10n.postLoadMore),
+                ),
+              ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class CourseSummaryCard extends StatelessWidget {
+  const CourseSummaryCard({
+    super.key,
+    required this.course,
+    required this.onTap,
+  });
+  final CourseCommentSummary course;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return McCard.elevated(
+      child: CupertinoButton(
+        padding: EdgeInsets.zero,
+        onPressed: onTap,
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(course.courseName, style: context.mc.textSection),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${course.averageStar.toStringAsFixed(1)} / 5 · ${l10n.courseCommentsCount(course.totalCount)}',
+                    style: context.mc.textBody,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Icon(CupertinoIcons.chevron_right, size: 18),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class CourseRatingSummary extends StatelessWidget {
+  const CourseRatingSummary({super.key, required this.summary});
+  final CourseCommentSummary summary;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return McCard.elevated(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '${l10n.teacherCommentsAverageStar}: ${summary.averageStar.toStringAsFixed(1)} / 5',
+            style: context.mc.textSection,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            l10n.courseCommentsCount(summary.totalCount),
+            style: context.mc.textBody,
+          ),
+          const SizedBox(height: 6),
+          Text(l10n.courseCommentsAllTeachers, style: context.mc.textMuted),
+          const SizedBox(height: 16),
+          Text(l10n.courseCommentsDistribution, style: context.mc.textLabel),
+          for (final item in summary.starDistribution.reversed)
+            Semantics(
+              label:
+                  '${item.star} / 5: ${l10n.courseCommentsCount(item.count)}',
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 42,
+                      child: Text(
+                        '${item.star} ★',
+                        style: context.mc.textLabel,
+                      ),
+                    ),
+                    Expanded(
+                      child: Container(
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: context.mc.secondary,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: FractionallySizedBox(
+                          alignment: Alignment.centerLeft,
+                          widthFactor: summary.totalCount == 0
+                              ? 0
+                              : (item.count / summary.totalCount).clamp(0, 1),
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: context.mc.primary,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 42,
+                      child: Text(
+                        '${item.count}',
+                        textAlign: TextAlign.right,
+                        style: context.mc.textLabel,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
         ],
@@ -465,10 +704,7 @@ class _SubmitDialogContent extends StatelessWidget {
         children: [
           Text(l10n.teacherCommentsCreateTitle, style: context.mc.textSection),
           const SizedBox(height: 4),
-          Text(
-            l10n.teacherCommentsCreateSubtitle,
-            style: context.mc.textMuted,
-          ),
+          Text(l10n.teacherCommentsCreateSubtitle, style: context.mc.textMuted),
           const SizedBox(height: 14),
           if (!isAuthenticated)
             CupertinoButton(

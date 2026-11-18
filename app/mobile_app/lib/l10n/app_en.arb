@@ -37,7 +37,7 @@
   "tabNotifications": "Notifications",
   "tabProfile": "Me",
   "tabTeacherComments": "Courses",
-  "teacherCommentsTitle": "Teacher Course Reviews",
+  "teacherCommentsTitle": "Course reviews",
   "teacherCommentsSubtitle": "Search teachers or courses to view reviews, or submit your own course experience.",
   "teacherCommentsSearchPlaceholder": "Search teacher or course",
   "teacherCommentsSearch": "Search",
@@ -579,5 +579,16 @@
   "permissionUnsupportedTitle": "Permission management isn''t available on this platform",
   "permissionUnsupportedDesc": "Manage app permissions on an iOS or Android device.",
   "permissionLoadFailed": "Could not load permission status",
-  "permissionLoadFailedDesc": "Please try again later"
+  "permissionLoadFailedDesc": "Please try again later",
+  "courseCommentsCount": "{count} reviews",
+  "courseCommentsDistribution": "Rating distribution",
+  "courseCommentsAllTeachers": "Includes approved reviews for all teachers of this course",
+  "courseCommentsEmpty": "No courses with approved reviews found.",
+  "@courseCommentsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

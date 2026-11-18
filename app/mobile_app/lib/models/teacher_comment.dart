@@ -109,3 +109,36 @@ class TeacherCommentSummary {
       _$TeacherCommentSummaryFromJson(json);
   Map<String, dynamic> toJson() => _$TeacherCommentSummaryToJson(this);
 }
+
+@JsonSerializable()
+class CourseCommentSummary {
+  final String courseName;
+  final int totalCount;
+  final double averageStar;
+  final DateTime? latestCommentOn;
+  final List<CourseStarCount> starDistribution;
+
+  const CourseCommentSummary({
+    required this.courseName,
+    required this.totalCount,
+    required this.averageStar,
+    this.latestCommentOn,
+    required this.starDistribution,
+  });
+
+  factory CourseCommentSummary.fromJson(Map<String, dynamic> json) =>
+      _$CourseCommentSummaryFromJson(json);
+  Map<String, dynamic> toJson() => _$CourseCommentSummaryToJson(this);
+}
+
+@JsonSerializable()
+class CourseStarCount {
+  final int star;
+  final int count;
+
+  const CourseStarCount({required this.star, required this.count});
+
+  factory CourseStarCount.fromJson(Map<String, dynamic> json) =>
+      _$CourseStarCountFromJson(json);
+  Map<String, dynamic> toJson() => _$CourseStarCountToJson(this);
+}

@@ -1,5 +1,6 @@
 using MarketOurs.Data;
 using MarketOurs.Data.DataModels;
+using MarketOurs.Data.DTOs;
 using Microsoft.EntityFrameworkCore;
 using ParadeDB.EntityFrameworkCore.Extensions;
 
@@ -13,6 +14,10 @@ public interface ITeacherCommentRepo
 
     Task<(List<TeacherCommentModel> Items, int Total)> SearchApprovedAsync(
         string? keyword, int page, int pageSize);
+
+    Task<(List<CourseCommentSummary> Items, int Total)> QueryCoursesAsync(string? keyword, int page, int pageSize);
+    Task<CourseCommentSummary> GetCourseSummaryAsync(string courseName);
+    Task<(List<TeacherCommentModel> Items, int Total)> GetCourseCommentsAsync(string courseName, int page, int pageSize);
 
     Task<List<TeacherCommentModel>> GetByUserIdAsync(string userId);
 
@@ -128,6 +133,108 @@ public class TeacherCommentRepo(IDbContextFactory<MarketContext> factory) : ITea
             .ToListAsync();
 
         return (items, total);
+    }
+
+    public async Task<(List<CourseCommentSummary> Items, int Total)> QueryCoursesAsync(
+        string? keyword, int page, int pageSize)
+    {
+        await using var context = await factory.CreateDbContextAsync();
+        if (context.Database.IsNpgsql() && !string.IsNullOrWhiteSpace(keyword))
+        {
+            try
+            {
+                return await QueryCoursesCoreAsync(context, keyword, page, pageSize, true);
+            }
+            catch (InvalidOperationException)
+            {
+                // MatchAny also requires the ParadeDB EF query translator.
+            }
+            catch (Npgsql.PostgresException ex) when (ex.SqlState is "42883" or "42704" or "0A000" or "XX000")
+            {
+                // A plain PostgreSQL installation may not have the ParadeDB extension/index.
+            }
+        }
+        return await QueryCoursesCoreAsync(context, keyword, page, pageSize, false);
+    }
+
+    private static async Task<(List<CourseCommentSummary> Items, int Total)> QueryCoursesCoreAsync(
+        MarketContext context, string? keyword, int page, int pageSize, bool useBm25)
+    {
+        var approved = context.TeacherComments.AsNoTracking().Where(c => c.IsReview);
+        var courses = approved;
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            var term = keyword.Trim();
+            var matches = useBm25
+                ? approved.Where(c => EF.Functions.MatchAny(c.TeacherName, term) || EF.Functions.MatchAny(c.CourseName, term))
+                : approved.Where(c => c.TeacherName.Contains(term) || c.CourseName.Contains(term));
+            var courseNames = matches.Select(c => c.CourseName.Trim());
+            // Filter courses, not individual reviews: a teacher search must retain all teachers' ratings.
+            courses = approved.Where(c => courseNames.Contains(c.CourseName.Trim()));
+        }
+        var aggregates = AggregateCourses(courses);
+        var total = await aggregates.CountAsync();
+        var items = await aggregates.OrderByDescending(c => c.LatestCommentOn).ThenBy(c => c.CourseName)
+            .Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+        return (items.Select(ToCourseSummary).ToList(), total);
+    }
+
+    public async Task<CourseCommentSummary> GetCourseSummaryAsync(string courseName)
+    {
+        await using var context = await factory.CreateDbContextAsync();
+        var aggregate = await AggregateCourses(context.TeacherComments.AsNoTracking()
+                .Where(c => c.IsReview && c.CourseName.Trim() == courseName))
+            .SingleOrDefaultAsync();
+        return aggregate == null ? new CourseCommentSummary { CourseName = courseName } : ToCourseSummary(aggregate);
+    }
+
+    public async Task<(List<TeacherCommentModel> Items, int Total)> GetCourseCommentsAsync(
+        string courseName, int page, int pageSize)
+    {
+        await using var context = await factory.CreateDbContextAsync();
+        var query = context.TeacherComments.AsNoTracking()
+            .Where(c => c.IsReview && c.CourseName.Trim() == courseName);
+        var total = await query.CountAsync();
+        var items = await query.Include(c => c.User).OrderByDescending(c => c.CreatedOn).ThenBy(c => c.Key)
+            .Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+        return (items, total);
+    }
+
+    private static IQueryable<CourseAggregate> AggregateCourses(IQueryable<TeacherCommentModel> query) =>
+        query.GroupBy(c => c.CourseName.Trim()).Select(group => new CourseAggregate
+        {
+            CourseName = group.Key,
+            TotalCount = group.Count(),
+            AverageStar = group.Average(c => (double)c.Star),
+            LatestCommentOn = group.Max(c => c.CreatedOn),
+            One = group.Count(c => c.Star == 1),
+            Two = group.Count(c => c.Star == 2),
+            Three = group.Count(c => c.Star == 3),
+            Four = group.Count(c => c.Star == 4),
+            Five = group.Count(c => c.Star == 5)
+        });
+
+    private static CourseCommentSummary ToCourseSummary(CourseAggregate aggregate) => new()
+    {
+        CourseName = aggregate.CourseName,
+        TotalCount = aggregate.TotalCount,
+        AverageStar = Math.Round(aggregate.AverageStar, 1, MidpointRounding.AwayFromZero),
+        LatestCommentOn = aggregate.LatestCommentOn,
+        StarDistribution = new[] { aggregate.One, aggregate.Two, aggregate.Three, aggregate.Four, aggregate.Five }
+            .Select((count, index) => new CourseStarCount { Star = index + 1, Count = count }).ToList()
+    };
+
+    private sealed class CourseAggregate
+    {
+        public string CourseName { get; set; } = "";
+        public int TotalCount { get; set; }
+        public double AverageStar { get; set; }
+        public DateTime LatestCommentOn { get; set; }
+        public int One { get; set; }
+        public int Two { get; set; }
+        public int Three { get; set; }
+        public int Four { get; set; }
+        public int Five { get; set; }
     }
 
     public async Task<List<TeacherCommentModel>> GetByUserIdAsync(string userId)

@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
@@ -63,7 +64,7 @@ export function TeacherCommentCard({
   const authorName = comment.author?.name?.trim() || comment.userId
   const authorAvatar = comment.author?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${comment.userId}`
   const authorInitials = authorName.slice(0, 2).toUpperCase()
-  const hasActions = isMine && onEdit && onDelete
+  const hasActions = isMine && (onEdit || onDelete)
 
   return (
     <article className="group relative rounded-3xl border border-border/40 bg-card p-5 sm:p-6 transition-all duration-300 hover:border-primary/20 hover:shadow-md hover:shadow-primary/5 hover:-translate-y-0.5">
@@ -93,14 +94,20 @@ export function TeacherCommentCard({
               }
             />
             <DropdownMenuContent align="end" sideOffset={4} className="w-40">
-              <DropdownMenuItem className="rounded-lg" onClick={() => onEdit(comment)}>
-                <Pencil size={14} className="mr-2" />
-                {editText}
-              </DropdownMenuItem>
-              <DropdownMenuItem variant="destructive" className="rounded-lg" onClick={() => onDelete(comment)}>
-                <Trash2 size={14} className="mr-2" />
-                {deleteText}
-              </DropdownMenuItem>
+              <DropdownMenuGroup>
+                {onEdit ? (
+                  <DropdownMenuItem className="rounded-lg" onClick={() => onEdit(comment)}>
+                    <Pencil data-icon="inline-start" />
+                    {editText}
+                  </DropdownMenuItem>
+                ) : null}
+                {onDelete ? (
+                  <DropdownMenuItem variant="destructive" className="rounded-lg" onClick={() => onDelete(comment)}>
+                    <Trash2 data-icon="inline-start" />
+                    {deleteText}
+                  </DropdownMenuItem>
+                ) : null}
+              </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
         )}
@@ -157,11 +164,13 @@ export function TeacherCommentFormDialog({
   open,
   onOpenChange,
   initial,
+  initialCourseName = "",
   isAuthenticated,
   onSubmit,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
+  initialCourseName?: string
   initial?: TeacherCommentItem | null
   isAuthenticated: boolean
   onSubmit: (values: CommentFormValues) => Promise<void>
@@ -178,13 +187,13 @@ export function TeacherCommentFormDialog({
   useEffect(() => {
     if (open) {
       setTeacherName(initial?.teacherName ?? "")
-      setCourseName(initial?.courseName ?? "")
+      setCourseName(initial?.courseName ?? initialCourseName)
       setComment(initial?.comment ?? "")
       setStar(initial?.star ?? 5)
       setFormError(null)
       setIsSubmitting(false)
     }
-  }, [open, initial])
+  }, [open, initial, initialCourseName])
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()

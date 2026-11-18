@@ -61,6 +61,25 @@ public class TeacherCommentController(ITeacherCommentService commentService) : C
         ApiResponse<PagedResultDto<TeacherCommentItem>>.Success(
             await commentService.SearchApprovedAsync(keyword, page, pageSize));
 
+    /// <summary>按课程分页汇总所有已通过评价；教师搜索仅筛选课程。</summary>
+    [HttpGet("courses"), AllowAnonymous]
+    public async Task<ApiResponse<PagedResultDto<CourseCommentSummary>>> Courses(
+        [FromQuery] string? keyword, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) =>
+        ApiResponse<PagedResultDto<CourseCommentSummary>>.Success(
+            await commentService.QueryCoursesAsync(keyword, page, pageSize));
+
+    /// <summary>课程综合评分和星级分布。</summary>
+    [HttpGet("course/summary"), AllowAnonymous]
+    public async Task<ApiResponse<CourseCommentSummary>> CourseSummary([FromQuery] string courseName) =>
+        ApiResponse<CourseCommentSummary>.Success(await commentService.GetCourseSummaryAsync(courseName));
+
+    /// <summary>指定课程的已通过评价，精确匹配课程名。</summary>
+    [HttpGet("course/comments"), AllowAnonymous]
+    public async Task<ApiResponse<PagedResultDto<TeacherCommentItem>>> CourseComments(
+        [FromQuery] string courseName, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) =>
+        ApiResponse<PagedResultDto<TeacherCommentItem>>.Success(
+            await commentService.GetCourseCommentsAsync(courseName, page, pageSize));
+
     /// <summary>
     /// 修改评价（作者或管理员）
     /// </summary>

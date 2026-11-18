@@ -109,7 +109,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get tabTeacherComments => 'Courses';
 
   @override
-  String get teacherCommentsTitle => 'Teacher Course Reviews';
+  String get teacherCommentsTitle => '授業の評価';
 
   @override
   String get teacherCommentsSubtitle =>
@@ -1653,4 +1653,18 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get permissionLoadFailedDesc => '後でもう一度お試しください';
+
+  @override
+  String courseCommentsCount(int count) {
+    return '$count 件の評価';
+  }
+
+  @override
+  String get courseCommentsDistribution => '評価の分布';
+
+  @override
+  String get courseCommentsAllTeachers => 'この授業の全教員の承認済み評価を集計しています';
+
+  @override
+  String get courseCommentsEmpty => '承認済み評価のある授業はありません。';
 }

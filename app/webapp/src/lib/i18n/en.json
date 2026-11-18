@@ -315,8 +315,8 @@
     "cover_hint": "Open the post to see what campus is talking about"
   },
   "teacher_comments": {
-    "title": "Teacher Course Reviews",
-    "subtitle": "Search a teacher to view course ratings, or submit your own course experience.",
+    "title": "Course reviews",
+    "subtitle": "Explore course ratings and student experiences.",
     "search_placeholder": "Search teacher or course",
     "search": "Search",
     "load_error": "Failed to load teacher reviews. Please try again later.",
@@ -362,7 +362,18 @@
     "delete_title": "Delete Review",
     "delete_description": "This action cannot be undone. Are you sure you want to delete this review?",
     "status_approved": "Approved",
-    "status_pending": "Pending"
+    "status_pending": "Pending",
+    "course_count": "{{count, number}} reviews",
+    "course_count_one": "{{count, number}} review",
+    "distribution": "Rating distribution",
+    "score_out_of_five": "{{score}} out of 5",
+    "rating_distribution_row": "{{star}} out of 5, {{reviews}}",
+    "all_teachers": "Includes approved reviews for all teachers of this course",
+    "back_courses": "Back to courses",
+    "retry": "Retry",
+    "load_more": "Load more",
+    "empty_courses": "No courses with approved reviews found.",
+    "no_more_courses": "No more courses."
   },
   "admin": {
     "common": {

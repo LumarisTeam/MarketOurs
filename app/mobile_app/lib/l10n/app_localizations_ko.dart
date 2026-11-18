@@ -109,7 +109,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get tabTeacherComments => 'Courses';
 
   @override
-  String get teacherCommentsTitle => 'Teacher Course Reviews';
+  String get teacherCommentsTitle => '강의 평가';
 
   @override
   String get teacherCommentsSubtitle =>
@@ -1653,4 +1653,18 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get permissionLoadFailedDesc => '나중에 다시 시도해 주세요';
+
+  @override
+  String courseCommentsCount(int count) {
+    return '$count 개의 평가';
+  }
+
+  @override
+  String get courseCommentsDistribution => '평점 분포';
+
+  @override
+  String get courseCommentsAllTeachers => '이 강의의 모든 교수에 대한 승인된 평가를 포함합니다';
+
+  @override
+  String get courseCommentsEmpty => '승인된 평가가 있는 강의가 없습니다.';
 }

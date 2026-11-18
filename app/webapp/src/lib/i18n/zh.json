@@ -315,8 +315,8 @@
     "cover_hint": "点进看看大家正在关注什么"
   },
   "teacher_comments": {
-    "title": "教师课程评价",
-    "subtitle": "按教师查看课程评价与评分，也可以提交自己的课程体验。",
+    "title": "课程评价",
+    "subtitle": "按课程查看综合评分和同学们的真实评价。",
     "search_placeholder": "搜索教师或课程",
     "search": "搜索",
     "load_error": "教师评价加载失败，请稍后重试。",
@@ -362,7 +362,17 @@
     "delete_title": "删除评价",
     "delete_description": "此操作不可撤销。确定要删除这条评价吗？",
     "status_approved": "已通过",
-    "status_pending": "审核中"
+    "status_pending": "审核中",
+    "course_count": "{{count, number}} 条评价",
+    "distribution": "评分分布",
+    "score_out_of_five": "{{score}} 分，满分 5 分",
+    "rating_distribution_row": "{{star}} 星，{{reviews}}",
+    "all_teachers": "统计本课程所有教师的已通过评价",
+    "back_courses": "返回课程列表",
+    "retry": "重试",
+    "load_more": "加载更多",
+    "empty_courses": "暂无符合条件的课程评价。",
+    "no_more_courses": "没有更多课程了。"
   },
   "admin": {
     "common": {

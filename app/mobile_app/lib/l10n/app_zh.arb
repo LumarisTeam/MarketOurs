@@ -44,7 +44,7 @@
   "tabNotifications": "通知",
   "tabProfile": "我的",
   "tabTeacherComments": "课程",
-  "teacherCommentsTitle": "教师课程评价",
+  "teacherCommentsTitle": "课程评价",
   "teacherCommentsSubtitle": "搜索教师或课程查看评价，也可以提交自己的课程体验。",
   "teacherCommentsSearchPlaceholder": "搜索教师或课程",
   "teacherCommentsSearch": "搜索",
@@ -623,5 +623,16 @@
   "permissionUnsupportedTitle": "当前平台不支持权限管理",
   "permissionUnsupportedDesc": "请在 iOS 或 Android 设备上管理应用权限。",
   "permissionLoadFailed": "权限状态加载失败",
-  "permissionLoadFailedDesc": "请稍后重试"
+  "permissionLoadFailedDesc": "请稍后重试",
+  "courseCommentsCount": "{count} 条评价",
+  "courseCommentsDistribution": "评分分布",
+  "courseCommentsAllTeachers": "统计本课程所有教师的已通过评价",
+  "courseCommentsEmpty": "暂无符合条件的课程评价。",
+  "@courseCommentsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

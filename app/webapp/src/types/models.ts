@@ -430,3 +430,11 @@ export interface LikeToggleResult {
   likeCount: number;
   dislikeCount: number;
 }
+
+export interface CourseCommentSummary {
+  courseName: string;
+  totalCount: number;
+  averageStar: number;
+  latestCommentOn: string | null;
+  starDistribution: { star: number; count: number }[];
+}

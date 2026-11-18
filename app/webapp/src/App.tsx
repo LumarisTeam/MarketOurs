@@ -88,6 +88,7 @@ export function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/hot" element={<HotPage />} />
             <Route path="/teacher-comments" element={<TeacherCommentsPage />} />
+            <Route path="/teacher-comments/course" element={<TeacherCommentsPage />} />
             <Route path="/post/:id" element={<PostDetailPage />} />
             <Route path="/tag/:id" element={<TagPage />} />
             <Route path="/post/create" element={<CreatePostPage />} />

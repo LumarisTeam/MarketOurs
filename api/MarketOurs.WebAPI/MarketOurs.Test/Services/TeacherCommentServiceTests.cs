@@ -543,4 +543,45 @@ public class TeacherCommentServiceTests
 
         Assert.That(result.Count, Is.EqualTo(2));
     }
+
+    [Test]
+    public async Task QueryCourses_ClampsPagingAndTrimsKeyword()
+    {
+        _mockRepo.Setup(r => r.QueryCoursesAsync("高数", 1, 100))
+            .ReturnsAsync((new List<CourseCommentSummary>(), 0));
+        var result = await _service.QueryCoursesAsync(" 高数 ", 0, 200);
+        Assert.That(result.PageIndex, Is.EqualTo(1));
+        Assert.That(result.PageSize, Is.EqualTo(100));
+        _mockRepo.Verify(r => r.QueryCoursesAsync("高数", 1, 100), Times.Once);
+    }
+
+    [Test]
+    public async Task CourseComments_TrimsExactCourseAndMapsAuthor()
+    {
+        _mockRepo.Setup(r => r.GetCourseCommentsAsync("高数", 1, 1))
+            .ReturnsAsync((new List<TeacherCommentModel> { new() {
+                Key = "a", CourseName = "高数", IsReview = true,
+                User = new UserModel { Id = "student", Name = "Student" }
+            } }, 3));
+        var result = await _service.GetCourseCommentsAsync(" 高数 ", -1, 0);
+        Assert.That(result.TotalCount, Is.EqualTo(3));
+        Assert.That(result.Items.Single().Author!.Name, Is.EqualTo("Student"));
+    }
+
+    [Test]
+    public async Task CourseSummary_TrimsCourseName()
+    {
+        _mockRepo.Setup(r => r.GetCourseSummaryAsync("高数")).ReturnsAsync(new CourseCommentSummary { CourseName = "高数" });
+        var result = await _service.GetCourseSummaryAsync(" 高数 ");
+        Assert.That(result.CourseName, Is.EqualTo("高数"));
+        _mockRepo.Verify(r => r.GetCourseSummaryAsync("高数"), Times.Once);
+    }
+
+    [TestCase("")]
+    [TestCase(" ")]
+    public void CourseEndpoints_RejectBlankName(string name)
+    {
+        Assert.ThrowsAsync<BusinessException>(async () => await _service.GetCourseSummaryAsync(name));
+        Assert.ThrowsAsync<BusinessException>(async () => await _service.GetCourseCommentsAsync(name, 1, 20));
+    }
 }

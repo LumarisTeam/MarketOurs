@@ -1,7 +1,13 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../models/api_response.dart';
 import '../models/paged_result.dart';
 import '../models/teacher_comment.dart';
 import 'api_service.dart';
+
+final teacherCommentServiceProvider = Provider(
+  (ref) => TeacherCommentService(),
+);
 
 class TeacherCommentService {
   final _api = ApiService().dio;
@@ -20,7 +26,10 @@ class TeacherCommentService {
     String key,
     UpdateTeacherCommentRequest request,
   ) async {
-    final response = await _api.put('/TeacherComment/$key', data: request.toJson());
+    final response = await _api.put(
+      '/TeacherComment/$key',
+      data: request.toJson(),
+    );
     return ApiResponse<TeacherCommentItem>.fromJson(
       response.data,
       (json) => TeacherCommentItem.fromJson(json as Map<String, dynamic>),
@@ -78,6 +87,63 @@ class TeacherCommentService {
       '/TeacherComment/search',
       queryParameters: {'keyword': keyword, 'page': page, 'pageSize': pageSize}
         ..removeWhere((_, value) => value == null),
+    );
+    return ApiResponse<PagedResult<TeacherCommentItem>>.fromJson(
+      response.data,
+      (json) => PagedResult<TeacherCommentItem>.fromJson(
+        json as Map<String, dynamic>,
+        (item) => TeacherCommentItem.fromJson(item as Map<String, dynamic>),
+      ),
+    );
+  }
+
+  Future<ApiResponse<PagedResult<CourseCommentSummary>>> getCourses({
+    String? keyword,
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    final response = await _api.get(
+      '/TeacherComment/courses',
+      queryParameters: {
+        'keyword': ?keyword,
+        'page': page,
+        'pageSize': pageSize,
+      },
+    );
+    return ApiResponse<PagedResult<CourseCommentSummary>>.fromJson(
+      response.data,
+      (json) => PagedResult<CourseCommentSummary>.fromJson(
+        json as Map<String, dynamic>,
+        (item) => CourseCommentSummary.fromJson(item as Map<String, dynamic>),
+      ),
+    );
+  }
+
+  Future<ApiResponse<CourseCommentSummary>> getCourseSummary(
+    String courseName,
+  ) async {
+    final response = await _api.get(
+      '/TeacherComment/course/summary',
+      queryParameters: {'courseName': courseName},
+    );
+    return ApiResponse<CourseCommentSummary>.fromJson(
+      response.data,
+      (json) => CourseCommentSummary.fromJson(json as Map<String, dynamic>),
+    );
+  }
+
+  Future<ApiResponse<PagedResult<TeacherCommentItem>>> getCourseComments(
+    String courseName, {
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    final response = await _api.get(
+      '/TeacherComment/course/comments',
+      queryParameters: {
+        'courseName': courseName,
+        'page': page,
+        'pageSize': pageSize,
+      },
     );
     return ApiResponse<PagedResult<TeacherCommentItem>>.fromJson(
       response.data,

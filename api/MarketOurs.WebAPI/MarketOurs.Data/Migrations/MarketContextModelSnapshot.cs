@@ -460,6 +460,8 @@ namespace MarketOurs.Data.Migrations
 
                     b.HasIndex("TeacherName", "IsReview");
 
+                    b.HasIndex("CourseName", "IsReview", "CreatedOn");
+
                     b.ToTable("teacher_comments");
                 });
 

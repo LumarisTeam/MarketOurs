@@ -307,4 +307,18 @@ public class TeacherCommentControllerTests : ControllerTestBase
 
         _mockService.Verify(s => s.GetSummaryAsync("张老师"), Times.Once);
     }
+
+    [Test]
+    public async Task CourseEndpoints_WrapPublicResults()
+    {
+        var summary = new CourseCommentSummary { CourseName = "高数", TotalCount = 3, AverageStar = 4 };
+        var courses = PagedResultDto<CourseCommentSummary>.Success([summary], 1, 1, 20);
+        var reviews = PagedResultDto<TeacherCommentItem>.Success([new() { CourseName = "高数" }], 3, 1, 20);
+        _mockService.Setup(s => s.QueryCoursesAsync("张老师", 1, 20)).ReturnsAsync(courses);
+        _mockService.Setup(s => s.GetCourseSummaryAsync("高数")).ReturnsAsync(summary);
+        _mockService.Setup(s => s.GetCourseCommentsAsync("高数", 1, 20)).ReturnsAsync(reviews);
+        Assert.That((await _controller.Courses("张老师")).Data, Is.SameAs(courses));
+        Assert.That((await _controller.CourseSummary("高数")).Data, Is.SameAs(summary));
+        Assert.That((await _controller.CourseComments("高数")).Data, Is.SameAs(reviews));
+    }
 }

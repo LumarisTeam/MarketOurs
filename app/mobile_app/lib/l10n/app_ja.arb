@@ -32,7 +32,7 @@
   "tabNotifications": "通知",
   "tabProfile": "マイページ",
   "tabTeacherComments": "Courses",
-  "teacherCommentsTitle": "Teacher Course Reviews",
+  "teacherCommentsTitle": "授業の評価",
   "teacherCommentsSubtitle": "Search teachers or courses to view reviews, or submit your own course experience.",
   "teacherCommentsSearchPlaceholder": "Search teacher or course",
   "teacherCommentsSearch": "Search",
@@ -547,5 +547,16 @@
   "permissionUnsupportedTitle": "このプラットフォームでは権限管理を利用できません",
   "permissionUnsupportedDesc": "iOS または Android 端末でアプリの権限を管理してください。",
   "permissionLoadFailed": "権限の状態を読み込めませんでした",
-  "permissionLoadFailedDesc": "後でもう一度お試しください"
+  "permissionLoadFailedDesc": "後でもう一度お試しください",
+  "courseCommentsCount": "{count} 件の評価",
+  "courseCommentsDistribution": "評価の分布",
+  "courseCommentsAllTeachers": "この授業の全教員の承認済み評価を集計しています",
+  "courseCommentsEmpty": "承認済み評価のある授業はありません。",
+  "@courseCommentsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

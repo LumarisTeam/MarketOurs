@@ -109,7 +109,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get tabTeacherComments => 'Courses';
 
   @override
-  String get teacherCommentsTitle => 'Teacher Course Reviews';
+  String get teacherCommentsTitle => 'Avis sur les cours';
 
   @override
   String get teacherCommentsSubtitle =>
@@ -1694,4 +1694,20 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get permissionLoadFailedDesc => 'Veuillez réessayer plus tard';
+
+  @override
+  String courseCommentsCount(int count) {
+    return '$count avis';
+  }
+
+  @override
+  String get courseCommentsDistribution => 'Répartition des notes';
+
+  @override
+  String get courseCommentsAllTeachers =>
+      'Inclut les avis approuvés de tous les enseignants de ce cours';
+
+  @override
+  String get courseCommentsEmpty =>
+      'Aucun cours avec des avis approuvés trouvé.';
 }

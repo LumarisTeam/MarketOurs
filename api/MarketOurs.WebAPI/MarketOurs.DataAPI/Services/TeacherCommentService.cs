@@ -21,6 +21,10 @@ public interface ITeacherCommentService
     /// <summary>分页搜索已通过评价</summary>
     Task<PagedResultDto<TeacherCommentItem>> SearchApprovedAsync(string? keyword, int page, int pageSize);
 
+    Task<PagedResultDto<CourseCommentSummary>> QueryCoursesAsync(string? keyword, int page, int pageSize);
+    Task<CourseCommentSummary> GetCourseSummaryAsync(string courseName);
+    Task<PagedResultDto<TeacherCommentItem>> GetCourseCommentsAsync(string courseName, int page, int pageSize);
+
     /// <summary>获取我的评价列表</summary>
     Task<List<TeacherCommentItem>> GetMyCommentsAsync(string userId);
 
@@ -127,6 +131,33 @@ public class TeacherCommentService(
         var (items, total) = await repository.SearchApprovedAsync(keyword, safePage, safePageSize);
 
         return PagedResultDto<TeacherCommentItem>.Success([.. items.Select(ToItem)], total, safePage, safePageSize);
+    }
+
+    public async Task<PagedResultDto<CourseCommentSummary>> QueryCoursesAsync(string? keyword, int page, int pageSize)
+    {
+        page = Math.Max(1, page);
+        pageSize = Math.Clamp(pageSize, 1, 100);
+        var (items, total) = await repository.QueryCoursesAsync(keyword?.Trim(), page, pageSize);
+        return PagedResultDto<CourseCommentSummary>.Success(items, total, page, pageSize);
+    }
+
+    public Task<CourseCommentSummary> GetCourseSummaryAsync(string courseName) =>
+        repository.GetCourseSummaryAsync(ValidateCourseName(courseName));
+
+    public async Task<PagedResultDto<TeacherCommentItem>> GetCourseCommentsAsync(string courseName, int page, int pageSize)
+    {
+        courseName = ValidateCourseName(courseName);
+        page = Math.Max(1, page);
+        pageSize = Math.Clamp(pageSize, 1, 100);
+        var (items, total) = await repository.GetCourseCommentsAsync(courseName, page, pageSize);
+        return PagedResultDto<TeacherCommentItem>.Success(items.Select(ToItem).ToList(), total, page, pageSize);
+    }
+
+    private static string ValidateCourseName(string courseName)
+    {
+        if (string.IsNullOrWhiteSpace(courseName))
+            throw new BusinessException(ErrorCode.ParameterEmpty, "课程名称不能为空");
+        return courseName.Trim();
     }
 
     public async Task<List<TeacherCommentItem>> GetMyCommentsAsync(string userId)

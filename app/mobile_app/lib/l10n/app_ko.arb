@@ -32,7 +32,7 @@
   "tabNotifications": "알림",
   "tabProfile": "마이페이지",
   "tabTeacherComments": "Courses",
-  "teacherCommentsTitle": "Teacher Course Reviews",
+  "teacherCommentsTitle": "강의 평가",
   "teacherCommentsSubtitle": "Search teachers or courses to view reviews, or submit your own course experience.",
   "teacherCommentsSearchPlaceholder": "Search teacher or course",
   "teacherCommentsSearch": "Search",
@@ -547,5 +547,16 @@
   "permissionUnsupportedTitle": "현재 플랫폼에서는 권한 관리를 지원하지 않습니다",
   "permissionUnsupportedDesc": "iOS 또는 Android 기기에서 앱 권한을 관리해 주세요.",
   "permissionLoadFailed": "권한 상태를 불러오지 못했습니다",
-  "permissionLoadFailedDesc": "나중에 다시 시도해 주세요"
+  "permissionLoadFailedDesc": "나중에 다시 시도해 주세요",
+  "courseCommentsCount": "{count} 개의 평가",
+  "courseCommentsDistribution": "평점 분포",
+  "courseCommentsAllTeachers": "이 강의의 모든 교수에 대한 승인된 평가를 포함합니다",
+  "courseCommentsEmpty": "승인된 평가가 있는 강의가 없습니다.",
+  "@courseCommentsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

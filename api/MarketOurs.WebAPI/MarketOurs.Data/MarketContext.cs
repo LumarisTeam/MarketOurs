@@ -170,6 +170,7 @@ public class MarketContext(DbContextOptions<MarketContext> options) : DbContext(
         {
             entity.HasIndex(e => e.UserId);
             entity.HasIndex(e => e.TeacherName);
+            entity.HasIndex(e => new { e.CourseName, e.IsReview, e.CreatedOn });
             entity.HasIndex(e => e.IsReview);
             entity.HasIndex(e => new { e.TeacherName, e.IsReview });
             entity.Property(e => e.CreatedOn).HasDefaultValueSql("CURRENT_TIMESTAMP");

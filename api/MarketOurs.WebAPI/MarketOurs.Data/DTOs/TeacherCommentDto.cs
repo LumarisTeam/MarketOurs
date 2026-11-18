@@ -134,3 +134,20 @@ public class TeacherCommentSummary
     /// <summary>课程列表</summary>
     public List<string> Courses { get; set; } = [];
 }
+
+/// <summary>课程评价汇总，仅统计已通过评价。</summary>
+public class CourseCommentSummary
+{
+    public string CourseName { get; set; } = "";
+    public int TotalCount { get; set; }
+    public double AverageStar { get; set; }
+    public DateTime? LatestCommentOn { get; set; }
+    public List<CourseStarCount> StarDistribution { get; set; } =
+        Enumerable.Range(1, 5).Select(star => new CourseStarCount { Star = star }).ToList();
+}
+
+public class CourseStarCount
+{
+    public int Star { get; set; }
+    public int Count { get; set; }
+}

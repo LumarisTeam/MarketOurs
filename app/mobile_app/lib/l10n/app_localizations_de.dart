@@ -109,7 +109,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get tabTeacherComments => 'Courses';
 
   @override
-  String get teacherCommentsTitle => 'Teacher Course Reviews';
+  String get teacherCommentsTitle => 'Kursbewertungen';
 
   @override
   String get teacherCommentsSubtitle =>
@@ -1690,4 +1690,20 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get permissionLoadFailedDesc => 'Bitte versuche es später erneut';
+
+  @override
+  String courseCommentsCount(int count) {
+    return '$count Bewertungen';
+  }
+
+  @override
+  String get courseCommentsDistribution => 'Bewertungsverteilung';
+
+  @override
+  String get courseCommentsAllTeachers =>
+      'Enthält freigegebene Bewertungen aller Lehrkräfte dieses Kurses';
+
+  @override
+  String get courseCommentsEmpty =>
+      'Keine Kurse mit freigegebenen Bewertungen gefunden.';
 }

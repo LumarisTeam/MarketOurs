@@ -32,7 +32,7 @@
   "tabNotifications": "Notifications",
   "tabProfile": "Moi",
   "tabTeacherComments": "Courses",
-  "teacherCommentsTitle": "Teacher Course Reviews",
+  "teacherCommentsTitle": "Avis sur les cours",
   "teacherCommentsSubtitle": "Search teachers or courses to view reviews, or submit your own course experience.",
   "teacherCommentsSearchPlaceholder": "Search teacher or course",
   "teacherCommentsSearch": "Search",
@@ -547,5 +547,16 @@
   "permissionUnsupportedTitle": "Gestion des autorisations indisponible sur cette plateforme",
   "permissionUnsupportedDesc": "Gérez les autorisations de l''application sur un appareil iOS ou Android.",
   "permissionLoadFailed": "Impossible de charger l''état des autorisations",
-  "permissionLoadFailedDesc": "Veuillez réessayer plus tard"
+  "permissionLoadFailedDesc": "Veuillez réessayer plus tard",
+  "courseCommentsCount": "{count} avis",
+  "courseCommentsDistribution": "Répartition des notes",
+  "courseCommentsAllTeachers": "Inclut les avis approuvés de tous les enseignants de ce cours",
+  "courseCommentsEmpty": "Aucun cours avec des avis approuvés trouvé.",
+  "@courseCommentsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

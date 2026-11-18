@@ -1,5 +1,6 @@
 import { apiClient } from './apiClient';
 import type {
+  CourseCommentSummary,
   CreateTeacherCommentRequest,
   PagedResult,
   TeacherCommentItem,
@@ -30,6 +31,19 @@ export const teacherCommentService = {
     });
     if (keyword?.trim()) params.append('keyword', keyword.trim());
     return apiClient.get<PagedResult<TeacherCommentItem>>(`/TeacherComment/search?${params.toString()}`);
+  },
+
+  getCourses: (keyword = '', page = 1, pageSize = 20) => {
+    const params = new URLSearchParams({ keyword, page: String(page), pageSize: String(pageSize) });
+    return apiClient.get<PagedResult<CourseCommentSummary>>(`/TeacherComment/courses?${params}`);
+  },
+
+  getCourseSummary: (courseName: string) =>
+    apiClient.get<CourseCommentSummary>(`/TeacherComment/course/summary?${new URLSearchParams({ courseName })}`),
+
+  getCourseComments: (courseName: string, page = 1, pageSize = 20) => {
+    const params = new URLSearchParams({ courseName, page: String(page), pageSize: String(pageSize) });
+    return apiClient.get<PagedResult<TeacherCommentItem>>(`/TeacherComment/course/comments?${params}`);
   },
 
   getByTeacher: (teacherName: string) =>

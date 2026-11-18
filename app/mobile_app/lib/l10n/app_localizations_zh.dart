@@ -109,7 +109,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get tabTeacherComments => '课程';
 
   @override
-  String get teacherCommentsTitle => '教师课程评价';
+  String get teacherCommentsTitle => '课程评价';
 
   @override
   String get teacherCommentsSubtitle => '搜索教师或课程查看评价，也可以提交自己的课程体验。';
@@ -1640,4 +1640,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get permissionLoadFailedDesc => '请稍后重试';
+
+  @override
+  String courseCommentsCount(int count) {
+    return '$count 条评价';
+  }
+
+  @override
+  String get courseCommentsDistribution => '评分分布';
+
+  @override
+  String get courseCommentsAllTeachers => '统计本课程所有教师的已通过评价';
+
+  @override
+  String get courseCommentsEmpty => '暂无符合条件的课程评价。';
 }

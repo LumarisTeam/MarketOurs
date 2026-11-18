@@ -109,7 +109,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tabTeacherComments => 'Courses';
 
   @override
-  String get teacherCommentsTitle => 'Teacher Course Reviews';
+  String get teacherCommentsTitle => 'Course reviews';
 
   @override
   String get teacherCommentsSubtitle =>
@@ -1701,4 +1701,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get permissionLoadFailedDesc => 'Please try again later';
+
+  @override
+  String courseCommentsCount(int count) {
+    return '$count reviews';
+  }
+
+  @override
+  String get courseCommentsDistribution => 'Rating distribution';
+
+  @override
+  String get courseCommentsAllTeachers =>
+      'Includes approved reviews for all teachers of this course';
+
+  @override
+  String get courseCommentsEmpty => 'No courses with approved reviews found.';
 }

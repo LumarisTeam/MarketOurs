@@ -32,7 +32,7 @@
   "tabNotifications": "Nachrichten",
   "tabProfile": "Ich",
   "tabTeacherComments": "Courses",
-  "teacherCommentsTitle": "Teacher Course Reviews",
+  "teacherCommentsTitle": "Kursbewertungen",
   "teacherCommentsSubtitle": "Search teachers or courses to view reviews, or submit your own course experience.",
   "teacherCommentsSearchPlaceholder": "Search teacher or course",
   "teacherCommentsSearch": "Search",
@@ -548,5 +548,16 @@
   "permissionUnsupportedTitle": "Berechtigungsverwaltung auf dieser Plattform nicht verfügbar",
   "permissionUnsupportedDesc": "Verwalte die App-Berechtigungen auf einem iOS- oder Android-Gerät.",
   "permissionLoadFailed": "Berechtigungsstatus konnte nicht geladen werden",
-  "permissionLoadFailedDesc": "Bitte versuche es später erneut"
+  "permissionLoadFailedDesc": "Bitte versuche es später erneut",
+  "courseCommentsCount": "{count} Bewertungen",
+  "courseCommentsDistribution": "Bewertungsverteilung",
+  "courseCommentsAllTeachers": "Enthält freigegebene Bewertungen aller Lehrkräfte dieses Kurses",
+  "courseCommentsEmpty": "Keine Kurse mit freigegebenen Bewertungen gefunden.",
+  "@courseCommentsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

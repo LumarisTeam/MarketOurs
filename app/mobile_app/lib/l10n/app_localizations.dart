@@ -309,7 +309,7 @@ abstract class AppLocalizations {
   /// No description provided for @teacherCommentsTitle.
   ///
   /// In zh, this message translates to:
-  /// **'教师课程评价'**
+  /// **'课程评价'**
   String get teacherCommentsTitle;
 
   /// No description provided for @teacherCommentsSubtitle.
@@ -3231,6 +3231,30 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'请稍后重试'**
   String get permissionLoadFailedDesc;
+
+  /// No description provided for @courseCommentsCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 条评价'**
+  String courseCommentsCount(int count);
+
+  /// No description provided for @courseCommentsDistribution.
+  ///
+  /// In zh, this message translates to:
+  /// **'评分分布'**
+  String get courseCommentsDistribution;
+
+  /// No description provided for @courseCommentsAllTeachers.
+  ///
+  /// In zh, this message translates to:
+  /// **'统计本课程所有教师的已通过评价'**
+  String get courseCommentsAllTeachers;
+
+  /// No description provided for @courseCommentsEmpty.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无符合条件的课程评价。'**
+  String get courseCommentsEmpty;
 }
 
 class _AppLocalizationsDelegate

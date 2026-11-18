@@ -37,6 +37,7 @@ abstract final class AppRoutePaths {
   static const home = '/';
   static const notifications = '/notifications';
   static const teacherComments = '/teacher-comments';
+  static const courseComments = '/teacher-comments/course';
   static const profile = '/profile';
   static const feedback = '/feedback';
   static const bindings = '/profile/bindings';
@@ -99,9 +100,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isSplashRoute = path == AppRoutePaths.splash;
       final isPublicRoute = _isPublicRoute(path);
 
-      // 如果还在初始化加载中，保持在启动页
+      // 认证初始化期间保留公开内容的深链，其他页面停留在启动页
       if (authAsync.isLoading) {
-        return isSplashRoute ? null : AppRoutePaths.splash;
+        return isPublicRoute || isSplashRoute ? null : AppRoutePaths.splash;
       }
 
       // 获取当前认证状态，如果没有值（比如出错），默认为未认证
@@ -234,6 +235,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ],
       ),
       GoRoute(
+        path: AppRoutePaths.courseComments,
+        builder: (context, state) => TeacherCommentsScreen(
+          key: ValueKey(state.uri.queryParameters['courseName']),
+          courseName: state.uri.queryParameters['courseName'] ?? '',
+        ),
+      ),
+      GoRoute(
         path: AppRoutePaths.feedback,
         name: AppRouteNames.feedback,
         builder: (context, state) => const FeedbackScreen(),
@@ -309,7 +317,10 @@ const _authRoutes = {
 bool _isPublicRoute(String path) {
   // Legal pages are publicly accessible.
   if (path == AppRoutePaths.terms || path == AppRoutePaths.privacy) return true;
-  if (path == AppRoutePaths.teacherComments) return true;
+  if (path == AppRoutePaths.teacherComments ||
+      path == AppRoutePaths.courseComments) {
+    return true;
+  }
 
   // Post detail pages (e.g. /post/abc123) are publicly viewable, but NOT /post/create.
   if (path == AppRoutePaths.createPost) return false;

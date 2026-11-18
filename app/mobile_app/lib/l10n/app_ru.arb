@@ -32,7 +32,7 @@
   "tabNotifications": "Уведомления",
   "tabProfile": "Профиль",
   "tabTeacherComments": "Courses",
-  "teacherCommentsTitle": "Teacher Course Reviews",
+  "teacherCommentsTitle": "Отзывы о курсах",
   "teacherCommentsSubtitle": "Search teachers or courses to view reviews, or submit your own course experience.",
   "teacherCommentsSearchPlaceholder": "Search teacher or course",
   "teacherCommentsSearch": "Search",
@@ -547,5 +547,16 @@
   "permissionUnsupportedTitle": "На этой платформе управление разрешениями недоступно",
   "permissionUnsupportedDesc": "Управляйте разрешениями приложения на устройстве iOS или Android.",
   "permissionLoadFailed": "Не удалось загрузить статус разрешений",
-  "permissionLoadFailedDesc": "Попробуйте позже"
+  "permissionLoadFailedDesc": "Попробуйте позже",
+  "courseCommentsCount": "{count} отзывов",
+  "courseCommentsDistribution": "Распределение оценок",
+  "courseCommentsAllTeachers": "Включены одобренные отзывы обо всех преподавателях курса",
+  "courseCommentsEmpty": "Курсы с одобренными отзывами не найдены.",
+  "@courseCommentsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

@@ -113,3 +113,36 @@ Map<String, dynamic> _$TeacherCommentSummaryToJson(
   'averageStar': instance.averageStar,
   'courses': instance.courses,
 };
+
+CourseCommentSummary _$CourseCommentSummaryFromJson(
+  Map<String, dynamic> json,
+) => CourseCommentSummary(
+  courseName: json['courseName'] as String,
+  totalCount: (json['totalCount'] as num).toInt(),
+  averageStar: (json['averageStar'] as num).toDouble(),
+  latestCommentOn: json['latestCommentOn'] == null
+      ? null
+      : DateTime.parse(json['latestCommentOn'] as String),
+  starDistribution: (json['starDistribution'] as List<dynamic>)
+      .map((e) => CourseStarCount.fromJson(e as Map<String, dynamic>))
+      .toList(),
+);
+
+Map<String, dynamic> _$CourseCommentSummaryToJson(
+  CourseCommentSummary instance,
+) => <String, dynamic>{
+  'courseName': instance.courseName,
+  'totalCount': instance.totalCount,
+  'averageStar': instance.averageStar,
+  'latestCommentOn': instance.latestCommentOn?.toIso8601String(),
+  'starDistribution': instance.starDistribution,
+};
+
+CourseStarCount _$CourseStarCountFromJson(Map<String, dynamic> json) =>
+    CourseStarCount(
+      star: (json['star'] as num).toInt(),
+      count: (json['count'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$CourseStarCountToJson(CourseStarCount instance) =>
+    <String, dynamic>{'star': instance.star, 'count': instance.count};
