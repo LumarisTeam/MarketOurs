@@ -317,10 +317,10 @@ packages:
     dependency: transitive
     description:
       name: device_info_plus
-      sha256: a7fd703482b391a87d60b6061d04dfdeab07826b96f9abd8f5ed98068acc0074
+      sha256: "98f28b42168cc509abc92f88518882fd58061ea372d7999aecc424345c7bff6a"
       url: "https://pub.dev"
     source: hosted
-    version: "10.1.2"
+    version: "11.5.0"
   device_info_plus_platform_interface:
     dependency: transitive
     description:
@@ -365,8 +365,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: main
-      resolved-ref: "3b3e0f48bf5ea1eaa491699d7d4cf57863c77a94"
+      ref: "v0.1.0"
+      resolved-ref: "46547065f193d38bf6b691e1119b8d635082c16f"
       url: "https://github.com/LumarisTeam/feedback_sdk.git"
     source: git
     version: "0.1.0"
@@ -906,11 +906,11 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "v0.5.1"
-      resolved-ref: ffe5cd48af5cf0c1ba73f235b3115c197b9a6931
+      ref: "v0.5.4"
+      resolved-ref: "9680aff9b326156861d60519ed87e1b90cef0995"
       url: "https://github.com/LumarisTeam/luamris_ui.git"
     source: git
-    version: "0.5.1"
+    version: "0.5.4"
   matcher:
     dependency: transitive
     description:
@@ -1736,10 +1736,10 @@ packages:
     dependency: transitive
     description:
       name: win32_registry
-      sha256: "21ec76dfc731550fd3e2ce7a33a9ea90b828fdf19a5c3bcf556fa992cfa99852"
+      sha256: "6f1b564492d0147b330dd794fee8f512cec4977957f310f9951b5f9d83618dae"
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.5"
+    version: "2.1.0"
   xdg_directories:
     dependency: transitive
     description:
